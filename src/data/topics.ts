@@ -46,18 +46,18 @@ export const departments: DepartmentInfo[] = [
     topics: [
       {
         id: 'credit-memo',
-        title: 'AI-Assisted Credit Memo Drafting',
-        description: 'Create comprehensive credit memos efficiently using AI assistance',
+        title: 'AI-Assisted First-Draft Credit Memo from Unstructured Inputs',
+        description: 'Use AI to draft comprehensive credit memos from financial statements, tax returns, and borrower documents. Learn to ingest unstructured data, extract key financials, and generate narrative analysis with human review.',
       },
       {
         id: 'credit-docs',
         title: 'Reviewing Borrower Documents with AI',
-        description: 'Use AI to efficiently analyze and summarize borrower documentation',
+        description: 'Use AI to efficiently analyze and summarize borrower documentation including financial statements, tax returns, and supporting materials',
       },
       {
         id: 'credit-risk',
         title: 'Identifying Risk Flags with AI Prompts',
-        description: 'Develop AI prompts to systematically identify credit risk indicators',
+        description: 'Develop AI prompts to systematically identify credit risk indicators, customer concentration, and compliance concerns',
       },
     ],
   },
@@ -70,17 +70,17 @@ export const departments: DepartmentInfo[] = [
       {
         id: 'exec-decision',
         title: 'AI for Decision Support',
-        description: 'Leverage AI to enhance executive decision-making processes',
+        description: 'Leverage AI to enhance executive decision-making with data synthesis and scenario modeling',
       },
       {
         id: 'exec-scenario',
         title: 'Scenario Analysis with AI',
-        description: 'Use AI to model and evaluate strategic scenarios and outcomes',
+        description: 'Use AI to model and evaluate strategic scenarios, market conditions, and business outcomes',
       },
       {
         id: 'exec-summaries',
         title: 'AI-Powered Strategic Summaries',
-        description: 'Generate executive-level strategic summaries using AI',
+        description: 'Generate executive-level strategic summaries and board-ready briefings using AI',
       },
     ],
   },

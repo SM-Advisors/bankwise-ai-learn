@@ -1,6 +1,6 @@
 import { LessonPlan } from '@/contexts/TrainingContext';
 import { LearningStyle } from '@/contexts/TrainingContext';
-import { Clock, Target, Lightbulb, CheckSquare, Eye, Brain } from 'lucide-react';
+import { Clock, Target, Lightbulb, Eye, List, Zap, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LessonPlanDisplayProps {
@@ -8,24 +8,37 @@ interface LessonPlanDisplayProps {
   learningStyle: LearningStyle;
 }
 
-const styleConfig = {
-  visual: {
+const styleConfig: Record<LearningStyle, {
+  icon: typeof Eye;
+  label: string;
+  accent: string;
+  bgAccent: string;
+  borderAccent: string;
+}> = {
+  'example-based': {
     icon: Eye,
-    label: 'Visual Learning Format',
+    label: 'Example-Based Learning Format',
     accent: 'text-blue-600',
     bgAccent: 'bg-blue-50',
     borderAccent: 'border-blue-200',
   },
-  procedural: {
-    icon: CheckSquare,
-    label: 'Step-by-Step Format',
+  'explanation-based': {
+    icon: List,
+    label: 'Step-by-Step Explanation Format',
     accent: 'text-green-600',
     bgAccent: 'bg-green-50',
     borderAccent: 'border-green-200',
   },
-  conceptual: {
-    icon: Brain,
-    label: 'Strategic & Conceptual Format',
+  'hands-on': {
+    icon: Zap,
+    label: 'Hands-On Practice Format',
+    accent: 'text-amber-600',
+    bgAccent: 'bg-amber-50',
+    borderAccent: 'border-amber-200',
+  },
+  'logic-based': {
+    icon: Settings,
+    label: 'Logic & Rules Format',
     accent: 'text-purple-600',
     bgAccent: 'bg-purple-50',
     borderAccent: 'border-purple-200',
@@ -70,11 +83,11 @@ export function LessonPlanDisplay({ lesson, learningStyle }: LessonPlanDisplayPr
             key={index}
             className={cn(
               'bg-card rounded-xl border shadow-sm p-6',
-              learningStyle === 'procedural' && 'border-l-4 border-l-accent'
+              (learningStyle === 'explanation-based' || learningStyle === 'hands-on') && 'border-l-4 border-l-accent'
             )}
           >
             <div className="flex items-start gap-4">
-              {learningStyle === 'procedural' && (
+              {(learningStyle === 'explanation-based' || learningStyle === 'hands-on') && (
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-semibold text-sm">
                   {index + 1}
                 </div>

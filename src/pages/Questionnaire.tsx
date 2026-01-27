@@ -4,7 +4,7 @@ import { useTraining } from '@/contexts/TrainingContext';
 import { questions, QuestionOption } from '@/data/questionnaire';
 import { QuestionCard } from '@/components/QuestionCard';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, Info } from 'lucide-react';
 
 export default function Questionnaire() {
   const navigate = useNavigate();
@@ -57,10 +57,18 @@ export default function Questionnaire() {
         <div className="bg-card rounded-2xl border shadow-sm p-6 md:p-8">
           <div className="mb-6">
             <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-              Discover Your Learning Style
+              AI Training Interaction Preference Intake
             </h1>
             <p className="text-muted-foreground">
-              Answer these questions to help us personalize your training experience.
+              This intake adjusts how you practice AI-enabled work tasks. It does not assess ability or assign a fixed learning style.
+            </p>
+          </div>
+
+          {/* Info Banner */}
+          <div className="mb-6 p-4 bg-secondary rounded-lg flex items-start gap-3">
+            <Info className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-muted-foreground">
+              Everyone is trained to the same behaviors, standards, and compliance expectations. Your answers only change how training is delivered, not what is taught.
             </p>
           </div>
 

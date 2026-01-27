@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-export type LearningStyle = 'visual' | 'procedural' | 'conceptual';
+// Updated learning styles based on the Interaction Preference Intake document
+export type LearningStyle = 'example-based' | 'explanation-based' | 'hands-on' | 'logic-based';
 
 export type Department = 'accounting' | 'credit' | 'executive';
 
@@ -67,9 +68,10 @@ const TrainingContext = createContext<TrainingContextType | undefined>(undefined
 
 function calculateLearningStyle(answers: QuestionnaireAnswer[]): LearningStyle {
   const scores: Record<LearningStyle, number> = {
-    visual: 0,
-    procedural: 0,
-    conceptual: 0,
+    'example-based': 0,
+    'explanation-based': 0,
+    'hands-on': 0,
+    'logic-based': 0,
   };
 
   answers.forEach((answer) => {
@@ -79,12 +81,13 @@ function calculateLearningStyle(answers: QuestionnaireAnswer[]): LearningStyle {
   });
 
   // Deterministic: return the style with highest score
-  // In case of tie, priority: conceptual > procedural > visual
+  // In case of tie, priority: logic-based > hands-on > explanation-based > example-based
   const maxScore = Math.max(...Object.values(scores));
   
-  if (scores.conceptual === maxScore) return 'conceptual';
-  if (scores.procedural === maxScore) return 'procedural';
-  return 'visual';
+  if (scores['logic-based'] === maxScore) return 'logic-based';
+  if (scores['hands-on'] === maxScore) return 'hands-on';
+  if (scores['explanation-based'] === maxScore) return 'explanation-based';
+  return 'example-based';
 }
 
 export function TrainingProvider({ children }: { children: ReactNode }) {
