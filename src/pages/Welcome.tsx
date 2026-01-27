@@ -1,12 +1,25 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, BookOpen, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { GraduationCap, BookOpen, Sparkles, ArrowRight, ShieldCheck, Settings } from 'lucide-react';
 
 export default function Welcome() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen gradient-hero">
+    <div className="min-h-screen gradient-hero relative">
+      {/* Admin Dashboard Button */}
+      <div className="absolute top-4 right-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate('/admin')}
+          className="gap-2"
+        >
+          <Settings className="h-4 w-4" />
+          Admin Dashboard
+        </Button>
+      </div>
+      
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-3xl mx-auto text-center">
           {/* Hero Section */}
