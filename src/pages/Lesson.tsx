@@ -40,14 +40,17 @@ export default function Lesson() {
     setIsGeneratingLesson(true);
     setError(null);
 
+    const requestBody = {
+      department: selectedDepartment.name,
+      topic: selectedTopic.title,
+      topicDescription: selectedTopic.description,
+      learningStyle: state.learningStyle,
+    };
+
     try {
+      // Try using supabase.functions.invoke first
       const { data, error: fnError } = await supabase.functions.invoke('generate-lesson', {
-        body: {
-          department: selectedDepartment.name,
-          topic: selectedTopic.title,
-          topicDescription: selectedTopic.description,
-          learningStyle: state.learningStyle,
-        },
+        body: requestBody,
       });
 
       if (fnError) {
@@ -64,9 +67,44 @@ export default function Lesson() {
         throw new Error('No lesson data received');
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to generate lesson';
-      setError(message);
-      toast.error(message);
+      console.error('Supabase invoke failed, trying direct fetch:', err);
+      
+      // Fallback: try direct fetch to the edge function
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-lesson`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            },
+            body: JSON.stringify(requestBody),
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data?.error) {
+          throw new Error(data.error);
+        }
+
+        if (data?.lesson) {
+          setLesson(data.lesson as LessonPlan);
+        } else {
+          throw new Error('No lesson data received');
+        }
+      } catch (fetchErr) {
+        const message = fetchErr instanceof Error ? fetchErr.message : 'Failed to generate lesson';
+        setError(message);
+        toast.error(message);
+      }
     } finally {
       setIsGeneratingLesson(false);
     }
