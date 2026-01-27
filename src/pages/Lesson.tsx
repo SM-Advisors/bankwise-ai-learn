@@ -117,8 +117,7 @@ export default function Lesson() {
               Creating Your Personalized Lesson
             </h2>
             <p className="text-muted-foreground text-center max-w-md">
-              Generating a {state.learningStyle === 'visual' ? 'visual' : state.learningStyle === 'procedural' ? 'step-by-step' : 'conceptual'} lesson
-              on "{selectedTopic?.title}" tailored to your learning style...
+              Generating a personalized lesson on "{selectedTopic?.title}" tailored to your {state.learningStyle?.replace('-', ' ')} learning style...
             </p>
           </div>
         )}

@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-type LearningStyle = "visual" | "procedural" | "conceptual";
+type LearningStyle = "example-based" | "explanation-based" | "hands-on" | "logic-based";
 
 interface LessonRequest {
   department: string;
@@ -14,30 +14,43 @@ interface LessonRequest {
   learningStyle: LearningStyle;
 }
 
-const learningStyleInstructions = {
-  visual: `Format the lesson for VISUAL LEARNERS:
-- Use diagrams described in text (e.g., "Diagram: [description of flowchart/framework]")
-- Create bulleted visual structures with clear hierarchies
-- Use frameworks and matrices where applicable
-- Include visual metaphors and analogies
-- Structure content with clear visual separation
-- Use bullet points extensively with indentation to show relationships`,
+// Based on the AI Training Interaction Preference Intake document
+const learningStyleInstructions: Record<LearningStyle, string> = {
+  "example-based": `Format the lesson for EXAMPLE-BASED LEARNERS (prefer examples or visuals):
+- Show annotated AI outputs BEFORE providing instructions
+- Include examples that highlight compliant vs. risky patterns
+- Use visual prompt templates shown first
+- Provide concrete before/after examples
+- Include side-by-side comparisons of good vs. poor outputs
+- Use annotated screenshots or output snippets described in text
+- Structure: Show the example first, then explain what makes it work`,
 
-  procedural: `Format the lesson for PROCEDURAL/STEP-BY-STEP LEARNERS:
-- Use numbered steps throughout (Step 1, Step 2, etc.)
-- Include checklists with clear action items
-- Structure as "Do this → then this" flows
-- Provide explicit sequential instructions
-- Include decision trees with clear if/then logic
-- Add verification checkpoints after key steps`,
+  "explanation-based": `Format the lesson for EXPLANATION-BASED LEARNERS (prefer step-by-step guidance):
+- Provide sequenced walkthroughs with clear numbered steps
+- Explain rationale and policy logic explicitly at each step
+- Include checklists that appear BEFORE hands-on tasks
+- Use "Do this → then this" explicit flow
+- Provide the "why" along with each "what"
+- Include verification steps after key actions
+- Structure: Explain the process, then demonstrate application`,
 
-  conceptual: `Format the lesson for CONCEPTUAL/STRATEGIC LEARNERS:
-- Lead with mental models and principles
-- Explain the "why" before the "how"
-- Include strategic framing and context
-- Discuss tradeoffs and considerations
-- Connect to broader banking/finance principles
-- Emphasize decision frameworks and judgment criteria`,
+  "hands-on": `Format the lesson for HANDS-ON LEARNERS (prefer learning by doing):
+- Place the learner directly into a safe practice task early
+- Provide rapid feedback opportunities on their output
+- Encourage iteration within defined guardrails
+- Include practice exercises with immediate feedback points
+- Minimize upfront reading—get to action quickly
+- Provide scaffolded tasks that build complexity
+- Structure: Brief context, then practice task, then feedback/refinement`,
+
+  "logic-based": `Format the lesson for LOGIC-BASED LEARNERS (prefer rules and structure):
+- Show decision logic and constraints EARLY, before examples
+- Surface common failure modes up front
+- Explain WHY certain prompts or outputs are rejected
+- Include decision trees and rule frameworks
+- Provide the underlying principles that govern success
+- Map out edge cases and exception handling
+- Structure: Rules and logic first, then application examples`,
 };
 
 serve(async (req) => {
@@ -68,13 +81,19 @@ serve(async (req) => {
 
     const systemPrompt = `You are an expert AI training curriculum designer for financial institutions, specifically community and regional banks. You create practical, job-ready training content that teaches banking professionals how to apply AI in their specific roles.
 
+IMPORTANT CONTEXT: This training adjusts HOW practice is delivered, not WHAT is taught. All learners are trained to the same behaviors, standards, and compliance expectations. The following never change regardless of learning style:
+- Target workplace behaviors
+- Compliance and data-handling rules
+- Audit expectations and accountability
+- Pass/fail success criteria
+
+${styleInstruction}
+
 Your lessons are:
 - Specific to banking workflows (never generic AI education)
 - Focused on practical outputs employees can use immediately
-- Tailored to the learning style requested
-- Using only non-sensitive example data
-
-${styleInstruction}
+- Compliant with banking regulations and data privacy
+- Using only non-sensitive, synthetic example data
 
 IMPORTANT: You must respond with ONLY valid JSON matching this exact structure (no markdown, no code blocks, just raw JSON):
 {
@@ -93,19 +112,20 @@ IMPORTANT: You must respond with ONLY valid JSON matching this exact structure (
   }
 }
 
-Include 3-5 sections in the lesson. Each section should be substantive (150-300 words).`;
+Include 4-6 sections in the lesson. Each section should be substantive (200-400 words) and clearly follow the learning style format.`;
 
     const userPrompt = `Create a training lesson for the ${department} department on the topic: "${topic}"
 
 Topic Description: ${topicDescription}
 
-The learner has a ${learningStyle} learning style. Structure the entire lesson accordingly.
+The learner has an ${learningStyle} learning style. Structure the ENTIRE lesson according to their preference—this affects presentation order, emphasis, and format, not the actual skills or compliance requirements taught.
 
 Remember to:
 1. Make all examples specific to banking/financial institution contexts
 2. Include practical AI prompts or techniques they can use
 3. Focus on the specific job output mentioned in the topic
-4. Use only non-sensitive example data`;
+4. Use only non-sensitive, synthetic example data
+5. Ensure the format clearly reflects their learning style preference throughout`;
 
     console.log("Generating lesson for:", { department, topic, learningStyle });
 
@@ -122,7 +142,7 @@ Remember to:
           { role: "user", content: userPrompt },
         ],
         temperature: 0.7,
-        max_tokens: 4000,
+        max_tokens: 5000,
       }),
     });
 

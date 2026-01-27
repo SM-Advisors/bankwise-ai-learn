@@ -1,5 +1,5 @@
 import { LearningStyle } from '@/contexts/TrainingContext';
-import { Eye, CheckSquare, Brain } from 'lucide-react';
+import { Eye, List, Zap, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LearningStyleBadgeProps {
@@ -7,23 +7,34 @@ interface LearningStyleBadgeProps {
   showDescription?: boolean;
 }
 
-const styleInfo = {
-  visual: {
+const styleInfo: Record<LearningStyle, {
+  icon: typeof Eye;
+  label: string;
+  description: string;
+  color: string;
+}> = {
+  'example-based': {
     icon: Eye,
-    label: 'Visual Learner',
-    description: 'You learn best through diagrams, frameworks, and visual structures',
+    label: 'Example-Based Learner',
+    description: 'You learn best through annotated examples and visual patterns',
     color: 'bg-blue-100 text-blue-700 border-blue-200',
   },
-  procedural: {
-    icon: CheckSquare,
-    label: 'Procedural Learner',
-    description: 'You prefer step-by-step instructions and clear checklists',
+  'explanation-based': {
+    icon: List,
+    label: 'Explanation-Based Learner',
+    description: 'You prefer step-by-step guidance and explicit rationale',
     color: 'bg-green-100 text-green-700 border-green-200',
   },
-  conceptual: {
-    icon: Brain,
-    label: 'Conceptual Learner',
-    description: 'You excel with strategic thinking and understanding principles',
+  'hands-on': {
+    icon: Zap,
+    label: 'Hands-On Learner',
+    description: 'You excel by practicing tasks and receiving rapid feedback',
+    color: 'bg-amber-100 text-amber-700 border-amber-200',
+  },
+  'logic-based': {
+    icon: Settings,
+    label: 'Logic-Based Learner',
+    description: 'You thrive with decision logic, constraints, and rules up front',
     color: 'bg-purple-100 text-purple-700 border-purple-200',
   },
 };
