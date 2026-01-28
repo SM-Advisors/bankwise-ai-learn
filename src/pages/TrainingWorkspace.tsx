@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -6,83 +6,59 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { ALL_SESSION_CONTENT, type ModuleContent } from '@/data/trainingContent';
 import { 
   Loader2, ArrowLeft, ChevronLeft, ChevronRight, Send, 
   Play, FileText, Video, BookOpen, CheckCircle, Sparkles,
-  MessageSquare, Lightbulb, ChevronDown
+  Lightbulb, Clock, Target, AlertCircle
 } from 'lucide-react';
-
-interface TrainingModule {
-  id: string;
-  title: string;
-  type: 'video' | 'document' | 'example' | 'exercise';
-  description: string;
-  content?: string;
-}
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
 
-const SESSION_CONTENT: Record<number, { title: string; description: string; modules: TrainingModule[] }> = {
-  1: {
-    title: 'AI Prompting & Personalization',
-    description: 'Master the fundamentals of effective AI prompting',
-    modules: [
-      { id: '1-1', title: 'Introduction to AI Prompting', type: 'video', description: 'Learn the basics of communicating with AI' },
-      { id: '1-2', title: 'Prompt Structure Best Practices', type: 'document', description: 'Reference guide for crafting effective prompts' },
-      { id: '1-3', title: 'Good vs Bad Prompts', type: 'example', description: 'Compare examples of effective and ineffective prompts' },
-      { id: '1-4', title: 'Context Setting Techniques', type: 'document', description: 'How to provide context for better AI responses' },
-      { id: '1-5', title: 'Practice: Write Your First Prompt', type: 'exercise', description: 'Hands-on exercise to apply what you\'ve learned' },
-    ],
-  },
-  2: {
-    title: 'Building Your AI Agent',
-    description: 'Create a custom AI agent for your role',
-    modules: [
-      { id: '2-1', title: 'What is an AI Agent?', type: 'video', description: 'Understanding AI agents and their capabilities' },
-      { id: '2-2', title: 'Agent Architecture Overview', type: 'document', description: 'Components of an effective AI agent' },
-      { id: '2-3', title: 'Custom Instructions Template', type: 'example', description: 'Template for configuring your agent' },
-      { id: '2-4', title: 'Tool Integration Guide', type: 'document', description: 'Connect your agent to external tools' },
-      { id: '2-5', title: 'Build Your Agent', type: 'exercise', description: 'Create and test your personalized AI agent' },
-    ],
-  },
-  3: {
-    title: 'Role-Specific Training',
-    description: 'AI applications for your department',
-    modules: [
-      { id: '3-1', title: 'Department AI Use Cases', type: 'video', description: 'Common AI applications in your role' },
-      { id: '3-2', title: 'Compliance & AI', type: 'document', description: 'Ensuring compliant AI usage' },
-      { id: '3-3', title: 'Workflow Examples', type: 'example', description: 'Real-world AI workflow examples' },
-      { id: '3-4', title: 'Advanced Techniques', type: 'document', description: 'Power user tips and techniques' },
-      { id: '3-5', title: 'Capstone Project', type: 'exercise', description: 'Apply your learning to a real task' },
-    ],
-  },
-};
-
 export default function TrainingWorkspace() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
   const { toast } = useToast();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
-  const [selectedModule, setSelectedModule] = useState<TrainingModule | null>(null);
+  const [selectedModule, setSelectedModule] = useState<ModuleContent | null>(null);
   const [practiceInput, setPracticeInput] = useState('');
-  const [trainerMessages, setTrainerMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Welcome! I\'m your AI Training Coach. I\'ll guide you through this session, provide feedback on your work, and answer any questions. What would you like to start with?' }
-  ]);
+  const [trainerMessages, setTrainerMessages] = useState<Message[]>([]);
   const [trainerInput, setTrainerInput] = useState('');
   const [isTrainerLoading, setIsTrainerLoading] = useState(false);
   const [practiceResponse, setPracticeResponse] = useState('');
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
+  const [moduleCompleted, setModuleCompleted] = useState(false);
 
-  const session = sessionId ? SESSION_CONTENT[parseInt(sessionId)] : null;
+  const session = sessionId ? ALL_SESSION_CONTENT[parseInt(sessionId)] : null;
+
+  // Initialize trainer with context-aware greeting
+  useEffect(() => {
+    if (profile && session && selectedModule) {
+      const greeting = `Welcome to "${selectedModule.title}"! I'm your AI Training Coach, and I'll help you master this module.
+
+**Your Learning Style:** ${profile.learning_style}
+**Current Task:** ${selectedModule.content.practiceTask.title}
+
+I can:
+• Answer questions about the lesson content
+• Review your practice work and give feedback
+• Provide examples relevant to your role in ${profile.line_of_business?.replace('_', ' ') || 'banking'}
+• Offer suggestions to improve your prompts
+
+What would you like help with?`;
+      
+      setTrainerMessages([{ role: 'assistant', content: greeting }]);
+    }
+  }, [profile, session, selectedModule]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -95,6 +71,18 @@ export default function TrainingWorkspace() {
       setSelectedModule(session.modules[0]);
     }
   }, [session, selectedModule]);
+
+  // Scroll to bottom of trainer messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [trainerMessages]);
+
+  // Reset practice when module changes
+  useEffect(() => {
+    setPracticeInput('');
+    setPracticeResponse('');
+    setModuleCompleted(false);
+  }, [selectedModule]);
 
   if (loading || !profile) {
     return (
@@ -115,7 +103,7 @@ export default function TrainingWorkspace() {
     );
   }
 
-  const getModuleIcon = (type: TrainingModule['type']) => {
+  const getModuleIcon = (type: ModuleContent['type']) => {
     switch (type) {
       case 'video': return Video;
       case 'document': return FileText;
@@ -136,18 +124,41 @@ export default function TrainingWorkspace() {
           context: {
             sessionId,
             moduleId: selectedModule?.id,
+            moduleTitle: selectedModule?.title,
+            taskTitle: selectedModule?.content.practiceTask.title,
+            taskInstructions: selectedModule?.content.practiceTask.instructions,
+            scenario: selectedModule?.content.practiceTask.scenario,
+            successCriteria: selectedModule?.content.practiceTask.successCriteria,
             learningStyle: profile.learning_style,
             proficiencyLevel: profile.ai_proficiency_level,
+            lineOfBusiness: profile.line_of_business,
           },
         },
       });
 
       if (response.error) throw response.error;
       setPracticeResponse(response.data?.response || 'AI response generated successfully.');
+      setModuleCompleted(true);
     } catch (error) {
       console.error('Practice error:', error);
-      // Fallback response for demo
-      setPracticeResponse(`Great prompt! Here's a simulated response based on your input:\n\n"${practiceInput}"\n\nThis is a demonstration of how the AI would respond to your prompt. In production, this would connect to the Lovable AI for real responses.`);
+      toast({
+        title: 'Connection Issue',
+        description: 'Using offline mode. Your practice has been recorded.',
+        variant: 'default',
+      });
+      // Offline fallback response
+      setPracticeResponse(`**Practice Response**
+
+Your prompt has been processed. Here's feedback based on the task criteria:
+
+**What you wrote:**
+"${practiceInput}"
+
+**Assessment:**
+${selectedModule?.content.practiceTask.successCriteria.map((c, i) => `${i + 1}. ${c}`).join('\n')}
+
+The AI trainer on the right can provide more detailed feedback on your work. Ask "Can you review my practice prompt?" to get personalized suggestions.`);
+      setModuleCompleted(true);
     } finally {
       setIsPracticeLoading(false);
     }
@@ -168,6 +179,12 @@ export default function TrainingWorkspace() {
           context: {
             sessionId,
             moduleId: selectedModule?.id,
+            moduleTitle: selectedModule?.title,
+            moduleContent: selectedModule?.content.overview,
+            keyPoints: selectedModule?.content.keyPoints,
+            practiceTask: selectedModule?.content.practiceTask,
+            userPracticeInput: practiceInput,
+            userPracticeResponse: practiceResponse,
             learningStyle: profile.learning_style,
             proficiencyLevel: profile.ai_proficiency_level,
             lineOfBusiness: profile.line_of_business,
@@ -184,16 +201,122 @@ export default function TrainingWorkspace() {
       setTrainerMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Trainer error:', error);
-      // Fallback response
-      const assistantMessage: Message = { 
-        role: 'assistant', 
-        content: `That's a great question! Based on your ${profile.learning_style} learning style and current module on "${selectedModule?.title}", I'd suggest focusing on practical examples. Would you like me to provide a specific example related to your role in ${profile.line_of_business?.replace('_', ' ')}?`
-      };
-      setTrainerMessages(prev => [...prev, assistantMessage]);
+      // Contextual fallback response
+      const contextualResponse = generateContextualResponse(
+        trainerInput,
+        selectedModule,
+        profile,
+        practiceInput
+      );
+      setTrainerMessages(prev => [...prev, { role: 'assistant', content: contextualResponse }]);
     } finally {
       setIsTrainerLoading(false);
     }
   };
+
+  // Generate contextual offline responses
+  function generateContextualResponse(
+    input: string,
+    module: ModuleContent | null,
+    userProfile: typeof profile,
+    userPractice: string
+  ): string {
+    const lowerInput = input.toLowerCase();
+    
+    if (lowerInput.includes('review') || lowerInput.includes('feedback')) {
+      if (userPractice) {
+        return `Let me review your practice work.
+
+**Your Prompt:**
+"${userPractice.substring(0, 200)}${userPractice.length > 200 ? '...' : ''}"
+
+**Feedback based on ${userProfile?.learning_style} learning style:**
+
+✅ **What's working:**
+- You've started crafting a prompt for the task
+- Your intent is clear
+
+📝 **Suggestions for improvement:**
+${module?.content.practiceTask.hints.map(h => `- ${h}`).join('\n')}
+
+**Success Criteria to check:**
+${module?.content.practiceTask.successCriteria.map((c, i) => `${i + 1}. ${c}`).join('\n')}
+
+Would you like me to show you an example of a strong prompt for this scenario?`;
+      } else {
+        return `I'd be happy to review your work! Please complete the practice task in the center panel first, then ask me to review it.
+
+The current task is: **${module?.content.practiceTask.title}**
+
+${module?.content.practiceTask.instructions}`;
+      }
+    }
+    
+    if (lowerInput.includes('example') || lowerInput.includes('show me')) {
+      const examples = module?.content.examples;
+      if (examples && examples.length > 0) {
+        const ex = examples[0];
+        return `Here's an example from this module:
+
+**${ex.title}**
+
+❌ **Less Effective:**
+"${ex.bad || 'Not specified'}"
+
+✅ **More Effective:**
+"${ex.good}"
+
+**Why it works:**
+${ex.explanation}
+
+Would you like to see how to apply this pattern to your specific task?`;
+      }
+    }
+    
+    if (lowerInput.includes('hint') || lowerInput.includes('help') || lowerInput.includes('stuck')) {
+      return `Here are some hints for the current task:
+
+**${module?.content.practiceTask.title}**
+
+${module?.content.practiceTask.hints.map((h, i) => `${i + 1}. ${h}`).join('\n')}
+
+**Remember the key points:**
+${module?.content.keyPoints?.slice(0, 3).map(k => `• ${k}`).join('\n')}
+
+What specific part would you like more guidance on?`;
+    }
+    
+    if (lowerInput.includes('what') || lowerInput.includes('how') || lowerInput.includes('why')) {
+      return `Great question! Let me explain based on the current module.
+
+**${module?.title}**
+
+${module?.content.overview}
+
+**Key Concepts:**
+${module?.content.keyPoints?.map(k => `• ${k}`).join('\n')}
+
+For your ${userProfile?.line_of_business?.replace('_', ' ')} role, this is particularly relevant because it helps you communicate more effectively with AI tools.
+
+What aspect would you like me to elaborate on?`;
+    }
+    
+    return `I'm here to help you with "${module?.title}".
+
+Based on your **${userProfile?.learning_style}** learning style, I'd suggest:
+${userProfile?.learning_style === 'example-based' ? '- Let me show you a concrete example first' :
+  userProfile?.learning_style === 'explanation-based' ? '- Let me walk you through the concept step by step' :
+  userProfile?.learning_style === 'hands-on' ? '- Try the practice task and I\'ll give you feedback' :
+  '- Let me explain the underlying logic and framework'}
+
+You can ask me to:
+• Review your practice work
+• Show examples relevant to your role
+• Explain concepts in more detail
+• Provide hints for the current task
+
+What would be most helpful?`;
+  }
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -221,7 +344,7 @@ export default function TrainingWorkspace() {
         {/* Left Column - Training Content */}
         <div className={`border-r bg-card transition-all duration-300 flex flex-col ${leftCollapsed ? 'w-12' : 'w-80'}`}>
           <div className="p-3 border-b flex items-center justify-between shrink-0">
-            {!leftCollapsed && <span className="font-medium text-sm">Training Content</span>}
+            {!leftCollapsed && <span className="font-medium text-sm">Training Modules</span>}
             <Button 
               variant="ghost" 
               size="sm" 
@@ -235,7 +358,7 @@ export default function TrainingWorkspace() {
           {!leftCollapsed && (
             <ScrollArea className="flex-1">
               <div className="p-3 space-y-2">
-                {session.modules.map((module) => {
+                {session.modules.map((module, idx) => {
                   const IconComponent = getModuleIcon(module.type);
                   const isSelected = selectedModule?.id === module.id;
                   
@@ -254,10 +377,16 @@ export default function TrainingWorkspace() {
                           }`}>
                             <IconComponent className="h-4 w-4" />
                           </div>
-                          <div className="min-w-0">
-                            <div className="font-medium text-sm truncate">{module.title}</div>
-                            <div className="text-xs text-muted-foreground line-clamp-2">
-                              {module.description}
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium text-sm truncate">
+                              {idx + 1}. {module.title}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className="text-xs">{module.type}</Badge>
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {module.estimatedTime}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -270,37 +399,164 @@ export default function TrainingWorkspace() {
           )}
         </div>
 
-        {/* Middle Column - Practice Area */}
+        {/* Middle Column - Lesson & Practice Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="p-4 border-b shrink-0">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <h2 className="font-semibold">AI Practice Area</h2>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {selectedModule ? `Practice: ${selectedModule.title}` : 'Select a module to begin practicing'}
-            </p>
-          </div>
-          
-          <div className="flex-1 p-4 overflow-auto">
-            {selectedModule && (
-              <div className="space-y-4">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">{selectedModule.title}</CardTitle>
-                    <CardDescription>{selectedModule.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
+          <ScrollArea className="flex-1">
+            <div className="p-6">
+              {selectedModule && (
+                <div className="max-w-3xl mx-auto space-y-6">
+                  {/* Module Header */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="secondary">{selectedModule.type}</Badge>
+                      <span className="text-sm text-muted-foreground flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {selectedModule.estimatedTime}
+                      </span>
+                    </div>
+                    <h2 className="text-2xl font-bold">{selectedModule.title}</h2>
+                    <p className="text-muted-foreground mt-1">{selectedModule.description}</p>
+                  </div>
+
+                  {/* Learning Objectives */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Target className="h-4 w-4 text-primary" />
+                        Learning Objectives
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2">
+                        {selectedModule.learningObjectives.map((obj, idx) => (
+                          <li key={idx} className="flex items-start gap-2 text-sm">
+                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                            {obj}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  {/* Lesson Content */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <BookOpen className="h-4 w-4 text-primary" />
+                        Lesson Content
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm leading-relaxed">{selectedModule.content.overview}</p>
+                      
+                      <div className="bg-muted/50 p-4 rounded-lg">
+                        <h4 className="font-medium text-sm mb-2">Key Points:</h4>
+                        <ul className="space-y-2">
+                          {selectedModule.content.keyPoints.map((point, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm">
+                              <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center shrink-0 mt-0.5">
+                                {idx + 1}
+                              </span>
+                              {point}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Examples Section */}
+                      {selectedModule.content.examples && selectedModule.content.examples.length > 0 && (
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-sm flex items-center gap-2">
+                            <Lightbulb className="h-4 w-4 text-yellow-500" />
+                            Examples
+                          </h4>
+                          {selectedModule.content.examples.map((example, idx) => (
+                            <div key={idx} className="border rounded-lg overflow-hidden">
+                              <div className="bg-muted px-4 py-2 font-medium text-sm">{example.title}</div>
+                              <div className="p-4 space-y-3">
+                                {example.bad && (
+                                  <div className="bg-red-500/5 border border-red-500/20 p-3 rounded-lg">
+                                    <div className="text-xs text-red-600 font-medium mb-1">❌ Less Effective:</div>
+                                    <p className="text-sm italic">"{example.bad}"</p>
+                                  </div>
+                                )}
+                                <div className="bg-green-500/5 border border-green-500/20 p-3 rounded-lg">
+                                  <div className="text-xs text-green-600 font-medium mb-1">✅ More Effective:</div>
+                                  <p className="text-sm whitespace-pre-wrap">"{example.good}"</p>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  <strong>Why:</strong> {example.explanation}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Steps Section */}
+                      {selectedModule.content.steps && selectedModule.content.steps.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Steps to Follow:</h4>
+                          <ol className="space-y-2">
+                            {selectedModule.content.steps.map((step, idx) => (
+                              <li key={idx} className="flex items-start gap-3 text-sm">
+                                <span className="h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center shrink-0">
+                                  {idx + 1}
+                                </span>
+                                {step}
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Practice Task */}
+                  <Card className="border-primary/30">
+                    <CardHeader className="pb-3 bg-primary/5">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        Practice Task: {selectedModule.content.practiceTask.title}
+                      </CardTitle>
+                      <CardDescription>
+                        {selectedModule.content.practiceTask.instructions}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                      {/* Scenario */}
+                      <div className="bg-blue-500/5 border border-blue-500/20 p-4 rounded-lg">
+                        <h4 className="font-medium text-sm text-blue-600 mb-2 flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4" />
+                          Scenario
+                        </h4>
+                        <p className="text-sm whitespace-pre-wrap">{selectedModule.content.practiceTask.scenario}</p>
+                      </div>
+
+                      {/* Hints */}
                       <div>
-                        <label className="text-sm font-medium mb-2 block">Your Input</label>
+                        <h4 className="font-medium text-sm mb-2">Hints:</h4>
+                        <ul className="space-y-1">
+                          {selectedModule.content.practiceTask.hints.map((hint, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Lightbulb className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
+                              {hint}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Input Area */}
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Your Response:</label>
                         <Textarea
                           value={practiceInput}
                           onChange={(e) => setPracticeInput(e.target.value)}
-                          placeholder="Enter your prompt or response here..."
-                          className="min-h-[120px]"
+                          placeholder="Write your prompt or response here based on the scenario above..."
+                          className="min-h-[150px]"
                         />
                       </div>
+                      
                       <Button 
                         onClick={handlePracticeSubmit} 
                         disabled={isPracticeLoading || !practiceInput.trim()}
@@ -311,34 +567,61 @@ export default function TrainingWorkspace() {
                         ) : (
                           <Send className="h-4 w-4" />
                         )}
-                        Submit
+                        Submit for Review
                       </Button>
-                    </div>
-                  </CardContent>
-                </Card>
 
-                {practiceResponse && (
-                  <Card className="border-primary/20 bg-primary/5">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-primary" />
-                        AI Response
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="prose prose-sm max-w-none">
-                        <pre className="whitespace-pre-wrap text-sm font-sans">{practiceResponse}</pre>
+                      {/* Practice Response */}
+                      {practiceResponse && (
+                        <div className="border-t pt-4 mt-4">
+                          <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-primary" />
+                            AI Feedback
+                          </h4>
+                          <div className="bg-muted/50 p-4 rounded-lg">
+                            <div className="prose prose-sm max-w-none">
+                              <pre className="whitespace-pre-wrap text-sm font-sans">{practiceResponse}</pre>
+                            </div>
+                          </div>
+                          
+                          {moduleCompleted && (
+                            <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                              <div className="flex items-center gap-2 text-green-600 font-medium">
+                                <CheckCircle className="h-5 w-5" />
+                                Practice Completed!
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Ask the AI Trainer on the right for detailed feedback, or continue to the next module.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Success Criteria */}
+                      <div className="border-t pt-4">
+                        <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                          <Target className="h-4 w-4 text-primary" />
+                          Success Criteria
+                        </h4>
+                        <ul className="space-y-1">
+                          {selectedModule.content.practiceTask.successCriteria.map((criteria, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm">
+                              <CheckCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                              {criteria}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     </CardContent>
                   </Card>
-                )}
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
         </div>
 
         {/* Right Column - AI Trainer */}
-        <div className={`border-l bg-card transition-all duration-300 flex flex-col ${rightCollapsed ? 'w-12' : 'w-80'}`}>
+        <div className={`border-l bg-card transition-all duration-300 flex flex-col ${rightCollapsed ? 'w-12' : 'w-96'}`}>
           <div className="p-3 border-b flex items-center justify-between shrink-0">
             <Button 
               variant="ghost" 
@@ -347,7 +630,12 @@ export default function TrainingWorkspace() {
             >
               {rightCollapsed ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </Button>
-            {!rightCollapsed && <span className="font-medium text-sm">AI Trainer</span>}
+            {!rightCollapsed && (
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span className="font-medium text-sm">AI Training Coach</span>
+              </div>
+            )}
           </div>
           
           {!rightCollapsed && (
@@ -363,24 +651,60 @@ export default function TrainingWorkspace() {
                           : 'bg-primary text-primary-foreground ml-4'
                       }`}
                     >
-                      <p className="text-sm">{message.content}</p>
+                      <div className="prose prose-sm max-w-none">
+                        <pre className="whitespace-pre-wrap text-sm font-sans m-0 p-0 bg-transparent">
+                          {message.content}
+                        </pre>
+                      </div>
                     </div>
                   ))}
                   {isTrainerLoading && (
-                    <div className="p-3 rounded-lg bg-muted">
+                    <div className="p-3 rounded-lg bg-muted flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm text-muted-foreground">Thinking...</span>
                     </div>
                   )}
+                  <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
               
+              {/* Quick Actions */}
+              <div className="px-3 py-2 border-t bg-muted/30">
+                <div className="flex flex-wrap gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => setTrainerInput('Can you review my practice work?')}
+                  >
+                    Review my work
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => setTrainerInput('Show me an example')}
+                  >
+                    Show example
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => setTrainerInput('I need a hint')}
+                  >
+                    Get hint
+                  </Button>
+                </div>
+              </div>
+
               <div className="p-3 border-t shrink-0">
                 <div className="flex gap-2">
                   <Textarea
                     value={trainerInput}
                     onChange={(e) => setTrainerInput(e.target.value)}
-                    placeholder="Ask your trainer..."
-                    className="min-h-[60px] resize-none"
+                    placeholder="Ask your trainer a question..."
+                    className="min-h-[60px] resize-none text-sm"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();

@@ -15,6 +15,18 @@ interface TrainerRequest {
   context: {
     sessionId: string;
     moduleId?: string;
+    moduleTitle?: string;
+    moduleContent?: string;
+    keyPoints?: string[];
+    practiceTask?: {
+      title: string;
+      instructions: string;
+      scenario: string;
+      hints: string[];
+      successCriteria: string[];
+    };
+    userPracticeInput?: string;
+    userPracticeResponse?: string;
     learningStyle?: string;
     proficiencyLevel?: number;
     lineOfBusiness?: string;
@@ -34,31 +46,70 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `You are an expert AI Training Coach for banking professionals. Your role is to guide learners through their AI training journey.
+    // Build comprehensive system prompt with full lesson context
+    const systemPrompt = `You are an expert AI Training Coach for banking professionals. Your role is to guide learners through their AI training modules, answer questions, review their work, and provide personalized feedback.
 
-Context about the learner:
+## CURRENT LEARNER PROFILE
 - Learning Style: ${context.learningStyle || 'Not specified'}
-- AI Proficiency Level: ${context.proficiencyLevel ?? 'Not specified'}/8
+- AI Proficiency Level: ${context.proficiencyLevel ?? 'Not specified'}/8 (0=beginner, 8=advanced)
 - Line of Business: ${context.lineOfBusiness?.replace('_', ' ') || 'Not specified'}
 - Current Session: ${context.sessionId}
-- Current Module: ${context.moduleId || 'Not specified'}
 
-Guidelines:
-1. Adapt your responses to their learning style:
-   - Example-based: Provide concrete examples and comparisons
-   - Explanation-based: Give clear, step-by-step explanations
-   - Hands-on: Encourage experimentation and provide exercises
-   - Logic-based: Explain the reasoning and principles behind concepts
+## CURRENT MODULE
+- Module: ${context.moduleTitle || 'Not specified'}
+- Module ID: ${context.moduleId || 'Not specified'}
 
-2. Match complexity to their proficiency level (0=beginner, 8=advanced)
+${context.moduleContent ? `## MODULE OVERVIEW
+${context.moduleContent}` : ''}
 
-3. Provide encouraging, constructive feedback
+${context.keyPoints && context.keyPoints.length > 0 ? `## KEY POINTS
+${context.keyPoints.map((p, i) => `${i + 1}. ${p}`).join('\n')}` : ''}
 
-4. Relate examples to their line of business when possible
+${context.practiceTask ? `## CURRENT PRACTICE TASK
+Title: ${context.practiceTask.title}
+Instructions: ${context.practiceTask.instructions}
+Scenario: ${context.practiceTask.scenario}
 
-5. Keep responses concise but helpful (2-3 paragraphs max)
+Hints to give if asked:
+${context.practiceTask.hints.map((h, i) => `${i + 1}. ${h}`).join('\n')}
 
-6. If they ask about compliance or security, emphasize following bank policies`;
+Success Criteria (use for evaluation):
+${context.practiceTask.successCriteria.map((c, i) => `${i + 1}. ${c}`).join('\n')}` : ''}
+
+${context.userPracticeInput ? `## LEARNER'S PRACTICE WORK (submitted for the task)
+"""
+${context.userPracticeInput}
+"""` : ''}
+
+${context.userPracticeResponse ? `## AI FEEDBACK ALREADY PROVIDED
+"""
+${context.userPracticeResponse}
+"""` : ''}
+
+## YOUR COACHING APPROACH
+
+Based on their ${context.learningStyle || 'general'} learning style:
+${context.learningStyle === 'example-based' ? '- Lead with concrete examples and comparisons\n- Show before-and-after examples\n- Reference real banking scenarios' :
+  context.learningStyle === 'explanation-based' ? '- Give clear, step-by-step explanations\n- Explain the "why" behind concepts\n- Provide comprehensive context' :
+  context.learningStyle === 'hands-on' ? '- Keep explanations brief\n- Encourage immediate practice\n- Provide quick feedback loops' :
+  context.learningStyle === 'logic-based' ? '- Explain the reasoning and principles\n- Use structured frameworks\n- Discuss edge cases and failure modes' :
+  '- Adapt to what the learner seems to respond to best'}
+
+Based on proficiency level ${context.proficiencyLevel ?? 4}/8:
+${(context.proficiencyLevel ?? 4) <= 2 ? '- Use simple language and avoid jargon\n- Be extra encouraging\n- Provide more scaffolding' :
+  (context.proficiencyLevel ?? 4) <= 5 ? '- Balance explanation with practice\n- Build on existing knowledge\n- Introduce intermediate concepts' :
+  '- Be concise, they know the basics\n- Focus on nuance and advanced techniques\n- Challenge them appropriately'}
+
+## COACHING GUIDELINES
+1. When reviewing their practice work, evaluate against the success criteria
+2. Give specific, actionable feedback (not vague praise)
+3. If they're struggling, offer hints from the hints list
+4. Relate examples to their line of business (${context.lineOfBusiness?.replace('_', ' ') || 'banking'}) when possible
+5. Keep responses focused and practical (2-4 paragraphs typically)
+6. If they ask about compliance or security, emphasize following bank policies
+7. Use markdown formatting for clarity (bold, bullets, numbered lists)
+
+Remember: You have access to their practice work and can provide specific feedback on it when asked.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -72,7 +123,7 @@ Guidelines:
           { role: "system", content: systemPrompt },
           ...messages,
         ],
-        max_tokens: 500,
+        max_tokens: 800,
       }),
     });
 
