@@ -7,10 +7,11 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { HelpTour } from '@/components/HelpTour';
 import { BankPolicyModal } from '@/components/BankPolicyModal';
+import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { 
   Loader2, Play, CheckCircle, Lock, Sparkles, Bot, 
-  Building2, HelpCircle, BookOpen, Settings, Shield, Lightbulb
+  Building2, HelpCircle, BookOpen, Shield, Lightbulb
 } from 'lucide-react';
 
 const SESSIONS = [
@@ -133,13 +134,7 @@ export default function Dashboard() {
               <HelpCircle className="h-4 w-4" />
               Help
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="gap-2">
-              <Settings className="h-4 w-4" />
-              Admin
-            </Button>
-            <Button variant="outline" size="sm" onClick={signOut}>
-              Sign Out
-            </Button>
+            <ProfileDropdown />
           </div>
         </div>
       </header>
