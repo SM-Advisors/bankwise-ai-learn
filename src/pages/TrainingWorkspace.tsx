@@ -51,13 +51,15 @@ export default function TrainingWorkspace() {
       const greeting = `Welcome to "${selectedModule.title}"! I'm your AI Training Coach, and I'll help you master this module.
 
 **Your Learning Style:** ${profile.learning_style}
+
 **Current Task:** ${selectedModule.content.practiceTask.title}
 
 I can:
-• Answer questions about the lesson content
-• Review your practice work and give feedback
-• Provide examples relevant to your role in ${profile.line_of_business?.replace('_', ' ') || 'banking'}
-• Offer suggestions to improve your prompts
+
+- Answer questions about the lesson content
+- Review your practice work and give feedback
+- Provide examples relevant to your role in ${profile.line_of_business?.replace('_', ' ') || 'banking'}
+- Offer suggestions to improve your prompts
 
 What would you like help with?`;
       
@@ -618,6 +620,27 @@ What would be most helpful?`;
                               <p className="text-sm text-muted-foreground mt-1">
                                 Ask the AI Trainer on the right for detailed feedback, or continue to the next module.
                               </p>
+                              {(() => {
+                                const currentIndex = session.modules.findIndex(m => m.id === selectedModule?.id);
+                                const nextModule = session.modules[currentIndex + 1];
+                                return nextModule ? (
+                                  <Button 
+                                    onClick={() => setSelectedModule(nextModule)}
+                                    className="mt-3 gap-2"
+                                  >
+                                    Continue to Next Module
+                                    <ChevronRight className="h-4 w-4" />
+                                  </Button>
+                                ) : (
+                                  <Button 
+                                    onClick={() => navigate('/dashboard')}
+                                    className="mt-3 gap-2"
+                                  >
+                                    Complete Session
+                                    <CheckCircle className="h-4 w-4" />
+                                  </Button>
+                                );
+                              })()}
                             </div>
                           )}
                         </div>
