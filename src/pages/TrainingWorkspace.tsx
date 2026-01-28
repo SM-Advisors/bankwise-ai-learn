@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -578,8 +579,8 @@ What would be most helpful?`;
                             AI Feedback
                           </h4>
                           <div className="bg-muted/50 p-4 rounded-lg">
-                            <div className="prose prose-sm max-w-none">
-                              <pre className="whitespace-pre-wrap text-sm font-sans">{practiceResponse}</pre>
+                            <div className="prose prose-sm max-w-none dark:prose-invert [&>h1]:text-lg [&>h1]:font-bold [&>h1]:mt-4 [&>h1]:mb-2 [&>h2]:text-base [&>h2]:font-semibold [&>h2]:mt-3 [&>h2]:mb-2 [&>h3]:text-sm [&>h3]:font-semibold [&>h3]:mt-3 [&>h3]:mb-1 [&>p]:mb-2 [&>ul]:my-2 [&>ul]:pl-4 [&>ol]:my-2 [&>ol]:pl-4 [&>li]:mb-1">
+                              <ReactMarkdown>{practiceResponse}</ReactMarkdown>
                             </div>
                           </div>
                           
@@ -651,10 +652,8 @@ What would be most helpful?`;
                           : 'bg-primary text-primary-foreground ml-4'
                       }`}
                     >
-                      <div className="prose prose-sm max-w-none">
-                        <pre className="whitespace-pre-wrap text-sm font-sans m-0 p-0 bg-transparent">
-                          {message.content}
-                        </pre>
+                      <div className={`prose prose-sm max-w-none ${message.role === 'assistant' ? 'dark:prose-invert' : ''} [&>h1]:text-base [&>h1]:font-bold [&>h1]:mt-3 [&>h1]:mb-2 [&>h2]:text-sm [&>h2]:font-semibold [&>h2]:mt-2 [&>h2]:mb-1 [&>h3]:text-sm [&>h3]:font-semibold [&>h3]:mt-2 [&>h3]:mb-1 [&>p]:mb-2 [&>p]:text-sm [&>ul]:my-2 [&>ul]:pl-4 [&>ol]:my-2 [&>ol]:pl-4 [&>li]:mb-1 [&>li]:text-sm`}>
+                        <ReactMarkdown>{message.content}</ReactMarkdown>
                       </div>
                     </div>
                   ))}
