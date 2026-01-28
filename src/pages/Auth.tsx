@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { GraduationCap, Loader2, Eye, EyeOff } from 'lucide-react';
+import { GraduationCap, Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
@@ -21,6 +22,8 @@ export default function Auth() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
   
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
@@ -31,6 +34,9 @@ export default function Auth() {
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
+
+  // Forgot password state
+  const [resetEmail, setResetEmail] = useState('');
 
   // Redirect if already logged in
   if (user) {
@@ -122,6 +128,112 @@ export default function Auth() {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const emailResult = emailSchema.safeParse(resetEmail);
+    if (!emailResult.success) {
+      toast({ title: 'Error', description: emailResult.error.errors[0].message, variant: 'destructive' });
+      return;
+    }
+
+    setIsLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setIsLoading(false);
+
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      setResetEmailSent(true);
+      toast({ 
+        title: 'Reset Email Sent', 
+        description: 'Check your email for a password reset link.' 
+      });
+    }
+  };
+
+  // Forgot Password View
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 rounded-xl bg-primary">
+                <GraduationCap className="h-8 w-8 text-primary-foreground" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-display">Reset Password</CardTitle>
+            <CardDescription>
+              {resetEmailSent 
+                ? 'Check your email for a password reset link'
+                : 'Enter your email to receive a password reset link'
+              }
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {resetEmailSent ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-center">
+                  <p className="text-sm text-green-600 font-medium">
+                    Password reset email sent!
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Check your inbox for a link to reset your password.
+                  </p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  className="w-full gap-2"
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setResetEmailSent(false);
+                    setResetEmail('');
+                  }}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Login
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email">Email</Label>
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    placeholder="you@bank.com"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Send Reset Link
+                </Button>
+                <Button 
+                  type="button"
+                  variant="ghost" 
+                  className="w-full gap-2"
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setResetEmail('');
+                  }}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Login
+                </Button>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-lg">
@@ -157,7 +269,16 @@ export default function Auth() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="login-password">Password</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="login-password">Password</Label>
+                    <button
+                      type="button"
+                      className="text-xs text-primary hover:underline"
+                      onClick={() => setShowForgotPassword(true)}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
                   <div className="relative">
                     <Input
                       id="login-password"

@@ -17,6 +17,7 @@ import Questionnaire from "./pages/Questionnaire";
 import TopicSelection from "./pages/TopicSelection";
 import Lesson from "./pages/Lesson";
 import AdminDashboard from "./pages/AdminDashboard";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
               {/* Public routes */}
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               
               {/* Protected routes */}
               <Route path="/onboarding" element={<Onboarding />} />
