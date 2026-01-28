@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAllBankPolicies } from '@/hooks/useBankPolicies';
+import { UsersManagement } from '@/components/UsersManagement';
 import { learningStyles } from '@/data/learningStyles';
 import { departments } from '@/data/topics';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
@@ -35,7 +39,9 @@ import {
   Edit,
   Save,
   X,
-  Plus
+  Plus,
+  Loader2,
+  ArrowLeft
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -118,6 +124,9 @@ const CORE_PROGRAMS = [
 ];
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const { toast } = useToast();
   const { policies, loading: policiesLoading, updatePolicy, createPolicy } = useAllBankPolicies();
   const [editingPolicy, setEditingPolicy] = useState<any>(null);
@@ -132,6 +141,31 @@ export default function AdminDashboard() {
     display_order: 0,
     is_active: true,
   });
+
+  // Redirect non-admins away
+  useEffect(() => {
+    if (!authLoading && !roleLoading) {
+      if (!user) {
+        navigate('/auth');
+      } else if (!isAdmin) {
+        navigate('/dashboard');
+      }
+    }
+  }, [user, isAdmin, authLoading, roleLoading, navigate]);
+
+  // Show loading state while checking auth/role
+  if (authLoading || roleLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Don't render if not admin
+  if (!isAdmin) {
+    return null;
+  }
 
   const handleEditPolicy = (policy: any) => {
     setEditingPolicy(policy);
@@ -179,27 +213,39 @@ export default function AdminDashboard() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-8">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => navigate('/dashboard')}
+          className="mb-4 gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Dashboard
+        </Button>
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-primary/10 rounded-lg">
-            <Users className="h-6 w-6 text-primary" />
+            <Shield className="h-6 w-6 text-primary" />
           </div>
           <h1 className="text-3xl font-bold">Training Administration</h1>
         </div>
         <p className="text-muted-foreground">
-          Overview of learning styles, training programs, curriculum content, and bank policies
+          Manage users, policies, training programs, and curriculum content
         </p>
       </div>
 
-      <Tabs defaultValue="programs" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+      <Tabs defaultValue="users" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="users" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            <span className="hidden sm:inline">Users</span>
+          </TabsTrigger>
           <TabsTrigger value="programs" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
             <span className="hidden sm:inline">Programs</span>
           </TabsTrigger>
           <TabsTrigger value="policies" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
-            <span className="hidden sm:inline">Bank Policies</span>
-            <span className="sm:hidden">Policies</span>
+            <span className="hidden sm:inline">Policies</span>
           </TabsTrigger>
           <TabsTrigger value="learning-styles" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
@@ -214,6 +260,11 @@ export default function AdminDashboard() {
             <span className="hidden sm:inline">Content</span>
           </TabsTrigger>
         </TabsList>
+
+        {/* Users Management Tab */}
+        <TabsContent value="users" className="space-y-6">
+          <UsersManagement />
+        </TabsContent>
 
         {/* Bank Policies Tab */}
         <TabsContent value="policies" className="space-y-6">
