@@ -26,15 +26,35 @@ export default function ResetPassword() {
   // Check if we have a valid recovery session
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      // Listen for auth state changes first - this handles the PKCE flow
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
+          setIsValidSession(true);
+          setIsCheckingSession(false);
+        }
+      });
+
+      // Check URL for code parameter (PKCE flow - used by Supabase by default)
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
       
-      // Check URL hash for recovery token (Supabase redirects with token in hash)
+      if (code) {
+        // Exchange the code for a session - this triggers the PASSWORD_RECOVERY event
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          console.error('Error exchanging code:', error);
+          setIsCheckingSession(false);
+        }
+        // The onAuthStateChange listener will handle setting isValidSession
+        return () => subscription.unsubscribe();
+      }
+
+      // Check URL hash for legacy token flow (fallback)
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get('access_token');
       const type = hashParams.get('type');
       
       if (type === 'recovery' && accessToken) {
-        // Set the session from the recovery token
         const { error } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: hashParams.get('refresh_token') || '',
@@ -43,25 +63,21 @@ export default function ResetPassword() {
         if (!error) {
           setIsValidSession(true);
         }
-      } else if (session) {
-        // User might already have a session from the recovery flow
+        setIsCheckingSession(false);
+        return () => subscription.unsubscribe();
+      }
+
+      // Check for existing session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
         setIsValidSession(true);
       }
       
       setIsCheckingSession(false);
+      return () => subscription.unsubscribe();
     };
 
     checkSession();
-
-    // Listen for auth state changes (handles the recovery token from email link)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setIsValidSession(true);
-        setIsCheckingSession(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
   }, []);
 
   const handleResetPassword = async (e: React.FormEvent) => {
