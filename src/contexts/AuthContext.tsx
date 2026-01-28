@@ -42,6 +42,8 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: Error | null }>;
   refreshProfile: () => Promise<void>;
+  updateProgress: (updates: Partial<TrainingProgress>) => Promise<{ error: Error | null }>;
+  markSessionCompleted: (sessionNumber: 1 | 2 | 3) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -240,6 +242,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProgress(progressData);
   };
 
+  const updateProgress = async (updates: Partial<TrainingProgress>) => {
+    if (!user) return { error: new Error('Not authenticated') };
+
+    try {
+      const { error } = await supabase
+        .from('training_progress')
+        .update(updates as Record<string, unknown>)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Refresh progress
+      const updatedProgress = await fetchProgress(user.id);
+      setProgress(updatedProgress);
+
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
+  const markSessionCompleted = async (sessionNumber: 1 | 2 | 3) => {
+    if (!user) return { error: new Error('Not authenticated') };
+
+    const completedKey = `session_${sessionNumber}_completed` as const;
+    const updates: Partial<TrainingProgress> = {
+      [completedKey]: true,
+    };
+
+    // Also advance the current session if applicable
+    const profileUpdates: Partial<UserProfile> = {};
+    if (profile && profile.current_session === sessionNumber && sessionNumber < 3) {
+      profileUpdates.current_session = sessionNumber + 1;
+    }
+
+    try {
+      const { error: progressError } = await supabase
+        .from('training_progress')
+        .update(updates as Record<string, unknown>)
+        .eq('user_id', user.id);
+
+      if (progressError) throw progressError;
+
+      // Update current_session in profile if needed
+      if (Object.keys(profileUpdates).length > 0) {
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .update(profileUpdates)
+          .eq('user_id', user.id);
+
+        if (profileError) throw profileError;
+      }
+
+      // Refresh both profile and progress
+      const updatedProfile = await fetchProfile(user.id);
+      setProfile(updatedProfile);
+      const updatedProgress = await fetchProgress(user.id);
+      setProgress(updatedProgress);
+
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -253,6 +320,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signOut,
         updateProfile,
         refreshProfile,
+        updateProgress,
+        markSessionCompleted,
       }}
     >
       {children}
