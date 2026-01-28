@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { HelpTour } from '@/components/HelpTour';
 import { 
   Loader2, Play, CheckCircle, Lock, Sparkles, Bot, 
   Building2, HelpCircle, BookOpen, Settings
@@ -37,6 +38,7 @@ const SESSIONS = [
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user, profile, progress, loading, signOut } = useAuth();
+  const [helpOpen, setHelpOpen] = useState(false);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -92,6 +94,9 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Help Tour Dialog */}
+      <HelpTour open={helpOpen} onOpenChange={setHelpOpen} />
+
       {/* Header */}
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -102,7 +107,12 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-2"
+              onClick={() => setHelpOpen(true)}
+            >
               <HelpCircle className="h-4 w-4" />
               Help
             </Button>

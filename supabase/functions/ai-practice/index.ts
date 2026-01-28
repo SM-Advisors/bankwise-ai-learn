@@ -10,8 +10,14 @@ interface PracticeRequest {
   context: {
     sessionId: string;
     moduleId?: string;
+    moduleTitle?: string;
+    taskTitle?: string;
+    taskInstructions?: string;
+    scenario?: string;
+    successCriteria?: string[];
     learningStyle?: string;
     proficiencyLevel?: number;
+    lineOfBusiness?: string;
   };
 }
 
@@ -28,15 +34,38 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `You are an AI assistant helping a banking professional practice their AI skills.
+    // Build evaluation system prompt
+    const systemPrompt = `You are an AI Practice Evaluator for a banking AI training platform. Your job is to evaluate a learner's practice prompt/response and provide constructive feedback.
 
-The user is working on a practice exercise as part of their AI training. Their proficiency level is ${context.proficiencyLevel ?? 0}/8.
+## LEARNER CONTEXT
+- Learning Style: ${context.learningStyle || 'Not specified'}
+- AI Proficiency Level: ${context.proficiencyLevel ?? 4}/8
+- Line of Business: ${context.lineOfBusiness?.replace('_', ' ') || 'Banking'}
+- Current Session: ${context.sessionId}
+- Current Module: ${context.moduleTitle || 'Not specified'}
 
-Respond to their prompt as a helpful AI assistant would, but also:
-1. Demonstrate good AI response patterns they can learn from
-2. If their prompt could be improved, subtly show a better approach in your response
-3. Keep responses professional and relevant to a banking context
-4. Be concise but thorough`;
+## PRACTICE TASK
+Title: ${context.taskTitle || 'Practice Exercise'}
+Instructions: ${context.taskInstructions || 'Complete the practice task'}
+Scenario: ${context.scenario || 'General banking scenario'}
+
+## SUCCESS CRITERIA
+${context.successCriteria ? context.successCriteria.map((c, i) => `${i + 1}. ${c}`).join('\n') : 'Evaluate for clarity, specificity, and appropriateness'}
+
+## YOUR EVALUATION APPROACH
+
+1. **Acknowledge the effort** - Start with what they did well
+2. **Evaluate against criteria** - Check each success criterion
+3. **Provide specific feedback** - Point to exact parts that could improve
+4. **Give actionable suggestions** - Concrete next steps, not vague advice
+5. **Encourage iteration** - Suggest they refine and resubmit
+
+Adapt your feedback style to their proficiency level:
+- Level 0-2: Be very encouraging, explain concepts gently
+- Level 3-5: Balance praise with constructive critique
+- Level 6-8: Be direct, focus on nuance and advanced techniques
+
+Format your response with clear sections using markdown.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -48,9 +77,9 @@ Respond to their prompt as a helpful AI assistant would, but also:
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: prompt },
+          { role: "user", content: `Please evaluate the following practice submission for the task "${context.taskTitle || 'Practice Exercise'}":\n\n---\n${prompt}\n---\n\nProvide constructive feedback based on the success criteria.` },
         ],
-        max_tokens: 800,
+        max_tokens: 600,
       }),
     });
 
@@ -73,7 +102,7 @@ Respond to their prompt as a helpful AI assistant would, but also:
     }
 
     const data = await response.json();
-    const aiResponse = data.choices?.[0]?.message?.content || "I've processed your request.";
+    const aiResponse = data.choices?.[0]?.message?.content || "Your practice response has been received. The AI trainer can provide more detailed feedback.";
 
     return new Response(
       JSON.stringify({ response: aiResponse }),
