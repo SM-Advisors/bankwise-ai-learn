@@ -1,0 +1,269 @@
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+
+export type LineOfBusiness = 'accounting_finance' | 'credit_administration' | 'executive_leadership';
+export type LearningStyleType = 'example-based' | 'explanation-based' | 'hands-on' | 'logic-based';
+
+export interface UserProfile {
+  id: string;
+  user_id: string;
+  display_name: string | null;
+  line_of_business: LineOfBusiness | null;
+  bank_role: string | null;
+  learning_style: LearningStyleType | null;
+  tech_learning_style: LearningStyleType | null;
+  ai_proficiency_level: number | null;
+  onboarding_completed: boolean;
+  current_session: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TrainingProgress {
+  id: string;
+  user_id: string;
+  session_1_completed: boolean;
+  session_1_progress: Record<string, unknown>;
+  session_2_completed: boolean;
+  session_2_progress: Record<string, unknown>;
+  session_3_completed: boolean;
+  session_3_progress: Record<string, unknown>;
+}
+
+interface AuthContextType {
+  user: User | null;
+  session: Session | null;
+  profile: UserProfile | null;
+  progress: TrainingProgress | null;
+  loading: boolean;
+  signUp: (email: string, password: string, displayName: string) => Promise<{ error: Error | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signOut: () => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: Error | null }>;
+  refreshProfile: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [progress, setProgress] = useState<TrainingProgress | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Error fetching profile:', error);
+      return null;
+    }
+    return data as UserProfile | null;
+  };
+
+  const fetchProgress = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('training_progress')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Error fetching progress:', error);
+      return null;
+    }
+    return data as TrainingProgress | null;
+  };
+
+  const createProfile = async (userId: string, displayName: string) => {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .insert({
+        user_id: userId,
+        display_name: displayName,
+        onboarding_completed: false,
+        current_session: 1,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating profile:', error);
+      return null;
+    }
+    return data as UserProfile;
+  };
+
+  const createProgress = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('training_progress')
+      .insert({
+        user_id: userId,
+        session_1_completed: false,
+        session_1_progress: {},
+        session_2_completed: false,
+        session_2_progress: {},
+        session_3_completed: false,
+        session_3_progress: {},
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating progress:', error);
+      return null;
+    }
+    return data as TrainingProgress;
+  };
+
+  useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Defer profile fetch with setTimeout to avoid deadlock
+        if (session?.user) {
+          setTimeout(async () => {
+            const profileData = await fetchProfile(session.user.id);
+            setProfile(profileData);
+            
+            const progressData = await fetchProgress(session.user.id);
+            setProgress(progressData);
+            
+            setLoading(false);
+          }, 0);
+        } else {
+          setProfile(null);
+          setProgress(null);
+          setLoading(false);
+        }
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        fetchProfile(session.user.id).then(setProfile);
+        fetchProgress(session.user.id).then(setProgress);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signUp = async (email: string, password: string, displayName: string) => {
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+        },
+      });
+
+      if (error) throw error;
+
+      // Create profile for the new user
+      if (data.user) {
+        await createProfile(data.user.id, displayName);
+        await createProgress(data.user.id);
+      }
+
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
+    setProfile(null);
+    setProgress(null);
+  };
+
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    if (!user) return { error: new Error('Not authenticated') };
+
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update(updates)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Refresh profile
+      const updatedProfile = await fetchProfile(user.id);
+      setProfile(updatedProfile);
+
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
+  const refreshProfile = async () => {
+    if (!user) return;
+    const profileData = await fetchProfile(user.id);
+    setProfile(profileData);
+    const progressData = await fetchProgress(user.id);
+    setProgress(progressData);
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        profile,
+        progress,
+        loading,
+        signUp,
+        signIn,
+        signOut,
+        updateProfile,
+        refreshProfile,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}
