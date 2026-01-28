@@ -14,7 +14,108 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      training_progress: {
+        Row: {
+          created_at: string | null
+          id: string
+          session_1_completed: boolean | null
+          session_1_progress: Json | null
+          session_2_completed: boolean | null
+          session_2_progress: Json | null
+          session_3_completed: boolean | null
+          session_3_progress: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          session_1_completed?: boolean | null
+          session_1_progress?: Json | null
+          session_2_completed?: boolean | null
+          session_2_progress?: Json | null
+          session_3_completed?: boolean | null
+          session_3_progress?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          session_1_completed?: boolean | null
+          session_1_progress?: Json | null
+          session_2_completed?: boolean | null
+          session_2_progress?: Json | null
+          session_3_completed?: boolean | null
+          session_3_progress?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          ai_proficiency_level: number | null
+          bank_role: string | null
+          created_at: string | null
+          current_session: number | null
+          display_name: string | null
+          id: string
+          learning_style:
+            | Database["public"]["Enums"]["learning_style_type"]
+            | null
+          line_of_business:
+            | Database["public"]["Enums"]["line_of_business"]
+            | null
+          onboarding_completed: boolean | null
+          tech_learning_style:
+            | Database["public"]["Enums"]["learning_style_type"]
+            | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_proficiency_level?: number | null
+          bank_role?: string | null
+          created_at?: string | null
+          current_session?: number | null
+          display_name?: string | null
+          id?: string
+          learning_style?:
+            | Database["public"]["Enums"]["learning_style_type"]
+            | null
+          line_of_business?:
+            | Database["public"]["Enums"]["line_of_business"]
+            | null
+          onboarding_completed?: boolean | null
+          tech_learning_style?:
+            | Database["public"]["Enums"]["learning_style_type"]
+            | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_proficiency_level?: number | null
+          bank_role?: string | null
+          created_at?: string | null
+          current_session?: number | null
+          display_name?: string | null
+          id?: string
+          learning_style?:
+            | Database["public"]["Enums"]["learning_style_type"]
+            | null
+          line_of_business?:
+            | Database["public"]["Enums"]["line_of_business"]
+            | null
+          onboarding_completed?: boolean | null
+          tech_learning_style?:
+            | Database["public"]["Enums"]["learning_style_type"]
+            | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +124,15 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      learning_style_type:
+        | "example-based"
+        | "explanation-based"
+        | "hands-on"
+        | "logic-based"
+      line_of_business:
+        | "accounting_finance"
+        | "credit_administration"
+        | "executive_leadership"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +259,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      learning_style_type: [
+        "example-based",
+        "explanation-based",
+        "hands-on",
+        "logic-based",
+      ],
+      line_of_business: [
+        "accounting_finance",
+        "credit_administration",
+        "executive_leadership",
+      ],
+    },
   },
 } as const
