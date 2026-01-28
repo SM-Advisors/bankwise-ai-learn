@@ -6,9 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { HelpTour } from '@/components/HelpTour';
+import { BankPolicyModal } from '@/components/BankPolicyModal';
+import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { 
   Loader2, Play, CheckCircle, Lock, Sparkles, Bot, 
-  Building2, HelpCircle, BookOpen, Settings
+  Building2, HelpCircle, BookOpen, Settings, Shield, Lightbulb
 } from 'lucide-react';
 
 const SESSIONS = [
@@ -35,10 +37,18 @@ const SESSIONS = [
   },
 ];
 
+const policyIconMap: Record<string, React.ElementType> = {
+  BookOpen,
+  Shield,
+  Lightbulb,
+};
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user, profile, progress, loading, signOut } = useAuth();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
+  const { policies, loading: policiesLoading } = useBankPolicies();
 
   // Redirect if not logged in
   useEffect(() => {
@@ -96,6 +106,13 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       {/* Help Tour Dialog */}
       <HelpTour open={helpOpen} onOpenChange={setHelpOpen} />
+      
+      {/* Bank Policy Modal */}
+      <BankPolicyModal 
+        open={!!selectedPolicy} 
+        onOpenChange={(open) => !open && setSelectedPolicy(null)} 
+        policy={selectedPolicy} 
+      />
 
       {/* Header */}
       <header className="border-b bg-card">
@@ -255,29 +272,37 @@ export default function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              <Button variant="outline" className="justify-start gap-2 h-auto py-4">
-                <BookOpen className="h-5 w-5 text-primary" />
-                <div className="text-left">
-                  <div className="font-medium">AI Usage Policy</div>
-                  <div className="text-xs text-muted-foreground">Guidelines and compliance</div>
-                </div>
-              </Button>
-              <Button variant="outline" className="justify-start gap-2 h-auto py-4">
-                <BookOpen className="h-5 w-5 text-primary" />
-                <div className="text-left">
-                  <div className="font-medium">Data Security</div>
-                  <div className="text-xs text-muted-foreground">Handling sensitive information</div>
-                </div>
-              </Button>
-              <Button variant="outline" className="justify-start gap-2 h-auto py-4">
-                <BookOpen className="h-5 w-5 text-primary" />
-                <div className="text-left">
-                  <div className="font-medium">Best Practices</div>
-                  <div className="text-xs text-muted-foreground">Tips and recommendations</div>
-                </div>
-              </Button>
-            </div>
+            {policiesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : policies.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No policies configured. Contact your administrator.
+              </p>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-3">
+                {policies.map((policy) => {
+                  const IconComponent = policyIconMap[policy.icon || 'BookOpen'] || BookOpen;
+                  return (
+                    <Button 
+                      key={policy.id}
+                      variant="outline" 
+                      className="justify-start gap-2 h-auto py-4"
+                      onClick={() => setSelectedPolicy(policy)}
+                    >
+                      <IconComponent className="h-5 w-5 text-primary" />
+                      <div className="text-left">
+                        <div className="font-medium">{policy.title}</div>
+                        <div className="text-xs text-muted-foreground line-clamp-1">
+                          {policy.summary || 'Click to view details'}
+                        </div>
+                      </div>
+                    </Button>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

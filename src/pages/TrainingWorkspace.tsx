@@ -12,10 +12,12 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ALL_SESSION_CONTENT, type ModuleContent } from '@/data/trainingContent';
 import { ModuleContentModal } from '@/components/ModuleContentModal';
+import { BankPolicyModal } from '@/components/BankPolicyModal';
+import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { 
   Loader2, ArrowLeft, ChevronLeft, ChevronRight, Send, 
   Play, FileText, BookOpen, CheckCircle, Sparkles,
-  Lightbulb, Clock, Target, AlertCircle
+  Lightbulb, Clock, Target, AlertCircle, Shield
 } from 'lucide-react';
 
 interface Message {
@@ -42,6 +44,10 @@ export default function TrainingWorkspace() {
   const [moduleCompleted, setModuleCompleted] = useState(false);
   const [contentModalOpen, setContentModalOpen] = useState(false);
   const [contentModalModule, setContentModalModule] = useState<ModuleContent | null>(null);
+  const [policyModalOpen, setPolicyModalOpen] = useState(false);
+  const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
+  
+  const { policies } = useBankPolicies();
 
   const session = sessionId ? ALL_SESSION_CONTENT[parseInt(sessionId)] : null;
 
@@ -341,6 +347,13 @@ What would be most helpful?`;
 
   return (
     <div className="h-screen flex flex-col bg-background">
+      {/* Bank Policy Modal */}
+      <BankPolicyModal 
+        open={policyModalOpen} 
+        onOpenChange={setPolicyModalOpen} 
+        policy={selectedPolicy} 
+      />
+
       {/* Top Bar */}
       <header className="border-b bg-card px-4 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
@@ -354,7 +367,35 @@ What would be most helpful?`;
             <p className="text-xs text-muted-foreground">{session.description}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* Bank Policies Dropdown */}
+          {policies.length > 0 && (
+            <div className="relative group">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Shield className="h-4 w-4" />
+                Bank Policies
+              </Button>
+              <div className="absolute right-0 top-full mt-1 w-64 bg-popover border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <div className="p-2 space-y-1">
+                  {policies.map((policy) => (
+                    <button
+                      key={policy.id}
+                      className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
+                      onClick={() => {
+                        setSelectedPolicy(policy);
+                        setPolicyModalOpen(true);
+                      }}
+                    >
+                      <div className="font-medium">{policy.title}</div>
+                      <div className="text-xs text-muted-foreground line-clamp-1">
+                        {policy.summary || 'View policy details'}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
           <Badge variant="secondary">{profile.learning_style}</Badge>
           <Badge variant="outline">Level {profile.ai_proficiency_level}</Badge>
         </div>
