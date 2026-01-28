@@ -1,8 +1,16 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { useAllBankPolicies } from '@/hooks/useBankPolicies';
 import { learningStyles } from '@/data/learningStyles';
 import { departments } from '@/data/topics';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
@@ -22,7 +30,12 @@ import {
   Building2,
   Video,
   Play,
-  Clock
+  Clock,
+  Shield,
+  Edit,
+  Save,
+  X,
+  Plus
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -105,6 +118,64 @@ const CORE_PROGRAMS = [
 ];
 
 export default function AdminDashboard() {
+  const { toast } = useToast();
+  const { policies, loading: policiesLoading, updatePolicy, createPolicy } = useAllBankPolicies();
+  const [editingPolicy, setEditingPolicy] = useState<any>(null);
+  const [editForm, setEditForm] = useState({ title: '', content: '', summary: '' });
+  const [isCreating, setIsCreating] = useState(false);
+  const [newPolicyForm, setNewPolicyForm] = useState({
+    policy_type: '',
+    title: '',
+    content: '',
+    summary: '',
+    icon: 'BookOpen',
+    display_order: 0,
+    is_active: true,
+  });
+
+  const handleEditPolicy = (policy: any) => {
+    setEditingPolicy(policy);
+    setEditForm({
+      title: policy.title,
+      content: policy.content,
+      summary: policy.summary || '',
+    });
+  };
+
+  const handleSavePolicy = async () => {
+    if (!editingPolicy) return;
+    const result = await updatePolicy(editingPolicy.id, editForm);
+    if (result.success) {
+      toast({ title: 'Policy updated', description: 'The policy has been saved successfully.' });
+      setEditingPolicy(null);
+    } else {
+      toast({ title: 'Error', description: result.error, variant: 'destructive' });
+    }
+  };
+
+  const handleCreatePolicy = async () => {
+    if (!newPolicyForm.title || !newPolicyForm.content || !newPolicyForm.policy_type) {
+      toast({ title: 'Missing fields', description: 'Please fill in all required fields.', variant: 'destructive' });
+      return;
+    }
+    const result = await createPolicy(newPolicyForm);
+    if (result.success) {
+      toast({ title: 'Policy created', description: 'The new policy has been added.' });
+      setIsCreating(false);
+      setNewPolicyForm({
+        policy_type: '',
+        title: '',
+        content: '',
+        summary: '',
+        icon: 'BookOpen',
+        display_order: policies.length,
+        is_active: true,
+      });
+    } else {
+      toast({ title: 'Error', description: result.error, variant: 'destructive' });
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-8">
@@ -115,33 +186,213 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-bold">Training Administration</h1>
         </div>
         <p className="text-muted-foreground">
-          Overview of learning styles, training programs, and curriculum content
+          Overview of learning styles, training programs, curriculum content, and bank policies
         </p>
       </div>
 
       <Tabs defaultValue="programs" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
           <TabsTrigger value="programs" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
-            <span className="hidden sm:inline">Training Programs</span>
-            <span className="sm:hidden">Programs</span>
+            <span className="hidden sm:inline">Programs</span>
+          </TabsTrigger>
+          <TabsTrigger value="policies" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            <span className="hidden sm:inline">Bank Policies</span>
+            <span className="sm:hidden">Policies</span>
           </TabsTrigger>
           <TabsTrigger value="learning-styles" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
-            <span className="hidden sm:inline">Learning Styles</span>
-            <span className="sm:hidden">Styles</span>
+            <span className="hidden sm:inline">Styles</span>
           </TabsTrigger>
           <TabsTrigger value="departments" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
-            <span className="hidden sm:inline">Department Tracks</span>
-            <span className="sm:hidden">Depts</span>
+            <span className="hidden sm:inline">Depts</span>
           </TabsTrigger>
           <TabsTrigger value="content" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Content Guide</span>
-            <span className="sm:hidden">Content</span>
+            <span className="hidden sm:inline">Content</span>
           </TabsTrigger>
         </TabsList>
+
+        {/* Bank Policies Tab */}
+        <TabsContent value="policies" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-primary" />
+                    Bank Policy Management
+                  </CardTitle>
+                  <CardDescription>
+                    Configure AI usage policies, data security guidelines, and best practices for your institution
+                  </CardDescription>
+                </div>
+                <Button onClick={() => setIsCreating(true)} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Policy
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {policiesLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading policies...</div>
+              ) : policies.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No policies configured. Click "Add Policy" to create one.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {policies.map((policy) => (
+                    <Card key={policy.id} className="border">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <CardTitle className="text-lg">{policy.title}</CardTitle>
+                              {!policy.is_active && (
+                                <Badge variant="outline" className="text-xs">Inactive</Badge>
+                              )}
+                            </div>
+                            <CardDescription>{policy.summary}</CardDescription>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleEditPolicy(policy)}
+                            className="gap-2"
+                          >
+                            <Edit className="h-4 w-4" />
+                            Edit
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <Badge variant="secondary">{policy.policy_type.replace('_', ' ')}</Badge>
+                          <span>Order: {policy.display_order}</span>
+                          <span>Updated: {new Date(policy.updated_at || '').toLocaleDateString()}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Edit Policy Dialog */}
+          <Dialog open={!!editingPolicy} onOpenChange={(open) => !open && setEditingPolicy(null)}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+              <DialogHeader>
+                <DialogTitle>Edit Policy: {editingPolicy?.title}</DialogTitle>
+              </DialogHeader>
+              <ScrollArea className="flex-1 pr-4">
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                      id="title"
+                      value={editForm.title}
+                      onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="summary">Summary (short description)</Label>
+                    <Input
+                      id="summary"
+                      value={editForm.summary}
+                      onChange={(e) => setEditForm({ ...editForm, summary: e.target.value })}
+                      placeholder="Brief description for the policy card"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="content">Content (Markdown supported)</Label>
+                    <Textarea
+                      id="content"
+                      value={editForm.content}
+                      onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
+                      className="min-h-[400px] font-mono text-sm"
+                    />
+                  </div>
+                </div>
+              </ScrollArea>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setEditingPolicy(null)}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button onClick={handleSavePolicy}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Create Policy Dialog */}
+          <Dialog open={isCreating} onOpenChange={setIsCreating}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+              <DialogHeader>
+                <DialogTitle>Create New Policy</DialogTitle>
+              </DialogHeader>
+              <ScrollArea className="flex-1 pr-4">
+                <div className="space-y-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="new-type">Policy Type (e.g., ai_usage, data_security)</Label>
+                      <Input
+                        id="new-type"
+                        value={newPolicyForm.policy_type}
+                        onChange={(e) => setNewPolicyForm({ ...newPolicyForm, policy_type: e.target.value })}
+                        placeholder="ai_usage"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-title">Title</Label>
+                      <Input
+                        id="new-title"
+                        value={newPolicyForm.title}
+                        onChange={(e) => setNewPolicyForm({ ...newPolicyForm, title: e.target.value })}
+                        placeholder="AI Usage Policy"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-summary">Summary</Label>
+                    <Input
+                      id="new-summary"
+                      value={newPolicyForm.summary}
+                      onChange={(e) => setNewPolicyForm({ ...newPolicyForm, summary: e.target.value })}
+                      placeholder="Brief description for the policy card"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-content">Content (Markdown supported)</Label>
+                    <Textarea
+                      id="new-content"
+                      value={newPolicyForm.content}
+                      onChange={(e) => setNewPolicyForm({ ...newPolicyForm, content: e.target.value })}
+                      className="min-h-[300px] font-mono text-sm"
+                      placeholder="# Policy Title&#10;&#10;## Section 1&#10;&#10;Policy content here..."
+                    />
+                  </div>
+                </div>
+              </ScrollArea>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCreating(false)}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button onClick={handleCreatePolicy}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Policy
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </TabsContent>
 
         {/* Training Programs Tab */}
         <TabsContent value="programs" className="space-y-6">
