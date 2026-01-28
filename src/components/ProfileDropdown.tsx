@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { User, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { User, Settings, LogOut, ChevronDown, RefreshCw } from 'lucide-react';
 
 const LOB_OPTIONS: { value: LineOfBusiness; label: string }[] = [
   { value: 'accounting_finance', label: 'Accounting & Finance' },
@@ -87,6 +87,17 @@ export function ProfileDropdown() {
     navigate('/auth');
   };
 
+  const handleRetakeIntake = async () => {
+    // Reset onboarding_completed to false so user goes through onboarding again
+    const { error } = await updateProfile({ onboarding_completed: false });
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Intake Form', description: 'Redirecting to the intake form...' });
+      navigate('/onboarding');
+    }
+  };
+
   return (
     <>
       <DropdownMenu>
@@ -114,6 +125,10 @@ export function ProfileDropdown() {
           <DropdownMenuItem onClick={handleOpenProfile} className="cursor-pointer">
             <User className="mr-2 h-4 w-4" />
             My Profile
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleRetakeIntake} className="cursor-pointer">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Retake Intake Form
           </DropdownMenuItem>
           {isAdmin && (
             <DropdownMenuItem onClick={() => navigate('/admin')} className="cursor-pointer">
