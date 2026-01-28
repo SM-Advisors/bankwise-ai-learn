@@ -28,7 +28,7 @@ interface Message {
 export default function TrainingWorkspace() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, markSessionCompleted } = useAuth();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -664,6 +664,25 @@ What would be most helpful?`;
                               {(() => {
                                 const currentIndex = session.modules.findIndex(m => m.id === selectedModule?.id);
                                 const nextModule = session.modules[currentIndex + 1];
+                                
+                                const handleCompleteSession = async () => {
+                                  const sessionNum = parseInt(sessionId || '1') as 1 | 2 | 3;
+                                  const { error } = await markSessionCompleted(sessionNum);
+                                  if (error) {
+                                    toast({
+                                      title: 'Error saving progress',
+                                      description: error.message,
+                                      variant: 'destructive',
+                                    });
+                                  } else {
+                                    toast({
+                                      title: 'Session Completed!',
+                                      description: `Session ${sessionNum} has been marked as complete.`,
+                                    });
+                                    navigate('/dashboard');
+                                  }
+                                };
+
                                 return nextModule ? (
                                   <Button 
                                     onClick={() => setSelectedModule(nextModule)}
@@ -674,7 +693,7 @@ What would be most helpful?`;
                                   </Button>
                                 ) : (
                                   <Button 
-                                    onClick={() => navigate('/dashboard')}
+                                    onClick={handleCompleteSession}
                                     className="mt-3 gap-2"
                                   >
                                     Complete Session

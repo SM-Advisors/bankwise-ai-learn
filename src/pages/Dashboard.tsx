@@ -280,20 +280,21 @@ export default function Dashboard() {
                 {policies.map((policy) => {
                   const IconComponent = policyIconMap[policy.icon || 'BookOpen'] || BookOpen;
                   return (
-                    <Button 
+                    <button 
                       key={policy.id}
-                      variant="outline" 
-                      className="justify-start gap-2 h-auto py-4"
                       onClick={() => setSelectedPolicy(policy)}
+                      className="flex items-start gap-3 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors text-left"
                     >
-                      <IconComponent className="h-5 w-5 text-primary" />
-                      <div className="text-left">
-                        <div className="font-medium">{policy.title}</div>
-                        <div className="text-xs text-muted-foreground line-clamp-1">
+                      <div className="shrink-0 mt-0.5">
+                        <IconComponent className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-primary">{policy.title}</div>
+                        <div className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
                           {policy.summary || 'Click to view details'}
                         </div>
                       </div>
-                    </Button>
+                    </button>
                   );
                 })}
               </div>
