@@ -3,7 +3,7 @@
 export interface ModuleContent {
   id: string;
   title: string;
-  type: 'video' | 'document' | 'example' | 'exercise';
+  type: 'document' | 'example' | 'exercise';
   description: string;
   estimatedTime: string;
   learningObjectives: string[];
@@ -42,7 +42,7 @@ export const SESSION_1_CONTENT: SessionContent = {
     {
       id: '1-1',
       title: 'Introduction to AI Prompting',
-      type: 'video',
+      type: 'document',
       description: 'Learn the basics of communicating effectively with AI',
       estimatedTime: '10 min',
       learningObjectives: [
@@ -57,6 +57,13 @@ export const SESSION_1_CONTENT: SessionContent = {
           'The quality of your prompt directly affects the quality of the response',
           'AI works best with clear, specific, and contextual instructions',
           'Banking professionals need to balance detail with data security',
+        ],
+        steps: [
+          'Start with a clear objective: What do you want the AI to produce?',
+          'Provide relevant context: What background does the AI need?',
+          'Specify the format: How should the output be structured?',
+          'Include constraints: What should be included or excluded?',
+          'Review and refine: Check the output and adjust your prompt if needed',
         ],
         examples: [
           {
@@ -321,7 +328,7 @@ export const SESSION_2_CONTENT: SessionContent = {
     {
       id: '2-1',
       title: 'What is an AI Agent?',
-      type: 'video',
+      type: 'document',
       description: 'Understanding AI agents and their capabilities in banking',
       estimatedTime: '12 min',
       learningObjectives: [
@@ -332,10 +339,25 @@ export const SESSION_2_CONTENT: SessionContent = {
       content: {
         overview: 'An AI agent is a configured AI assistant with persistent instructions, specialized knowledge, and defined capabilities. Unlike one-off prompts, an agent remembers context and follows consistent guidelines across conversations.',
         keyPoints: [
-          'Agents have persistent system instructions',
-          'They can be specialized for specific roles or tasks',
-          'Agents provide consistency across interactions',
-          'They can be configured with specific knowledge and constraints',
+          'Agents have persistent system instructions that define their behavior',
+          'They can be specialized for specific roles or tasks within banking',
+          'Agents provide consistency across all interactions',
+          'They can be configured with specific knowledge, tone, and constraints',
+        ],
+        steps: [
+          'Identify a repetitive task that would benefit from consistent AI assistance',
+          'Define the core behavior and personality of your agent',
+          'Specify the knowledge domain and expertise required',
+          'Set boundaries and safety constraints',
+          'Test the agent with realistic scenarios from your work',
+        ],
+        examples: [
+          {
+            title: 'Agent vs One-off Prompt',
+            bad: 'Each time: "I\'m a loan officer. Help me draft a collection follow-up email..."',
+            good: 'Agent instruction: "You are a Collections Assistant for loan officers. You help draft professional, compliant follow-up communications. Always maintain a supportive tone, never threaten, and include standard regulatory disclosures."',
+            explanation: 'The agent approach embeds your role, compliance requirements, and tone preferences once, so every interaction automatically follows these guidelines.',
+          },
         ],
         practiceTask: {
           title: 'Identify Agent Opportunities',
@@ -515,7 +537,7 @@ export const SESSION_3_CONTENT: SessionContent = {
     {
       id: '3-1',
       title: 'Department AI Use Cases',
-      type: 'video',
+      type: 'example',
       description: 'Common AI applications in your specific role',
       estimatedTime: '15 min',
       learningObjectives: [
@@ -524,12 +546,29 @@ export const SESSION_3_CONTENT: SessionContent = {
         'Prioritize high-value opportunities',
       ],
       content: {
-        overview: 'Every banking department has unique opportunities for AI assistance. This module explores specific use cases tailored to your line of business.',
+        overview: 'Every banking department has unique opportunities for AI assistance. This module explores specific use cases tailored to your line of business, showing how AI can streamline common tasks while maintaining compliance.',
         keyPoints: [
-          'Each department has distinct AI opportunities',
-          'Focus on high-frequency, high-value tasks',
-          'Consider compliance requirements',
-          'Start with lower-risk applications',
+          'Each department has distinct AI opportunities based on their workflow',
+          'Focus on high-frequency, high-value tasks for maximum impact',
+          'Always consider compliance requirements specific to your department',
+          'Start with lower-risk applications and build confidence',
+        ],
+        examples: [
+          {
+            title: 'Accounting & Finance Use Case',
+            good: 'Prompt: "As a financial analyst, I need to prepare variance analysis commentary for our monthly board report. Please analyze these figures: Budget: $2.1M, Actual: $1.85M, Prior Year: $1.92M. Provide professional commentary explaining the variance, possible causes, and recommended follow-up questions for department heads. Format as 2-3 paragraphs suitable for executive review."',
+            explanation: 'This prompt is role-specific, provides concrete data, specifies the audience, and requests actionable output. The analyst can review and refine the commentary while ensuring accuracy.',
+          },
+          {
+            title: 'Credit Administration Use Case',
+            good: 'Prompt: "I am reviewing a commercial loan file for annual renewal. Based on the following financial metrics, please provide a risk assessment summary: Current Ratio: 1.8, Debt Service Coverage: 1.25, Debt to Equity: 2.1. Include: (1) rating of each metric as Strong/Acceptable/Weak with reasoning, (2) overall risk trend, (3) three questions to ask the borrower. Follow our standard credit memo format."',
+            explanation: 'This prompt gives specific metrics, asks for structured analysis with ratings, and requests follow-up questions - all aligned with typical credit review processes.',
+          },
+          {
+            title: 'Executive Leadership Use Case',
+            good: 'Prompt: "Help me prepare talking points for a board presentation on our digital transformation initiative. Key updates: mobile app launch exceeded targets by 15%, customer adoption at 42%, cost savings of $350K YTD. Talking points should address: achievements, challenges faced, next quarter priorities, and resource requests. Keep each point to 1-2 sentences for verbal delivery."',
+            explanation: 'This executive-focused prompt provides concrete metrics, specifies the communication format (talking points for verbal delivery), and covers the typical board presentation structure.',
+          },
         ],
         practiceTask: {
           title: 'Map Your Use Cases',

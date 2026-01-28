@@ -13,7 +13,7 @@ import { ALL_SESSION_CONTENT, type ModuleContent } from '@/data/trainingContent'
 import { ModuleContentModal } from '@/components/ModuleContentModal';
 import { 
   Loader2, ArrowLeft, ChevronLeft, ChevronRight, Send, 
-  Play, FileText, Video, BookOpen, CheckCircle, Sparkles,
+  Play, FileText, BookOpen, CheckCircle, Sparkles,
   Lightbulb, Clock, Target, AlertCircle
 } from 'lucide-react';
 
@@ -109,7 +109,6 @@ What would you like help with?`;
 
   const getModuleIcon = (type: ModuleContent['type']) => {
     switch (type) {
-      case 'video': return Video;
       case 'document': return FileText;
       case 'example': return Lightbulb;
       case 'exercise': return Play;
@@ -125,7 +124,6 @@ What would you like help with?`;
 
   const getTypeBadgeClass = (type: ModuleContent['type']) => {
     switch (type) {
-      case 'video': return 'bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50 cursor-pointer';
       case 'document': return 'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 cursor-pointer';
       case 'example': return 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-900/50 cursor-pointer';
       case 'exercise': return 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-900/50 cursor-pointer';
