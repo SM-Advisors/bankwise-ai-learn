@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ALL_SESSION_CONTENT, type ModuleContent } from '@/data/trainingContent';
+import { ModuleContentModal } from '@/components/ModuleContentModal';
 import { 
   Loader2, ArrowLeft, ChevronLeft, ChevronRight, Send, 
   Play, FileText, Video, BookOpen, CheckCircle, Sparkles,
@@ -38,6 +39,8 @@ export default function TrainingWorkspace() {
   const [practiceResponse, setPracticeResponse] = useState('');
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
   const [moduleCompleted, setModuleCompleted] = useState(false);
+  const [contentModalOpen, setContentModalOpen] = useState(false);
+  const [contentModalModule, setContentModalModule] = useState<ModuleContent | null>(null);
 
   const session = sessionId ? ALL_SESSION_CONTENT[parseInt(sessionId)] : null;
 
@@ -111,6 +114,22 @@ What would you like help with?`;
       case 'example': return Lightbulb;
       case 'exercise': return Play;
       default: return BookOpen;
+    }
+  };
+
+  const handleOpenContentModal = (module: ModuleContent, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent selecting the module when clicking the badge
+    setContentModalModule(module);
+    setContentModalOpen(true);
+  };
+
+  const getTypeBadgeClass = (type: ModuleContent['type']) => {
+    switch (type) {
+      case 'video': return 'bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50 cursor-pointer';
+      case 'document': return 'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 cursor-pointer';
+      case 'example': return 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-900/50 cursor-pointer';
+      case 'exercise': return 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-900/50 cursor-pointer';
+      default: return 'bg-muted text-muted-foreground hover:bg-muted/80 cursor-pointer';
     }
   };
 
@@ -383,7 +402,14 @@ What would be most helpful?`;
                               {idx + 1}. {module.title}
                             </div>
                             <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="outline" className="text-xs">{module.type}</Badge>
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs transition-colors ${getTypeBadgeClass(module.type)}`}
+                                onClick={(e) => handleOpenContentModal(module, e)}
+                                title={`View ${module.type} content`}
+                              >
+                                {module.type}
+                              </Badge>
                               <span className="text-xs text-muted-foreground flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
                                 {module.estimatedTime}
@@ -724,6 +750,13 @@ What would be most helpful?`;
           )}
         </div>
       </div>
+
+      {/* Module Content Modal */}
+      <ModuleContentModal
+        module={contentModalModule}
+        open={contentModalOpen}
+        onOpenChange={setContentModalOpen}
+      />
     </div>
   );
 }
