@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAllBankPolicies } from '@/hooks/useBankPolicies';
 import { useAllLiveTrainingSessions, LiveTrainingSessionInsert } from '@/hooks/useLiveTrainingSessions';
+import { useAdminAppSettings } from '@/hooks/useAppSettings';
 import { UsersManagement } from '@/components/UsersManagement';
 import { learningStyles } from '@/data/learningStyles';
 import { departments } from '@/data/topics';
@@ -45,7 +46,10 @@ import {
   ArrowLeft,
   Radio,
   Calendar,
-  Trash2
+  Trash2,
+  Settings,
+  MessageCircle,
+  Link
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -134,6 +138,7 @@ export default function AdminDashboard() {
   const { toast } = useToast();
   const { policies, loading: policiesLoading, updatePolicy, createPolicy } = useAllBankPolicies();
   const { sessions: liveSessions, loading: liveSessionsLoading, createSession, updateSession, deleteSession } = useAllLiveTrainingSessions();
+  const { settings: appSettings, loading: settingsLoading, updateSetting, getSetting } = useAdminAppSettings();
   
   const [editingPolicy, setEditingPolicy] = useState<any>(null);
   const [editForm, setEditForm] = useState({ title: '', content: '', summary: '' });
@@ -160,6 +165,17 @@ export default function AdminDashboard() {
     max_attendees: 50,
     is_active: true,
   });
+
+  // App settings state
+  const [communityUrl, setCommunityUrl] = useState('');
+  const [savingCommunityUrl, setSavingCommunityUrl] = useState(false);
+
+  // Load community URL when settings load
+  useEffect(() => {
+    if (!settingsLoading) {
+      setCommunityUrl(getSetting('community_slack_url'));
+    }
+  }, [settingsLoading, appSettings]);
 
   // Redirect non-admins away
   useEffect(() => {
@@ -297,6 +313,17 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSaveCommunityUrl = async () => {
+    setSavingCommunityUrl(true);
+    const result = await updateSetting('community_slack_url', communityUrl);
+    if (result.success) {
+      toast({ title: 'Settings saved', description: 'Community URL has been updated.' });
+    } else {
+      toast({ title: 'Error', description: result.error, variant: 'destructive' });
+    }
+    setSavingCommunityUrl(false);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-8">
@@ -321,7 +348,7 @@ export default function AdminDashboard() {
       </div>
 
       <Tabs defaultValue="users" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-8 lg:w-auto lg:inline-grid">
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Users</span>
@@ -349,6 +376,10 @@ export default function AdminDashboard() {
           <TabsTrigger value="content" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             <span className="hidden sm:inline">Content</span>
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            <span className="hidden sm:inline">Settings</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1171,6 +1202,77 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* Settings Tab */}
+        <TabsContent value="settings" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5 text-primary" />
+                Platform Settings
+              </CardTitle>
+              <CardDescription>
+                Configure global settings for the training platform
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Community Hub Settings */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="h-5 w-5 text-muted-foreground" />
+                  <h3 className="font-semibold">Community Hub</h3>
+                </div>
+                <div className="pl-7 space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="community-url">Slack Workspace Invite URL</Label>
+                    <div className="flex gap-2">
+                      <div className="flex-1 relative">
+                        <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="community-url"
+                          value={communityUrl}
+                          onChange={(e) => setCommunityUrl(e.target.value)}
+                          placeholder="https://join.slack.com/t/your-workspace/..."
+                          className="pl-10"
+                        />
+                      </div>
+                      <Button 
+                        onClick={handleSaveCommunityUrl} 
+                        disabled={savingCommunityUrl}
+                        className="gap-2"
+                      >
+                        {savingCommunityUrl ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Save className="h-4 w-4" />
+                        )}
+                        Save
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Enter your Slack workspace invite link. This will enable the "Join Community" button on user dashboards.
+                    </p>
+                  </div>
+                  {communityUrl && (
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-medium text-foreground">Preview:</span> Users will see a "Join Community" button that links to:
+                      </p>
+                      <a 
+                        href={communityUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:underline break-all"
+                      >
+                        {communityUrl}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
