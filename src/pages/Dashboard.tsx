@@ -11,7 +11,8 @@ import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { 
   Loader2, Play, CheckCircle, Lock, Sparkles, Bot, 
-  Building2, HelpCircle, BookOpen, Shield, Lightbulb
+  Building2, HelpCircle, BookOpen, Shield, Lightbulb,
+  Radio, Calendar, Users, Clock
 } from 'lucide-react';
 
 const SESSIONS = [
@@ -257,6 +258,91 @@ export default function Dashboard() {
             );
           })}
         </div>
+
+        {/* Live Feed Section */}
+        <Card className="mt-8">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Radio className="h-5 w-5 text-red-500" />
+                  <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 rounded-full animate-pulse" />
+                </div>
+                <CardTitle>Live Training Feed</CardTitle>
+              </div>
+              <Badge variant="outline" className="gap-1">
+                <Users className="h-3 w-3" />
+                Coming Soon
+              </Badge>
+            </div>
+            <CardDescription>
+              Join live training sessions with expert instructors and fellow learners
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {/* Placeholder Live Sessions */}
+              {[
+                {
+                  title: 'AI for Credit Risk Analysis',
+                  instructor: 'Sarah Chen',
+                  date: 'Feb 5, 2026',
+                  time: '2:00 PM EST',
+                  attendees: 24,
+                },
+                {
+                  title: 'Mastering Prompt Engineering',
+                  instructor: 'Michael Torres',
+                  date: 'Feb 8, 2026',
+                  time: '11:00 AM EST',
+                  attendees: 42,
+                },
+                {
+                  title: 'AI Compliance Workshop',
+                  instructor: 'Jennifer Walsh',
+                  date: 'Feb 12, 2026',
+                  time: '3:00 PM EST',
+                  attendees: 18,
+                },
+              ].map((session, idx) => (
+                <div 
+                  key={idx}
+                  className="relative p-4 rounded-lg border bg-muted/30 opacity-75"
+                >
+                  <div className="absolute top-3 right-3">
+                    <Badge variant="secondary" className="text-xs">Upcoming</Badge>
+                  </div>
+                  <h4 className="font-medium pr-16 mb-2">{session.title}</h4>
+                  <div className="space-y-1.5 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-3.5 w-3.5" />
+                      <span>{session.instructor}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span>{session.date}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>{session.time}</span>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      {session.attendees} registered
+                    </span>
+                    <Button size="sm" variant="outline" disabled>
+                      Notify Me
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-center text-sm text-muted-foreground mt-4">
+              Live training sessions will be available soon. Stay tuned!
+            </p>
+          </CardContent>
+        </Card>
 
         {/* Resources Section */}
         <Card className="mt-8">
