@@ -28,7 +28,7 @@ interface Message {
 export default function TrainingWorkspace() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
-  const { user, profile, loading, markSessionCompleted } = useAuth();
+  const { user, profile, progress, loading, markSessionCompleted, updateProgress } = useAuth();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -46,6 +46,7 @@ export default function TrainingWorkspace() {
   const [contentModalModule, setContentModalModule] = useState<ModuleContent | null>(null);
   const [policyModalOpen, setPolicyModalOpen] = useState(false);
   const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
+  const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
   
   const { policies } = useBankPolicies();
 
@@ -94,8 +95,20 @@ What would you like help with?`;
   useEffect(() => {
     setPracticeInput('');
     setPracticeResponse('');
-    setModuleCompleted(false);
-  }, [selectedModule]);
+    // Check if this module was already completed
+    setModuleCompleted(selectedModule ? completedModules.has(selectedModule.id) : false);
+  }, [selectedModule, completedModules]);
+
+  // Load completed modules from database progress
+  useEffect(() => {
+    if (progress && sessionId) {
+      const progressKey = `session_${sessionId}_progress` as keyof typeof progress;
+      const sessionProgress = progress[progressKey] as Record<string, unknown> | null;
+      if (sessionProgress && sessionProgress.completedModules) {
+        setCompletedModules(new Set(sessionProgress.completedModules as string[]));
+      }
+    }
+  }, [progress, sessionId]);
 
   if (loading || !profile) {
     return (
@@ -141,7 +154,7 @@ What would you like help with?`;
   };
 
   const handlePracticeSubmit = async () => {
-    if (!practiceInput.trim()) return;
+    if (!practiceInput.trim() || !selectedModule) return;
 
     setIsPracticeLoading(true);
     try {
@@ -186,6 +199,18 @@ ${feedbackData.next_steps?.map((n: string) => `- ${n}`).join('\n') || '- Move on
         setPracticeResponse('AI response generated successfully.');
       }
       setModuleCompleted(true);
+      
+      // Save completed module to database
+      const newCompletedModules = new Set(completedModules);
+      newCompletedModules.add(selectedModule.id);
+      setCompletedModules(newCompletedModules);
+      
+      if (sessionId) {
+        const progressKey = `session_${sessionId}_progress` as const;
+        await updateProgress({
+          [progressKey]: { completedModules: Array.from(newCompletedModules) },
+        });
+      }
     } catch (error) {
       console.error('Practice error:', error);
       toast({
@@ -206,6 +231,11 @@ ${selectedModule?.content.practiceTask.successCriteria.map((c, i) => `${i + 1}. 
 
 The AI trainer on the right can provide more detailed feedback on your work. Ask "Can you review my practice prompt?" to get personalized suggestions.`);
       setModuleCompleted(true);
+      
+      // Still save progress locally even if API fails
+      const newCompletedModules = new Set(completedModules);
+      newCompletedModules.add(selectedModule.id);
+      setCompletedModules(newCompletedModules);
     } finally {
       setIsPracticeLoading(false);
     }
@@ -437,24 +467,30 @@ What would be most helpful?`;
                 {session.modules.map((module, idx) => {
                   const IconComponent = getModuleIcon(module.type);
                   const isSelected = selectedModule?.id === module.id;
+                  const isCompleted = completedModules.has(module.id);
                   
                   return (
                     <Card
                       key={module.id}
                       className={`cursor-pointer transition-all ${
                         isSelected ? 'ring-2 ring-primary' : 'hover:bg-muted/50'
-                      }`}
+                      } ${isCompleted ? 'bg-green-500/5' : ''}`}
                       onClick={() => setSelectedModule(module)}
                     >
                       <CardContent className="p-3">
                         <div className="flex items-start gap-3">
-                          <div className={`p-2 rounded-lg shrink-0 ${
+                          <div className={`p-2 rounded-lg shrink-0 relative ${
+                            isCompleted ? 'bg-green-500/20 text-green-600' :
                             isSelected ? 'bg-primary/10 text-primary' : 'bg-muted'
                           }`}>
-                            <IconComponent className="h-4 w-4" />
+                            {isCompleted ? (
+                              <CheckCircle className="h-4 w-4" />
+                            ) : (
+                              <IconComponent className="h-4 w-4" />
+                            )}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="font-medium text-sm truncate">
+                            <div className={`font-medium text-sm truncate ${isCompleted ? 'text-green-700 dark:text-green-400' : ''}`}>
                               {idx + 1}. {module.title}
                             </div>
                             <div className="flex items-center gap-2 mt-1">
@@ -470,6 +506,9 @@ What would be most helpful?`;
                                 <Clock className="h-3 w-3" />
                                 {module.estimatedTime}
                               </span>
+                              {isCompleted && (
+                                <span className="text-xs text-green-600 font-medium">Done</span>
+                              )}
                             </div>
                           </div>
                         </div>
