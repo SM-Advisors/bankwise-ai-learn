@@ -89,6 +89,45 @@ export type Database = {
         }
         Relationships: []
       }
+      live_training_sessions: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          instructor: string
+          is_active: boolean
+          max_attendees: number | null
+          scheduled_date: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          instructor: string
+          is_active?: boolean
+          max_attendees?: number | null
+          scheduled_date: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          instructor?: string
+          is_active?: boolean
+          max_attendees?: number | null
+          scheduled_date?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       training_progress: {
         Row: {
           created_at: string | null
