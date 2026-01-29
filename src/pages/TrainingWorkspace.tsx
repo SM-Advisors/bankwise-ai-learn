@@ -145,26 +145,46 @@ What would you like help with?`;
 
     setIsPracticeLoading(true);
     try {
-      const response = await supabase.functions.invoke('ai-practice', {
+      // Call Claude-powered submission_review edge function
+      const response = await supabase.functions.invoke('submission_review', {
         body: {
-          prompt: practiceInput,
-          context: {
-            sessionId,
-            moduleId: selectedModule?.id,
-            moduleTitle: selectedModule?.title,
-            taskTitle: selectedModule?.content.practiceTask.title,
-            taskInstructions: selectedModule?.content.practiceTask.instructions,
-            scenario: selectedModule?.content.practiceTask.scenario,
-            successCriteria: selectedModule?.content.practiceTask.successCriteria,
-            learningStyle: profile.learning_style,
-            proficiencyLevel: profile.ai_proficiency_level,
-            lineOfBusiness: profile.line_of_business,
+          lessonId: sessionId || '1',
+          moduleId: selectedModule?.id,
+          submission: practiceInput,
+          rubric: selectedModule?.content.practiceTask.successCriteria.join('\n'),
+          learnerState: {
+            currentCardTitle: selectedModule?.content.practiceTask.title,
+            attemptNumber: 1,
+            progressSummary: `Working on ${selectedModule?.title}`,
           },
         },
       });
 
       if (response.error) throw response.error;
-      setPracticeResponse(response.data?.response || 'AI response generated successfully.');
+      
+      // Parse the structured feedback response
+      const feedbackData = response.data?.feedback;
+      if (feedbackData) {
+        // Format structured feedback as markdown
+        const formattedFeedback = `## Feedback Summary
+${feedbackData.summary}
+
+### ✅ Strengths
+${feedbackData.strengths?.map((s: string) => `- ${s}`).join('\n') || '- Good effort!'}
+
+### ⚠️ Areas for Improvement
+${feedbackData.issues?.map((i: string) => `- ${i}`).join('\n') || '- No major issues found.'}
+
+### 🔧 Suggested Fixes
+${feedbackData.fixes?.map((f: string) => `- ${f}`).join('\n') || '- Continue practicing.'}
+
+### 🚀 Next Steps
+${feedbackData.next_steps?.map((n: string) => `- ${n}`).join('\n') || '- Move on to the next module.'}`;
+        
+        setPracticeResponse(formattedFeedback);
+      } else {
+        setPracticeResponse('AI response generated successfully.');
+      }
       setModuleCompleted(true);
     } catch (error) {
       console.error('Practice error:', error);
@@ -200,21 +220,15 @@ The AI trainer on the right can provide more detailed feedback on your work. Ask
     setIsTrainerLoading(true);
 
     try {
-      const response = await supabase.functions.invoke('ai-trainer', {
+      // Call Claude-powered trainer_chat edge function
+      const response = await supabase.functions.invoke('trainer_chat', {
         body: {
+          lessonId: sessionId || '1',
+          moduleId: selectedModule?.id,
           messages: [...trainerMessages, userMessage],
-          context: {
-            sessionId,
-            moduleId: selectedModule?.id,
-            moduleTitle: selectedModule?.title,
-            moduleContent: selectedModule?.content.overview,
-            keyPoints: selectedModule?.content.keyPoints,
-            practiceTask: selectedModule?.content.practiceTask,
-            userPracticeInput: practiceInput,
-            userPracticeResponse: practiceResponse,
-            learningStyle: profile.learning_style,
-            proficiencyLevel: profile.ai_proficiency_level,
-            lineOfBusiness: profile.line_of_business,
+          learnerState: {
+            currentCardTitle: selectedModule?.title,
+            progressSummary: practiceInput ? `Has submitted practice: "${practiceInput.substring(0, 100)}..."` : 'Working on module',
           },
         },
       });
@@ -223,7 +237,7 @@ The AI trainer on the right can provide more detailed feedback on your work. Ask
       
       const assistantMessage: Message = { 
         role: 'assistant', 
-        content: response.data?.response || 'I\'m here to help you with your training. What questions do you have?' 
+        content: response.data?.reply || 'I\'m here to help you with your training. What questions do you have?' 
       };
       setTrainerMessages(prev => [...prev, assistantMessage]);
     } catch (error) {

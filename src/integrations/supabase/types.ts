@@ -53,6 +53,42 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_content_chunks: {
+        Row: {
+          chunk_index: number
+          created_at: string
+          id: string
+          lesson_id: string
+          metadata: Json | null
+          module_id: string | null
+          source: string | null
+          text: string
+          updated_at: string
+        }
+        Insert: {
+          chunk_index?: number
+          created_at?: string
+          id?: string
+          lesson_id: string
+          metadata?: Json | null
+          module_id?: string | null
+          source?: string | null
+          text: string
+          updated_at?: string
+        }
+        Update: {
+          chunk_index?: number
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          metadata?: Json | null
+          module_id?: string | null
+          source?: string | null
+          text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       training_progress: {
         Row: {
           created_at: string | null

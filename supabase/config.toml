@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.ai-practice]
 verify_jwt = false
+
+[functions.trainer_chat]
+verify_jwt = false
+
+[functions.submission_review]
+verify_jwt = false
