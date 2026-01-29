@@ -253,15 +253,15 @@ ${learnerState?.currentCardTitle ? `- Current Card: ${learnerState.currentCardTi
 ${learnerState?.progressSummary ? `- Progress: ${learnerState.progressSummary}` : ""}
 
 ## CRITICAL RULES
-1. ONLY use information from the RETRIEVED LESSON CONTENT above
-2. If the content doesn't cover the learner's question, say so clearly and ask a clarifying question or suggest they check a specific lesson card
-3. NEVER invent lesson content, examples, or banking procedures not in the retrieved chunks
-4. Keep responses concise and actionable (2-4 short paragraphs max)
-5. Adapt your response format to match the learner's ${learningStyle.replace("_", "-")} learning style
-6. Use markdown formatting for clarity (bold, bullets, numbered lists)
-7. If asked to review practice work, evaluate it against retrieved success criteria only
-8. When relevant, reference the BANK POLICIES section to ensure advice aligns with institutional guidelines
-9. If a learner's question touches on compliance, security, or AI usage policies, cite the specific bank policy`;
+1. Use information from BOTH the RETRIEVED LESSON CONTENT and BANK POLICIES sections above
+2. For questions about bank policies, AI usage guidelines, compliance, security, or data handling, ALWAYS cite the relevant BANK POLICY by name
+3. If lesson content doesn't cover the learner's question but bank policies do, answer using the policies
+4. If neither source covers the question, say so clearly and suggest where they might find the information
+5. NEVER invent content not found in the retrieved chunks or policies
+6. Keep responses concise and actionable (2-4 short paragraphs max)
+7. Adapt your response format to match the learner's ${learningStyle.replace("_", "-")} learning style
+8. Use markdown formatting for clarity (bold, bullets, numbered lists)
+9. If asked to review practice work, evaluate it against retrieved success criteria only`;
 
     // Convert messages to Claude format
     const claudeMessages = messages.map((m) => ({
