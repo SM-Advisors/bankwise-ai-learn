@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAllBankPolicies } from '@/hooks/useBankPolicies';
+import { useAllLiveTrainingSessions, LiveTrainingSessionInsert } from '@/hooks/useLiveTrainingSessions';
 import { UsersManagement } from '@/components/UsersManagement';
 import { learningStyles } from '@/data/learningStyles';
 import { departments } from '@/data/topics';
@@ -41,7 +42,10 @@ import {
   X,
   Plus,
   Loader2,
-  ArrowLeft
+  ArrowLeft,
+  Radio,
+  Calendar,
+  Trash2
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -129,6 +133,8 @@ export default function AdminDashboard() {
   const { isAdmin, loading: roleLoading } = useUserRole();
   const { toast } = useToast();
   const { policies, loading: policiesLoading, updatePolicy, createPolicy } = useAllBankPolicies();
+  const { sessions: liveSessions, loading: liveSessionsLoading, createSession, updateSession, deleteSession } = useAllLiveTrainingSessions();
+  
   const [editingPolicy, setEditingPolicy] = useState<any>(null);
   const [editForm, setEditForm] = useState({ title: '', content: '', summary: '' });
   const [isCreating, setIsCreating] = useState(false);
@@ -139,6 +145,19 @@ export default function AdminDashboard() {
     summary: '',
     icon: 'BookOpen',
     display_order: 0,
+    is_active: true,
+  });
+
+  // Live session state
+  const [editingSession, setEditingSession] = useState<any>(null);
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [sessionForm, setSessionForm] = useState({
+    title: '',
+    description: '',
+    instructor: '',
+    scheduled_date: '',
+    duration_minutes: 60,
+    max_attendees: 50,
     is_active: true,
   });
 
@@ -210,6 +229,74 @@ export default function AdminDashboard() {
     }
   };
 
+  // Live session handlers
+  const resetSessionForm = () => {
+    setSessionForm({
+      title: '',
+      description: '',
+      instructor: '',
+      scheduled_date: '',
+      duration_minutes: 60,
+      max_attendees: 50,
+      is_active: true,
+    });
+  };
+
+  const handleEditSession = (session: any) => {
+    setEditingSession(session);
+    setSessionForm({
+      title: session.title,
+      description: session.description || '',
+      instructor: session.instructor,
+      scheduled_date: session.scheduled_date.slice(0, 16), // Format for datetime-local input
+      duration_minutes: session.duration_minutes,
+      max_attendees: session.max_attendees || 50,
+      is_active: session.is_active,
+    });
+  };
+
+  const handleSaveSession = async () => {
+    if (!editingSession) return;
+    const result = await updateSession(editingSession.id, {
+      ...sessionForm,
+      scheduled_date: new Date(sessionForm.scheduled_date).toISOString(),
+    });
+    if (result.success) {
+      toast({ title: 'Session updated', description: 'The live session has been saved.' });
+      setEditingSession(null);
+      resetSessionForm();
+    } else {
+      toast({ title: 'Error', description: result.error, variant: 'destructive' });
+    }
+  };
+
+  const handleCreateSession = async () => {
+    if (!sessionForm.title || !sessionForm.instructor || !sessionForm.scheduled_date) {
+      toast({ title: 'Missing fields', description: 'Please fill in all required fields.', variant: 'destructive' });
+      return;
+    }
+    const result = await createSession({
+      ...sessionForm,
+      scheduled_date: new Date(sessionForm.scheduled_date).toISOString(),
+    });
+    if (result.success) {
+      toast({ title: 'Session created', description: 'The live session has been scheduled.' });
+      setIsCreatingSession(false);
+      resetSessionForm();
+    } else {
+      toast({ title: 'Error', description: result.error, variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteSession = async (id: string) => {
+    const result = await deleteSession(id);
+    if (result.success) {
+      toast({ title: 'Session deleted', description: 'The live session has been removed.' });
+    } else {
+      toast({ title: 'Error', description: result.error, variant: 'destructive' });
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-8">
@@ -234,10 +321,14 @@ export default function AdminDashboard() {
       </div>
 
       <Tabs defaultValue="users" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid">
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Users</span>
+          </TabsTrigger>
+          <TabsTrigger value="live-feed" className="flex items-center gap-2">
+            <Radio className="h-4 w-4" />
+            <span className="hidden sm:inline">Live Feed</span>
           </TabsTrigger>
           <TabsTrigger value="programs" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
@@ -264,6 +355,263 @@ export default function AdminDashboard() {
         {/* Users Management Tab */}
         <TabsContent value="users" className="space-y-6">
           <UsersManagement />
+        </TabsContent>
+
+        {/* Live Feed Management Tab */}
+        <TabsContent value="live-feed" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Radio className="h-5 w-5 text-primary" />
+                    Live Training Sessions
+                  </CardTitle>
+                  <CardDescription>
+                    Schedule and manage live training sessions for users
+                  </CardDescription>
+                </div>
+                <Button onClick={() => setIsCreatingSession(true)} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Session
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {liveSessionsLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading sessions...</div>
+              ) : liveSessions.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No live sessions scheduled. Click "Add Session" to create one.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {liveSessions.map((session) => (
+                    <Card key={session.id} className="border">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <CardTitle className="text-lg">{session.title}</CardTitle>
+                              {!session.is_active && (
+                                <Badge variant="outline" className="text-xs">Inactive</Badge>
+                              )}
+                              {new Date(session.scheduled_date) < new Date() && (
+                                <Badge variant="secondary" className="text-xs">Past</Badge>
+                              )}
+                            </div>
+                            <CardDescription>{session.description}</CardDescription>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleEditSession(session)}
+                              className="gap-2"
+                            >
+                              <Edit className="h-4 w-4" />
+                              Edit
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleDeleteSession(session.id)}
+                              className="gap-2 text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            {session.instructor}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {new Date(session.scheduled_date).toLocaleDateString()}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            {new Date(session.scheduled_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                          <Badge variant="secondary">{session.duration_minutes} min</Badge>
+                          {session.max_attendees && (
+                            <span>Max: {session.max_attendees} attendees</span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Edit Session Dialog */}
+          <Dialog open={!!editingSession} onOpenChange={(open) => !open && setEditingSession(null)}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Edit Live Session</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-title">Title *</Label>
+                  <Input
+                    id="edit-title"
+                    value={sessionForm.title}
+                    onChange={(e) => setSessionForm({ ...sessionForm, title: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-description">Description</Label>
+                  <Textarea
+                    id="edit-description"
+                    value={sessionForm.description}
+                    onChange={(e) => setSessionForm({ ...sessionForm, description: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-instructor">Instructor *</Label>
+                  <Input
+                    id="edit-instructor"
+                    value={sessionForm.instructor}
+                    onChange={(e) => setSessionForm({ ...sessionForm, instructor: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-date">Date & Time *</Label>
+                    <Input
+                      id="edit-date"
+                      type="datetime-local"
+                      value={sessionForm.scheduled_date}
+                      onChange={(e) => setSessionForm({ ...sessionForm, scheduled_date: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-duration">Duration (minutes)</Label>
+                    <Input
+                      id="edit-duration"
+                      type="number"
+                      value={sessionForm.duration_minutes}
+                      onChange={(e) => setSessionForm({ ...sessionForm, duration_minutes: parseInt(e.target.value) || 60 })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-max">Max Attendees</Label>
+                    <Input
+                      id="edit-max"
+                      type="number"
+                      value={sessionForm.max_attendees}
+                      onChange={(e) => setSessionForm({ ...sessionForm, max_attendees: parseInt(e.target.value) || 50 })}
+                    />
+                  </div>
+                  <div className="space-y-2 flex items-end gap-2">
+                    <input
+                      type="checkbox"
+                      id="edit-active"
+                      checked={sessionForm.is_active}
+                      onChange={(e) => setSessionForm({ ...sessionForm, is_active: e.target.checked })}
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor="edit-active">Active</Label>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setEditingSession(null)}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveSession}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Create Session Dialog */}
+          <Dialog open={isCreatingSession} onOpenChange={setIsCreatingSession}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Schedule Live Session</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-title">Title *</Label>
+                  <Input
+                    id="new-title"
+                    value={sessionForm.title}
+                    onChange={(e) => setSessionForm({ ...sessionForm, title: e.target.value })}
+                    placeholder="AI for Credit Risk Analysis"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-description">Description</Label>
+                  <Textarea
+                    id="new-description"
+                    value={sessionForm.description}
+                    onChange={(e) => setSessionForm({ ...sessionForm, description: e.target.value })}
+                    placeholder="What will participants learn?"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-instructor">Instructor *</Label>
+                  <Input
+                    id="new-instructor"
+                    value={sessionForm.instructor}
+                    onChange={(e) => setSessionForm({ ...sessionForm, instructor: e.target.value })}
+                    placeholder="Sarah Chen"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-date">Date & Time *</Label>
+                    <Input
+                      id="new-date"
+                      type="datetime-local"
+                      value={sessionForm.scheduled_date}
+                      onChange={(e) => setSessionForm({ ...sessionForm, scheduled_date: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-duration">Duration (minutes)</Label>
+                    <Input
+                      id="new-duration"
+                      type="number"
+                      value={sessionForm.duration_minutes}
+                      onChange={(e) => setSessionForm({ ...sessionForm, duration_minutes: parseInt(e.target.value) || 60 })}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-max">Max Attendees</Label>
+                  <Input
+                    id="new-max"
+                    type="number"
+                    value={sessionForm.max_attendees}
+                    onChange={(e) => setSessionForm({ ...sessionForm, max_attendees: parseInt(e.target.value) || 50 })}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => { setIsCreatingSession(false); resetSessionForm(); }}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button onClick={handleCreateSession}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Schedule Session
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         {/* Bank Policies Tab */}

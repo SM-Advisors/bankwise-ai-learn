@@ -9,6 +9,7 @@ import { HelpTour } from '@/components/HelpTour';
 import { BankPolicyModal } from '@/components/BankPolicyModal';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { useBankPolicies } from '@/hooks/useBankPolicies';
+import { useLiveTrainingSessions } from '@/hooks/useLiveTrainingSessions';
 import { 
   Loader2, Play, CheckCircle, Lock, Sparkles, Bot, 
   Building2, HelpCircle, BookOpen, Shield, Lightbulb,
@@ -51,6 +52,7 @@ export default function Dashboard() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
   const { policies, loading: policiesLoading } = useBankPolicies();
+  const { sessions: liveSessions, loading: liveSessionsLoading } = useLiveTrainingSessions();
 
   // Redirect if not logged in
   useEffect(() => {
@@ -270,77 +272,74 @@ export default function Dashboard() {
                 </div>
                 <CardTitle>Live Training Feed</CardTitle>
               </div>
-              <Badge variant="outline" className="gap-1">
-                <Users className="h-3 w-3" />
-                Coming Soon
-              </Badge>
+              {liveSessions.length > 0 ? (
+                <Badge variant="secondary" className="gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {liveSessions.length} Upcoming
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="gap-1">
+                  <Users className="h-3 w-3" />
+                  Coming Soon
+                </Badge>
+              )}
             </div>
             <CardDescription>
               Join live training sessions with expert instructors and fellow learners
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {/* Placeholder Live Sessions */}
-              {[
-                {
-                  title: 'AI for Credit Risk Analysis',
-                  instructor: 'Sarah Chen',
-                  date: 'Feb 5, 2026',
-                  time: '2:00 PM EST',
-                  attendees: 24,
-                },
-                {
-                  title: 'Mastering Prompt Engineering',
-                  instructor: 'Michael Torres',
-                  date: 'Feb 8, 2026',
-                  time: '11:00 AM EST',
-                  attendees: 42,
-                },
-                {
-                  title: 'AI Compliance Workshop',
-                  instructor: 'Jennifer Walsh',
-                  date: 'Feb 12, 2026',
-                  time: '3:00 PM EST',
-                  attendees: 18,
-                },
-              ].map((session, idx) => (
-                <div 
-                  key={idx}
-                  className="relative p-4 rounded-lg border bg-muted/30 opacity-75"
-                >
-                  <div className="absolute top-3 right-3">
-                    <Badge variant="secondary" className="text-xs">Upcoming</Badge>
-                  </div>
-                  <h4 className="font-medium pr-16 mb-2">{session.title}</h4>
-                  <div className="space-y-1.5 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <Users className="h-3.5 w-3.5" />
-                      <span>{session.instructor}</span>
+            {liveSessionsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : liveSessions.length === 0 ? (
+              <div className="text-center py-8">
+                <Radio className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-muted-foreground">
+                  No live sessions scheduled yet. Check back soon!
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {liveSessions.filter(s => new Date(s.scheduled_date) >= new Date()).map((session) => (
+                  <div 
+                    key={session.id}
+                    className="relative p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="absolute top-3 right-3">
+                      <Badge variant="secondary" className="text-xs">Upcoming</Badge>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-3.5 w-3.5" />
-                      <span>{session.date}</span>
+                    <h4 className="font-medium pr-16 mb-2">{session.title}</h4>
+                    {session.description && (
+                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{session.description}</p>
+                    )}
+                    <div className="space-y-1.5 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-3.5 w-3.5" />
+                        <span>{session.instructor}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-3.5 w-3.5" />
+                        <span>{new Date(session.scheduled_date).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-3.5 w-3.5" />
+                        <span>{new Date(session.scheduled_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span>{session.time}</span>
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        {session.duration_minutes} min
+                      </span>
+                      <Button size="sm" variant="outline">
+                        Notify Me
+                      </Button>
                     </div>
                   </div>
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      {session.attendees} registered
-                    </span>
-                    <Button size="sm" variant="outline" disabled>
-                      Notify Me
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="text-center text-sm text-muted-foreground mt-4">
-              Live training sessions will be available soon. Stay tuned!
-            </p>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
