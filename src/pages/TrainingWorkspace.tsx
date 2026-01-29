@@ -91,10 +91,14 @@ What would you like help with?`;
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [trainerMessages]);
 
-  // Reset practice when module changes
+  // Reset practice when module changes (not when completedModules updates)
+  const prevModuleRef = useRef<string | null>(null);
   useEffect(() => {
-    setPracticeInput('');
-    setPracticeResponse('');
+    if (selectedModule && selectedModule.id !== prevModuleRef.current) {
+      setPracticeInput('');
+      setPracticeResponse('');
+      prevModuleRef.current = selectedModule.id;
+    }
     // Check if this module was already completed
     setModuleCompleted(selectedModule ? completedModules.has(selectedModule.id) : false);
   }, [selectedModule, completedModules]);
