@@ -10,10 +10,11 @@ import { BankPolicyModal } from '@/components/BankPolicyModal';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { useLiveTrainingSessions } from '@/hooks/useLiveTrainingSessions';
+import { useAppSettings } from '@/hooks/useAppSettings';
 import { 
   Loader2, Play, CheckCircle, Lock, Sparkles, Bot, 
   Building2, HelpCircle, BookOpen, Shield, Lightbulb,
-  Radio, Calendar, Users, Clock
+  Radio, Calendar, Users, Clock, MessageCircle, ExternalLink
 } from 'lucide-react';
 
 const SESSIONS = [
@@ -53,6 +54,9 @@ export default function Dashboard() {
   const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
   const { policies, loading: policiesLoading } = useBankPolicies();
   const { sessions: liveSessions, loading: liveSessionsLoading } = useLiveTrainingSessions();
+  const { settings: appSettings } = useAppSettings();
+
+  const communityUrl = appSettings.community_slack_url;
 
   // Redirect if not logged in
   useEffect(() => {
@@ -384,6 +388,49 @@ export default function Dashboard() {
                 })}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Community Hub Section */}
+        <Card className="mt-8 border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <MessageCircle className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Community Hub</CardTitle>
+                  <CardDescription>
+                    Connect with peers, share ideas, and learn from others
+                  </CardDescription>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">
+                  Join our Slack community to connect with fellow banking professionals, 
+                  share AI use cases, ask questions, and collaborate on best practices.
+                </p>
+              </div>
+              {communityUrl ? (
+                <Button asChild className="gap-2 shrink-0">
+                  <a href={communityUrl} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="h-4 w-4" />
+                    Join Community
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </Button>
+              ) : (
+                <Button disabled className="gap-2 shrink-0">
+                  <MessageCircle className="h-4 w-4" />
+                  Coming Soon
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
