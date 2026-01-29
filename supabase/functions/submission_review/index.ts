@@ -73,6 +73,14 @@ function getFeedbackStyleInstructions(style: string): string {
   return instructions[style] || instructions.explanation_based;
 }
 
+interface BankPolicy {
+  id: string;
+  title: string;
+  content: string;
+  summary: string | null;
+  policy_type: string;
+}
+
 // Retrieve lesson content chunks from database
 async function retrieveLessonContext(
   supabase: any,
@@ -98,6 +106,30 @@ async function retrieveLessonContext(
     return [];
   }
 
+  return data || [];
+}
+
+// Retrieve active bank policies (uses service role to bypass RLS since policies are institutional data)
+async function retrieveBankPolicies(supabaseUrl: string): Promise<BankPolicy[]> {
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!serviceRoleKey) {
+    console.error("SUPABASE_SERVICE_ROLE_KEY not available for policy retrieval");
+    return [];
+  }
+
+  const adminClient = createClient(supabaseUrl, serviceRoleKey);
+  const { data, error } = await adminClient
+    .from("bank_policies")
+    .select("id, title, content, summary, policy_type")
+    .eq("is_active", true)
+    .order("display_order", { ascending: true });
+
+  if (error) {
+    console.error("Error retrieving bank policies:", error);
+    return [];
+  }
+
+  console.log(`Retrieved ${data?.length || 0} bank policies`);
   return data || [];
 }
 
@@ -172,6 +204,9 @@ serve(async (req) => {
       topK: 6,
     });
 
+    // Retrieve bank policies
+    const policies = await retrieveBankPolicies(supabaseUrl);
+
     // Build context section from chunks
     let contextSection = "";
     if (chunks.length > 0) {
@@ -188,12 +223,27 @@ Evaluate the submission based on general prompt engineering best practices.
 Note in your feedback that specific lesson criteria were not available.`;
     }
 
+    // Build bank policies section
+    let policiesSection = "";
+    if (policies.length > 0) {
+      policiesSection = `## BANK POLICIES & GUIDELINES
+The following are the bank's official policies. Check submissions for compliance:
+
+${policies.map((policy) => `### ${policy.title} (${policy.policy_type})
+${policy.summary ? `**Summary:** ${policy.summary}\n` : ""}
+${policy.content}`).join("\n\n")}
+
+---`;
+    }
+
     // Build system prompt
     const systemPrompt = `You are a strict but supportive AI Practice Reviewer for a banking AI training platform. Your job is to evaluate learner submissions and provide structured feedback.
 
 ${getFeedbackStyleInstructions(learningStyle)}
 
 ${contextSection}
+
+${policiesSection}
 
 ## RUBRIC
 ${rubric ? (typeof rubric === "string" ? rubric : JSON.stringify(rubric, null, 2)) : "Evaluate based on clarity, specificity, context, and appropriateness for banking use cases."}
@@ -211,6 +261,8 @@ ${learnerState?.attemptNumber ? `- Attempt #${learnerState.attemptNumber}` : ""}
 4. Balance praise with constructive criticism
 5. Tailor language complexity to the ${learningStyle.replace("_", "-")} learning style
 6. If lesson content is missing, acknowledge this and evaluate on general best practices
+7. Check submissions for compliance with BANK POLICIES - flag any potential violations
+8. If the submission touches on data handling, AI usage, or security, verify alignment with bank guidelines
 
 ## REQUIRED OUTPUT FORMAT (strict JSON, no extra keys)
 {
