@@ -70,6 +70,36 @@ function getLearningStyleInstructions(style: string): string {
   return instructions[style] || instructions.explanation_based;
 }
 
+// Get proficiency level instructions (0-8 scale)
+function getProficiencyInstructions(level: number | null): string {
+  const proficiency = level ?? 3; // Default to intermediate if not set
+  
+  if (proficiency <= 2) {
+    return `AI PROFICIENCY: Beginner (Level ${proficiency}/8)
+- Use simple, everyday language - avoid jargon
+- Define AI terms when you use them (e.g., "prompt", "context window")
+- Provide more hand-holding and step-by-step guidance
+- Assume minimal prior AI/ChatGPT experience
+- Use analogies to explain concepts
+- Be encouraging and patient`;
+  } else if (proficiency <= 5) {
+    return `AI PROFICIENCY: Intermediate (Level ${proficiency}/8)
+- Use moderate technical language with brief clarifications
+- Assume familiarity with basic AI concepts (prompts, responses)
+- Can reference common AI patterns without full explanations
+- Balance explanation with practical application
+- Build on foundational knowledge`;
+  } else {
+    return `AI PROFICIENCY: Advanced (Level ${proficiency}/8)
+- Use precise technical language freely
+- Assume strong AI literacy and prompt engineering awareness
+- Focus on nuance, edge cases, and optimization
+- Can discuss advanced techniques (few-shot, chain-of-thought)
+- Challenge with sophisticated scenarios
+- Skip basic explanations`;
+  }
+}
+
 interface BankPolicy {
   id: string;
   title: string;
@@ -176,17 +206,21 @@ serve(async (req) => {
       userId = bodyUserId;
     }
 
-    // Fetch learning style from user_profiles
+    // Fetch learning style and AI proficiency from user_profiles
     let learningStyle = "explanation_based";
+    let aiProficiencyLevel: number | null = null;
     if (userId) {
       const { data: profile } = await supabase
         .from("user_profiles")
-        .select("learning_style")
+        .select("learning_style, ai_proficiency_level")
         .eq("user_id", userId)
         .single();
 
       if (profile?.learning_style) {
         learningStyle = normalizeLearningStyle(profile.learning_style);
+      }
+      if (profile?.ai_proficiency_level !== undefined) {
+        aiProficiencyLevel = profile.ai_proficiency_level;
       }
     }
 
@@ -241,6 +275,8 @@ ${policy.content}`).join("\n\n")}
     const systemPrompt = `You are an AI Training Coach for a banking AI training platform. Your role is to guide learners, answer questions about lesson content, and provide personalized coaching.
 
 ${getLearningStyleInstructions(learningStyle)}
+
+${getProficiencyInstructions(aiProficiencyLevel)}
 
 ${contextSection}
 
