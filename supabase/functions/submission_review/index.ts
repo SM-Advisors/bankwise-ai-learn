@@ -73,6 +73,33 @@ function getFeedbackStyleInstructions(style: string): string {
   return instructions[style] || instructions.explanation_based;
 }
 
+// Get proficiency level instructions for feedback (0-8 scale)
+function getProficiencyFeedbackInstructions(level: number | null): string {
+  const proficiency = level ?? 3; // Default to intermediate if not set
+  
+  if (proficiency <= 2) {
+    return `AI PROFICIENCY: Beginner (Level ${proficiency}/8)
+- Use simple language in all feedback
+- Define any AI terms you mention
+- Be extra encouraging and supportive
+- Provide very specific, step-by-step fixes
+- Avoid overwhelming with too many issues at once`;
+  } else if (proficiency <= 5) {
+    return `AI PROFICIENCY: Intermediate (Level ${proficiency}/8)
+- Use moderate technical language
+- Assume basic understanding of prompts and AI behavior
+- Balance encouragement with constructive criticism
+- Can reference common prompt patterns`;
+  } else {
+    return `AI PROFICIENCY: Advanced (Level ${proficiency}/8)
+- Use precise technical language
+- Focus on nuance and optimization opportunities
+- Can reference advanced techniques in suggestions
+- Be more direct and concise in feedback
+- Challenge with higher-level improvements`;
+  }
+}
+
 interface BankPolicy {
   id: string;
   title: string;
@@ -178,17 +205,21 @@ serve(async (req) => {
       userId = bodyUserId;
     }
 
-    // Fetch learning style from user_profiles
+    // Fetch learning style and AI proficiency from user_profiles
     let learningStyle = "explanation_based";
+    let aiProficiencyLevel: number | null = null;
     if (userId) {
       const { data: profile } = await supabase
         .from("user_profiles")
-        .select("learning_style")
+        .select("learning_style, ai_proficiency_level")
         .eq("user_id", userId)
         .single();
 
       if (profile?.learning_style) {
         learningStyle = normalizeLearningStyle(profile.learning_style);
+      }
+      if (profile?.ai_proficiency_level !== undefined) {
+        aiProficiencyLevel = profile.ai_proficiency_level;
       }
     }
 
@@ -240,6 +271,8 @@ ${policy.content}`).join("\n\n")}
     const systemPrompt = `You are a strict but supportive AI Practice Reviewer for a banking AI training platform. Your job is to evaluate learner submissions and provide structured feedback.
 
 ${getFeedbackStyleInstructions(learningStyle)}
+
+${getProficiencyFeedbackInstructions(aiProficiencyLevel)}
 
 ${contextSection}
 
