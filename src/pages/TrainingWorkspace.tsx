@@ -31,6 +31,7 @@ export default function TrainingWorkspace() {
   const { user, profile, progress, loading, markSessionCompleted, updateProgress } = useAuth();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const contentScrollRef = useRef<HTMLDivElement>(null);
 
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
@@ -98,6 +99,10 @@ What would you like help with?`;
       setPracticeInput('');
       setPracticeResponse('');
       prevModuleRef.current = selectedModule.id;
+      // Scroll content area to top when navigating to a new module
+      if (contentScrollRef.current) {
+        contentScrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
     // Check if this module was already completed
     setModuleCompleted(selectedModule ? completedModules.has(selectedModule.id) : false);
@@ -527,7 +532,7 @@ What would be most helpful?`;
 
         {/* Middle Column - Lesson & Practice Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1" viewportRef={contentScrollRef}>
             <div className="p-6">
               {selectedModule && (
                 <div className="max-w-3xl mx-auto space-y-6">
