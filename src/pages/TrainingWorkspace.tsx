@@ -301,6 +301,38 @@ The AI trainer on the right can provide more detailed feedback on your work. Ask
     }
   };
 
+  // Handle quick action button clicks (auto-send prompts)
+  const handleQuickAction = async (prompt: string) => {
+    setIsTrainerLoading(true);
+    try {
+      const response = await supabase.functions.invoke('trainer_chat', {
+        body: {
+          lessonId: sessionId || '1',
+          moduleId: selectedModule?.id,
+          messages: [...trainerMessages, { role: 'user', content: prompt }],
+          learnerState: {
+            currentCardTitle: selectedModule?.title,
+            progressSummary: practiceInput ? `Current practice input: "${practiceInput.substring(0, 200)}..."` : 'Working on module',
+          },
+        },
+      });
+
+      if (response.error) throw response.error;
+      
+      const assistantMessage: Message = { 
+        role: 'assistant', 
+        content: response.data?.reply || 'I\'m here to help you with your training.' 
+      };
+      setTrainerMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Trainer error:', error);
+      const contextualResponse = generateContextualResponse(prompt, selectedModule, profile, practiceInput);
+      setTrainerMessages(prev => [...prev, { role: 'assistant', content: contextualResponse }]);
+    } finally {
+      setIsTrainerLoading(false);
+    }
+  };
+
   // Generate contextual offline responses
   function generateContextualResponse(
     input: string,
@@ -775,14 +807,25 @@ What would be most helpful?`;
                 </div>
               </ScrollArea>
               
-              {/* Quick Actions */}
+              {/* Quick Actions - Auto-send on click */}
               <div className="px-3 py-2 border-t bg-muted/30">
                 <div className="flex flex-wrap gap-1">
                   <Button
                     variant="outline"
                     size="sm"
                     className="text-xs h-7"
-                    onClick={() => setTrainerInput('Can you review my practice work?')}
+                    disabled={isTrainerLoading}
+                    onClick={() => {
+                      const prompt = 'Can you review my practice work?';
+                      setTrainerInput(prompt);
+                      // Auto-send the prompt
+                      setTimeout(() => {
+                        const userMessage: Message = { role: 'user', content: prompt };
+                        setTrainerMessages(prev => [...prev, userMessage]);
+                        setTrainerInput('');
+                        handleQuickAction(prompt);
+                      }, 0);
+                    }}
                   >
                     Review my work
                   </Button>
@@ -790,7 +833,17 @@ What would be most helpful?`;
                     variant="outline"
                     size="sm"
                     className="text-xs h-7"
-                    onClick={() => setTrainerInput('Show me an example')}
+                    disabled={isTrainerLoading}
+                    onClick={() => {
+                      const prompt = 'Show me an example';
+                      setTrainerInput(prompt);
+                      setTimeout(() => {
+                        const userMessage: Message = { role: 'user', content: prompt };
+                        setTrainerMessages(prev => [...prev, userMessage]);
+                        setTrainerInput('');
+                        handleQuickAction(prompt);
+                      }, 0);
+                    }}
                   >
                     Show example
                   </Button>
@@ -798,7 +851,17 @@ What would be most helpful?`;
                     variant="outline"
                     size="sm"
                     className="text-xs h-7"
-                    onClick={() => setTrainerInput('I need a hint')}
+                    disabled={isTrainerLoading}
+                    onClick={() => {
+                      const prompt = 'I need a hint';
+                      setTrainerInput(prompt);
+                      setTimeout(() => {
+                        const userMessage: Message = { role: 'user', content: prompt };
+                        setTrainerMessages(prev => [...prev, userMessage]);
+                        setTrainerInput('');
+                        handleQuickAction(prompt);
+                      }, 0);
+                    }}
                   >
                     Get hint
                   </Button>
