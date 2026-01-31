@@ -191,28 +191,33 @@ I won't interrupt you constantly—I'm here when you need guidance. Good luck wi
 
       if (response.error) throw response.error;
       
-      // Parse the structured feedback response
+      // Parse the structured feedback response and send to Andrea's chat
       const feedbackData = response.data?.feedback;
       if (feedbackData) {
-        // Format structured feedback as markdown
-        const formattedFeedback = `## Feedback Summary
+        // Format structured feedback as markdown for Andrea's chat
+        const formattedFeedback = `📝 **I've reviewed your submission!**
+
+**Feedback Summary:**
 ${feedbackData.summary}
 
-### ✅ Strengths
-${feedbackData.strengths?.map((s: string) => `- ${s}`).join('\n') || '- Good effort!'}
+**✅ Strengths:**
+${feedbackData.strengths?.map((s: string) => `• ${s}`).join('\n') || '• Good effort!'}
 
-### ⚠️ Areas for Improvement
-${feedbackData.issues?.map((i: string) => `- ${i}`).join('\n') || '- No major issues found.'}
+**⚠️ Areas for Improvement:**
+${feedbackData.issues?.map((i: string) => `• ${i}`).join('\n') || '• No major issues found.'}
 
-### 🔧 Suggested Fixes
-${feedbackData.fixes?.map((f: string) => `- ${f}`).join('\n') || '- Continue practicing.'}
+**🔧 Suggested Fixes:**
+${feedbackData.fixes?.map((f: string) => `• ${f}`).join('\n') || '• Continue practicing.'}
 
-### 🚀 Next Steps
-${feedbackData.next_steps?.map((n: string) => `- ${n}`).join('\n') || '- Move on to the next module.'}`;
+**🚀 Next Steps:**
+${feedbackData.next_steps?.map((n: string) => `• ${n}`).join('\n') || '• Move on to the next module.'}
+
+Feel free to ask me any questions about this feedback!`;
         
-        setPracticeResponse(formattedFeedback);
+        // Send feedback to Andrea's chat panel
+        setTrainerMessages(prev => [...prev, { role: 'assistant', content: formattedFeedback }]);
       } else {
-        setPracticeResponse('AI response generated successfully.');
+        setTrainerMessages(prev => [...prev, { role: 'assistant', content: 'Your practice has been submitted! Let me know if you have any questions.' }]);
       }
       setModuleCompleted(true);
       
@@ -234,18 +239,19 @@ ${feedbackData.next_steps?.map((n: string) => `- ${n}`).join('\n') || '- Move on
         description: 'Using offline mode. Your practice has been recorded.',
         variant: 'default',
       });
-      // Offline fallback response
-      setPracticeResponse(`**Practice Response**
+      // Offline fallback - send to Andrea's chat
+      const offlineFeedback = `📝 **I've received your submission!**
 
-Your prompt has been processed. Here's feedback based on the task criteria:
+I'm having a brief connection issue, but here's my initial assessment based on the task criteria:
 
 **What you wrote:**
 "${practiceInput}"
 
-**Assessment:**
+**Success Criteria Check:**
 ${selectedModule?.content.practiceTask.successCriteria.map((c, i) => `${i + 1}. ${c}`).join('\n')}
 
-The AI trainer on the right can provide more detailed feedback on your work. Ask "Can you review my practice prompt?" to get personalized suggestions.`);
+Feel free to ask me for more detailed feedback!`;
+      setTrainerMessages(prev => [...prev, { role: 'assistant', content: offlineFeedback }]);
       setModuleCompleted(true);
       
       // Still save progress locally even if API fails
@@ -655,70 +661,58 @@ What would be most helpful?`;
                         Submit for Review
                       </Button>
 
-                      {/* Practice Response */}
-                      {practiceResponse && (
+                      {/* Practice Completed Notification */}
+                      {moduleCompleted && (
                         <div className="border-t pt-4 mt-4">
-                          <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-                            <Sparkles className="h-4 w-4 text-primary" />
-                            AI Feedback
-                          </h4>
-                          <div className="bg-muted/50 p-4 rounded-lg overflow-x-auto">
-                            <div className="prose prose-sm max-w-none dark:prose-invert [&>h1]:text-lg [&>h1]:font-bold [&>h1]:mt-4 [&>h1]:mb-2 [&>h2]:text-base [&>h2]:font-semibold [&>h2]:mt-3 [&>h2]:mb-2 [&>h3]:text-sm [&>h3]:font-semibold [&>h3]:mt-3 [&>h3]:mb-1 [&>p]:mb-2 [&>ul]:my-2 [&>ul]:pl-4 [&>ol]:my-2 [&>ol]:pl-4 [&>li]:mb-1 [&>table]:w-full [&>table]:border-collapse [&>table]:my-3 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:text-left [&_th]:font-semibold [&_th]:text-sm [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:text-sm">
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{practiceResponse}</ReactMarkdown>
+                          <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                            <div className="flex items-center gap-2 text-primary font-medium">
+                              <CheckCircle className="h-5 w-5" />
+                              Practice Submitted!
                             </div>
-                          </div>
-                          
-                          {moduleCompleted && (
-                            <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-                              <div className="flex items-center gap-2 text-green-600 font-medium">
-                                <CheckCircle className="h-5 w-5" />
-                                Practice Completed!
-                              </div>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                Ask Andrea on the right for detailed feedback, or continue to the next module.
-                              </p>
-                              {(() => {
-                                const currentIndex = session.modules.findIndex(m => m.id === selectedModule?.id);
-                                const nextModule = session.modules[currentIndex + 1];
-                                
-                                const handleCompleteSession = async () => {
-                                  const sessionNum = parseInt(sessionId || '1') as 1 | 2 | 3;
-                                  const { error } = await markSessionCompleted(sessionNum);
-                                  if (error) {
-                                    toast({
-                                      title: 'Error saving progress',
-                                      description: error.message,
-                                      variant: 'destructive',
-                                    });
-                                  } else {
-                                    toast({
-                                      title: 'Session Completed!',
-                                      description: `Session ${sessionNum} has been marked as complete.`,
-                                    });
-                                    navigate('/dashboard');
-                                  }
-                                };
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Check Andrea's feedback on the right panel →
+                            </p>
+                            {(() => {
+                              const currentIndex = session.modules.findIndex(m => m.id === selectedModule?.id);
+                              const nextModule = session.modules[currentIndex + 1];
+                              
+                              const handleCompleteSession = async () => {
+                                const sessionNum = parseInt(sessionId || '1') as 1 | 2 | 3;
+                                const { error } = await markSessionCompleted(sessionNum);
+                                if (error) {
+                                  toast({
+                                    title: 'Error saving progress',
+                                    description: error.message,
+                                    variant: 'destructive',
+                                  });
+                                } else {
+                                  toast({
+                                    title: 'Session Completed!',
+                                    description: `Session ${sessionNum} has been marked as complete.`,
+                                  });
+                                  navigate('/dashboard');
+                                }
+                              };
 
-                                return nextModule ? (
-                                  <Button 
-                                    onClick={() => setSelectedModule(nextModule)}
-                                    className="mt-3 gap-2"
-                                  >
-                                    Continue to Next Module
-                                    <ChevronRight className="h-4 w-4" />
-                                  </Button>
-                                ) : (
-                                  <Button 
-                                    onClick={handleCompleteSession}
-                                    className="mt-3 gap-2"
-                                  >
-                                    Complete Session
-                                    <CheckCircle className="h-4 w-4" />
-                                  </Button>
-                                );
-                              })()}
-                            </div>
-                          )}
+                              return nextModule ? (
+                                <Button 
+                                  onClick={() => setSelectedModule(nextModule)}
+                                  className="mt-3 gap-2"
+                                >
+                                  Continue to Next Module
+                                  <ChevronRight className="h-4 w-4" />
+                                </Button>
+                              ) : (
+                                <Button 
+                                  onClick={handleCompleteSession}
+                                  className="mt-3 gap-2"
+                                >
+                                  Complete Session
+                                  <CheckCircle className="h-4 w-4" />
+                                </Button>
+                              );
+                            })()}
+                          </div>
                         </div>
                       )}
 
