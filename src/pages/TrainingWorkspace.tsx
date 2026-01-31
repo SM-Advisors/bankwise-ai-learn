@@ -149,6 +149,8 @@ What would you like help with?`;
 
   const handleOpenContentModal = (module: ModuleContent, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent selecting the module when clicking the badge
+    // Don't open modal for the Introduction module - it has embedded video instead
+    if (module.id === '1-1') return;
     setContentModalModule(module);
     setContentModalOpen(true);
   };
@@ -568,6 +570,29 @@ What would be most helpful?`;
                       </ul>
                     </CardContent>
                   </Card>
+
+                  {/* Introduction Video - Only for module 1-1 */}
+                  {selectedModule.id === '1-1' && (
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Play className="h-4 w-4 text-primary" />
+                          Introduction Video
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+                          <iframe
+                            className="w-full h-full"
+                            src="https://www.youtube.com/embed/xZ1FAm7IoA4"
+                            title="Introduction to AI Prompting"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Lesson Content */}
                   <Card>
