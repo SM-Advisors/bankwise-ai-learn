@@ -430,7 +430,7 @@ Feel free to ask me for more detailed feedback!`;
       <VideoModal
         open={videoModalOpen}
         onOpenChange={setVideoModalOpen}
-        videoUrl="https://youtu.be/xZ1FAm7IoA4"
+        videoUrl={selectedModule?.videoUrl || 'https://youtu.be/xZ1FAm7IoA4'}
         title={selectedModule?.title || "Introduction to AI Prompting"}
       />
     </div>

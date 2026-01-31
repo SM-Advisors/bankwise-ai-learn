@@ -31,10 +31,10 @@ export function PracticeTaskCard({
     <Card className="border-primary/30">
       <CardHeader className="pb-3 bg-primary/5">
         <CardTitle className="text-base flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" />
+          <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
           Practice Task: {module.content.practiceTask.title}
         </CardTitle>
-        <CardDescription>
+        <CardDescription id="practice-instructions">
           {module.content.practiceTask.instructions}
         </CardDescription>
       </CardHeader>
@@ -63,12 +63,16 @@ export function PracticeTaskCard({
 
         {/* Input Area */}
         <div>
-          <label className="text-sm font-medium mb-2 block">Your Response:</label>
+          <label htmlFor="practice-response" className="text-sm font-medium mb-2 block">
+            Your Response:
+          </label>
           <Textarea
+            id="practice-response"
             value={practiceInput}
             onChange={(e) => onPracticeInputChange(e.target.value)}
             placeholder="Write your prompt or response here based on the scenario above..."
             className="min-h-[150px]"
+            aria-describedby="practice-instructions"
           />
         </div>
         

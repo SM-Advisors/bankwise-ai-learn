@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,8 @@ interface TrainerChatPanelProps {
   isLoading: boolean;
 }
 
+type QuickActionType = 'review' | 'example' | 'hint' | null;
+
 export function TrainerChatPanel({
   collapsed,
   onToggleCollapse,
@@ -31,13 +33,22 @@ export function TrainerChatPanel({
   isLoading,
 }: TrainerChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [activeQuickAction, setActiveQuickAction] = useState<QuickActionType>(null);
 
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleQuickActionClick = (prompt: string) => {
+  // Reset active quick action when loading completes
+  useEffect(() => {
+    if (!isLoading) {
+      setActiveQuickAction(null);
+    }
+  }, [isLoading]);
+
+  const handleQuickActionClick = (prompt: string, actionType: QuickActionType) => {
+    setActiveQuickAction(actionType);
     onQuickAction(prompt);
   };
 
@@ -47,14 +58,18 @@ export function TrainerChatPanel({
       onSubmit();
     }
   };
-
   return (
-    <div className={`border-l bg-card transition-all duration-300 flex flex-col ${collapsed ? 'w-12' : 'w-96'}`}>
+    <aside 
+      className={`border-l bg-card transition-all duration-300 flex flex-col ${collapsed ? 'w-12' : 'w-96'}`}
+      aria-label="AI Training Coach panel"
+    >
       <div className="p-3 border-b flex items-center justify-between shrink-0">
         <Button 
           variant="ghost" 
           size="sm" 
           onClick={onToggleCollapse}
+          aria-label={collapsed ? 'Expand coach panel' : 'Collapse coach panel'}
+          aria-expanded={!collapsed}
         >
           {collapsed ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </Button>
@@ -116,28 +131,40 @@ export function TrainerChatPanel({
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs h-7"
+                className="text-xs h-7 gap-1"
                 disabled={isLoading}
-                onClick={() => handleQuickActionClick('Can you review my practice work?')}
+                aria-label="Ask Andrea to review your practice work"
+                onClick={() => handleQuickActionClick('Can you review my practice work?', 'review')}
               >
+                {activeQuickAction === 'review' && isLoading ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : null}
                 Review my work
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs h-7"
+                className="text-xs h-7 gap-1"
                 disabled={isLoading}
-                onClick={() => handleQuickActionClick('Show me an example')}
+                aria-label="Ask Andrea to show you an example"
+                onClick={() => handleQuickActionClick('Show me an example', 'example')}
               >
+                {activeQuickAction === 'example' && isLoading ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : null}
                 Show example
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs h-7"
+                className="text-xs h-7 gap-1"
                 disabled={isLoading}
-                onClick={() => handleQuickActionClick('I need a hint')}
+                aria-label="Ask Andrea for a hint"
+                onClick={() => handleQuickActionClick('I need a hint', 'hint')}
               >
+                {activeQuickAction === 'hint' && isLoading ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : null}
                 Get hint
               </Button>
             </div>
@@ -174,6 +201,6 @@ export function TrainerChatPanel({
           </div>
         </>
       )}
-    </div>
+    </aside>
   );
 }
