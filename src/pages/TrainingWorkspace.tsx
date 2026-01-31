@@ -70,7 +70,12 @@ I won't interrupt you constantly—I'm here when you need guidance. Good luck wi
 
   useEffect(() => {
     if (session?.modules?.length && !selectedModule) {
-      setSelectedModule(session.modules[0]);
+      const firstModule = session.modules[0];
+      setSelectedModule(firstModule);
+      // Auto-open video modal for video-type modules (like Introduction)
+      if (firstModule.type === 'video') {
+        setVideoModalOpen(true);
+      }
     }
   }, [session, selectedModule]);
 
