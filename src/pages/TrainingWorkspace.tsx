@@ -493,9 +493,12 @@ What would be most helpful?`;
                         } ${isCompleted ? 'bg-green-500/5' : ''}`}
                         onClick={() => {
                           setSelectedModule(module);
-                          // Open video modal directly for video type modules
+                          // Open content modal/video directly when clicking the module
                           if (module.type === 'video') {
                             setVideoModalOpen(true);
+                          } else {
+                            setContentModalModule(module);
+                            setContentModalOpen(true);
                           }
                         }}
                       >
@@ -562,184 +565,148 @@ What would be most helpful?`;
                     <p className="text-muted-foreground mt-1">{selectedModule.description}</p>
                   </div>
 
-                  {/* Content Access Prompt - Opens modals/videos for all module types */}
-                  <Card className="border-dashed border-2 border-muted-foreground/30">
-                    <CardContent className="p-6 text-center">
-                      <div className="p-3 rounded-full bg-muted inline-block mb-3">
-                        {selectedModule.type === 'video' ? (
-                          <Play className="h-6 w-6 text-muted-foreground" />
-                        ) : selectedModule.type === 'document' ? (
-                          <FileText className="h-6 w-6 text-muted-foreground" />
-                        ) : (
-                          <BookOpen className="h-6 w-6 text-muted-foreground" />
-                        )}
+                  {/* Practice Task - Show for ALL modules */}
+                  <Card className="border-primary/30">
+                    <CardHeader className="pb-3 bg-primary/5">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        Practice Task: {selectedModule.content.practiceTask.title}
+                      </CardTitle>
+                      <CardDescription>
+                        {selectedModule.content.practiceTask.instructions}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                      {/* Scenario */}
+                      <div className="bg-blue-500/5 border border-blue-500/20 p-4 rounded-lg">
+                        <h4 className="font-medium text-sm text-blue-600 mb-2 flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4" />
+                          Scenario
+                        </h4>
+                        <p className="text-sm whitespace-pre-wrap">{selectedModule.content.practiceTask.scenario}</p>
                       </div>
-                      <h3 className="font-medium mb-1">View {selectedModule.type.charAt(0).toUpperCase() + selectedModule.type.slice(1)} Content</h3>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Click the badge on the left sidebar or the button below to view the lesson materials.
-                      </p>
+
+                      {/* Hints */}
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Hints:</h4>
+                        <ul className="space-y-1">
+                          {selectedModule.content.practiceTask.hints.map((hint, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Lightbulb className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
+                              {hint}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Input Area */}
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Your Response:</label>
+                        <Textarea
+                          value={practiceInput}
+                          onChange={(e) => setPracticeInput(e.target.value)}
+                          placeholder="Write your prompt or response here based on the scenario above..."
+                          className="min-h-[150px]"
+                        />
+                      </div>
+                      
                       <Button 
-                        variant="outline" 
-                        onClick={() => {
-                          if (selectedModule.type === 'video') {
-                            setVideoModalOpen(true);
-                          } else {
-                            setContentModalModule(selectedModule);
-                            setContentModalOpen(true);
-                          }
-                        }}
+                        onClick={handlePracticeSubmit} 
+                        disabled={isPracticeLoading || !practiceInput.trim()}
                         className="gap-2"
                       >
-                        {selectedModule.type === 'video' ? <Play className="h-4 w-4" /> : <BookOpen className="h-4 w-4" />}
-                        Open {selectedModule.type === 'video' ? 'Video' : 'Content'}
+                        {isPracticeLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Send className="h-4 w-4" />
+                        )}
+                        Submit for Review
                       </Button>
+
+                      {/* Practice Response */}
+                      {practiceResponse && (
+                        <div className="border-t pt-4 mt-4">
+                          <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-primary" />
+                            AI Feedback
+                          </h4>
+                          <div className="bg-muted/50 p-4 rounded-lg overflow-x-auto">
+                            <div className="prose prose-sm max-w-none dark:prose-invert [&>h1]:text-lg [&>h1]:font-bold [&>h1]:mt-4 [&>h1]:mb-2 [&>h2]:text-base [&>h2]:font-semibold [&>h2]:mt-3 [&>h2]:mb-2 [&>h3]:text-sm [&>h3]:font-semibold [&>h3]:mt-3 [&>h3]:mb-1 [&>p]:mb-2 [&>ul]:my-2 [&>ul]:pl-4 [&>ol]:my-2 [&>ol]:pl-4 [&>li]:mb-1 [&>table]:w-full [&>table]:border-collapse [&>table]:my-3 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:text-left [&_th]:font-semibold [&_th]:text-sm [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:text-sm">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{practiceResponse}</ReactMarkdown>
+                            </div>
+                          </div>
+                          
+                          {moduleCompleted && (
+                            <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                              <div className="flex items-center gap-2 text-green-600 font-medium">
+                                <CheckCircle className="h-5 w-5" />
+                                Practice Completed!
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Ask Andrea on the right for detailed feedback, or continue to the next module.
+                              </p>
+                              {(() => {
+                                const currentIndex = session.modules.findIndex(m => m.id === selectedModule?.id);
+                                const nextModule = session.modules[currentIndex + 1];
+                                
+                                const handleCompleteSession = async () => {
+                                  const sessionNum = parseInt(sessionId || '1') as 1 | 2 | 3;
+                                  const { error } = await markSessionCompleted(sessionNum);
+                                  if (error) {
+                                    toast({
+                                      title: 'Error saving progress',
+                                      description: error.message,
+                                      variant: 'destructive',
+                                    });
+                                  } else {
+                                    toast({
+                                      title: 'Session Completed!',
+                                      description: `Session ${sessionNum} has been marked as complete.`,
+                                    });
+                                    navigate('/dashboard');
+                                  }
+                                };
+
+                                return nextModule ? (
+                                  <Button 
+                                    onClick={() => setSelectedModule(nextModule)}
+                                    className="mt-3 gap-2"
+                                  >
+                                    Continue to Next Module
+                                    <ChevronRight className="h-4 w-4" />
+                                  </Button>
+                                ) : (
+                                  <Button 
+                                    onClick={handleCompleteSession}
+                                    className="mt-3 gap-2"
+                                  >
+                                    Complete Session
+                                    <CheckCircle className="h-4 w-4" />
+                                  </Button>
+                                );
+                              })()}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Success Criteria */}
+                      <div className="border-t pt-4">
+                        <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                          <Target className="h-4 w-4 text-primary" />
+                          Success Criteria
+                        </h4>
+                        <ul className="space-y-1">
+                          {selectedModule.content.practiceTask.successCriteria.map((criteria, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm">
+                              <CheckCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                              {criteria}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </CardContent>
                   </Card>
-
-                  {/* Practice Task - Show for all non-video modules */}
-                  {selectedModule.type !== 'video' && (
-                    <Card className="border-primary/30">
-                      <CardHeader className="pb-3 bg-primary/5">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          <Sparkles className="h-4 w-4 text-primary" />
-                          Practice Task: {selectedModule.content.practiceTask.title}
-                        </CardTitle>
-                        <CardDescription>
-                          {selectedModule.content.practiceTask.instructions}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="pt-4 space-y-4">
-                        {/* Scenario */}
-                        <div className="bg-blue-500/5 border border-blue-500/20 p-4 rounded-lg">
-                          <h4 className="font-medium text-sm text-blue-600 mb-2 flex items-center gap-2">
-                            <AlertCircle className="h-4 w-4" />
-                            Scenario
-                          </h4>
-                          <p className="text-sm whitespace-pre-wrap">{selectedModule.content.practiceTask.scenario}</p>
-                        </div>
-
-                        {/* Hints */}
-                        <div>
-                          <h4 className="font-medium text-sm mb-2">Hints:</h4>
-                          <ul className="space-y-1">
-                            {selectedModule.content.practiceTask.hints.map((hint, idx) => (
-                              <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                                <Lightbulb className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
-                                {hint}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        {/* Input Area */}
-                        <div>
-                          <label className="text-sm font-medium mb-2 block">Your Response:</label>
-                          <Textarea
-                            value={practiceInput}
-                            onChange={(e) => setPracticeInput(e.target.value)}
-                            placeholder="Write your prompt or response here based on the scenario above..."
-                            className="min-h-[150px]"
-                          />
-                        </div>
-                        
-                        <Button 
-                          onClick={handlePracticeSubmit} 
-                          disabled={isPracticeLoading || !practiceInput.trim()}
-                          className="gap-2"
-                        >
-                          {isPracticeLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Send className="h-4 w-4" />
-                          )}
-                          Submit for Review
-                        </Button>
-
-                        {/* Practice Response */}
-                        {practiceResponse && (
-                          <div className="border-t pt-4 mt-4">
-                            <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-                              <Sparkles className="h-4 w-4 text-primary" />
-                              AI Feedback
-                            </h4>
-                            <div className="bg-muted/50 p-4 rounded-lg overflow-x-auto">
-                              <div className="prose prose-sm max-w-none dark:prose-invert [&>h1]:text-lg [&>h1]:font-bold [&>h1]:mt-4 [&>h1]:mb-2 [&>h2]:text-base [&>h2]:font-semibold [&>h2]:mt-3 [&>h2]:mb-2 [&>h3]:text-sm [&>h3]:font-semibold [&>h3]:mt-3 [&>h3]:mb-1 [&>p]:mb-2 [&>ul]:my-2 [&>ul]:pl-4 [&>ol]:my-2 [&>ol]:pl-4 [&>li]:mb-1 [&>table]:w-full [&>table]:border-collapse [&>table]:my-3 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:text-left [&_th]:font-semibold [&_th]:text-sm [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:text-sm">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{practiceResponse}</ReactMarkdown>
-                              </div>
-                            </div>
-                            
-                            {moduleCompleted && (
-                              <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-                                <div className="flex items-center gap-2 text-green-600 font-medium">
-                                  <CheckCircle className="h-5 w-5" />
-                                  Practice Completed!
-                                </div>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  Ask Andrea on the right for detailed feedback, or continue to the next module.
-                                </p>
-                                {(() => {
-                                  const currentIndex = session.modules.findIndex(m => m.id === selectedModule?.id);
-                                  const nextModule = session.modules[currentIndex + 1];
-                                  
-                                  const handleCompleteSession = async () => {
-                                    const sessionNum = parseInt(sessionId || '1') as 1 | 2 | 3;
-                                    const { error } = await markSessionCompleted(sessionNum);
-                                    if (error) {
-                                      toast({
-                                        title: 'Error saving progress',
-                                        description: error.message,
-                                        variant: 'destructive',
-                                      });
-                                    } else {
-                                      toast({
-                                        title: 'Session Completed!',
-                                        description: `Session ${sessionNum} has been marked as complete.`,
-                                      });
-                                      navigate('/dashboard');
-                                    }
-                                  };
-
-                                  return nextModule ? (
-                                    <Button 
-                                      onClick={() => setSelectedModule(nextModule)}
-                                      className="mt-3 gap-2"
-                                    >
-                                      Continue to Next Module
-                                      <ChevronRight className="h-4 w-4" />
-                                    </Button>
-                                  ) : (
-                                    <Button 
-                                      onClick={handleCompleteSession}
-                                      className="mt-3 gap-2"
-                                    >
-                                      Complete Session
-                                      <CheckCircle className="h-4 w-4" />
-                                    </Button>
-                                  );
-                                })()}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Success Criteria */}
-                        <div className="border-t pt-4">
-                          <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-                            <Target className="h-4 w-4 text-primary" />
-                            Success Criteria
-                          </h4>
-                          <ul className="space-y-1">
-                            {selectedModule.content.practiceTask.successCriteria.map((criteria, idx) => (
-                              <li key={idx} className="flex items-start gap-2 text-sm">
-                                <CheckCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                                {criteria}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
                 </div>
               )}
             </div>
