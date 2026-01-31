@@ -57,14 +57,19 @@ export default function TrainingWorkspace() {
 
   const session = sessionId ? ALL_SESSION_CONTENT[parseInt(sessionId)] : null;
 
-  // Initialize trainer with context-aware greeting
+  // Initialize trainer with context-aware greeting (only on first module load)
+  const hasGreetedRef = useRef(false);
   useEffect(() => {
-    if (profile && session && selectedModule) {
-      const greeting = `Hi! I'm **Andrea**, your AI Training Coach. I'll help you master "${selectedModule.title}".
+    if (profile && session && selectedModule && !hasGreetedRef.current) {
+      hasGreetedRef.current = true;
+      const greeting = `Hi! I'm **Andrea**, your AI Training Coach 👋
 
-Click on content in the left panel to learn, then practice here in the middle. I'll give you personalized feedback!
+**How this works:**
+1. Click a module on the left to view the learning content
+2. Practice what you learn in the center area
+3. I'll review your work and give you tips when needed
 
-What would you like help with?`;
+I won't interrupt you constantly—I'm here when you need guidance. Good luck with "${selectedModule.title}"!`;
       
       setTrainerMessages([{ role: 'assistant', content: greeting }]);
     }
@@ -557,122 +562,41 @@ What would be most helpful?`;
                     <p className="text-muted-foreground mt-1">{selectedModule.description}</p>
                   </div>
 
-                  {/* Video Module - Show video prompt only */}
-                  {selectedModule.type === 'video' ? (
-                    <Card className="border-primary/30">
-                      <CardContent className="p-8 text-center">
-                        <div className="p-4 rounded-full bg-primary/10 inline-block mb-4">
-                          <Play className="h-8 w-8 text-primary" />
-                        </div>
-                        <h3 className="font-semibold text-lg mb-2">Watch the Introduction Video</h3>
-                        <p className="text-muted-foreground mb-4">
-                          Click below to watch the introductory video and learn the basics of AI prompting.
-                        </p>
-                        <Button onClick={() => setVideoModalOpen(true)} className="gap-2">
-                          <Play className="h-4 w-4" />
-                          Watch Video
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <>
-                      {/* Learning Objectives */}
-                      <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-base flex items-center gap-2">
-                            <Target className="h-4 w-4 text-primary" />
-                            Learning Objectives
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <ul className="space-y-2">
-                            {selectedModule.learningObjectives.map((obj, idx) => (
-                              <li key={idx} className="flex items-start gap-2 text-sm">
-                                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                                {obj}
-                              </li>
-                            ))}
-                          </ul>
-                        </CardContent>
-                      </Card>
+                  {/* Content Access Prompt - Opens modals/videos for all module types */}
+                  <Card className="border-dashed border-2 border-muted-foreground/30">
+                    <CardContent className="p-6 text-center">
+                      <div className="p-3 rounded-full bg-muted inline-block mb-3">
+                        {selectedModule.type === 'video' ? (
+                          <Play className="h-6 w-6 text-muted-foreground" />
+                        ) : selectedModule.type === 'document' ? (
+                          <FileText className="h-6 w-6 text-muted-foreground" />
+                        ) : (
+                          <BookOpen className="h-6 w-6 text-muted-foreground" />
+                        )}
+                      </div>
+                      <h3 className="font-medium mb-1">View {selectedModule.type.charAt(0).toUpperCase() + selectedModule.type.slice(1)} Content</h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Click the badge on the left sidebar or the button below to view the lesson materials.
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          if (selectedModule.type === 'video') {
+                            setVideoModalOpen(true);
+                          } else {
+                            setContentModalModule(selectedModule);
+                            setContentModalOpen(true);
+                          }
+                        }}
+                        className="gap-2"
+                      >
+                        {selectedModule.type === 'video' ? <Play className="h-4 w-4" /> : <BookOpen className="h-4 w-4" />}
+                        Open {selectedModule.type === 'video' ? 'Video' : 'Content'}
+                      </Button>
+                    </CardContent>
+                  </Card>
 
-                      {/* Lesson Content */}
-                      <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-base flex items-center gap-2">
-                            <BookOpen className="h-4 w-4 text-primary" />
-                            Lesson Content
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <p className="text-sm leading-relaxed">{selectedModule.content.overview}</p>
-                          
-                          <div className="bg-muted/50 p-4 rounded-lg">
-                            <h4 className="font-medium text-sm mb-2">Key Points:</h4>
-                            <ul className="space-y-2">
-                              {selectedModule.content.keyPoints.map((point, idx) => (
-                                <li key={idx} className="flex items-start gap-2 text-sm">
-                                  <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center shrink-0 mt-0.5">
-                                    {idx + 1}
-                                  </span>
-                                  {point}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-
-                          {/* Examples Section */}
-                          {selectedModule.content.examples && selectedModule.content.examples.length > 0 && (
-                            <div className="space-y-3">
-                              <h4 className="font-medium text-sm flex items-center gap-2">
-                                <Lightbulb className="h-4 w-4 text-yellow-500" />
-                                Examples
-                              </h4>
-                              {selectedModule.content.examples.map((example, idx) => (
-                                <div key={idx} className="border rounded-lg overflow-hidden">
-                                  <div className="bg-muted px-4 py-2 font-medium text-sm">{example.title}</div>
-                                  <div className="p-4 space-y-3">
-                                    {example.bad && (
-                                      <div className="bg-red-500/5 border border-red-500/20 p-3 rounded-lg">
-                                        <div className="text-xs text-red-600 font-medium mb-1">❌ Less Effective:</div>
-                                        <p className="text-sm italic">"{example.bad}"</p>
-                                      </div>
-                                    )}
-                                    <div className="bg-green-500/5 border border-green-500/20 p-3 rounded-lg">
-                                      <div className="text-xs text-green-600 font-medium mb-1">✅ More Effective:</div>
-                                      <p className="text-sm whitespace-pre-wrap">"{example.good}"</p>
-                                    </div>
-                                    <p className="text-sm text-muted-foreground">
-                                      <strong>Why:</strong> {example.explanation}
-                                    </p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* Steps Section */}
-                          {selectedModule.content.steps && selectedModule.content.steps.length > 0 && (
-                            <div>
-                              <h4 className="font-medium text-sm mb-2">Steps to Follow:</h4>
-                              <ol className="space-y-2">
-                                {selectedModule.content.steps.map((step, idx) => (
-                                  <li key={idx} className="flex items-start gap-3 text-sm">
-                                    <span className="h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center shrink-0">
-                                      {idx + 1}
-                                    </span>
-                                    {step}
-                                  </li>
-                                ))}
-                              </ol>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </>
-                  )}
-
-                  {/* Practice Task - Hide for video modules */}
+                  {/* Practice Task - Show for all non-video modules */}
                   {selectedModule.type !== 'video' && (
                     <Card className="border-primary/30">
                       <CardHeader className="pb-3 bg-primary/5">
