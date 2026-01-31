@@ -480,14 +480,20 @@ What would be most helpful?`;
                   const isSelected = selectedModule?.id === module.id;
                   const isCompleted = completedModules.has(module.id);
                   
-                  return (
-                    <Card
-                      key={module.id}
-                      className={`cursor-pointer transition-all ${
-                        isSelected ? 'ring-2 ring-primary' : 'hover:bg-muted/50'
-                      } ${isCompleted ? 'bg-green-500/5' : ''}`}
-                      onClick={() => setSelectedModule(module)}
-                    >
+                    return (
+                      <Card
+                        key={module.id}
+                        className={`cursor-pointer transition-all ${
+                          isSelected ? 'ring-2 ring-primary' : 'hover:bg-muted/50'
+                        } ${isCompleted ? 'bg-green-500/5' : ''}`}
+                        onClick={() => {
+                          setSelectedModule(module);
+                          // Open video modal directly for video type modules
+                          if (module.type === 'video') {
+                            setVideoModalOpen(true);
+                          }
+                        }}
+                      >
                       <CardContent className="p-3">
                         <div className="flex items-start gap-3">
                           <div className={`p-2 rounded-lg shrink-0 relative ${
@@ -551,242 +557,265 @@ What would be most helpful?`;
                     <p className="text-muted-foreground mt-1">{selectedModule.description}</p>
                   </div>
 
-                  {/* Learning Objectives */}
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Target className="h-4 w-4 text-primary" />
-                        Learning Objectives
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-2">
-                        {selectedModule.learningObjectives.map((obj, idx) => (
-                          <li key={idx} className="flex items-start gap-2 text-sm">
-                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                            {obj}
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-
-                  {/* Lesson Content */}
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <BookOpen className="h-4 w-4 text-primary" />
-                        Lesson Content
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-sm leading-relaxed">{selectedModule.content.overview}</p>
-                      
-                      <div className="bg-muted/50 p-4 rounded-lg">
-                        <h4 className="font-medium text-sm mb-2">Key Points:</h4>
-                        <ul className="space-y-2">
-                          {selectedModule.content.keyPoints.map((point, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-sm">
-                              <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center shrink-0 mt-0.5">
-                                {idx + 1}
-                              </span>
-                              {point}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Examples Section */}
-                      {selectedModule.content.examples && selectedModule.content.examples.length > 0 && (
-                        <div className="space-y-3">
-                          <h4 className="font-medium text-sm flex items-center gap-2">
-                            <Lightbulb className="h-4 w-4 text-yellow-500" />
-                            Examples
-                          </h4>
-                          {selectedModule.content.examples.map((example, idx) => (
-                            <div key={idx} className="border rounded-lg overflow-hidden">
-                              <div className="bg-muted px-4 py-2 font-medium text-sm">{example.title}</div>
-                              <div className="p-4 space-y-3">
-                                {example.bad && (
-                                  <div className="bg-red-500/5 border border-red-500/20 p-3 rounded-lg">
-                                    <div className="text-xs text-red-600 font-medium mb-1">❌ Less Effective:</div>
-                                    <p className="text-sm italic">"{example.bad}"</p>
-                                  </div>
-                                )}
-                                <div className="bg-green-500/5 border border-green-500/20 p-3 rounded-lg">
-                                  <div className="text-xs text-green-600 font-medium mb-1">✅ More Effective:</div>
-                                  <p className="text-sm whitespace-pre-wrap">"{example.good}"</p>
-                                </div>
-                                <p className="text-sm text-muted-foreground">
-                                  <strong>Why:</strong> {example.explanation}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
+                  {/* Video Module - Show video prompt only */}
+                  {selectedModule.type === 'video' ? (
+                    <Card className="border-primary/30">
+                      <CardContent className="p-8 text-center">
+                        <div className="p-4 rounded-full bg-primary/10 inline-block mb-4">
+                          <Play className="h-8 w-8 text-primary" />
                         </div>
-                      )}
-
-                      {/* Steps Section */}
-                      {selectedModule.content.steps && selectedModule.content.steps.length > 0 && (
-                        <div>
-                          <h4 className="font-medium text-sm mb-2">Steps to Follow:</h4>
-                          <ol className="space-y-2">
-                            {selectedModule.content.steps.map((step, idx) => (
-                              <li key={idx} className="flex items-start gap-3 text-sm">
-                                <span className="h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center shrink-0">
-                                  {idx + 1}
-                                </span>
-                                {step}
+                        <h3 className="font-semibold text-lg mb-2">Watch the Introduction Video</h3>
+                        <p className="text-muted-foreground mb-4">
+                          Click below to watch the introductory video and learn the basics of AI prompting.
+                        </p>
+                        <Button onClick={() => setVideoModalOpen(true)} className="gap-2">
+                          <Play className="h-4 w-4" />
+                          Watch Video
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <>
+                      {/* Learning Objectives */}
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <Target className="h-4 w-4 text-primary" />
+                            Learning Objectives
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-2">
+                            {selectedModule.learningObjectives.map((obj, idx) => (
+                              <li key={idx} className="flex items-start gap-2 text-sm">
+                                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                                {obj}
                               </li>
                             ))}
-                          </ol>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                          </ul>
+                        </CardContent>
+                      </Card>
 
-                  {/* Practice Task */}
-                  <Card className="border-primary/30">
-                    <CardHeader className="pb-3 bg-primary/5">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-primary" />
-                        Practice Task: {selectedModule.content.practiceTask.title}
-                      </CardTitle>
-                      <CardDescription>
-                        {selectedModule.content.practiceTask.instructions}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-4 space-y-4">
-                      {/* Scenario */}
-                      <div className="bg-blue-500/5 border border-blue-500/20 p-4 rounded-lg">
-                        <h4 className="font-medium text-sm text-blue-600 mb-2 flex items-center gap-2">
-                          <AlertCircle className="h-4 w-4" />
-                          Scenario
-                        </h4>
-                        <p className="text-sm whitespace-pre-wrap">{selectedModule.content.practiceTask.scenario}</p>
-                      </div>
-
-                      {/* Hints */}
-                      <div>
-                        <h4 className="font-medium text-sm mb-2">Hints:</h4>
-                        <ul className="space-y-1">
-                          {selectedModule.content.practiceTask.hints.map((hint, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                              <Lightbulb className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
-                              {hint}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Input Area */}
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">Your Response:</label>
-                        <Textarea
-                          value={practiceInput}
-                          onChange={(e) => setPracticeInput(e.target.value)}
-                          placeholder="Write your prompt or response here based on the scenario above..."
-                          className="min-h-[150px]"
-                        />
-                      </div>
-                      
-                      <Button 
-                        onClick={handlePracticeSubmit} 
-                        disabled={isPracticeLoading || !practiceInput.trim()}
-                        className="gap-2"
-                      >
-                        {isPracticeLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )}
-                        Submit for Review
-                      </Button>
-
-                      {/* Practice Response */}
-                      {practiceResponse && (
-                        <div className="border-t pt-4 mt-4">
-                          <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-                            <Sparkles className="h-4 w-4 text-primary" />
-                            AI Feedback
-                          </h4>
-                          <div className="bg-muted/50 p-4 rounded-lg overflow-x-auto">
-                            <div className="prose prose-sm max-w-none dark:prose-invert [&>h1]:text-lg [&>h1]:font-bold [&>h1]:mt-4 [&>h1]:mb-2 [&>h2]:text-base [&>h2]:font-semibold [&>h2]:mt-3 [&>h2]:mb-2 [&>h3]:text-sm [&>h3]:font-semibold [&>h3]:mt-3 [&>h3]:mb-1 [&>p]:mb-2 [&>ul]:my-2 [&>ul]:pl-4 [&>ol]:my-2 [&>ol]:pl-4 [&>li]:mb-1 [&>table]:w-full [&>table]:border-collapse [&>table]:my-3 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:text-left [&_th]:font-semibold [&_th]:text-sm [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:text-sm">
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{practiceResponse}</ReactMarkdown>
-                            </div>
-                          </div>
+                      {/* Lesson Content */}
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <BookOpen className="h-4 w-4 text-primary" />
+                            Lesson Content
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <p className="text-sm leading-relaxed">{selectedModule.content.overview}</p>
                           
-                          {moduleCompleted && (
-                            <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-                              <div className="flex items-center gap-2 text-green-600 font-medium">
-                                <CheckCircle className="h-5 w-5" />
-                                Practice Completed!
-                              </div>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                Ask the AI Trainer on the right for detailed feedback, or continue to the next module.
-                              </p>
-                              {(() => {
-                                const currentIndex = session.modules.findIndex(m => m.id === selectedModule?.id);
-                                const nextModule = session.modules[currentIndex + 1];
-                                
-                                const handleCompleteSession = async () => {
-                                  const sessionNum = parseInt(sessionId || '1') as 1 | 2 | 3;
-                                  const { error } = await markSessionCompleted(sessionNum);
-                                  if (error) {
-                                    toast({
-                                      title: 'Error saving progress',
-                                      description: error.message,
-                                      variant: 'destructive',
-                                    });
-                                  } else {
-                                    toast({
-                                      title: 'Session Completed!',
-                                      description: `Session ${sessionNum} has been marked as complete.`,
-                                    });
-                                    navigate('/dashboard');
-                                  }
-                                };
+                          <div className="bg-muted/50 p-4 rounded-lg">
+                            <h4 className="font-medium text-sm mb-2">Key Points:</h4>
+                            <ul className="space-y-2">
+                              {selectedModule.content.keyPoints.map((point, idx) => (
+                                <li key={idx} className="flex items-start gap-2 text-sm">
+                                  <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center shrink-0 mt-0.5">
+                                    {idx + 1}
+                                  </span>
+                                  {point}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
 
-                                return nextModule ? (
-                                  <Button 
-                                    onClick={() => setSelectedModule(nextModule)}
-                                    className="mt-3 gap-2"
-                                  >
-                                    Continue to Next Module
-                                    <ChevronRight className="h-4 w-4" />
-                                  </Button>
-                                ) : (
-                                  <Button 
-                                    onClick={handleCompleteSession}
-                                    className="mt-3 gap-2"
-                                  >
-                                    Complete Session
-                                    <CheckCircle className="h-4 w-4" />
-                                  </Button>
-                                );
-                              })()}
+                          {/* Examples Section */}
+                          {selectedModule.content.examples && selectedModule.content.examples.length > 0 && (
+                            <div className="space-y-3">
+                              <h4 className="font-medium text-sm flex items-center gap-2">
+                                <Lightbulb className="h-4 w-4 text-yellow-500" />
+                                Examples
+                              </h4>
+                              {selectedModule.content.examples.map((example, idx) => (
+                                <div key={idx} className="border rounded-lg overflow-hidden">
+                                  <div className="bg-muted px-4 py-2 font-medium text-sm">{example.title}</div>
+                                  <div className="p-4 space-y-3">
+                                    {example.bad && (
+                                      <div className="bg-red-500/5 border border-red-500/20 p-3 rounded-lg">
+                                        <div className="text-xs text-red-600 font-medium mb-1">❌ Less Effective:</div>
+                                        <p className="text-sm italic">"{example.bad}"</p>
+                                      </div>
+                                    )}
+                                    <div className="bg-green-500/5 border border-green-500/20 p-3 rounded-lg">
+                                      <div className="text-xs text-green-600 font-medium mb-1">✅ More Effective:</div>
+                                      <p className="text-sm whitespace-pre-wrap">"{example.good}"</p>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">
+                                      <strong>Why:</strong> {example.explanation}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           )}
-                        </div>
-                      )}
 
-                      {/* Success Criteria */}
-                      <div className="border-t pt-4">
-                        <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-                          <Target className="h-4 w-4 text-primary" />
-                          Success Criteria
-                        </h4>
-                        <ul className="space-y-1">
-                          {selectedModule.content.practiceTask.successCriteria.map((criteria, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-sm">
-                              <CheckCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                              {criteria}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </CardContent>
-                  </Card>
+                          {/* Steps Section */}
+                          {selectedModule.content.steps && selectedModule.content.steps.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Steps to Follow:</h4>
+                              <ol className="space-y-2">
+                                {selectedModule.content.steps.map((step, idx) => (
+                                  <li key={idx} className="flex items-start gap-3 text-sm">
+                                    <span className="h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center shrink-0">
+                                      {idx + 1}
+                                    </span>
+                                    {step}
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </>
+                  )}
+
+                  {/* Practice Task - Hide for video modules */}
+                  {selectedModule.type !== 'video' && (
+                    <Card className="border-primary/30">
+                      <CardHeader className="pb-3 bg-primary/5">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-primary" />
+                          Practice Task: {selectedModule.content.practiceTask.title}
+                        </CardTitle>
+                        <CardDescription>
+                          {selectedModule.content.practiceTask.instructions}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-4 space-y-4">
+                        {/* Scenario */}
+                        <div className="bg-blue-500/5 border border-blue-500/20 p-4 rounded-lg">
+                          <h4 className="font-medium text-sm text-blue-600 mb-2 flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4" />
+                            Scenario
+                          </h4>
+                          <p className="text-sm whitespace-pre-wrap">{selectedModule.content.practiceTask.scenario}</p>
+                        </div>
+
+                        {/* Hints */}
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Hints:</h4>
+                          <ul className="space-y-1">
+                            {selectedModule.content.practiceTask.hints.map((hint, idx) => (
+                              <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                <Lightbulb className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
+                                {hint}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* Input Area */}
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">Your Response:</label>
+                          <Textarea
+                            value={practiceInput}
+                            onChange={(e) => setPracticeInput(e.target.value)}
+                            placeholder="Write your prompt or response here based on the scenario above..."
+                            className="min-h-[150px]"
+                          />
+                        </div>
+                        
+                        <Button 
+                          onClick={handlePracticeSubmit} 
+                          disabled={isPracticeLoading || !practiceInput.trim()}
+                          className="gap-2"
+                        >
+                          {isPracticeLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Send className="h-4 w-4" />
+                          )}
+                          Submit for Review
+                        </Button>
+
+                        {/* Practice Response */}
+                        {practiceResponse && (
+                          <div className="border-t pt-4 mt-4">
+                            <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                              <Sparkles className="h-4 w-4 text-primary" />
+                              AI Feedback
+                            </h4>
+                            <div className="bg-muted/50 p-4 rounded-lg overflow-x-auto">
+                              <div className="prose prose-sm max-w-none dark:prose-invert [&>h1]:text-lg [&>h1]:font-bold [&>h1]:mt-4 [&>h1]:mb-2 [&>h2]:text-base [&>h2]:font-semibold [&>h2]:mt-3 [&>h2]:mb-2 [&>h3]:text-sm [&>h3]:font-semibold [&>h3]:mt-3 [&>h3]:mb-1 [&>p]:mb-2 [&>ul]:my-2 [&>ul]:pl-4 [&>ol]:my-2 [&>ol]:pl-4 [&>li]:mb-1 [&>table]:w-full [&>table]:border-collapse [&>table]:my-3 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:text-left [&_th]:font-semibold [&_th]:text-sm [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:text-sm">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{practiceResponse}</ReactMarkdown>
+                              </div>
+                            </div>
+                            
+                            {moduleCompleted && (
+                              <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                                <div className="flex items-center gap-2 text-green-600 font-medium">
+                                  <CheckCircle className="h-5 w-5" />
+                                  Practice Completed!
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Ask Andrea on the right for detailed feedback, or continue to the next module.
+                                </p>
+                                {(() => {
+                                  const currentIndex = session.modules.findIndex(m => m.id === selectedModule?.id);
+                                  const nextModule = session.modules[currentIndex + 1];
+                                  
+                                  const handleCompleteSession = async () => {
+                                    const sessionNum = parseInt(sessionId || '1') as 1 | 2 | 3;
+                                    const { error } = await markSessionCompleted(sessionNum);
+                                    if (error) {
+                                      toast({
+                                        title: 'Error saving progress',
+                                        description: error.message,
+                                        variant: 'destructive',
+                                      });
+                                    } else {
+                                      toast({
+                                        title: 'Session Completed!',
+                                        description: `Session ${sessionNum} has been marked as complete.`,
+                                      });
+                                      navigate('/dashboard');
+                                    }
+                                  };
+
+                                  return nextModule ? (
+                                    <Button 
+                                      onClick={() => setSelectedModule(nextModule)}
+                                      className="mt-3 gap-2"
+                                    >
+                                      Continue to Next Module
+                                      <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                  ) : (
+                                    <Button 
+                                      onClick={handleCompleteSession}
+                                      className="mt-3 gap-2"
+                                    >
+                                      Complete Session
+                                      <CheckCircle className="h-4 w-4" />
+                                    </Button>
+                                  );
+                                })()}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Success Criteria */}
+                        <div className="border-t pt-4">
+                          <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                            <Target className="h-4 w-4 text-primary" />
+                            Success Criteria
+                          </h4>
+                          <ul className="space-y-1">
+                            {selectedModule.content.practiceTask.successCriteria.map((criteria, idx) => (
+                              <li key={idx} className="flex items-start gap-2 text-sm">
+                                <CheckCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                {criteria}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
               )}
             </div>
