@@ -20,6 +20,8 @@ import {
   Play, FileText, BookOpen, CheckCircle, Sparkles,
   Lightbulb, Clock, Target, AlertCircle, Shield
 } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import andreaCoach from '@/assets/andrea-coach.png';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -58,18 +60,9 @@ export default function TrainingWorkspace() {
   // Initialize trainer with context-aware greeting
   useEffect(() => {
     if (profile && session && selectedModule) {
-      const greeting = `Welcome to "${selectedModule.title}"! I'm your AI Training Coach, and I'll help you master this module.
+      const greeting = `Hi! I'm **Andrea**, your AI Training Coach. I'll help you master "${selectedModule.title}".
 
-**Your Learning Style:** ${profile.learning_style}
-
-**Current Task:** ${selectedModule.content.practiceTask.title}
-
-I can:
-
-- Answer questions about the lesson content
-- Review your practice work and give feedback
-- Provide examples relevant to your role in ${profile.line_of_business?.replace('_', ' ') || 'banking'}
-- Offer suggestions to improve your prompts
+Click on content in the left panel to learn, then practice here in the middle. I'll give you personalized feedback!
 
 What would you like help with?`;
       
@@ -800,7 +793,7 @@ What would be most helpful?`;
           </ScrollArea>
         </div>
 
-        {/* Right Column - AI Trainer */}
+        {/* Right Column - Andrea AI Coach */}
         <div className={`border-l bg-card transition-all duration-300 flex flex-col ${rightCollapsed ? 'w-12' : 'w-96'}`}>
           <div className="p-3 border-b flex items-center justify-between shrink-0">
             <Button 
@@ -812,8 +805,11 @@ What would be most helpful?`;
             </Button>
             {!rightCollapsed && (
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="font-medium text-sm">AI Training Coach</span>
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={andreaCoach} alt="Andrea" />
+                  <AvatarFallback>A</AvatarFallback>
+                </Avatar>
+                <span className="font-medium text-sm">Andrea - AI Coach</span>
               </div>
             )}
           </div>
@@ -831,6 +827,15 @@ What would be most helpful?`;
                           : 'bg-primary text-primary-foreground ml-4'
                       }`}
                     >
+                      {message.role === 'assistant' && (
+                        <div className="flex items-center gap-2 mb-2">
+                          <Avatar className="h-5 w-5">
+                            <AvatarImage src={andreaCoach} alt="Andrea" />
+                            <AvatarFallback>A</AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs font-medium text-muted-foreground">Andrea</span>
+                        </div>
+                      )}
                       <div className={`prose prose-sm max-w-none ${message.role === 'assistant' ? 'dark:prose-invert' : ''} [&>h1]:text-base [&>h1]:font-bold [&>h1]:mt-3 [&>h1]:mb-2 [&>h2]:text-sm [&>h2]:font-semibold [&>h2]:mt-2 [&>h2]:mb-1 [&>h3]:text-sm [&>h3]:font-semibold [&>h3]:mt-2 [&>h3]:mb-1 [&>p]:mb-2 [&>p]:text-sm [&>ul]:my-2 [&>ul]:pl-4 [&>ol]:my-2 [&>ol]:pl-4 [&>li]:mb-1 [&>li]:text-sm [&>table]:w-full [&>table]:border-collapse [&>table]:my-2 [&_th]:border [&_th]:border-border [&_th]:px-2 [&_th]:py-1 [&_th]:bg-muted [&_th]:text-left [&_th]:font-semibold [&_th]:text-xs [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_td]:text-xs`}>
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
                       </div>
@@ -838,6 +843,10 @@ What would be most helpful?`;
                   ))}
                   {isTrainerLoading && (
                     <div className="p-3 rounded-lg bg-muted flex items-center gap-2">
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage src={andreaCoach} alt="Andrea" />
+                        <AvatarFallback>A</AvatarFallback>
+                      </Avatar>
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span className="text-sm text-muted-foreground">Thinking...</span>
                     </div>
@@ -876,27 +885,38 @@ What would be most helpful?`;
                 </div>
               </div>
 
-              <div className="p-3 border-t shrink-0">
-                <div className="flex gap-2">
-                  <Textarea
-                    value={trainerInput}
-                    onChange={(e) => setTrainerInput(e.target.value)}
-                    placeholder="Ask your trainer a question..."
-                    className="min-h-[60px] resize-none text-sm"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleTrainerSubmit();
-                      }
-                    }}
-                  />
-                  <Button 
-                    size="icon" 
-                    onClick={handleTrainerSubmit}
-                    disabled={isTrainerLoading || !trainerInput.trim()}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
+              {/* Andrea Avatar & Input Section */}
+              <div className="p-3 border-t shrink-0 bg-gradient-to-t from-muted/50 to-transparent">
+                <div className="flex gap-3 items-end">
+                  <div className="shrink-0">
+                    <Avatar className="h-16 w-16 border-2 border-primary/20 shadow-lg">
+                      <AvatarImage src={andreaCoach} alt="Andrea" className="object-cover" />
+                      <AvatarFallback className="text-lg">A</AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <div className="flex-1 flex flex-col gap-2">
+                    <Textarea
+                      value={trainerInput}
+                      onChange={(e) => setTrainerInput(e.target.value)}
+                      placeholder="Ask Andrea for help..."
+                      className="min-h-[50px] resize-none text-sm"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleTrainerSubmit();
+                        }
+                      }}
+                    />
+                    <Button 
+                      size="sm"
+                      onClick={handleTrainerSubmit}
+                      disabled={isTrainerLoading || !trainerInput.trim()}
+                      className="gap-2 self-end"
+                    >
+                      <Send className="h-3 w-3" />
+                      Ask Andrea
+                    </Button>
+                  </div>
                 </div>
               </div>
             </>
