@@ -136,6 +136,15 @@ export default function Dashboard() {
               variant="ghost" 
               size="sm" 
               className="gap-2"
+              onClick={() => policies.length > 0 && setSelectedPolicy(policies[0])}
+            >
+              <Shield className="h-4 w-4" />
+              Bank Policies
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-2"
               onClick={() => setHelpOpen(true)}
             >
               <HelpCircle className="h-4 w-4" />
@@ -228,17 +237,6 @@ export default function Dashboard() {
                   <CardDescription>{session.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 mb-4">
-                    {session.modules.map((module, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-sm">
-                        <BookOpen className="h-4 w-4 text-muted-foreground" />
-                        <span className={status === 'locked' ? 'text-muted-foreground' : ''}>
-                          {module}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  
                   <Button 
                     className="w-full gap-2"
                     disabled={status === 'locked'}
@@ -265,136 +263,90 @@ export default function Dashboard() {
           })}
         </div>
 
-        {/* Live Feed Section */}
-        <Card className="mt-8">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <Radio className="h-5 w-5 text-red-500" />
-                  <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 rounded-full animate-pulse" />
-                </div>
-                <CardTitle>Live Training Feed</CardTitle>
-              </div>
-              {liveSessions.length > 0 ? (
-                <Badge variant="secondary" className="gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {liveSessions.length} Upcoming
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="gap-1">
-                  <Users className="h-3 w-3" />
-                  Coming Soon
-                </Badge>
-              )}
-            </div>
-            <CardDescription>
-              Join live training sessions with expert instructors and fellow learners
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {liveSessionsLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : liveSessions.length === 0 ? (
-              <div className="text-center py-8">
-                <Radio className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-muted-foreground">
-                  No live sessions scheduled yet. Check back soon!
-                </p>
-              </div>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {liveSessions.filter(s => new Date(s.scheduled_date) >= new Date()).map((session) => (
-                  <div 
-                    key={session.id}
-                    className="relative p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="absolute top-3 right-3">
-                      <Badge variant="secondary" className="text-xs">Upcoming</Badge>
-                    </div>
-                    <h4 className="font-medium pr-16 mb-2">{session.title}</h4>
-                    {session.description && (
-                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{session.description}</p>
-                    )}
-                    <div className="space-y-1.5 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-3.5 w-3.5" />
-                        <span>{session.instructor}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-3.5 w-3.5" />
-                        <span>{new Date(session.scheduled_date).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span>{new Date(session.scheduled_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
-                        {session.duration_minutes} min
-                      </span>
-                      <Button size="sm" variant="outline">
-                        Notify Me
-                      </Button>
-                    </div>
+        {/* Live Feed and Community Hub - Side by Side */}
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+          {/* Live Feed Section */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <Radio className="h-5 w-5 text-red-500" />
+                    <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 rounded-full animate-pulse" />
                   </div>
-                ))}
+                  <CardTitle>Live Training Feed</CardTitle>
+                </div>
+                {liveSessions.length > 0 ? (
+                  <Badge variant="secondary" className="gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {liveSessions.length} Upcoming
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="gap-1">
+                    <Users className="h-3 w-3" />
+                    Coming Soon
+                  </Badge>
+                )}
               </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Resources Section */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Bank Resources</CardTitle>
-            <CardDescription>
-              Access policies, guidelines, and reference materials
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {policiesLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : policies.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No policies configured. Contact your administrator.
-              </p>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-3">
-                {policies.map((policy) => {
-                  const IconComponent = policyIconMap[policy.icon || 'BookOpen'] || BookOpen;
-                  return (
-                    <button 
-                      key={policy.id}
-                      onClick={() => setSelectedPolicy(policy)}
-                      className="flex items-start gap-3 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors text-left"
+              <CardDescription>
+                Join live training sessions with expert instructors
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {liveSessionsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : liveSessions.length === 0 ? (
+                <div className="text-center py-8">
+                  <Radio className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-muted-foreground">
+                    No live sessions scheduled yet. Check back soon!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {liveSessions.filter(s => new Date(s.scheduled_date) >= new Date()).slice(0, 2).map((session) => (
+                    <div 
+                      key={session.id}
+                      className="relative p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors"
                     >
-                      <div className="shrink-0 mt-0.5">
-                        <IconComponent className="h-5 w-5 text-muted-foreground" />
+                      <div className="absolute top-3 right-3">
+                        <Badge variant="secondary" className="text-xs">Upcoming</Badge>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="font-medium text-primary">{policy.title}</div>
-                        <div className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
-                          {policy.summary || 'Click to view details'}
+                      <h4 className="font-medium pr-16 mb-2">{session.title}</h4>
+                      <div className="space-y-1.5 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-3.5 w-3.5" />
+                          <span>{session.instructor}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span>{new Date(session.scheduled_date).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-3.5 w-3.5" />
+                          <span>{new Date(session.scheduled_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                       </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">
+                          {session.duration_minutes} min
+                        </span>
+                        <Button size="sm" variant="outline">
+                          Notify Me
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Community Hub Section */}
-        <Card className="mt-8 border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-          <CardHeader>
-            <div className="flex items-center justify-between">
+          {/* Community Hub Section */}
+          <Card className="border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+            <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <MessageCircle className="h-5 w-5 text-primary" />
@@ -406,33 +358,31 @@ export default function Dashboard() {
                   </CardDescription>
                 </div>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <div className="flex-1">
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-4">
                 <p className="text-sm text-muted-foreground">
                   Join our Slack community to connect with fellow banking professionals, 
                   share AI use cases, ask questions, and collaborate on best practices.
                 </p>
-              </div>
-              {communityUrl ? (
-                <Button asChild className="gap-2 shrink-0">
-                  <a href={communityUrl} target="_blank" rel="noopener noreferrer">
+                {communityUrl ? (
+                  <Button asChild className="gap-2 w-fit">
+                    <a href={communityUrl} target="_blank" rel="noopener noreferrer">
+                      <MessageCircle className="h-4 w-4" />
+                      Join Community
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </Button>
+                ) : (
+                  <Button disabled className="gap-2 w-fit">
                     <MessageCircle className="h-4 w-4" />
-                    Join Community
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                </Button>
-              ) : (
-                <Button disabled className="gap-2 shrink-0">
-                  <MessageCircle className="h-4 w-4" />
-                  Coming Soon
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                    Coming Soon
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
