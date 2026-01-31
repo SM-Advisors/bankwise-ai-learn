@@ -1,13 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, type UserProfile } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ALL_SESSION_CONTENT, type ModuleContent } from '@/data/trainingContent';
@@ -15,25 +11,17 @@ import { ModuleContentModal } from '@/components/ModuleContentModal';
 import { VideoModal } from '@/components/VideoModal';
 import { BankPolicyModal } from '@/components/BankPolicyModal';
 import { useBankPolicies } from '@/hooks/useBankPolicies';
-import { 
-  Loader2, ArrowLeft, ChevronLeft, ChevronRight, Send, 
-  Play, FileText, BookOpen, CheckCircle, Sparkles,
-  Lightbulb, Clock, Target, AlertCircle, Shield
-} from 'lucide-react';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import andreaCoach from '@/assets/andrea-coach.png';
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
+import { TrainerChatPanel } from '@/components/training/TrainerChatPanel';
+import { PracticeTaskCard } from '@/components/training/PracticeTaskCard';
+import { ModuleListSidebar } from '@/components/training/ModuleListSidebar';
+import { type Message, type BankPolicy } from '@/types/training';
+import { Loader2, ArrowLeft, Clock, Shield } from 'lucide-react';
 
 export default function TrainingWorkspace() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const { user, profile, progress, loading, markSessionCompleted, updateProgress } = useAuth();
   const { toast } = useToast();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const contentScrollRef = useRef<HTMLDivElement>(null);
 
   const [leftCollapsed, setLeftCollapsed] = useState(false);
@@ -43,21 +31,20 @@ export default function TrainingWorkspace() {
   const [trainerMessages, setTrainerMessages] = useState<Message[]>([]);
   const [trainerInput, setTrainerInput] = useState('');
   const [isTrainerLoading, setIsTrainerLoading] = useState(false);
-  const [practiceResponse, setPracticeResponse] = useState('');
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
   const [moduleCompleted, setModuleCompleted] = useState(false);
   const [contentModalOpen, setContentModalOpen] = useState(false);
   const [contentModalModule, setContentModalModule] = useState<ModuleContent | null>(null);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [policyModalOpen, setPolicyModalOpen] = useState(false);
-  const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
+  const [selectedPolicy, setSelectedPolicy] = useState<BankPolicy | null>(null);
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
   
   const { policies } = useBankPolicies();
 
   const session = sessionId ? ALL_SESSION_CONTENT[parseInt(sessionId)] : null;
 
-  // Initialize trainer with context-aware greeting (only on first module load)
+  // Initialize trainer with context-aware greeting
   const hasGreetedRef = useRef(false);
   useEffect(() => {
     if (profile && session && selectedModule && !hasGreetedRef.current) {
@@ -87,24 +74,14 @@ I won't interrupt you constantly—I'm here when you need guidance. Good luck wi
     }
   }, [session, selectedModule]);
 
-  // Scroll to bottom of trainer messages
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [trainerMessages]);
-
-  // Reset practice when module changes (not when completedModules updates)
+  // Reset practice when module changes
   const prevModuleRef = useRef<string | null>(null);
   useEffect(() => {
     if (selectedModule && selectedModule.id !== prevModuleRef.current) {
       setPracticeInput('');
-      setPracticeResponse('');
       prevModuleRef.current = selectedModule.id;
-      // Scroll content area to top when navigating to a new module
-      if (contentScrollRef.current) {
-        contentScrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+      contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    // Check if this module was already completed
     setModuleCompleted(selectedModule ? completedModules.has(selectedModule.id) : false);
   }, [selectedModule, completedModules]);
 
@@ -138,34 +115,13 @@ I won't interrupt you constantly—I'm here when you need guidance. Good luck wi
     );
   }
 
-  const getModuleIcon = (type: ModuleContent['type']) => {
-    switch (type) {
-      case 'document': return FileText;
-      case 'example': return Lightbulb;
-      case 'exercise': return Play;
-      case 'video': return Play;
-      default: return BookOpen;
-    }
-  };
-
-  const handleOpenContentModal = (module: ModuleContent, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent selecting the module when clicking the badge
-    // Open video modal for video type modules
+  const handleModuleSelect = (module: ModuleContent) => {
+    setSelectedModule(module);
     if (module.type === 'video') {
       setVideoModalOpen(true);
-      return;
-    }
-    setContentModalModule(module);
-    setContentModalOpen(true);
-  };
-
-  const getTypeBadgeClass = (type: ModuleContent['type']) => {
-    switch (type) {
-      case 'document': return 'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 cursor-pointer';
-      case 'example': return 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-900/50 cursor-pointer';
-      case 'exercise': return 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-900/50 cursor-pointer';
-      case 'video': return 'bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50 cursor-pointer';
-      default: return 'bg-muted text-muted-foreground hover:bg-muted/80 cursor-pointer';
+    } else {
+      setContentModalModule(module);
+      setContentModalOpen(true);
     }
   };
 
@@ -174,7 +130,6 @@ I won't interrupt you constantly—I'm here when you need guidance. Good luck wi
 
     setIsPracticeLoading(true);
     try {
-      // Call Claude-powered submission_review edge function
       const response = await supabase.functions.invoke('submission_review', {
         body: {
           lessonId: sessionId || '1',
@@ -191,10 +146,8 @@ I won't interrupt you constantly—I'm here when you need guidance. Good luck wi
 
       if (response.error) throw response.error;
       
-      // Parse the structured feedback response and send to Andrea's chat
       const feedbackData = response.data?.feedback;
       if (feedbackData) {
-        // Format structured feedback as markdown for Andrea's chat
         const formattedFeedback = `📝 **I've reviewed your submission!**
 
 **Feedback Summary:**
@@ -214,14 +167,12 @@ ${feedbackData.next_steps?.map((n: string) => `• ${n}`).join('\n') || '• Mov
 
 Feel free to ask me any questions about this feedback!`;
         
-        // Send feedback to Andrea's chat panel
         setTrainerMessages(prev => [...prev, { role: 'assistant', content: formattedFeedback }]);
       } else {
         setTrainerMessages(prev => [...prev, { role: 'assistant', content: 'Your practice has been submitted! Let me know if you have any questions.' }]);
       }
       setModuleCompleted(true);
       
-      // Save completed module to database
       const newCompletedModules = new Set(completedModules);
       newCompletedModules.add(selectedModule.id);
       setCompletedModules(newCompletedModules);
@@ -239,7 +190,6 @@ Feel free to ask me any questions about this feedback!`;
         description: 'Using offline mode. Your practice has been recorded.',
         variant: 'default',
       });
-      // Offline fallback - send to Andrea's chat
       const offlineFeedback = `📝 **I've received your submission!**
 
 I'm having a brief connection issue, but here's my initial assessment based on the task criteria:
@@ -254,7 +204,6 @@ Feel free to ask me for more detailed feedback!`;
       setTrainerMessages(prev => [...prev, { role: 'assistant', content: offlineFeedback }]);
       setModuleCompleted(true);
       
-      // Still save progress locally even if API fails
       const newCompletedModules = new Set(completedModules);
       newCompletedModules.add(selectedModule.id);
       setCompletedModules(newCompletedModules);
@@ -272,7 +221,6 @@ Feel free to ask me for more detailed feedback!`;
     setIsTrainerLoading(true);
 
     try {
-      // Call Claude-powered trainer_chat edge function
       const response = await supabase.functions.invoke('trainer_chat', {
         body: {
           lessonId: sessionId || '1',
@@ -294,28 +242,24 @@ Feel free to ask me for more detailed feedback!`;
       setTrainerMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Trainer error:', error);
-      // Contextual fallback response
-      const contextualResponse = generateContextualResponse(
-        trainerInput,
-        selectedModule,
-        profile,
-        practiceInput
-      );
+      const contextualResponse = generateContextualResponse(trainerInput, selectedModule, profile, practiceInput);
       setTrainerMessages(prev => [...prev, { role: 'assistant', content: contextualResponse }]);
     } finally {
       setIsTrainerLoading(false);
     }
   };
 
-  // Handle quick action button clicks (auto-send prompts)
   const handleQuickAction = async (prompt: string) => {
+    const userMessage: Message = { role: 'user', content: prompt };
+    setTrainerMessages(prev => [...prev, userMessage]);
     setIsTrainerLoading(true);
+    
     try {
       const response = await supabase.functions.invoke('trainer_chat', {
         body: {
           lessonId: sessionId || '1',
           moduleId: selectedModule?.id,
-          messages: [...trainerMessages, { role: 'user', content: prompt }],
+          messages: [...trainerMessages, userMessage],
           learnerState: {
             currentCardTitle: selectedModule?.title,
             progressSummary: practiceInput ? `Current practice input: "${practiceInput.substring(0, 200)}..."` : 'Working on module',
@@ -339,113 +283,29 @@ Feel free to ask me for more detailed feedback!`;
     }
   };
 
-  // Generate contextual offline responses
-  function generateContextualResponse(
-    input: string,
-    module: ModuleContent | null,
-    userProfile: typeof profile,
-    userPractice: string
-  ): string {
-    const lowerInput = input.toLowerCase();
-    
-    if (lowerInput.includes('review') || lowerInput.includes('feedback')) {
-      if (userPractice) {
-        return `Let me review your practice work.
-
-**Your Prompt:**
-"${userPractice.substring(0, 200)}${userPractice.length > 200 ? '...' : ''}"
-
-**Feedback based on ${userProfile?.learning_style} learning style:**
-
-✅ **What's working:**
-- You've started crafting a prompt for the task
-- Your intent is clear
-
-📝 **Suggestions for improvement:**
-${module?.content.practiceTask.hints.map(h => `- ${h}`).join('\n')}
-
-**Success Criteria to check:**
-${module?.content.practiceTask.successCriteria.map((c, i) => `${i + 1}. ${c}`).join('\n')}
-
-Would you like me to show you an example of a strong prompt for this scenario?`;
-      } else {
-        return `I'd be happy to review your work! Please complete the practice task in the center panel first, then ask me to review it.
-
-The current task is: **${module?.content.practiceTask.title}**
-
-${module?.content.practiceTask.instructions}`;
-      }
+  const handleCompleteSession = async () => {
+    const sessionNum = parseInt(sessionId || '1') as 1 | 2 | 3;
+    const { error } = await markSessionCompleted(sessionNum);
+    if (error) {
+      toast({
+        title: 'Error saving progress',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Session Completed!',
+        description: `Session ${sessionNum} has been marked as complete.`,
+      });
+      navigate('/dashboard');
     }
-    
-    if (lowerInput.includes('example') || lowerInput.includes('show me')) {
-      const examples = module?.content.examples;
-      if (examples && examples.length > 0) {
-        const ex = examples[0];
-        return `Here's an example from this module:
+  };
 
-**${ex.title}**
-
-❌ **Less Effective:**
-"${ex.bad || 'Not specified'}"
-
-✅ **More Effective:**
-"${ex.good}"
-
-**Why it works:**
-${ex.explanation}
-
-Would you like to see how to apply this pattern to your specific task?`;
-      }
-    }
-    
-    if (lowerInput.includes('hint') || lowerInput.includes('help') || lowerInput.includes('stuck')) {
-      return `Here are some hints for the current task:
-
-**${module?.content.practiceTask.title}**
-
-${module?.content.practiceTask.hints.map((h, i) => `${i + 1}. ${h}`).join('\n')}
-
-**Remember the key points:**
-${module?.content.keyPoints?.slice(0, 3).map(k => `• ${k}`).join('\n')}
-
-What specific part would you like more guidance on?`;
-    }
-    
-    if (lowerInput.includes('what') || lowerInput.includes('how') || lowerInput.includes('why')) {
-      return `Great question! Let me explain based on the current module.
-
-**${module?.title}**
-
-${module?.content.overview}
-
-**Key Concepts:**
-${module?.content.keyPoints?.map(k => `• ${k}`).join('\n')}
-
-For your ${userProfile?.line_of_business?.replace('_', ' ')} role, this is particularly relevant because it helps you communicate more effectively with AI tools.
-
-What aspect would you like me to elaborate on?`;
-    }
-    
-    return `I'm here to help you with "${module?.title}".
-
-Based on your **${userProfile?.learning_style}** learning style, I'd suggest:
-${userProfile?.learning_style === 'example-based' ? '- Let me show you a concrete example first' :
-  userProfile?.learning_style === 'explanation-based' ? '- Let me walk you through the concept step by step' :
-  userProfile?.learning_style === 'hands-on' ? '- Try the practice task and I\'ll give you feedback' :
-  '- Let me explain the underlying logic and framework'}
-
-You can ask me to:
-• Review your practice work
-• Show examples relevant to your role
-• Explain concepts in more detail
-• Provide hints for the current task
-
-What would be most helpful?`;
-  }
+  const currentModuleIndex = session.modules.findIndex(m => m.id === selectedModule?.id);
+  const nextModule = session.modules[currentModuleIndex + 1];
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Bank Policy Modal */}
       <BankPolicyModal 
         open={policyModalOpen} 
         onOpenChange={setPolicyModalOpen} 
@@ -466,7 +326,6 @@ What would be most helpful?`;
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {/* Bank Policies Dropdown */}
           {policies.length > 0 && (
             <div className="relative group">
               <Button variant="outline" size="sm" className="gap-2">
@@ -480,7 +339,7 @@ What would be most helpful?`;
                       key={policy.id}
                       className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
                       onClick={() => {
-                        setSelectedPolicy(policy);
+                        setSelectedPolicy(policy as BankPolicy);
                         setPolicyModalOpen(true);
                       }}
                     >
@@ -501,90 +360,17 @@ What would be most helpful?`;
 
       {/* Main Content - 3 Column Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Column - Training Content */}
-        <div className={`border-r bg-card transition-all duration-300 flex flex-col ${leftCollapsed ? 'w-12' : 'w-80'}`}>
-          <div className="p-3 border-b flex items-center justify-between shrink-0">
-            {!leftCollapsed && <span className="font-medium text-sm">Training Modules</span>}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setLeftCollapsed(!leftCollapsed)}
-              className="ml-auto"
-            >
-              {leftCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-            </Button>
-          </div>
-          
-          {!leftCollapsed && (
-            <ScrollArea className="flex-1">
-              <div className="p-3 space-y-2">
-                {session.modules.map((module, idx) => {
-                  const IconComponent = getModuleIcon(module.type);
-                  const isSelected = selectedModule?.id === module.id;
-                  const isCompleted = completedModules.has(module.id);
-                  
-                    return (
-                      <Card
-                        key={module.id}
-                        className={`cursor-pointer transition-all ${
-                          isSelected ? 'ring-2 ring-primary' : 'hover:bg-muted/50'
-                        } ${isCompleted ? 'bg-green-500/5' : ''}`}
-                        onClick={() => {
-                          setSelectedModule(module);
-                          // Open content modal/video directly when clicking the module
-                          if (module.type === 'video') {
-                            setVideoModalOpen(true);
-                          } else {
-                            setContentModalModule(module);
-                            setContentModalOpen(true);
-                          }
-                        }}
-                      >
-                      <CardContent className="p-3">
-                        <div className="flex items-start gap-3">
-                          <div className={`p-2 rounded-lg shrink-0 relative ${
-                            isCompleted ? 'bg-green-500/20 text-green-600' :
-                            isSelected ? 'bg-primary/10 text-primary' : 'bg-muted'
-                          }`}>
-                            {isCompleted ? (
-                              <CheckCircle className="h-4 w-4" />
-                            ) : (
-                              <IconComponent className="h-4 w-4" />
-                            )}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className={`font-medium text-sm truncate ${isCompleted ? 'text-green-700 dark:text-green-400' : ''}`}>
-                              {idx + 1}. {module.title}
-                            </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge 
-                                variant="outline" 
-                                className={`text-xs transition-colors ${getTypeBadgeClass(module.type)}`}
-                                onClick={(e) => handleOpenContentModal(module, e)}
-                                title={`View ${module.type} content`}
-                              >
-                                {module.type}
-                              </Badge>
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {module.estimatedTime}
-                              </span>
-                              {isCompleted && (
-                                <span className="text-xs text-green-600 font-medium">Done</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </ScrollArea>
-          )}
-        </div>
+        {/* Left Column - Training Modules */}
+        <ModuleListSidebar
+          collapsed={leftCollapsed}
+          onToggleCollapse={() => setLeftCollapsed(!leftCollapsed)}
+          modules={session.modules}
+          selectedModule={selectedModule}
+          completedModules={completedModules}
+          onSelectModule={handleModuleSelect}
+        />
 
-        {/* Middle Column - Lesson & Practice Area */}
+        {/* Middle Column - Practice Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <ScrollArea className="flex-1" viewportRef={contentScrollRef}>
             <div className="p-6">
@@ -603,136 +389,18 @@ What would be most helpful?`;
                     <p className="text-muted-foreground mt-1">{selectedModule.description}</p>
                   </div>
 
-                  {/* Practice Task - Show for ALL modules */}
-                  <Card className="border-primary/30">
-                    <CardHeader className="pb-3 bg-primary/5">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-primary" />
-                        Practice Task: {selectedModule.content.practiceTask.title}
-                      </CardTitle>
-                      <CardDescription>
-                        {selectedModule.content.practiceTask.instructions}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-4 space-y-4">
-                      {/* Scenario */}
-                      <div className="bg-blue-500/5 border border-blue-500/20 p-4 rounded-lg">
-                        <h4 className="font-medium text-sm text-blue-600 mb-2 flex items-center gap-2">
-                          <AlertCircle className="h-4 w-4" />
-                          Scenario
-                        </h4>
-                        <p className="text-sm whitespace-pre-wrap">{selectedModule.content.practiceTask.scenario}</p>
-                      </div>
-
-                      {/* Hints */}
-                      <div>
-                        <h4 className="font-medium text-sm mb-2">Hints:</h4>
-                        <ul className="space-y-1">
-                          {selectedModule.content.practiceTask.hints.map((hint, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                              <Lightbulb className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
-                              {hint}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Input Area */}
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">Your Response:</label>
-                        <Textarea
-                          value={practiceInput}
-                          onChange={(e) => setPracticeInput(e.target.value)}
-                          placeholder="Write your prompt or response here based on the scenario above..."
-                          className="min-h-[150px]"
-                        />
-                      </div>
-                      
-                      <Button 
-                        onClick={handlePracticeSubmit} 
-                        disabled={isPracticeLoading || !practiceInput.trim()}
-                        className="gap-2"
-                      >
-                        {isPracticeLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )}
-                        Submit for Review
-                      </Button>
-
-                      {/* Practice Completed Notification */}
-                      {moduleCompleted && (
-                        <div className="border-t pt-4 mt-4">
-                          <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-                            <div className="flex items-center gap-2 text-primary font-medium">
-                              <CheckCircle className="h-5 w-5" />
-                              Practice Submitted!
-                            </div>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              Check Andrea's feedback on the right panel →
-                            </p>
-                            {(() => {
-                              const currentIndex = session.modules.findIndex(m => m.id === selectedModule?.id);
-                              const nextModule = session.modules[currentIndex + 1];
-                              
-                              const handleCompleteSession = async () => {
-                                const sessionNum = parseInt(sessionId || '1') as 1 | 2 | 3;
-                                const { error } = await markSessionCompleted(sessionNum);
-                                if (error) {
-                                  toast({
-                                    title: 'Error saving progress',
-                                    description: error.message,
-                                    variant: 'destructive',
-                                  });
-                                } else {
-                                  toast({
-                                    title: 'Session Completed!',
-                                    description: `Session ${sessionNum} has been marked as complete.`,
-                                  });
-                                  navigate('/dashboard');
-                                }
-                              };
-
-                              return nextModule ? (
-                                <Button 
-                                  onClick={() => setSelectedModule(nextModule)}
-                                  className="mt-3 gap-2"
-                                >
-                                  Continue to Next Module
-                                  <ChevronRight className="h-4 w-4" />
-                                </Button>
-                              ) : (
-                                <Button 
-                                  onClick={handleCompleteSession}
-                                  className="mt-3 gap-2"
-                                >
-                                  Complete Session
-                                  <CheckCircle className="h-4 w-4" />
-                                </Button>
-                              );
-                            })()}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Success Criteria */}
-                      <div className="border-t pt-4">
-                        <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-                          <Target className="h-4 w-4 text-primary" />
-                          Success Criteria
-                        </h4>
-                        <ul className="space-y-1">
-                          {selectedModule.content.practiceTask.successCriteria.map((criteria, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-sm">
-                              <CheckCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                              {criteria}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  {/* Practice Task */}
+                  <PracticeTaskCard
+                    module={selectedModule}
+                    practiceInput={practiceInput}
+                    onPracticeInputChange={setPracticeInput}
+                    onSubmit={handlePracticeSubmit}
+                    isLoading={isPracticeLoading}
+                    isCompleted={moduleCompleted}
+                    onContinueToNext={nextModule ? () => setSelectedModule(nextModule) : undefined}
+                    onCompleteSession={!nextModule ? handleCompleteSession : undefined}
+                    hasNextModule={!!nextModule}
+                  />
                 </div>
               )}
             </div>
@@ -740,181 +408,120 @@ What would be most helpful?`;
         </div>
 
         {/* Right Column - Andrea AI Coach */}
-        <div className={`border-l bg-card transition-all duration-300 flex flex-col ${rightCollapsed ? 'w-12' : 'w-96'}`}>
-          <div className="p-3 border-b flex items-center justify-between shrink-0">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setRightCollapsed(!rightCollapsed)}
-            >
-              {rightCollapsed ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            </Button>
-            {!rightCollapsed && (
-              <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src={andreaCoach} alt="Andrea" />
-                  <AvatarFallback>A</AvatarFallback>
-                </Avatar>
-                <span className="font-medium text-sm">Andrea - AI Coach</span>
-              </div>
-            )}
-          </div>
-          
-          {!rightCollapsed && (
-            <>
-              <ScrollArea className="flex-1">
-                <div className="p-3 space-y-3">
-                  {trainerMessages.map((message, idx) => (
-                    <div
-                      key={idx}
-                      className={`p-3 rounded-lg ${
-                        message.role === 'assistant'
-                          ? 'bg-muted'
-                          : 'bg-primary text-primary-foreground ml-4'
-                      }`}
-                    >
-                      {message.role === 'assistant' && (
-                        <div className="flex items-center gap-2 mb-2">
-                          <Avatar className="h-5 w-5">
-                            <AvatarImage src={andreaCoach} alt="Andrea" />
-                            <AvatarFallback>A</AvatarFallback>
-                          </Avatar>
-                          <span className="text-xs font-medium text-muted-foreground">Andrea</span>
-                        </div>
-                      )}
-                      <div className={`prose prose-sm max-w-none ${message.role === 'assistant' ? 'dark:prose-invert' : ''} [&>h1]:text-base [&>h1]:font-bold [&>h1]:mt-3 [&>h1]:mb-2 [&>h2]:text-sm [&>h2]:font-semibold [&>h2]:mt-2 [&>h2]:mb-1 [&>h3]:text-sm [&>h3]:font-semibold [&>h3]:mt-2 [&>h3]:mb-1 [&>p]:mb-2 [&>p]:text-sm [&>ul]:my-2 [&>ul]:pl-4 [&>ol]:my-2 [&>ol]:pl-4 [&>li]:mb-1 [&>li]:text-sm [&>table]:w-full [&>table]:border-collapse [&>table]:my-2 [&_th]:border [&_th]:border-border [&_th]:px-2 [&_th]:py-1 [&_th]:bg-muted [&_th]:text-left [&_th]:font-semibold [&_th]:text-xs [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_td]:text-xs`}>
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
-                      </div>
-                    </div>
-                  ))}
-                  {isTrainerLoading && (
-                    <div className="p-3 rounded-lg bg-muted flex items-center gap-2">
-                      <Avatar className="h-5 w-5">
-                        <AvatarImage src={andreaCoach} alt="Andrea" />
-                        <AvatarFallback>A</AvatarFallback>
-                      </Avatar>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="text-sm text-muted-foreground">Thinking...</span>
-                    </div>
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
-              </ScrollArea>
-              
-              {/* Quick Actions - Auto-send on click */}
-              <div className="px-3 py-2 border-t bg-muted/30">
-                <div className="flex flex-wrap gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-7"
-                    disabled={isTrainerLoading}
-                    onClick={() => {
-                      const prompt = 'Can you review my practice work?';
-                      setTrainerInput(prompt);
-                      // Auto-send the prompt
-                      setTimeout(() => {
-                        const userMessage: Message = { role: 'user', content: prompt };
-                        setTrainerMessages(prev => [...prev, userMessage]);
-                        setTrainerInput('');
-                        handleQuickAction(prompt);
-                      }, 0);
-                    }}
-                  >
-                    Review my work
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-7"
-                    disabled={isTrainerLoading}
-                    onClick={() => {
-                      const prompt = 'Show me an example';
-                      setTrainerInput(prompt);
-                      setTimeout(() => {
-                        const userMessage: Message = { role: 'user', content: prompt };
-                        setTrainerMessages(prev => [...prev, userMessage]);
-                        setTrainerInput('');
-                        handleQuickAction(prompt);
-                      }, 0);
-                    }}
-                  >
-                    Show example
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-7"
-                    disabled={isTrainerLoading}
-                    onClick={() => {
-                      const prompt = 'I need a hint';
-                      setTrainerInput(prompt);
-                      setTimeout(() => {
-                        const userMessage: Message = { role: 'user', content: prompt };
-                        setTrainerMessages(prev => [...prev, userMessage]);
-                        setTrainerInput('');
-                        handleQuickAction(prompt);
-                      }, 0);
-                    }}
-                  >
-                    Get hint
-                  </Button>
-                </div>
-              </div>
-
-              {/* Andrea Avatar & Input Section */}
-              <div className="p-3 border-t shrink-0 bg-gradient-to-t from-muted/50 to-transparent">
-                <div className="flex gap-3 items-end">
-                  <div className="shrink-0">
-                    <Avatar className="h-16 w-16 border-2 border-primary/20 shadow-lg">
-                      <AvatarImage src={andreaCoach} alt="Andrea" className="object-cover" />
-                      <AvatarFallback className="text-lg">A</AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <div className="flex-1 flex flex-col gap-2">
-                    <Textarea
-                      value={trainerInput}
-                      onChange={(e) => setTrainerInput(e.target.value)}
-                      placeholder="Ask Andrea for help..."
-                      className="min-h-[50px] resize-none text-sm"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleTrainerSubmit();
-                        }
-                      }}
-                    />
-                    <Button 
-                      size="sm"
-                      onClick={handleTrainerSubmit}
-                      disabled={isTrainerLoading || !trainerInput.trim()}
-                      className="gap-2 self-end"
-                    >
-                      <Send className="h-3 w-3" />
-                      Ask Andrea
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+        <TrainerChatPanel
+          collapsed={rightCollapsed}
+          onToggleCollapse={() => setRightCollapsed(!rightCollapsed)}
+          messages={trainerMessages}
+          input={trainerInput}
+          onInputChange={setTrainerInput}
+          onSubmit={handleTrainerSubmit}
+          onQuickAction={handleQuickAction}
+          isLoading={isTrainerLoading}
+        />
       </div>
 
-      {/* Module Content Modal */}
+      {/* Modals */}
       <ModuleContentModal
         module={contentModalModule}
         open={contentModalOpen}
         onOpenChange={setContentModalOpen}
       />
 
-      {/* Video Modal for Introduction */}
       <VideoModal
         open={videoModalOpen}
         onOpenChange={setVideoModalOpen}
         videoUrl="https://youtu.be/xZ1FAm7IoA4"
-        title="Introduction to AI Prompting"
+        title={selectedModule?.title || "Introduction to AI Prompting"}
       />
     </div>
   );
+}
+
+// Contextual offline response generator
+function generateContextualResponse(
+  input: string,
+  module: ModuleContent | null,
+  userProfile: UserProfile | null,
+  userPractice: string
+): string {
+  const lowerInput = input.toLowerCase();
+  
+  if (lowerInput.includes('review') || lowerInput.includes('feedback')) {
+    if (userPractice) {
+      return `Let me review your practice work.
+
+**Your Prompt:**
+"${userPractice.substring(0, 200)}${userPractice.length > 200 ? '...' : ''}"
+
+**Feedback based on ${userProfile?.learning_style} learning style:**
+
+✅ **What's working:**
+- You've started crafting a prompt for the task
+- Your intent is clear
+
+📝 **Suggestions for improvement:**
+${module?.content.practiceTask.hints.map(h => `- ${h}`).join('\n')}
+
+**Success Criteria to check:**
+${module?.content.practiceTask.successCriteria.map((c, i) => `${i + 1}. ${c}`).join('\n')}
+
+Would you like me to show you an example of a strong prompt for this scenario?`;
+    } else {
+      return `I'd be happy to review your work! Please complete the practice task in the center panel first, then ask me to review it.
+
+The current task is: **${module?.content.practiceTask.title}**
+
+${module?.content.practiceTask.instructions}`;
+    }
+  }
+  
+  if (lowerInput.includes('example') || lowerInput.includes('show me')) {
+    const examples = module?.content.examples;
+    if (examples && examples.length > 0) {
+      const ex = examples[0];
+      return `Here's an example from this module:
+
+**${ex.title}**
+
+❌ **Less Effective:**
+"${ex.bad || 'Not specified'}"
+
+✅ **More Effective:**
+"${ex.good}"
+
+**Why it works:**
+${ex.explanation}
+
+Would you like to see how to apply this pattern to your specific task?`;
+    }
+  }
+  
+  if (lowerInput.includes('hint') || lowerInput.includes('help') || lowerInput.includes('stuck')) {
+    return `Here are some hints for the current task:
+
+**${module?.content.practiceTask.title}**
+
+${module?.content.practiceTask.hints.map((h, i) => `${i + 1}. ${h}`).join('\n')}
+
+**Remember the key points:**
+${module?.content.keyPoints?.slice(0, 3).map(k => `• ${k}`).join('\n')}
+
+What specific part would you like more guidance on?`;
+  }
+  
+  return `I'm here to help you with "${module?.title}".
+
+Based on your **${userProfile?.learning_style}** learning style, I'd suggest:
+${userProfile?.learning_style === 'example-based' ? '- Let me show you a concrete example first' :
+  userProfile?.learning_style === 'explanation-based' ? '- Let me walk you through the concept step by step' :
+  userProfile?.learning_style === 'hands-on' ? '- Try the practice task and I\'ll give you feedback' :
+  '- Let me explain the underlying logic and framework'}
+
+You can ask me to:
+• Review your practice work
+• Show examples relevant to your role
+• Explain concepts in more detail
+• Provide hints for the current task
+
+What would be most helpful?`;
 }
