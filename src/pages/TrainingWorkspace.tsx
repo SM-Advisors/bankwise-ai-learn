@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ALL_SESSION_CONTENT, type ModuleContent } from '@/data/trainingContent';
 import { ModuleContentModal } from '@/components/ModuleContentModal';
+import { VideoModal } from '@/components/VideoModal';
 import { BankPolicyModal } from '@/components/BankPolicyModal';
 import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { 
@@ -45,6 +46,7 @@ export default function TrainingWorkspace() {
   const [moduleCompleted, setModuleCompleted] = useState(false);
   const [contentModalOpen, setContentModalOpen] = useState(false);
   const [contentModalModule, setContentModalModule] = useState<ModuleContent | null>(null);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [policyModalOpen, setPolicyModalOpen] = useState(false);
   const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
@@ -143,14 +145,18 @@ What would you like help with?`;
       case 'document': return FileText;
       case 'example': return Lightbulb;
       case 'exercise': return Play;
+      case 'video': return Play;
       default: return BookOpen;
     }
   };
 
   const handleOpenContentModal = (module: ModuleContent, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent selecting the module when clicking the badge
-    // Don't open modal for the Introduction module - it has embedded video instead
-    if (module.id === '1-1') return;
+    // Open video modal for video type modules
+    if (module.type === 'video') {
+      setVideoModalOpen(true);
+      return;
+    }
     setContentModalModule(module);
     setContentModalOpen(true);
   };
@@ -160,6 +166,7 @@ What would you like help with?`;
       case 'document': return 'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 cursor-pointer';
       case 'example': return 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-900/50 cursor-pointer';
       case 'exercise': return 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-900/50 cursor-pointer';
+      case 'video': return 'bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50 cursor-pointer';
       default: return 'bg-muted text-muted-foreground hover:bg-muted/80 cursor-pointer';
     }
   };
@@ -571,29 +578,6 @@ What would be most helpful?`;
                     </CardContent>
                   </Card>
 
-                  {/* Introduction Video - Only for module 1-1 */}
-                  {selectedModule.id === '1-1' && (
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          <Play className="h-4 w-4 text-primary" />
-                          Introduction Video
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="aspect-video rounded-lg overflow-hidden bg-muted">
-                          <iframe
-                            className="w-full h-full"
-                            src="https://www.youtube.com/embed/xZ1FAm7IoA4"
-                            title="Introduction to AI Prompting"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
                   {/* Lesson Content */}
                   <Card>
                     <CardHeader className="pb-3">
@@ -925,6 +909,14 @@ What would be most helpful?`;
         module={contentModalModule}
         open={contentModalOpen}
         onOpenChange={setContentModalOpen}
+      />
+
+      {/* Video Modal for Introduction */}
+      <VideoModal
+        open={videoModalOpen}
+        onOpenChange={setVideoModalOpen}
+        videoUrl="https://youtu.be/xZ1FAm7IoA4"
+        title="Introduction to AI Prompting"
       />
     </div>
   );
