@@ -2,7 +2,9 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { GraduationCap, BookOpen, Sparkles, ArrowRight, ShieldCheck, Settings, LogIn } from 'lucide-react';
+import andreaCoach from '@/assets/andrea-coach.png';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -105,8 +107,11 @@ const Index = () => {
             </div>
 
             <div className="bg-card rounded-xl border shadow-sm p-6 text-left">
-              <div className="p-3 rounded-lg bg-secondary inline-block mb-4">
-                <GraduationCap className="h-6 w-6 text-primary" />
+              <div className="p-2 rounded-lg bg-secondary inline-block mb-4">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={andreaCoach} alt="Andrea - AI Coach" />
+                  <AvatarFallback>A</AvatarFallback>
+                </Avatar>
               </div>
               <h3 className="font-semibold text-lg mb-2">Role-Specific Training</h3>
               <p className="text-muted-foreground text-sm">
