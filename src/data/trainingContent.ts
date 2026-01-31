@@ -3,7 +3,7 @@
 export interface ModuleContent {
   id: string;
   title: string;
-  type: 'document' | 'example' | 'exercise';
+  type: 'document' | 'example' | 'exercise' | 'video';
   description: string;
   estimatedTime: string;
   learningObjectives: string[];
@@ -42,7 +42,7 @@ export const SESSION_1_CONTENT: SessionContent = {
     {
       id: '1-1',
       title: 'Introduction to AI Prompting',
-      type: 'document',
+      type: 'video',
       description: 'Learn the basics of communicating effectively with AI',
       estimatedTime: '10 min',
       learningObjectives: [
