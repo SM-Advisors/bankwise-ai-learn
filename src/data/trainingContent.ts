@@ -6,6 +6,7 @@ export interface ModuleContent {
   type: 'document' | 'example' | 'exercise' | 'video';
   description: string;
   estimatedTime: string;
+  videoUrl?: string; // Optional video URL for video-type modules
   learningObjectives: string[];
   content: {
     overview: string;
@@ -45,6 +46,7 @@ export const SESSION_1_CONTENT: SessionContent = {
       type: 'video',
       description: 'Learn the basics of communicating effectively with AI',
       estimatedTime: '10 min',
+      videoUrl: 'https://youtu.be/xZ1FAm7IoA4',
       learningObjectives: [
         'Understand what AI prompting is and why it matters',
         'Learn the basic structure of an effective prompt',

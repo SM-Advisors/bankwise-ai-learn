@@ -43,7 +43,10 @@ export function ModuleListSidebar({
   onSelectModule,
 }: ModuleListSidebarProps) {
   return (
-    <div className={`border-r bg-card transition-all duration-300 flex flex-col ${collapsed ? 'w-12' : 'w-80'}`}>
+    <aside 
+      className={`border-r bg-card transition-all duration-300 flex flex-col ${collapsed ? 'w-12' : 'w-80'}`}
+      aria-label="Training modules navigation"
+    >
       <div className="p-3 border-b flex items-center justify-between shrink-0">
         {!collapsed && <span className="font-medium text-sm">Training Modules</span>}
         <Button 
@@ -51,6 +54,8 @@ export function ModuleListSidebar({
           size="sm" 
           onClick={onToggleCollapse}
           className="ml-auto"
+          aria-label={collapsed ? 'Expand module list' : 'Collapse module list'}
+          aria-expanded={!collapsed}
         >
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
@@ -58,7 +63,7 @@ export function ModuleListSidebar({
       
       {!collapsed && (
         <ScrollArea className="flex-1">
-          <div className="p-3 space-y-2">
+          <nav className="p-3 space-y-2" aria-label="Module list">
             {modules.map((module, idx) => {
               const IconComponent = getModuleIcon(module.type);
               const isSelected = selectedModule?.id === module.id;
@@ -71,6 +76,16 @@ export function ModuleListSidebar({
                     isSelected ? 'ring-2 ring-primary' : 'hover:bg-muted/50'
                   } ${isCompleted ? 'bg-primary/5' : ''}`}
                   onClick={() => onSelectModule(module)}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isSelected}
+                  aria-label={`${isCompleted ? 'Completed: ' : ''}${idx + 1}. ${module.title} - ${module.type}, ${module.estimatedTime}`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectModule(module);
+                    }
+                  }}
                 >
                   <CardContent className="p-3">
                     <div className="flex items-start gap-3">
@@ -110,9 +125,9 @@ export function ModuleListSidebar({
                 </Card>
               );
             })}
-          </div>
+          </nav>
         </ScrollArea>
       )}
-    </div>
+    </aside>
   );
 }
