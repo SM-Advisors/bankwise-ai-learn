@@ -136,7 +136,7 @@ export default function Dashboard() {
               variant="ghost"
               size="sm"
               className="gap-2"
-              onClick={() => policies.length > 0 && setSelectedPolicy(policies[0])}
+              onClick={() => navigate('/policies')}
             >
               <Shield className="h-4 w-4" />
               Bank Policies

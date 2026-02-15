@@ -21,6 +21,8 @@ import TopicSelection from "./pages/TopicSelection";
 import Lesson from "./pages/Lesson";
 import AdminDashboard from "./pages/AdminDashboard";
 import Ideas from "./pages/Ideas";
+import Policies from "./pages/Policies";
+import PolicyDetail from "./pages/PolicyDetail";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
@@ -69,6 +71,16 @@ const App = () => (
                   <Route path="/ideas" element={
                     <ProtectedRoute requireOnboarding>
                       <Ideas />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/policies" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Policies />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/policies/:id" element={
+                    <ProtectedRoute requireOnboarding>
+                      <PolicyDetail />
                     </ProtectedRoute>
                   } />
 
