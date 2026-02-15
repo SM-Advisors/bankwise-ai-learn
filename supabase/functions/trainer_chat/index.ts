@@ -278,10 +278,28 @@ COACHING STYLE:
 - Be warm and personable, like a supportive colleague
 - Give SUBTLE NUDGES, not constant detailed feedback
 - Only offer help when asked or when you notice a clear opportunity to improve
-- Keep responses SHORT (1-3 sentences) unless asked for more detail
 - Celebrate wins briefly, don't over-praise
 - When reviewing work, focus on 1-2 key improvements, not everything at once
 - Use encouraging language: "You might try..." or "One thing that could help..." rather than "You should..."
+
+RESPONSE FORMAT — CRITICAL:
+- Keep your main reply CONCISE: 2-3 sentences maximum for normal responses
+- Only give longer responses (up to 5 sentences) when explicitly asked for detail, reviewing practice work, or showing examples
+- Use markdown sparingly—bold for emphasis only
+- Never write long paragraphs or bulleted lists unless the learner asks for detail
+
+RESPONSE STRUCTURE — MANDATORY:
+You MUST respond with valid JSON in this exact format:
+{
+  "reply": "Your concise response here (2-3 sentences max)",
+  "suggestedPrompts": ["Follow-up prompt 1", "Follow-up prompt 2"]
+}
+
+The "suggestedPrompts" array should contain 2-3 short follow-up questions or actions the learner might want to take next. These should be:
+- Relevant to the current module and conversation
+- Phrased as things the learner would say to you
+- Short (under 60 characters each)
+- Examples: "Show me an example for my role", "How can I improve this?", "What should I focus on next?"
 
 ${getLearningStyleInstructions(learningStyle)}
 
@@ -298,10 +316,10 @@ ${learnerState?.currentCardTitle ? `- Current Card: ${learnerState.currentCardTi
 ${learnerState?.progressSummary ? `- Learner's Practice: ${learnerState.progressSummary}` : ""}
 
 ## CRITICAL RULES
-1. Keep responses brief and conversational unless asked for detail
-2. Give ONE actionable suggestion at a time, not a list
-3. If the learner asks for help, give a gentle hint first, not the full answer
-4. Use markdown sparingly—bold for emphasis, not long formatted responses
+1. ALWAYS respond with valid JSON containing "reply" and "suggestedPrompts"
+2. Keep replies concise (2-3 sentences) unless reviewing practice work
+3. Give ONE actionable suggestion at a time, not a list
+4. If the learner asks for help, give a gentle hint first, not the full answer
 5. Reference bank policies ONLY when directly relevant to the question
 6. If their practice looks good, just say so briefly and encourage them to submit
 7. Never lecture—be a helpful colleague, not a teacher
@@ -344,10 +362,41 @@ ${learnerState?.progressSummary ? `- Learner's Practice: ${learnerState.progress
     }
 
     const claudeResponse = await response.json();
-    const reply = claudeResponse.content?.[0]?.text || "I'm here to help with your training. What would you like to know?";
+    const rawText = claudeResponse.content?.[0]?.text || "";
+
+    // Try to parse structured JSON response
+    let reply = "I'm here to help with your training. What would you like to know?";
+    let suggestedPrompts: string[] = [];
+
+    try {
+      // Try parsing the entire response as JSON
+      const parsed = JSON.parse(rawText);
+      if (parsed.reply) {
+        reply = parsed.reply;
+        suggestedPrompts = Array.isArray(parsed.suggestedPrompts) ? parsed.suggestedPrompts.slice(0, 4) : [];
+      } else {
+        // If JSON but no reply field, use raw text
+        reply = rawText;
+      }
+    } catch {
+      // If not valid JSON, try to extract JSON from the response
+      const jsonMatch = rawText.match(/\{[\s\S]*"reply"[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[0]);
+          reply = parsed.reply || rawText;
+          suggestedPrompts = Array.isArray(parsed.suggestedPrompts) ? parsed.suggestedPrompts.slice(0, 4) : [];
+        } catch {
+          reply = rawText;
+        }
+      } else {
+        // Plain text response — use as-is
+        reply = rawText;
+      }
+    }
 
     return new Response(
-      JSON.stringify({ reply }),
+      JSON.stringify({ reply, suggestedPrompts }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
