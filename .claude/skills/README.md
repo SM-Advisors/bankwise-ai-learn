@@ -132,6 +132,21 @@ These skills are available in **every project** where you use Claude Code for De
 
 ---
 
+### 🔁 `/resume` - Continue From Handoff
+**Pick up where you left off in a new conversation**
+
+```bash
+/resume
+```
+
+**Best for:**
+- Starting a new conversation after `/reset`
+- Loading previous session context quickly
+
+**Workflow:** Load Handoff → Verify Git State → Summarize → Confirm Direction
+
+---
+
 ## Which Skill Should I Use?
 
 ### Quick Decision Tree:
@@ -168,7 +183,7 @@ Need to undo something?
   NO ↓
 
 Session getting long or need to pick up later?
-  YES → Use /reset
+  YES → Use /reset, then /resume in the new session
 ```
 
 ---
@@ -207,6 +222,7 @@ Mac/Linux: ~/.claude/skills/
 4. **Use `/feature`** when you know you need full planning
 5. **Use `/test`** before any commit to catch issues early
 6. **Use `/rollback`** carefully - it can't be undone!
+7. **Use `/reset`** before ending a long session, then **`/resume`** to pick back up
 
 ## Orchestrate vs Build: What's the Difference?
 
