@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nMake authentication required for all app access\n\n- Move login page to root path \\(/\\) as initial landing page\n- Create ProtectedRoute component to guard all protected routes\n- Redirect unauthenticated users to /auth from any protected route\n- Remove duplicate authentication checks from individual pages\n- Update navigation links to point to /dashboard instead of /\n- Ensure onboarding completion is enforced for protected routes\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(npm run dev)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix Auth page error - add missing destructured variables\n\n- Add profile and loading to useAuth destructuring\n- Fixes runtime error on landing page\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(echo:*)",
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:*)",
+      "Bash(where:*)",
+      "Bash(cmd /c \"where node && where npm\")",
+      "Bash(git commit:*)"
+    ]
+  }
+}
