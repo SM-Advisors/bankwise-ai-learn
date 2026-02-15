@@ -227,6 +227,39 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_events: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          exception_flag: boolean | null
+          exception_type: string | null
+          id: string
+          module_id: string | null
+          session_id: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          exception_flag?: boolean | null
+          exception_type?: string | null
+          id?: string
+          module_id?: string | null
+          session_id?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          exception_flag?: boolean | null
+          exception_type?: string | null
+          id?: string
+          module_id?: string | null
+          session_id?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       training_progress: {
         Row: {
           created_at: string | null
