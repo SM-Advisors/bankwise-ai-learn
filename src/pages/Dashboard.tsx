@@ -362,8 +362,8 @@ export default function Dashboard() {
             <CardContent>
               <div className="flex flex-col gap-4">
                 <p className="text-sm text-muted-foreground">
-                  Join our Slack community to connect with fellow banking professionals, 
-                  share AI use cases, ask questions, and collaborate on best practices.
+                  Connect with fellow banking professionals, share AI use cases,
+                  ask questions, and collaborate on best practices.
                 </p>
                 {communityUrl ? (
                   <Button asChild className="gap-2 w-fit">
