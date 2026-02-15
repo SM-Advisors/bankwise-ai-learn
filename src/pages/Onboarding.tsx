@@ -78,13 +78,6 @@ export default function Onboarding() {
   const [learningStyle, setLearningStyle] = useState<LearningStyleType | null>(profile?.learning_style || null);
   const [techLearningStyle, setTechLearningStyle] = useState<LearningStyleType | null>(profile?.tech_learning_style || null);
 
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
-    }
-  }, [user, loading, navigate]);
-
   // Skip onboarding if already completed
   useEffect(() => {
     if (!loading && profile?.onboarding_completed) {

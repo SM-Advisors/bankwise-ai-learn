@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,8 +39,17 @@ export default function Auth() {
   const [resetEmail, setResetEmail] = useState('');
 
   // Redirect if already logged in
+  useEffect(() => {
+    if (user && !loading) {
+      if (profile?.onboarding_completed) {
+        navigate('/dashboard');
+      } else {
+        navigate('/onboarding');
+      }
+    }
+  }, [user, profile, loading, navigate]);
+
   if (user) {
-    navigate('/onboarding');
     return null;
   }
 

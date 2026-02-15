@@ -58,20 +58,6 @@ export default function Dashboard() {
 
   const communityUrl = appSettings.community_slack_url;
 
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
-    }
-  }, [user, loading, navigate]);
-
-  // Redirect to onboarding if not completed
-  useEffect(() => {
-    if (!loading && profile && !profile.onboarding_completed) {
-      navigate('/onboarding');
-    }
-  }, [profile, loading, navigate]);
-
   if (loading || !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center">

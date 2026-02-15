@@ -46,11 +46,11 @@ export default function Questionnaire() {
         <div className="mb-8">
           <Button
             variant="ghost"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/dashboard')}
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
+            Back to Dashboard
           </Button>
         </div>
 

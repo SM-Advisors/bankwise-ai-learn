@@ -62,11 +62,6 @@ I won't interrupt you constantly—I'm here when you need guidance. Good luck wi
     }
   }, [profile, session, selectedModule]);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
-    }
-  }, [user, loading, navigate]);
 
   useEffect(() => {
     if (session?.modules?.length && !selectedModule) {
