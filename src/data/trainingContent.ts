@@ -42,30 +42,21 @@ export const SESSION_1_CONTENT: SessionContent = {
   modules: [
     {
       id: '1-1',
-      title: 'Introduction to AI Prompting',
+      title: 'What is AI Prompting?',
       type: 'video',
-      description: 'Learn the basics of communicating effectively with AI',
-      estimatedTime: '10 min',
+      description: 'Quick intro to what AI prompting is and why it matters',
+      estimatedTime: '4 min',
       videoUrl: 'https://youtu.be/xZ1FAm7IoA4',
       learningObjectives: [
         'Understand what AI prompting is and why it matters',
         'Learn the basic structure of an effective prompt',
-        'Recognize how prompt quality affects AI output',
       ],
       content: {
-        overview: 'AI prompting is the skill of crafting clear, specific instructions to get useful responses from AI systems. Just like giving instructions to a colleague, the clearer your request, the better the result. In banking, effective prompting can help with drafting documents, analyzing data, summarizing reports, and much more.',
+        overview: 'AI prompting is the skill of crafting clear, specific instructions to get useful responses from AI systems. Just like giving instructions to a colleague, the clearer your request, the better the result.',
         keyPoints: [
           'A prompt is simply an instruction or question you give to an AI',
           'The quality of your prompt directly affects the quality of the response',
           'AI works best with clear, specific, and contextual instructions',
-          'Banking professionals need to balance detail with data security',
-        ],
-        steps: [
-          'Start with a clear objective: What do you want the AI to produce?',
-          'Provide relevant context: What background does the AI need?',
-          'Specify the format: How should the output be structured?',
-          'Include constraints: What should be included or excluded?',
-          'Review and refine: Check the output and adjust your prompt if needed',
         ],
         examples: [
           {
@@ -76,8 +67,8 @@ export const SESSION_1_CONTENT: SessionContent = {
           },
         ],
         practiceTask: {
-          title: 'Write Your First Prompt',
-          instructions: 'Transform the following vague request into a clear, specific prompt.',
+          title: 'Your First Prompt',
+          instructions: 'Transform a vague request into a clear, specific prompt.',
           scenario: 'You need to ask AI to help you write an email to a customer about their loan application status.',
           hints: [
             'Specify the tone (professional, friendly, formal)',
@@ -88,21 +79,64 @@ export const SESSION_1_CONTENT: SessionContent = {
             'Prompt specifies the purpose clearly',
             'Includes context about the audience',
             'Mentions desired format or structure',
-            'Considers banking compliance requirements',
           ],
         },
       },
     },
     {
       id: '1-2',
-      title: 'Prompt Structure Best Practices',
+      title: 'Anatomy of a Good Prompt',
       type: 'document',
-      description: 'Reference guide for crafting effective prompts using the CLEAR framework',
-      estimatedTime: '15 min',
+      description: 'The 5 elements every effective prompt should include',
+      estimatedTime: '5 min',
+      learningObjectives: [
+        'Recognize how prompt quality affects AI output',
+        'Identify the 5 key elements of a good prompt',
+      ],
+      content: {
+        overview: 'Every effective prompt has five key elements: Objective, Context, Format, Constraints, and Review. Understanding these elements helps you get consistently good results from AI.',
+        keyPoints: [
+          'Start with a clear objective: What do you want the AI to produce?',
+          'Provide relevant context: What background does the AI need?',
+          'Specify the format: How should the output be structured?',
+          'Include constraints: What should be included or excluded?',
+          'Review and refine: Check the output and adjust your prompt if needed',
+        ],
+        steps: [
+          'State your objective in one sentence',
+          'Add 1-2 sentences of context',
+          'Specify the output format you want',
+          'Note any constraints or exclusions',
+          'Plan to review and iterate on the result',
+        ],
+        practiceTask: {
+          title: 'Build a 5-Element Prompt',
+          instructions: 'Write a prompt that includes all 5 elements for this banking scenario.',
+          scenario: 'You need AI to help draft a brief talking point for a customer meeting about their savings account options.',
+          hints: [
+            'What is the objective?',
+            'What context does the AI need?',
+            'What format works best for talking points?',
+            'What should be excluded (e.g., specific rates)?',
+          ],
+          successCriteria: [
+            'Includes a clear objective',
+            'Provides relevant context',
+            'Specifies output format',
+            'Mentions constraints or exclusions',
+          ],
+        },
+      },
+    },
+    {
+      id: '1-3',
+      title: 'The CLEAR Framework',
+      type: 'document',
+      description: 'A structured approach: Context, Length, Examples, Audience, Requirements',
+      estimatedTime: '5 min',
       learningObjectives: [
         'Apply the CLEAR framework to structure prompts',
         'Identify components of a well-structured prompt',
-        'Adapt prompt structure for different banking tasks',
       ],
       content: {
         overview: 'The CLEAR framework helps you structure prompts for consistent, high-quality results. CLEAR stands for: Context, Length/Format, Examples, Audience, and Requirements.',
@@ -155,18 +189,17 @@ Requirements: Include debt service coverage ratio, current ratio, and industry c
       },
     },
     {
-      id: '1-3',
+      id: '1-4',
       title: 'Good vs Bad Prompts',
       type: 'example',
-      description: 'Compare examples of effective and ineffective prompts in banking contexts',
-      estimatedTime: '12 min',
+      description: 'Side-by-side comparison of effective and ineffective banking prompts',
+      estimatedTime: '4 min',
       learningObjectives: [
         'Identify common prompt mistakes',
         'Recognize characteristics of effective prompts',
-        'Practice improving weak prompts',
       ],
       content: {
-        overview: 'Learning to recognize what makes prompts effective helps you craft better instructions. This module shows real banking examples with side-by-side comparisons.',
+        overview: 'Learning to recognize what makes prompts effective helps you craft better instructions. These banking examples show side-by-side comparisons.',
         keyPoints: [
           'Vague prompts lead to generic, unhelpful responses',
           'Overly complex prompts can confuse the AI',
@@ -194,8 +227,8 @@ Requirements: Include debt service coverage ratio, current ratio, and industry c
           },
         ],
         practiceTask: {
-          title: 'Transform Bad Prompts',
-          instructions: 'Take the following bad prompt and rewrite it as an effective prompt.',
+          title: 'Transform a Bad Prompt',
+          instructions: 'Take the bad prompt below and rewrite it as an effective prompt.',
           scenario: 'Bad prompt: "Help me with this credit memo."\n\nContext: You\'re a credit analyst who needs to draft the risk factors section of a credit memo for a retail business applying for working capital.',
           hints: [
             'What specific help do you need?',
@@ -213,14 +246,13 @@ Requirements: Include debt service coverage ratio, current ratio, and industry c
       },
     },
     {
-      id: '1-4',
-      title: 'Context Setting Techniques',
+      id: '1-5',
+      title: 'Setting Context for Banking AI',
       type: 'document',
-      description: 'How to provide context for better AI responses in banking workflows',
-      estimatedTime: '15 min',
+      description: 'How to provide role, task, and security context in banking prompts',
+      estimatedTime: '4 min',
       learningObjectives: [
         'Master techniques for setting effective context',
-        'Learn when and how much context to provide',
         'Handle sensitive information appropriately',
       ],
       content: {
@@ -274,18 +306,101 @@ Security: Use generic placeholders for any specific amounts or dates.`,
       },
     },
     {
-      id: '1-5',
-      title: 'Practical Prompting Exercise',
-      type: 'exercise',
-      description: 'Hands-on exercise applying all prompting skills learned',
-      estimatedTime: '20 min',
+      id: '1-6',
+      title: 'Data Security in Prompts',
+      type: 'document',
+      description: 'What to share and what to protect when using AI in banking',
+      estimatedTime: '3 min',
       learningObjectives: [
-        'Apply CLEAR framework in a realistic scenario',
-        'Practice iterative prompt refinement',
-        'Demonstrate prompting proficiency',
+        'Know what data should never be shared with AI',
+        'Learn to use placeholders for sensitive information',
       ],
       content: {
-        overview: 'This capstone exercise brings together everything you\'ve learned. You\'ll work through a realistic banking scenario, crafting and refining prompts to complete a practical task.',
+        overview: 'Banking professionals must balance getting helpful AI responses with protecting sensitive customer and institutional data. This module covers what to share and what to protect.',
+        keyPoints: [
+          'Never share customer PII (Social Security numbers, account numbers, addresses)',
+          'Use placeholders for specific amounts: "$X" or "[AMOUNT]"',
+          'Avoid sharing internal system credentials or access codes',
+          'Anonymize customer details before including in prompts',
+          'When in doubt, leave it out and ask the AI to work with generic data',
+        ],
+        practiceTask: {
+          title: 'Sanitize a Prompt',
+          instructions: 'Rewrite the following prompt to remove sensitive data while keeping it useful.',
+          scenario: 'Original prompt: "Review John Smith\'s loan at 123 Main St, account #4567890, SSN 123-45-6789. His balance is $250,000 and he\'s 60 days past due. What collection approach should I take?"',
+          hints: [
+            'Replace the customer name with a generic reference',
+            'Remove the address, account number, and SSN entirely',
+            'Use a placeholder for the balance amount',
+            'Keep the relevant business context (past due status)',
+          ],
+          successCriteria: [
+            'All PII is removed or replaced with placeholders',
+            'The prompt still conveys the business need',
+            'Account numbers and SSNs are completely removed',
+            'The AI can still provide useful guidance',
+          ],
+        },
+      },
+    },
+    {
+      id: '1-7',
+      title: 'Prompt Iteration & Refinement',
+      type: 'example',
+      description: 'How to improve AI responses by refining your prompts step by step',
+      estimatedTime: '4 min',
+      learningObjectives: [
+        'Practice iterative prompt refinement',
+        'Learn when and how to adjust prompts for better results',
+      ],
+      content: {
+        overview: 'Getting the best results from AI is often an iterative process. Start with a good prompt, review the output, and refine based on what you get.',
+        keyPoints: [
+          'First attempt rarely produces perfect results — that\'s normal',
+          'Review output for accuracy, completeness, and tone',
+          'Add specificity where the AI was too vague',
+          'Remove instructions that led to unwanted content',
+        ],
+        examples: [
+          {
+            title: 'Iterative Refinement',
+            bad: 'Write me a risk assessment.',
+            good: 'Draft a risk assessment for a $500K equipment loan to a manufacturing company. Include: credit risk, collateral risk, industry risk. Format as a table with Risk Type, Rating (H/M/L), and Mitigation. Keep it under 1 page.',
+            explanation: 'The refined prompt adds specificity about the loan, requested risks, format, and length constraints — all learned from a first attempt that was too generic.',
+          },
+        ],
+        practiceTask: {
+          title: 'Refine a Prompt',
+          instructions: 'Start with the basic prompt below and refine it through 2-3 iterations.',
+          scenario: 'Starting prompt: "Help me prepare for a loan committee meeting."\n\nYou are a credit analyst presenting a new commercial loan request. Iterate on this prompt to make it produce useful meeting prep materials.',
+          hints: [
+            'Add your role and the meeting context',
+            'Specify what materials you need (summary, talking points, Q&A)',
+            'Include format preferences',
+            'Add compliance and security notes',
+          ],
+          successCriteria: [
+            'Shows clear improvement from basic to refined',
+            'Final prompt includes role context',
+            'Specifies deliverables and format',
+            'Considers compliance requirements',
+          ],
+        },
+      },
+    },
+    {
+      id: '1-8',
+      title: 'Capstone: Complete Banking Prompt',
+      type: 'exercise',
+      description: 'Apply all skills to craft a comprehensive prompt for a real banking scenario',
+      estimatedTime: '5 min',
+      learningObjectives: [
+        'Apply CLEAR framework in a realistic scenario',
+        'Demonstrate prompting proficiency',
+        'Combine all techniques into a single effective prompt',
+      ],
+      content: {
+        overview: 'This capstone exercise brings together everything you\'ve learned. You\'ll craft a comprehensive prompt for a realistic banking scenario using the CLEAR framework, proper context-setting, and data security awareness.',
         keyPoints: [
           'Combine CLEAR framework with context-setting',
           'Start simple, then add detail as needed',

@@ -3,6 +3,7 @@ import { type ModuleContent } from '@/data/trainingContent';
 export interface Message {
   role: 'user' | 'assistant';
   content: string;
+  suggestedPrompts?: string[];
 }
 
 export interface BankPolicy {

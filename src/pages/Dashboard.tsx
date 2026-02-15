@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { HelpTour } from '@/components/HelpTour';
 import { BankPolicyModal } from '@/components/BankPolicyModal';
+import { VideoModal } from '@/components/VideoModal';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { useLiveTrainingSessions } from '@/hooks/useLiveTrainingSessions';
@@ -17,7 +18,7 @@ import {
   Loader2, Play, CheckCircle, Lock, Sparkles, Bot,
   Building2, HelpCircle, BookOpen, Shield, Lightbulb,
   Radio, Calendar, Users, Clock, MessageCircle, ExternalLink,
-  CalendarDays
+  CalendarDays, Video
 } from 'lucide-react';
 
 const SESSIONS = [
@@ -56,6 +57,7 @@ export default function Dashboard() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
   const { policies, loading: policiesLoading } = useBankPolicies();
   const { sessions: liveSessions, loading: liveSessionsLoading } = useLiveTrainingSessions();
   const { events, loading: eventsLoading } = useEvents();
@@ -131,6 +133,14 @@ export default function Dashboard() {
         open={!!selectedEvent}
         onOpenChange={(open) => !open && setSelectedEvent(null)}
         event={selectedEvent}
+      />
+
+      {/* Session 1 Intro Video Modal */}
+      <VideoModal
+        open={videoModalOpen}
+        onOpenChange={setVideoModalOpen}
+        videoUrl="https://youtu.be/xZ1FAm7IoA4"
+        title="Session 1: Introduction to AI Prompting"
       />
 
       {/* Header */}
@@ -394,32 +404,55 @@ export default function Dashboard() {
                     {liveSessions.length} Upcoming
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="gap-1">
-                    <Users className="h-3 w-3" />
-                    Coming Soon
+                  <Badge variant="secondary" className="gap-1">
+                    <Video className="h-3 w-3" />
+                    1 Video Available
                   </Badge>
                 )}
               </div>
               <CardDescription>
-                Join live training sessions with expert instructors
+                Watch training videos and join live sessions with expert instructors
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Featured Intro Video */}
+              <div
+                className="relative p-4 rounded-lg border bg-gradient-to-r from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 transition-colors cursor-pointer mb-3"
+                onClick={() => setVideoModalOpen(true)}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="shrink-0 p-3 rounded-full bg-primary/20 text-primary">
+                    <Video className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge className="bg-primary/90 text-primary-foreground text-xs">Session 1</Badge>
+                    </div>
+                    <h4 className="font-medium">Introduction to AI Prompting</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">Watch the intro video to get started with your training</p>
+                  </div>
+                  <Button size="sm" className="gap-2 shrink-0">
+                    <Play className="h-3.5 w-3.5" />
+                    Watch Now
+                  </Button>
+                </div>
+              </div>
+
+              {/* Live Sessions */}
               {liveSessionsLoading ? (
-                <div className="flex items-center justify-center py-8">
+                <div className="flex items-center justify-center py-4">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
               ) : liveSessions.length === 0 ? (
-                <div className="text-center py-8">
-                  <Radio className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-                  <p className="text-muted-foreground">
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">
                     No live sessions scheduled yet. Check back soon!
                   </p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {liveSessions.filter(s => new Date(s.scheduled_date) >= new Date()).slice(0, 2).map((session) => (
-                    <div 
+                    <div
                       key={session.id}
                       className="relative p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors"
                     >

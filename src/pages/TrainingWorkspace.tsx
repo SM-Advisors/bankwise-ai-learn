@@ -39,7 +39,8 @@ export default function TrainingWorkspace() {
   const [policyModalOpen, setPolicyModalOpen] = useState(false);
   const [selectedPolicy, setSelectedPolicy] = useState<BankPolicy | null>(null);
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
-  
+  const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
+
   const { policies } = useBankPolicies();
 
   const session = sessionId ? ALL_SESSION_CONTENT[parseInt(sessionId)] : null;
@@ -234,16 +235,23 @@ Feel free to ask me for more detailed feedback!`;
       });
 
       if (response.error) throw response.error;
-      
-      const assistantMessage: Message = { 
-        role: 'assistant', 
-        content: response.data?.reply || 'I\'m here to help you with your training. What questions do you have?' 
+
+      const replyData = response.data;
+      const replyText = replyData?.reply || 'I\'m here to help you with your training. What questions do you have?';
+      const prompts = replyData?.suggestedPrompts || [];
+
+      const assistantMessage: Message = {
+        role: 'assistant',
+        content: replyText,
+        suggestedPrompts: prompts,
       };
       setTrainerMessages(prev => [...prev, assistantMessage]);
+      setSuggestedPrompts(prompts);
     } catch (error) {
       console.error('Trainer error:', error);
       const contextualResponse = generateContextualResponse(trainerInput, selectedModule, profile, practiceInput);
       setTrainerMessages(prev => [...prev, { role: 'assistant', content: contextualResponse }]);
+      setSuggestedPrompts([]);
     } finally {
       setIsTrainerLoading(false);
     }
@@ -252,8 +260,9 @@ Feel free to ask me for more detailed feedback!`;
   const handleQuickAction = async (prompt: string) => {
     const userMessage: Message = { role: 'user', content: prompt };
     setTrainerMessages(prev => [...prev, userMessage]);
+    setSuggestedPrompts([]);
     setIsTrainerLoading(true);
-    
+
     try {
       const response = await supabase.functions.invoke('trainer_chat', {
         body: {
@@ -268,16 +277,23 @@ Feel free to ask me for more detailed feedback!`;
       });
 
       if (response.error) throw response.error;
-      
-      const assistantMessage: Message = { 
-        role: 'assistant', 
-        content: response.data?.reply || 'I\'m here to help you with your training.' 
+
+      const replyData = response.data;
+      const replyText = replyData?.reply || 'I\'m here to help you with your training.';
+      const prompts = replyData?.suggestedPrompts || [];
+
+      const assistantMessage: Message = {
+        role: 'assistant',
+        content: replyText,
+        suggestedPrompts: prompts,
       };
       setTrainerMessages(prev => [...prev, assistantMessage]);
+      setSuggestedPrompts(prompts);
     } catch (error) {
       console.error('Trainer error:', error);
       const contextualResponse = generateContextualResponse(prompt, selectedModule, profile, practiceInput);
       setTrainerMessages(prev => [...prev, { role: 'assistant', content: contextualResponse }]);
+      setSuggestedPrompts([]);
     } finally {
       setIsTrainerLoading(false);
     }
@@ -417,6 +433,7 @@ Feel free to ask me for more detailed feedback!`;
           onSubmit={handleTrainerSubmit}
           onQuickAction={handleQuickAction}
           isLoading={isTrainerLoading}
+          suggestedPrompts={suggestedPrompts}
         />
       </div>
 
