@@ -17,7 +17,7 @@ const nameSchema = z.string().min(2, 'Name must be at least 2 characters').max(1
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, profile, loading } = useAuth();
   const { toast } = useToast();
   
   const [isLoading, setIsLoading] = useState(false);
