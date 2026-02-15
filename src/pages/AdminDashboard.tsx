@@ -19,6 +19,8 @@ import { useAdminAppSettings } from '@/hooks/useAppSettings';
 import { useAllEvents, EventInsert } from '@/hooks/useEvents';
 import { getEventTypeConfig } from '@/components/EventModal';
 import { UsersManagement } from '@/components/UsersManagement';
+import { ProgressDashboard } from '@/components/admin/ProgressDashboard';
+import { IdeasInbox } from '@/components/admin/IdeasInbox';
 import { learningStyles } from '@/data/learningStyles';
 import { departments } from '@/data/topics';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
@@ -52,7 +54,8 @@ import {
   Settings,
   MessageCircle,
   Link,
-  CalendarDays
+  CalendarDays,
+  BarChart3
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -431,15 +434,23 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-bold">Training Administration</h1>
         </div>
         <p className="text-muted-foreground">
-          Manage users, policies, training programs, and curriculum content
+          Manage users, view reports, review ideas, and administer training content
         </p>
       </div>
 
       <Tabs defaultValue="users" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-9 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-11 lg:w-auto lg:inline-grid">
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Users</span>
+          </TabsTrigger>
+          <TabsTrigger value="reporting" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Reports</span>
+          </TabsTrigger>
+          <TabsTrigger value="ideas" className="flex items-center gap-2">
+            <Lightbulb className="h-4 w-4" />
+            <span className="hidden sm:inline">Ideas</span>
           </TabsTrigger>
           <TabsTrigger value="events" className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4" />
@@ -478,6 +489,16 @@ export default function AdminDashboard() {
         {/* Users Management Tab */}
         <TabsContent value="users" className="space-y-6">
           <UsersManagement />
+        </TabsContent>
+
+        {/* Reporting Tab */}
+        <TabsContent value="reporting" className="space-y-6">
+          <ProgressDashboard />
+        </TabsContent>
+
+        {/* Ideas Inbox Tab */}
+        <TabsContent value="ideas" className="space-y-6">
+          <IdeasInbox />
         </TabsContent>
 
         {/* Events Management Tab */}

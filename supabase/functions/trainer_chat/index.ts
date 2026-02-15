@@ -447,6 +447,19 @@ ${learnerState?.progressSummary ? `- Learner's Practice: ${learnerState.progress
       }
     }
 
+    // Log prompt telemetry (fire-and-forget, non-blocking)
+    if (userId) {
+      supabase
+        .from("prompt_events")
+        .insert({
+          user_id: userId,
+          session_id: lessonId ? parseInt(lessonId) : null,
+          module_id: moduleId || null,
+          event_type: "prompt_submitted",
+        })
+        .then(() => {});
+    }
+
     return new Response(
       JSON.stringify({ reply, suggestedPrompts }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
