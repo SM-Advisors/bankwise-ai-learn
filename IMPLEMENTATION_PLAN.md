@@ -11,11 +11,11 @@
 
 | # | Feature | Complexity | DB Changes | Est. Files | Phase |
 |---|---------|------------|------------|------------|-------|
-| 1 | Bank Identity Required | Low | 1 field | 4 files | Phase 1 |
-| 2 | Policies List + Detail Views | Low | None | 5 files | Phase 1 |
+| 1 | Bank Identity Required | Low | 1 field | 5 files | Phase 1 |
+| 2 | Policies List + Detail Views | Low | None | 4 files | Phase 1 |
 | 3 | Guided Product Tour | Medium | 1 field | 3 files + lib | Phase 2 |
 | 4 | Calendar of Events | Medium | 1 table | 6 files | Phase 2 |
-| 5 | Community Hub Link | Low | Config only | 2 files | Phase 1 |
+| 5 | Community Hub Verification | Low | None | 1-2 files | Phase 1 |
 | 6 | Training Experience Updates | Moderate | None | 8 files | Phase 3 |
 | 7 | Andrea Output Controls | Moderate | Schema change | 4 files | Phase 3 |
 | 8 | AI Preferences + Memory | High | 2 tables | 7 files | Phase 4 |
@@ -45,9 +45,11 @@ ADD COLUMN employer_bank_name TEXT;
 2. Update TypeScript types (`UserProfile` interface)
 3. Update `AuthContext.tsx` to include `employer_bank_name` in profile type
 4. Modify `Onboarding.tsx`:
-   - Add Step 1.5 (after role, before AI proficiency): "Employer Bank"
+   - Current flow is 4 steps: Role/LOB → AI Proficiency → Learning Style → Tech Learning Style
+   - Insert new Step 2: "Employer Bank" (after Role/LOB, before AI Proficiency)
+   - This makes it a **5-step onboarding flow**
    - Add validation (required field)
-   - Update state management
+   - Update step numbering, state management, and progress indicator
    - Update `updateProfile` call to include bank name
 5. Modify `Dashboard.tsx` header:
    - Add bank name above "AI Training Dashboard"
@@ -69,7 +71,9 @@ ADD COLUMN employer_bank_name TEXT;
 2. `src/pages/Policies.tsx` - NEW (list view)
 3. `src/pages/PolicyDetail.tsx` - NEW (detail view)
 4. `src/pages/Dashboard.tsx` - Update policy card click handler
-5. `src/hooks/useBankPolicies.ts` - Already exists, use as-is
+
+**Existing Dependencies (no changes needed):**
+- `src/hooks/useBankPolicies.ts` - Already exports `useBankPolicies()` and `useAllBankPolicies()` with full CRUD
 
 **Database Changes:** None (uses existing `bank_policies` table)
 
@@ -98,29 +102,32 @@ ADD COLUMN employer_bank_name TEXT;
 
 ---
 
-### Feature 5: Community Hub Platform Link
+### Feature 5: Community Hub Verification & Polish
 
-**Files to Modify:**
-1. `src/pages/Dashboard.tsx` - Update Community Hub card
-2. `src/hooks/useAppSettings.ts` - Already exists
+**Current State:** The Community Hub card already exists on the Dashboard with Slack integration, and the AdminDashboard Settings tab already allows managing the community URL via `app_settings`. The `useAppSettings` hook already provides access to settings.
 
-**Database Changes:** None (uses existing `app_settings` table)
+**This feature is mostly implemented.** The work here is verification and minor polish.
+
+**Files to Potentially Modify:**
+1. `src/pages/Dashboard.tsx` - Verify Community Hub card behavior, update description text if needed
+
+**Database Changes:** None (uses existing `app_settings` table with `community_slack_url` key)
 
 **Implementation Steps:**
-1. Verify `community_slack_url` key exists in `app_settings`
-2. Update Dashboard.tsx Community Hub card:
-   - Keep existing button logic
-   - Update description text to be platform-agnostic
-   - Ensure external link opens in new tab
-3. Document in admin that URL can be:
-   - Microsoft Teams invite link
-   - Slack workspace link
-   - Circle community URL
+1. Verify `community_slack_url` key exists in `app_settings` and works end-to-end
+2. Verify Dashboard Community Hub card:
+   - Button opens the configured URL
+   - Link opens in new tab (`target="_blank"`)
+   - "Coming Soon" or disabled state if URL not configured
+3. Update description text to be platform-agnostic (currently may say "Slack"):
+   - Should work for Microsoft Teams, Slack, Circle, or any platform
+4. Verify admin can update the URL via AdminDashboard → Settings tab
 
 **Acceptance Criteria:**
-- ✅ Community Hub button opens configured URL
-- ✅ Link opens in new tab
-- ✅ "Coming Soon" state if URL not configured
+- ✅ Community Hub button opens configured URL in new tab
+- ✅ Graceful state if URL not configured
+- ✅ Description text is platform-agnostic (not Slack-specific)
+- ✅ Admin can configure the URL from Settings
 
 ---
 
@@ -297,6 +304,10 @@ C. Copilot-Like Center UI (Complex)
 ---
 
 ### Feature 7: Andrea Output Controls
+
+**Note:** Two edge functions exist for chat: `trainer_chat/index.ts` (actively used by TrainingWorkspace) and `ai-trainer/index.ts` (appears to be an older version). All changes target `trainer_chat` only. The `ai-trainer` function can be cleaned up separately.
+
+**Note:** The `trainer_chat` function uses `lesson_content_chunks` table for RAG/vector search. Changes to response format must preserve the existing RAG context pipeline.
 
 **Files to Modify:**
 1. `supabase/functions/trainer_chat/index.ts` - Update response format
@@ -577,16 +588,35 @@ If any feature breaks critically:
 ## Dependencies Check
 
 **External Libraries Needed:**
-- `driver.js` - For product tour (Phase 2)
-- All other dependencies already in package.json
+- `driver.js` - For product tour (Phase 2) — NOT currently installed
+- All other dependencies already in package.json, including:
+  - `recharts` — needed for Phase 4 reporting charts
+  - `react-markdown` + `remark-gfm` — used for policy content rendering
+  - `date-fns` — date formatting for events and reporting
+  - `lucide-react` — icons throughout UI
 
 **Database Migrations Needed:**
 - Phase 1: 1 migration (employer_bank_name)
 - Phase 2: 2 migrations (tour_completed, events table)
 - Phase 3: None
-- Phase 4: 2 migrations (ai_preferences, ai_memories, prompt_events)
+- Phase 4: 2 migrations (ai_preferences + ai_memories, prompt_events)
 
-**Total:** 5 new migrations
+**Total:** 5 new migrations (8 existing migrations in `supabase/migrations/`)
+
+**Existing Hooks Available (no changes needed):**
+- `useBankPolicies` / `useAllBankPolicies` — policy CRUD
+- `useAppSettings` / `useAdminAppSettings` — app config
+- `useLiveTrainingSessions` — live sessions
+- `useUserIdeas` — ideas CRUD
+- `useUserRole` — role checking
+- `useSessionTimeout` — session management
+
+**Edge Functions:**
+- `trainer_chat/index.ts` — Active chat function (targets for Features 7, 8, 9)
+- `submission_review/index.ts` — Practice submission reviews
+- `ai-trainer/index.ts` — Legacy/duplicate of trainer_chat (not actively used)
+- `ai-practice/index.ts` — Practice handling
+- `generate-lesson/index.ts` — Lesson generation
 
 ---
 
