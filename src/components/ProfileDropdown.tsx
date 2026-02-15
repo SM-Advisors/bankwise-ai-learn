@@ -84,7 +84,7 @@ export function ProfileDropdown() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/auth');
+    navigate('/');
   };
 
   const handleRetakeIntake = async () => {
