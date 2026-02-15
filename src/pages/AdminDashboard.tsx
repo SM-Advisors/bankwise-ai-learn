@@ -16,6 +16,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useAllBankPolicies } from '@/hooks/useBankPolicies';
 import { useAllLiveTrainingSessions, LiveTrainingSessionInsert } from '@/hooks/useLiveTrainingSessions';
 import { useAdminAppSettings } from '@/hooks/useAppSettings';
+import { useAllEvents, EventInsert } from '@/hooks/useEvents';
+import { getEventTypeConfig } from '@/components/EventModal';
 import { UsersManagement } from '@/components/UsersManagement';
 import { learningStyles } from '@/data/learningStyles';
 import { departments } from '@/data/topics';
@@ -49,7 +51,8 @@ import {
   Trash2,
   Settings,
   MessageCircle,
-  Link
+  Link,
+  CalendarDays
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -164,6 +167,21 @@ export default function AdminDashboard() {
     duration_minutes: 60,
     max_attendees: 50,
     is_active: true,
+  });
+
+  // Events state
+  const { events, loading: eventsLoading, createEvent, updateEvent, deleteEvent } = useAllEvents();
+  const [editingEvent, setEditingEvent] = useState<any>(null);
+  const [isCreatingEvent, setIsCreatingEvent] = useState(false);
+  const [eventForm, setEventForm] = useState({
+    title: '',
+    description: '',
+    event_type: 'live_training',
+    scheduled_date: '',
+    duration_minutes: 60,
+    location: '',
+    instructor: '',
+    max_attendees: 50,
   });
 
   // App settings state
@@ -313,6 +331,76 @@ export default function AdminDashboard() {
     }
   };
 
+  // Event handlers
+  const resetEventForm = () => {
+    setEventForm({
+      title: '',
+      description: '',
+      event_type: 'live_training',
+      scheduled_date: '',
+      duration_minutes: 60,
+      location: '',
+      instructor: '',
+      max_attendees: 50,
+    });
+  };
+
+  const handleEditEvent = (event: any) => {
+    setEditingEvent(event);
+    setEventForm({
+      title: event.title,
+      description: event.description || '',
+      event_type: event.event_type,
+      scheduled_date: event.scheduled_date.slice(0, 16),
+      duration_minutes: event.duration_minutes || 60,
+      location: event.location || '',
+      instructor: event.instructor || '',
+      max_attendees: event.max_attendees || 50,
+    });
+  };
+
+  const handleSaveEvent = async () => {
+    if (!editingEvent) return;
+    const result = await updateEvent(editingEvent.id, {
+      ...eventForm,
+      scheduled_date: new Date(eventForm.scheduled_date).toISOString(),
+    });
+    if (result.success) {
+      toast({ title: 'Event updated', description: 'The event has been saved.' });
+      setEditingEvent(null);
+      resetEventForm();
+    } else {
+      toast({ title: 'Error', description: result.error, variant: 'destructive' });
+    }
+  };
+
+  const handleCreateEvent = async () => {
+    if (!eventForm.title || !eventForm.scheduled_date || !eventForm.event_type) {
+      toast({ title: 'Missing fields', description: 'Please fill in all required fields.', variant: 'destructive' });
+      return;
+    }
+    const result = await createEvent({
+      ...eventForm,
+      scheduled_date: new Date(eventForm.scheduled_date).toISOString(),
+    });
+    if (result.success) {
+      toast({ title: 'Event created', description: 'The event has been scheduled.' });
+      setIsCreatingEvent(false);
+      resetEventForm();
+    } else {
+      toast({ title: 'Error', description: result.error, variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteEvent = async (id: string) => {
+    const result = await deleteEvent(id);
+    if (result.success) {
+      toast({ title: 'Event deleted', description: 'The event has been removed.' });
+    } else {
+      toast({ title: 'Error', description: result.error, variant: 'destructive' });
+    }
+  };
+
   const handleSaveCommunityUrl = async () => {
     setSavingCommunityUrl(true);
     const result = await updateSetting('community_slack_url', communityUrl);
@@ -348,10 +436,14 @@ export default function AdminDashboard() {
       </div>
 
       <Tabs defaultValue="users" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-8 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-9 lg:w-auto lg:inline-grid">
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Users</span>
+          </TabsTrigger>
+          <TabsTrigger value="events" className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4" />
+            <span className="hidden sm:inline">Events</span>
           </TabsTrigger>
           <TabsTrigger value="live-feed" className="flex items-center gap-2">
             <Radio className="h-4 w-4" />
@@ -386,6 +478,314 @@ export default function AdminDashboard() {
         {/* Users Management Tab */}
         <TabsContent value="users" className="space-y-6">
           <UsersManagement />
+        </TabsContent>
+
+        {/* Events Management Tab */}
+        <TabsContent value="events" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <CalendarDays className="h-5 w-5 text-primary" />
+                    Events Calendar Management
+                  </CardTitle>
+                  <CardDescription>
+                    Create and manage events that appear on user dashboards
+                  </CardDescription>
+                </div>
+                <Button onClick={() => setIsCreatingEvent(true)} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Event
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {eventsLoading ? (
+                <div className="text-center py-8 text-muted-foreground">Loading events...</div>
+              ) : events.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No events scheduled. Click "Add Event" to create one.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {events.map((event) => {
+                    const config = getEventTypeConfig(event.event_type);
+                    const EventIcon = config.icon;
+                    return (
+                      <Card key={event.id} className="border">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <div className={`p-1.5 rounded ${config.color}`}>
+                                  <EventIcon className="h-3.5 w-3.5" />
+                                </div>
+                                <CardTitle className="text-lg">{event.title}</CardTitle>
+                                {!event.is_active && (
+                                  <Badge variant="outline" className="text-xs">Inactive</Badge>
+                                )}
+                                {new Date(event.scheduled_date) < new Date() && (
+                                  <Badge variant="secondary" className="text-xs">Past</Badge>
+                                )}
+                              </div>
+                              <CardDescription>{event.description}</CardDescription>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditEvent(event)}
+                                className="gap-2"
+                              >
+                                <Edit className="h-4 w-4" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteEvent(event.id)}
+                                className="gap-2 text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                            <Badge variant="secondary" className={config.color}>{config.label}</Badge>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              {new Date(event.scheduled_date).toLocaleDateString()}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
+                              {new Date(event.scheduled_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                            {event.duration_minutes && <Badge variant="secondary">{event.duration_minutes} min</Badge>}
+                            {event.instructor && (
+                              <div className="flex items-center gap-1">
+                                <Users className="h-4 w-4" />
+                                {event.instructor}
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Edit Event Dialog */}
+          <Dialog open={!!editingEvent} onOpenChange={(open) => !open && setEditingEvent(null)}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Edit Event</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-event-title">Title *</Label>
+                  <Input
+                    id="edit-event-title"
+                    value={eventForm.title}
+                    onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-event-desc">Description</Label>
+                  <Textarea
+                    id="edit-event-desc"
+                    value={eventForm.description}
+                    onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-event-type">Event Type *</Label>
+                    <select
+                      id="edit-event-type"
+                      value={eventForm.event_type}
+                      onChange={(e) => setEventForm({ ...eventForm, event_type: e.target.value })}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="live_training">Live Training</option>
+                      <option value="office_hours">Office Hours</option>
+                      <option value="webinar">Webinar</option>
+                      <option value="deadline">Deadline</option>
+                      <option value="community_session">Community Session</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-event-date">Date & Time *</Label>
+                    <Input
+                      id="edit-event-date"
+                      type="datetime-local"
+                      value={eventForm.scheduled_date}
+                      onChange={(e) => setEventForm({ ...eventForm, scheduled_date: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-event-duration">Duration (minutes)</Label>
+                    <Input
+                      id="edit-event-duration"
+                      type="number"
+                      value={eventForm.duration_minutes}
+                      onChange={(e) => setEventForm({ ...eventForm, duration_minutes: parseInt(e.target.value) || 60 })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-event-instructor">Instructor</Label>
+                    <Input
+                      id="edit-event-instructor"
+                      value={eventForm.instructor}
+                      onChange={(e) => setEventForm({ ...eventForm, instructor: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-event-location">Location / URL</Label>
+                    <Input
+                      id="edit-event-location"
+                      value={eventForm.location}
+                      onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                      placeholder="https://zoom.us/... or Room 101"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-event-max">Max Attendees</Label>
+                    <Input
+                      id="edit-event-max"
+                      type="number"
+                      value={eventForm.max_attendees}
+                      onChange={(e) => setEventForm({ ...eventForm, max_attendees: parseInt(e.target.value) || 50 })}
+                    />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setEditingEvent(null)}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveEvent}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Create Event Dialog */}
+          <Dialog open={isCreatingEvent} onOpenChange={setIsCreatingEvent}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Create New Event</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-event-title">Title *</Label>
+                  <Input
+                    id="new-event-title"
+                    value={eventForm.title}
+                    onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                    placeholder="AI for Credit Risk Analysis"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-event-desc">Description</Label>
+                  <Textarea
+                    id="new-event-desc"
+                    value={eventForm.description}
+                    onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                    placeholder="What will participants learn or discuss?"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-event-type">Event Type *</Label>
+                    <select
+                      id="new-event-type"
+                      value={eventForm.event_type}
+                      onChange={(e) => setEventForm({ ...eventForm, event_type: e.target.value })}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="live_training">Live Training</option>
+                      <option value="office_hours">Office Hours</option>
+                      <option value="webinar">Webinar</option>
+                      <option value="deadline">Deadline</option>
+                      <option value="community_session">Community Session</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-event-date">Date & Time *</Label>
+                    <Input
+                      id="new-event-date"
+                      type="datetime-local"
+                      value={eventForm.scheduled_date}
+                      onChange={(e) => setEventForm({ ...eventForm, scheduled_date: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-event-duration">Duration (minutes)</Label>
+                    <Input
+                      id="new-event-duration"
+                      type="number"
+                      value={eventForm.duration_minutes}
+                      onChange={(e) => setEventForm({ ...eventForm, duration_minutes: parseInt(e.target.value) || 60 })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-event-instructor">Instructor</Label>
+                    <Input
+                      id="new-event-instructor"
+                      value={eventForm.instructor}
+                      onChange={(e) => setEventForm({ ...eventForm, instructor: e.target.value })}
+                      placeholder="Sarah Chen"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-event-location">Location / URL</Label>
+                    <Input
+                      id="new-event-location"
+                      value={eventForm.location}
+                      onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                      placeholder="https://zoom.us/... or Room 101"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-event-max">Max Attendees</Label>
+                    <Input
+                      id="new-event-max"
+                      type="number"
+                      value={eventForm.max_attendees}
+                      onChange={(e) => setEventForm({ ...eventForm, max_attendees: parseInt(e.target.value) || 50 })}
+                    />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => { setIsCreatingEvent(false); resetEventForm(); }}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button onClick={handleCreateEvent}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Event
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         {/* Live Feed Management Tab */}

@@ -10,11 +10,14 @@ import { BankPolicyModal } from '@/components/BankPolicyModal';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { useLiveTrainingSessions } from '@/hooks/useLiveTrainingSessions';
+import { useEvents } from '@/hooks/useEvents';
+import { EventModal, getEventTypeConfig } from '@/components/EventModal';
 import { useAppSettings } from '@/hooks/useAppSettings';
-import { 
-  Loader2, Play, CheckCircle, Lock, Sparkles, Bot, 
+import {
+  Loader2, Play, CheckCircle, Lock, Sparkles, Bot,
   Building2, HelpCircle, BookOpen, Shield, Lightbulb,
-  Radio, Calendar, Users, Clock, MessageCircle, ExternalLink
+  Radio, Calendar, Users, Clock, MessageCircle, ExternalLink,
+  CalendarDays
 } from 'lucide-react';
 
 const SESSIONS = [
@@ -52,8 +55,10 @@ export default function Dashboard() {
   const { user, profile, progress, loading, signOut, updateProfile } = useAuth();
   const [helpOpen, setHelpOpen] = useState(false);
   const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const { policies, loading: policiesLoading } = useBankPolicies();
   const { sessions: liveSessions, loading: liveSessionsLoading } = useLiveTrainingSessions();
+  const { events, loading: eventsLoading } = useEvents();
   const { settings: appSettings } = useAppSettings();
 
   const communityUrl = appSettings.community_slack_url;
@@ -115,10 +120,17 @@ export default function Dashboard() {
       <HelpTour open={helpOpen} onOpenChange={setHelpOpen} onComplete={handleTourComplete} />
       
       {/* Bank Policy Modal */}
-      <BankPolicyModal 
-        open={!!selectedPolicy} 
-        onOpenChange={(open) => !open && setSelectedPolicy(null)} 
-        policy={selectedPolicy} 
+      <BankPolicyModal
+        open={!!selectedPolicy}
+        onOpenChange={(open) => !open && setSelectedPolicy(null)}
+        policy={selectedPolicy}
+      />
+
+      {/* Event Detail Modal */}
+      <EventModal
+        open={!!selectedEvent}
+        onOpenChange={(open) => !open && setSelectedEvent(null)}
+        event={selectedEvent}
       />
 
       {/* Header */}
@@ -276,8 +288,95 @@ export default function Dashboard() {
           })}
         </div>
 
+        {/* Upcoming Events */}
+        <div className="mt-8">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="h-5 w-5 text-primary" />
+                  <CardTitle>Upcoming Events</CardTitle>
+                </div>
+                {(() => {
+                  const upcomingEvents = events.filter(e => new Date(e.scheduled_date) >= new Date());
+                  return upcomingEvents.length > 0 ? (
+                    <Badge variant="secondary" className="gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {upcomingEvents.length} Upcoming
+                    </Badge>
+                  ) : null;
+                })()}
+              </div>
+              <CardDescription>
+                Training sessions, webinars, office hours, and community events
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {eventsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : (() => {
+                const upcomingEvents = events.filter(e => new Date(e.scheduled_date) >= new Date()).slice(0, 3);
+                if (upcomingEvents.length === 0) {
+                  return (
+                    <div className="text-center py-8">
+                      <CalendarDays className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                      <p className="text-muted-foreground">
+                        No upcoming events scheduled. Check back soon!
+                      </p>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="grid gap-3 md:grid-cols-3">
+                    {upcomingEvents.map((event) => {
+                      const config = getEventTypeConfig(event.event_type);
+                      const EventIcon = config.icon;
+                      const eventDate = new Date(event.scheduled_date);
+                      return (
+                        <div
+                          key={event.id}
+                          className="p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                          onClick={() => setSelectedEvent(event)}
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className={`p-1.5 rounded ${config.color}`}>
+                              <EventIcon className="h-3.5 w-3.5" />
+                            </div>
+                            <Badge variant="outline" className="text-xs">
+                              {config.label}
+                            </Badge>
+                          </div>
+                          <h4 className="font-medium text-sm mb-2 line-clamp-2">{event.title}</h4>
+                          <div className="space-y-1 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-3 w-3" />
+                              <span>{eventDate.toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="h-3 w-3" />
+                              <span>{eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                            {event.instructor && (
+                              <div className="flex items-center gap-1.5">
+                                <Users className="h-3 w-3" />
+                                <span>{event.instructor}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Live Feed and Community Hub - Side by Side */}
-        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <div className="mt-6 grid gap-6 lg:grid-cols-2">
           {/* Live Feed Section */}
           <Card>
             <CardHeader>

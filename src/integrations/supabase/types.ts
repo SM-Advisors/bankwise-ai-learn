@@ -41,6 +41,62 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          event_type: string
+          scheduled_date: string
+          duration_minutes: number | null
+          location: string | null
+          instructor: string | null
+          max_attendees: number | null
+          is_active: boolean | null
+          live_session_id: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          event_type: string
+          scheduled_date: string
+          duration_minutes?: number | null
+          location?: string | null
+          instructor?: string | null
+          max_attendees?: number | null
+          is_active?: boolean | null
+          live_session_id?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          event_type?: string
+          scheduled_date?: string
+          duration_minutes?: number | null
+          location?: string | null
+          instructor?: string | null
+          max_attendees?: number | null
+          is_active?: boolean | null
+          live_session_id?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_live_session_id_fkey"
+            columns: ["live_session_id"]
+            isOneToOne: false
+            referencedRelation: "live_training_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bank_policies: {
         Row: {
           content: string
