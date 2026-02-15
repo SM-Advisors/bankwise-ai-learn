@@ -383,40 +383,58 @@ export default function Dashboard() {
           </Card>
 
           {/* Community Hub Section */}
-          <Card className="border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-            <CardHeader>
+          <Card className="overflow-hidden">
+            <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <MessageCircle className="h-5 w-5 text-primary" />
+                <div className="p-2 rounded-lg" style={{ backgroundColor: '#4A154B' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zm1.271 0a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zm0 1.271a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zm10.124 2.521a2.528 2.528 0 0 1 2.52-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.52V8.834zm-1.271 0a2.528 2.528 0 0 1-2.521 2.521 2.528 2.528 0 0 1-2.521-2.521V2.522A2.528 2.528 0 0 1 15.166 0a2.528 2.528 0 0 1 2.521 2.522v6.312zm-2.521 10.124a2.528 2.528 0 0 1 2.521 2.52A2.528 2.528 0 0 1 15.166 24a2.527 2.527 0 0 1-2.521-2.522v-2.52h2.521zm0-1.271a2.527 2.527 0 0 1-2.521-2.521 2.528 2.528 0 0 1 2.521-2.521h6.312A2.528 2.528 0 0 1 24 15.166a2.528 2.528 0 0 1-2.522 2.521h-6.312z" fill="white"/>
+                  </svg>
                 </div>
                 <div>
                   <CardTitle>Community Hub</CardTitle>
                   <CardDescription>
-                    Connect with peers, share ideas, and learn from others
+                    # all-smile-ai-enablement-for-banking
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col gap-4">
-                <p className="text-sm text-muted-foreground">
-                  Connect with fellow banking professionals, share AI use cases,
-                  ask questions, and collaborate on best practices.
-                </p>
-                {communityUrl ? (
-                  <Button asChild className="gap-2 w-fit">
-                    <a href={communityUrl} target="_blank" rel="noopener noreferrer">
-                      <MessageCircle className="h-4 w-4" />
-                      Join Community
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </Button>
-                ) : (
-                  <Button disabled className="gap-2 w-fit">
+              {/* Slack-style message preview */}
+              <div className="rounded-lg border bg-muted/30 p-4 space-y-4 mb-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-8 w-8 rounded-md bg-primary/20 flex items-center justify-center text-xs font-bold text-primary shrink-0">CK</div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold">CoryK</span>
+                      <span className="text-xs text-muted-foreground">5:29 PM</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-0.5">Claude for excel and powerpoint are really wild. Huge opportunity to see instant ROI in terms of efficiencies.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="h-8 w-8 rounded-md bg-accent flex items-center justify-center text-xs font-bold text-accent-foreground shrink-0">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm text-muted-foreground italic">Join the conversation and share your AI use cases with fellow banking professionals...</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button asChild className="gap-2 flex-1" style={{ backgroundColor: '#4A154B' }}>
+                  <a href="slack://channel?team=T0AF5EP30BU&id=C0AFJC7SQUR">
                     <MessageCircle className="h-4 w-4" />
-                    Coming Soon
-                  </Button>
-                )}
+                    Open in Slack
+                  </a>
+                </Button>
+                <Button asChild variant="outline" className="gap-2">
+                  <a href="https://app.slack.com/client/T0AF5EP30BU/C0AFJC7SQUR" target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4" />
+                    Web
+                  </a>
+                </Button>
               </div>
             </CardContent>
           </Card>
