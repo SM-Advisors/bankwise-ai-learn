@@ -9,9 +9,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  ArrowRight, ArrowLeft, Building2, Briefcase, Brain, 
-  Lightbulb, CheckCircle, User, Loader2 
+import {
+  ArrowRight, ArrowLeft, Building2, Briefcase, Brain,
+  Lightbulb, CheckCircle, User, Loader2, Landmark
 } from 'lucide-react';
 
 const LOB_OPTIONS: { value: LineOfBusiness; label: string; description: string }[] = [
@@ -73,6 +73,7 @@ export default function Onboarding() {
   
   // Profile form state
   const [bankRole, setBankRole] = useState(profile?.bank_role || '');
+  const [employerBankName, setEmployerBankName] = useState(profile?.employer_bank_name || '');
   const [lineOfBusiness, setLineOfBusiness] = useState<LineOfBusiness | null>(profile?.line_of_business || null);
   const [aiProficiency, setAiProficiency] = useState(profile?.ai_proficiency_level ?? 0);
   const [learningStyle, setLearningStyle] = useState<LearningStyleType | null>(profile?.learning_style || null);
@@ -93,7 +94,7 @@ export default function Onboarding() {
     );
   }
 
-  const totalSteps = 4;
+  const totalSteps = 5;
   const progressPercent = (step / totalSteps) * 100;
 
   const handleNext = () => {
@@ -101,11 +102,15 @@ export default function Onboarding() {
       toast({ title: 'Required', description: 'Please complete all fields', variant: 'destructive' });
       return;
     }
-    if (step === 3 && !learningStyle) {
+    if (step === 2 && !employerBankName.trim()) {
+      toast({ title: 'Required', description: 'Please enter your employer bank name', variant: 'destructive' });
+      return;
+    }
+    if (step === 4 && !learningStyle) {
       toast({ title: 'Required', description: 'Please select a learning style', variant: 'destructive' });
       return;
     }
-    if (step === 4 && !techLearningStyle) {
+    if (step === 5 && !techLearningStyle) {
       toast({ title: 'Required', description: 'Please select a tech learning style', variant: 'destructive' });
       return;
     }
@@ -127,6 +132,7 @@ export default function Onboarding() {
     setIsSubmitting(true);
     
     const { error } = await updateProfile({
+      employer_bank_name: employerBankName,
       line_of_business: lineOfBusiness,
       bank_role: bankRole,
       ai_proficiency_level: aiProficiency,
@@ -226,8 +232,36 @@ export default function Onboarding() {
             </>
           )}
 
-          {/* Step 2: AI Proficiency */}
+          {/* Step 2: Employer Bank */}
           {step === 2 && (
+            <>
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Landmark className="h-5 w-5 text-primary" />
+                  </div>
+                  <CardTitle>Your Bank</CardTitle>
+                </div>
+                <CardDescription>
+                  Enter the name of your employer bank. This helps us customize content and policies for your institution.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="employer-bank">Employer Bank Name</Label>
+                  <Input
+                    id="employer-bank"
+                    placeholder="e.g., First National Bank, Community Trust Bank"
+                    value={employerBankName}
+                    onChange={(e) => setEmployerBankName(e.target.value)}
+                  />
+                </div>
+              </CardContent>
+            </>
+          )}
+
+          {/* Step 3: AI Proficiency */}
+          {step === 3 && (
             <>
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
@@ -287,8 +321,8 @@ export default function Onboarding() {
             </>
           )}
 
-          {/* Step 3: General Learning Style */}
-          {step === 3 && (
+          {/* Step 4: General Learning Style */}
+          {step === 4 && (
             <>
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
@@ -331,8 +365,8 @@ export default function Onboarding() {
             </>
           )}
 
-          {/* Step 4: Tech Learning Style */}
-          {step === 4 && (
+          {/* Step 5: Tech Learning Style */}
+          {step === 5 && (
             <>
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">

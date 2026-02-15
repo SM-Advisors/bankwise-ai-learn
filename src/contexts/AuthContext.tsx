@@ -9,6 +9,7 @@ export interface UserProfile {
   id: string;
   user_id: string;
   display_name: string | null;
+  employer_bank_name: string | null;
   line_of_business: LineOfBusiness | null;
   bank_role: string | null;
   learning_style: LearningStyleType | null;

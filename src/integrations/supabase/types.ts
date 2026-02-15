@@ -231,6 +231,7 @@ export type Database = {
           created_at: string | null
           current_session: number | null
           display_name: string | null
+          employer_bank_name: string | null
           id: string
           learning_style:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -251,6 +252,7 @@ export type Database = {
           created_at?: string | null
           current_session?: number | null
           display_name?: string | null
+          employer_bank_name?: string | null
           id?: string
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -271,6 +273,7 @@ export type Database = {
           created_at?: string | null
           current_session?: number | null
           display_name?: string | null
+          employer_bank_name?: string | null
           id?: string
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]

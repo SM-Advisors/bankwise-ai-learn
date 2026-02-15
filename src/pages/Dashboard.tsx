@@ -112,6 +112,11 @@ export default function Dashboard() {
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div>
+            {profile.employer_bank_name && (
+              <p className="text-xs text-muted-foreground/70 font-medium tracking-wide uppercase">
+                {profile.employer_bank_name}
+              </p>
+            )}
             <h1 className="text-xl font-display font-bold">AI Training Dashboard</h1>
             <p className="text-sm text-muted-foreground">
               Welcome back, {profile.display_name || 'Learner'}
