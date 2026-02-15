@@ -16,73 +16,73 @@ export type Database = {
     Tables: {
       ai_memories: {
         Row: {
-          id: string
-          user_id: string
           content: string
-          source: string | null
           context: string | null
-          is_pinned: boolean | null
-          is_active: boolean | null
           created_at: string | null
+          id: string
+          is_active: boolean | null
+          is_pinned: boolean | null
+          source: string | null
           updated_at: string | null
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
           content: string
-          source?: string | null
           context?: string | null
-          is_pinned?: boolean | null
-          is_active?: boolean | null
           created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_pinned?: boolean | null
+          source?: string | null
           updated_at?: string | null
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
           content?: string
-          source?: string | null
           context?: string | null
-          is_pinned?: boolean | null
-          is_active?: boolean | null
           created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_pinned?: boolean | null
+          source?: string | null
           updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
       ai_user_preferences: {
         Row: {
-          id: string
-          user_id: string
-          tone: string | null
-          verbosity: string | null
-          formatting_preference: string | null
-          role_context: string | null
           additional_instructions: string | null
           created_at: string | null
+          formatting_preference: string | null
+          id: string
+          role_context: string | null
+          tone: string | null
           updated_at: string | null
+          user_id: string
+          verbosity: string | null
         }
         Insert: {
-          id?: string
-          user_id: string
-          tone?: string | null
-          verbosity?: string | null
-          formatting_preference?: string | null
-          role_context?: string | null
           additional_instructions?: string | null
           created_at?: string | null
+          formatting_preference?: string | null
+          id?: string
+          role_context?: string | null
+          tone?: string | null
           updated_at?: string | null
+          user_id: string
+          verbosity?: string | null
         }
         Update: {
-          id?: string
-          user_id?: string
-          tone?: string | null
-          verbosity?: string | null
-          formatting_preference?: string | null
-          role_context?: string | null
           additional_instructions?: string | null
           created_at?: string | null
+          formatting_preference?: string | null
+          id?: string
+          role_context?: string | null
+          tone?: string | null
           updated_at?: string | null
+          user_id?: string
+          verbosity?: string | null
         }
         Relationships: []
       }
@@ -112,62 +112,6 @@ export type Database = {
           value?: string | null
         }
         Relationships: []
-      }
-      events: {
-        Row: {
-          id: string
-          title: string
-          description: string | null
-          event_type: string
-          scheduled_date: string
-          duration_minutes: number | null
-          location: string | null
-          instructor: string | null
-          max_attendees: number | null
-          is_active: boolean | null
-          live_session_id: string | null
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          title: string
-          description?: string | null
-          event_type: string
-          scheduled_date: string
-          duration_minutes?: number | null
-          location?: string | null
-          instructor?: string | null
-          max_attendees?: number | null
-          is_active?: boolean | null
-          live_session_id?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          title?: string
-          description?: string | null
-          event_type?: string
-          scheduled_date?: string
-          duration_minutes?: number | null
-          location?: string | null
-          instructor?: string | null
-          max_attendees?: number | null
-          is_active?: boolean | null
-          live_session_id?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "events_live_session_id_fkey"
-            columns: ["live_session_id"]
-            isOneToOne: false
-            referencedRelation: "live_training_sessions"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       bank_policies: {
         Row: {
@@ -241,39 +185,6 @@ export type Database = {
           source?: string | null
           text?: string
           updated_at?: string
-        }
-        Relationships: []
-      }
-      prompt_events: {
-        Row: {
-          id: string
-          user_id: string
-          session_id: number | null
-          module_id: string | null
-          event_type: string
-          exception_flag: boolean | null
-          exception_type: string | null
-          created_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          session_id?: number | null
-          module_id?: string | null
-          event_type: string
-          exception_flag?: boolean | null
-          exception_type?: string | null
-          created_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          session_id?: number | null
-          module_id?: string | null
-          event_type?: string
-          exception_flag?: boolean | null
-          exception_type?: string | null
-          created_at?: string | null
         }
         Relationships: []
       }
@@ -392,7 +303,6 @@ export type Database = {
           created_at: string | null
           current_session: number | null
           display_name: string | null
-          employer_bank_name: string | null
           id: string
           learning_style:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -404,7 +314,6 @@ export type Database = {
           tech_learning_style:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
-          tour_completed: boolean | null
           updated_at: string | null
           user_id: string
         }
@@ -414,7 +323,6 @@ export type Database = {
           created_at?: string | null
           current_session?: number | null
           display_name?: string | null
-          employer_bank_name?: string | null
           id?: string
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -426,7 +334,6 @@ export type Database = {
           tech_learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
-          tour_completed?: boolean | null
           updated_at?: string | null
           user_id: string
         }
@@ -436,7 +343,6 @@ export type Database = {
           created_at?: string | null
           current_session?: number | null
           display_name?: string | null
-          employer_bank_name?: string | null
           id?: string
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -448,7 +354,6 @@ export type Database = {
           tech_learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
-          tour_completed?: boolean | null
           updated_at?: string | null
           user_id?: string
         }
