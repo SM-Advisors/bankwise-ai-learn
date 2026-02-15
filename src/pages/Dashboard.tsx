@@ -49,7 +49,7 @@ const policyIconMap: Record<string, React.ElementType> = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user, profile, progress, loading, signOut } = useAuth();
+  const { user, profile, progress, loading, signOut, updateProfile } = useAuth();
   const [helpOpen, setHelpOpen] = useState(false);
   const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
   const { policies, loading: policiesLoading } = useBankPolicies();
@@ -57,6 +57,19 @@ export default function Dashboard() {
   const { settings: appSettings } = useAppSettings();
 
   const communityUrl = appSettings.community_slack_url;
+
+  // Auto-start tour for new users who haven't completed it
+  useEffect(() => {
+    if (profile && !profile.tour_completed && !helpOpen) {
+      setHelpOpen(true);
+    }
+  }, [profile?.tour_completed]);
+
+  const handleTourComplete = async () => {
+    if (profile && !profile.tour_completed) {
+      await updateProfile({ tour_completed: true } as any);
+    }
+  };
 
   if (loading || !profile) {
     return (
@@ -99,7 +112,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Help Tour Dialog */}
-      <HelpTour open={helpOpen} onOpenChange={setHelpOpen} />
+      <HelpTour open={helpOpen} onOpenChange={setHelpOpen} onComplete={handleTourComplete} />
       
       {/* Bank Policy Modal */}
       <BankPolicyModal 
@@ -150,7 +163,7 @@ export default function Dashboard() {
               <HelpCircle className="h-4 w-4" />
               Help
             </Button>
-            <ProfileDropdown />
+            <ProfileDropdown onReplayTour={() => setHelpOpen(true)} />
           </div>
         </div>
       </header>

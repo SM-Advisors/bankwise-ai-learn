@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { User, Settings, LogOut, ChevronDown, RefreshCw } from 'lucide-react';
+import { User, Settings, LogOut, ChevronDown, RefreshCw, Play } from 'lucide-react';
 
 const LOB_OPTIONS: { value: LineOfBusiness; label: string }[] = [
   { value: 'accounting_finance', label: 'Accounting & Finance' },
@@ -36,7 +36,11 @@ const LOB_OPTIONS: { value: LineOfBusiness; label: string }[] = [
   { value: 'executive_leadership', label: 'Executive & Leadership' },
 ];
 
-export function ProfileDropdown() {
+interface ProfileDropdownProps {
+  onReplayTour?: () => void;
+}
+
+export function ProfileDropdown({ onReplayTour }: ProfileDropdownProps = {}) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { profile, signOut, updateProfile } = useAuth();
@@ -126,6 +130,12 @@ export function ProfileDropdown() {
             <User className="mr-2 h-4 w-4" />
             My Profile
           </DropdownMenuItem>
+          {onReplayTour && (
+            <DropdownMenuItem onClick={onReplayTour} className="cursor-pointer">
+              <Play className="mr-2 h-4 w-4" />
+              Replay Tour
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={handleRetakeIntake} className="cursor-pointer">
             <RefreshCw className="mr-2 h-4 w-4" />
             Retake Intake Form

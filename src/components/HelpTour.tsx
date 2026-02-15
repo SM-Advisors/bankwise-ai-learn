@@ -12,13 +12,14 @@ import { Badge } from '@/components/ui/badge';
 import {
   ChevronLeft,
   ChevronRight,
-  LayoutDashboard,
+  Sparkles,
+  User,
   GraduationCap,
-  MessageSquare,
-  BookOpen,
+  Radio,
+  MessageCircle,
+  Shield,
   Bot,
-  Settings,
-  HelpCircle,
+  PartyPopper,
 } from 'lucide-react';
 
 interface TourStep {
@@ -30,63 +31,83 @@ interface TourStep {
 
 const TOUR_STEPS: TourStep[] = [
   {
-    title: 'Dashboard Overview',
-    description: 'Your dashboard is the central hub for tracking your AI training progress. Here you can see your learning track, overall completion percentage, and access each training session.',
-    icon: LayoutDashboard,
+    title: 'Welcome to BankWise AI Training!',
+    description: "Let's show you around the platform. This quick tour will highlight the key areas you'll use during your AI training journey.",
+    icon: Sparkles,
+    tips: [
+      'This tour takes about 1 minute to complete',
+      'You can skip at any time and replay later',
+      'Each step highlights a key feature of the platform',
+    ],
+  },
+  {
+    title: 'Your Profile & Progress',
+    description: 'The profile card at the top shows your name, role, department, and overall training progress. Track your completion percentage as you work through sessions.',
+    icon: User,
     tips: [
       'Your progress is automatically saved as you complete modules',
-      'Sessions unlock sequentially - complete one to access the next',
+      'Click the profile menu to edit your details or retake the intake form',
       'Your learning style badge shows how content is personalized for you',
     ],
   },
   {
     title: 'Training Sessions',
-    description: 'The platform has three main training sessions that build on each other: AI Prompting & Personalization, Building Your AI Agent, and Role-Specific Training.',
+    description: 'Complete three progressive sessions to build your AI skills: Prompting & Personalization, Building Your AI Agent, and Role-Specific Training. Sessions unlock sequentially.',
     icon: GraduationCap,
     tips: [
-      'Session 1 teaches foundational AI prompting skills',
-      'Session 2 helps you create a custom AI agent for your role',
-      'Session 3 provides training specific to your department',
+      'Each session has multiple interactive modules with practice tasks',
+      'Sessions unlock in order — complete one to access the next',
+      'Content adapts to your learning style and department',
     ],
   },
   {
-    title: 'Training Workspace',
-    description: 'When you start a session, you\'ll enter the three-column training workspace. The left panel shows training modules, the center is your practice area, and the right panel is your AI trainer.',
-    icon: BookOpen,
+    title: 'Live Training Feed',
+    description: 'Join live sessions with expert instructors. These are scheduled events where you can learn alongside your peers and ask questions in real time.',
+    icon: Radio,
     tips: [
-      'Click modules on the left to view their content and exercises',
-      'The center area has clear tasks and lessons to complete',
-      'Both side panels can be collapsed for more workspace',
+      'Upcoming sessions appear with date, time, and instructor info',
+      'Click "Notify Me" to get a reminder before the session starts',
+      'Check back regularly for new live training opportunities',
     ],
   },
   {
-    title: 'AI Practice Area',
-    description: 'The center column is where you apply what you\'ve learned. Each module has specific tasks, examples, and exercises. Practice prompting, review AI responses, and build your skills.',
-    icon: MessageSquare,
+    title: 'Community Hub',
+    description: 'Connect with fellow banking professionals. Share AI use cases, ask questions, and collaborate on best practices with your peers across the organization.',
+    icon: MessageCircle,
     tips: [
-      'Read the lesson content before attempting the task',
-      'Try different prompt variations to see how AI responds',
-      'Your work is reviewed by the AI trainer for feedback',
+      'Click "Join Community" to access the discussion space',
+      'Share ideas and learn from others\' experiences',
+      'Great place to get help when you\'re stuck on a concept',
     ],
   },
   {
-    title: 'AI Training Coach',
-    description: 'The AI trainer in the right panel is your personal coach. It can answer questions about the current lesson, review your progress, provide feedback on your work, and offer suggestions.',
+    title: 'Bank Policies',
+    description: "Access your institution's AI usage policies and guidelines. Review these before applying AI skills in your daily work to ensure compliance.",
+    icon: Shield,
+    tips: [
+      'Click "Bank Policies" in the header to browse all policies',
+      'Policies are searchable and filterable by type',
+      'Review updated policies regularly as guidelines evolve',
+    ],
+  },
+  {
+    title: 'Your AI Coach — Andrea',
+    description: 'During training sessions, Andrea is your personal AI coach. She answers questions, reviews your work, provides feedback, and guides you through exercises.',
     icon: Bot,
     tips: [
-      'Ask questions about concepts you don\'t understand',
-      'Request feedback on your practice prompts',
-      'Ask for examples related to your specific role',
+      'Andrea appears in the right panel during training sessions',
+      'Ask her questions about concepts you don\'t understand',
+      'She provides personalized feedback on your practice tasks',
     ],
   },
   {
-    title: 'Administration & Resources',
-    description: 'Access the Admin panel to view all training programs, learning styles, and curriculum content. Bank resources provide policies and guidelines for compliant AI usage.',
-    icon: Settings,
+    title: 'Tour Complete!',
+    description: "You're all set to start your AI training journey. Begin with Session 1 to build your prompting foundation. You can replay this tour anytime from the profile menu.",
+    icon: PartyPopper,
     tips: [
-      'Admin panel shows all available training content',
-      'Review AI usage policies before applying skills at work',
-      'Bank resources include compliance guidelines',
+      'Start with Session 1: AI Prompting & Personalization',
+      'Use the Help button or profile menu to replay this tour',
+      'Your progress saves automatically — pick up where you left off',
     ],
   },
 ];
@@ -94,9 +115,10 @@ const TOUR_STEPS: TourStep[] = [
 interface HelpTourProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onComplete?: () => void;
 }
 
-export function HelpTour({ open, onOpenChange }: HelpTourProps) {
+export function HelpTour({ open, onOpenChange, onComplete }: HelpTourProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
   const step = TOUR_STEPS[currentStep];
@@ -106,6 +128,7 @@ export function HelpTour({ open, onOpenChange }: HelpTourProps) {
 
   const handleNext = () => {
     if (isLast) {
+      onComplete?.();
       onOpenChange(false);
       setCurrentStep(0);
     } else {
@@ -120,6 +143,7 @@ export function HelpTour({ open, onOpenChange }: HelpTourProps) {
   };
 
   const handleClose = () => {
+    onComplete?.();
     onOpenChange(false);
     setCurrentStep(0);
   };
@@ -129,7 +153,6 @@ export function HelpTour({ open, onOpenChange }: HelpTourProps) {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-2">
-            <HelpCircle className="h-5 w-5 text-primary" />
             <Badge variant="secondary">
               Step {currentStep + 1} of {TOUR_STEPS.length}
             </Badge>
@@ -168,6 +191,8 @@ export function HelpTour({ open, onOpenChange }: HelpTourProps) {
               className={`h-2 rounded-full transition-all ${
                 idx === currentStep
                   ? 'w-6 bg-primary'
+                  : idx < currentStep
+                  ? 'w-2 bg-primary/50'
                   : 'w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
               }`}
             />
@@ -189,7 +214,7 @@ export function HelpTour({ open, onOpenChange }: HelpTourProps) {
               Skip Tour
             </Button>
             <Button onClick={handleNext} className="gap-1">
-              {isLast ? 'Finish' : 'Next'}
+              {isLast ? 'Get Started!' : 'Next'}
               {!isLast && <ChevronRight className="h-4 w-4" />}
             </Button>
           </div>

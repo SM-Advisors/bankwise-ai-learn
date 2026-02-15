@@ -243,6 +243,7 @@ export type Database = {
           tech_learning_style:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
+          tour_completed: boolean | null
           updated_at: string | null
           user_id: string
         }
@@ -264,6 +265,7 @@ export type Database = {
           tech_learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
+          tour_completed?: boolean | null
           updated_at?: string | null
           user_id: string
         }
@@ -285,6 +287,7 @@ export type Database = {
           tech_learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
+          tour_completed?: boolean | null
           updated_at?: string | null
           user_id?: string
         }

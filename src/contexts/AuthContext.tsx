@@ -16,6 +16,7 @@ export interface UserProfile {
   tech_learning_style: LearningStyleType | null;
   ai_proficiency_level: number | null;
   onboarding_completed: boolean;
+  tour_completed: boolean;
   current_session: number;
   created_at: string;
   updated_at: string;
