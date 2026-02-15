@@ -15,6 +15,7 @@ import { TrainerChatPanel } from '@/components/training/TrainerChatPanel';
 import { PracticeTaskCard } from '@/components/training/PracticeTaskCard';
 import { ModuleListSidebar } from '@/components/training/ModuleListSidebar';
 import { type Message, type BankPolicy } from '@/types/training';
+import { useAIMemories } from '@/hooks/useAIPreferences';
 import { Loader2, ArrowLeft, Clock, Shield } from 'lucide-react';
 
 export default function TrainingWorkspace() {
@@ -42,6 +43,7 @@ export default function TrainingWorkspace() {
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
 
   const { policies } = useBankPolicies();
+  const { createMemory } = useAIMemories();
 
   const session = sessionId ? ALL_SESSION_CONTENT[parseInt(sessionId)] : null;
 
@@ -434,6 +436,16 @@ Feel free to ask me for more detailed feedback!`;
           onQuickAction={handleQuickAction}
           isLoading={isTrainerLoading}
           suggestedPrompts={suggestedPrompts}
+          onSaveMemory={async (content) => {
+            const result = await createMemory({
+              content,
+              source: 'user_saved',
+              context: selectedModule ? `Session ${sessionId} - ${selectedModule.title}` : undefined,
+            });
+            if (result.success) {
+              toast({ title: 'Memory saved', description: 'Andrea will remember this insight.' });
+            }
+          }}
         />
       </div>
 

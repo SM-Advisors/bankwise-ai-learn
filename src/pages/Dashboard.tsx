@@ -18,7 +18,7 @@ import {
   Loader2, Play, CheckCircle, Lock, Sparkles, Bot,
   Building2, HelpCircle, BookOpen, Shield, Lightbulb,
   Radio, Calendar, Users, Clock, MessageCircle, ExternalLink,
-  CalendarDays, Video
+  CalendarDays, Video, Settings, Brain
 } from 'lucide-react';
 
 const SESSIONS = [
@@ -176,9 +176,27 @@ export default function Dashboard() {
               <Shield className="h-4 w-4" />
               Bank Policies
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+              onClick={() => navigate('/memories')}
+            >
+              <Brain className="h-4 w-4" />
+              Memories
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+              onClick={() => navigate('/settings')}
+            >
+              <Settings className="h-4 w-4" />
+              AI Settings
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               className="gap-2"
               onClick={() => setHelpOpen(true)}
             >

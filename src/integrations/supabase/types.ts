@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_memories: {
+        Row: {
+          id: string
+          user_id: string
+          content: string
+          source: string | null
+          context: string | null
+          is_pinned: boolean | null
+          is_active: boolean | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          content: string
+          source?: string | null
+          context?: string | null
+          is_pinned?: boolean | null
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          content?: string
+          source?: string | null
+          context?: string | null
+          is_pinned?: boolean | null
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      ai_user_preferences: {
+        Row: {
+          id: string
+          user_id: string
+          tone: string | null
+          verbosity: string | null
+          formatting_preference: string | null
+          role_context: string | null
+          additional_instructions: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          tone?: string | null
+          verbosity?: string | null
+          formatting_preference?: string | null
+          role_context?: string | null
+          additional_instructions?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          tone?: string | null
+          verbosity?: string | null
+          formatting_preference?: string | null
+          role_context?: string | null
+          additional_instructions?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           created_at: string

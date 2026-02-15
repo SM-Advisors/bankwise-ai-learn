@@ -108,6 +108,20 @@ interface BankPolicy {
   policy_type: string;
 }
 
+interface AIPreferences {
+  tone: string | null;
+  verbosity: string | null;
+  formatting_preference: string | null;
+  role_context: string | null;
+  additional_instructions: string | null;
+}
+
+interface AIMemory {
+  content: string;
+  context: string | null;
+  is_pinned: boolean;
+}
+
 // Retrieve lesson content chunks from database
 async function retrieveLessonContext(
   supabase: any,
@@ -224,6 +238,27 @@ serve(async (req) => {
       }
     }
 
+    // Fetch AI preferences and pinned memories
+    let aiPreferences: AIPreferences | null = null;
+    let aiMemories: AIMemory[] = [];
+    if (userId) {
+      const { data: prefs } = await supabase
+        .from("ai_user_preferences")
+        .select("tone, verbosity, formatting_preference, role_context, additional_instructions")
+        .eq("user_id", userId)
+        .single();
+      if (prefs) aiPreferences = prefs as AIPreferences;
+
+      const { data: mems } = await supabase
+        .from("ai_memories")
+        .select("content, context, is_pinned")
+        .eq("user_id", userId)
+        .eq("is_active", true)
+        .eq("is_pinned", true)
+        .limit(10);
+      if (mems) aiMemories = mems as AIMemory[];
+    }
+
     // Build RAG query from latest user message + context
     const latestUserMessage = messages.filter(m => m.role === "user").pop()?.content || "";
     const ragQuery = `${learnerState?.currentCardTitle || ""} ${latestUserMessage}`.trim();
@@ -308,6 +343,23 @@ ${getProficiencyInstructions(aiProficiencyLevel)}
 ${contextSection}
 
 ${policiesSection}
+
+${aiPreferences ? `## USER AI PREFERENCES
+- Preferred tone: ${aiPreferences.tone || 'professional'}
+- Verbosity: ${aiPreferences.verbosity || 'balanced'}
+- Formatting: ${aiPreferences.formatting_preference || 'mixed'}
+${aiPreferences.role_context ? `- Role context: ${aiPreferences.role_context}` : ""}
+${aiPreferences.additional_instructions ? `- Custom instructions: ${aiPreferences.additional_instructions}` : ""}
+
+Adapt your responses to match these preferences while maintaining your coaching role.
+
+---` : ""}
+
+${aiMemories.length > 0 ? `## LEARNER MEMORIES (Pinned)
+The learner has saved these key insights. Reference them when relevant:
+${aiMemories.map((m, i) => `${i + 1}. ${m.content}${m.context ? ` (from: ${m.context})` : ""}`).join("\n")}
+
+---` : ""}
 
 ## CURRENT CONTEXT
 - Lesson ID: ${lessonId}

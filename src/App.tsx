@@ -23,6 +23,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Ideas from "./pages/Ideas";
 import Policies from "./pages/Policies";
 import PolicyDetail from "./pages/PolicyDetail";
+import Settings from "./pages/Settings";
+import AIMemories from "./pages/AIMemories";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
@@ -81,6 +83,16 @@ const App = () => (
                   <Route path="/policies/:id" element={
                     <ProtectedRoute requireOnboarding>
                       <PolicyDetail />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/settings" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Settings />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/memories" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AIMemories />
                     </ProtectedRoute>
                   } />
 

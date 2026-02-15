@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check } from 'lucide-react';
+import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { type Message } from '@/types/training';
 
@@ -19,6 +19,7 @@ interface TrainerChatPanelProps {
   onQuickAction: (prompt: string) => void;
   isLoading: boolean;
   suggestedPrompts?: string[];
+  onSaveMemory?: (content: string) => void;
 }
 
 type QuickActionType = 'review' | 'example' | 'hint' | null;
@@ -33,10 +34,12 @@ export function TrainerChatPanel({
   onQuickAction,
   isLoading,
   suggestedPrompts,
+  onSaveMemory,
 }: TrainerChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [activeQuickAction, setActiveQuickAction] = useState<QuickActionType>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [savedIndex, setSavedIndex] = useState<number | null>(null);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -62,6 +65,14 @@ export function TrainerChatPanel({
       setTimeout(() => setCopiedIndex(null), 2000);
     } catch {
       // Clipboard API may not be available
+    }
+  };
+
+  const handleSaveMemory = (content: string, index: number) => {
+    if (onSaveMemory) {
+      onSaveMemory(content);
+      setSavedIndex(index);
+      setTimeout(() => setSavedIndex(null), 2000);
     }
   };
 
@@ -138,6 +149,19 @@ export function TrainerChatPanel({
                             <Copy className="h-3 w-3 text-muted-foreground" />
                           )}
                         </button>
+                        {onSaveMemory && (
+                          <button
+                            onClick={() => handleSaveMemory(message.content, idx)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-background/50"
+                            title="Save as memory"
+                          >
+                            {savedIndex === idx ? (
+                              <Check className="h-3 w-3 text-green-500" />
+                            ) : (
+                              <Bookmark className="h-3 w-3 text-muted-foreground" />
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
