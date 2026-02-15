@@ -162,38 +162,51 @@ export default function Dashboard() {
               variant="ghost"
               size="sm"
               className="gap-2"
-              onClick={() => navigate('/ideas')}
-            >
-              <Lightbulb className="h-4 w-4" />
-              My Ideas
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2"
               onClick={() => navigate('/policies')}
             >
               <Shield className="h-4 w-4" />
               Bank Policies
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2"
-              onClick={() => navigate('/memories')}
-            >
-              <Brain className="h-4 w-4" />
-              Memories
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2"
-              onClick={() => navigate('/settings')}
-            >
-              <Settings className="h-4 w-4" />
-              AI Settings
-            </Button>
+            <div className="relative group">
+              <Button variant="ghost" size="sm" className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                My Personalization
+              </Button>
+              <div className="absolute right-0 top-full mt-1 w-56 bg-card border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <div className="p-1.5 space-y-0.5">
+                  <button
+                    className="w-full text-left px-3 py-2.5 text-sm rounded-md hover:bg-muted transition-colors flex items-center gap-2.5"
+                    onClick={() => navigate('/settings')}
+                  >
+                    <Settings className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <div className="font-medium">AI Settings</div>
+                      <div className="text-xs text-muted-foreground">Customize Andrea's behavior</div>
+                    </div>
+                  </button>
+                  <button
+                    className="w-full text-left px-3 py-2.5 text-sm rounded-md hover:bg-muted transition-colors flex items-center gap-2.5"
+                    onClick={() => navigate('/memories')}
+                  >
+                    <Brain className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <div className="font-medium">Memories</div>
+                      <div className="text-xs text-muted-foreground">What Andrea remembers</div>
+                    </div>
+                  </button>
+                  <button
+                    className="w-full text-left px-3 py-2.5 text-sm rounded-md hover:bg-muted transition-colors flex items-center gap-2.5"
+                    onClick={() => navigate('/ideas')}
+                  >
+                    <Lightbulb className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <div className="font-medium">My Ideas</div>
+                      <div className="text-xs text-muted-foreground">AI use cases to explore</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
             <Button
               variant="ghost"
               size="sm"
@@ -316,189 +329,51 @@ export default function Dashboard() {
           })}
         </div>
 
-        {/* Upcoming Events */}
-        <div className="mt-8">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="h-5 w-5 text-primary" />
-                  <CardTitle>Upcoming Events</CardTitle>
-                </div>
-                {(() => {
-                  const upcomingEvents = events.filter(e => new Date(e.scheduled_date) >= new Date());
-                  return upcomingEvents.length > 0 ? (
-                    <Badge variant="secondary" className="gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {upcomingEvents.length} Upcoming
-                    </Badge>
-                  ) : null;
-                })()}
-              </div>
-              <CardDescription>
-                Training sessions, webinars, office hours, and community events
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {eventsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : (() => {
-                const upcomingEvents = events.filter(e => new Date(e.scheduled_date) >= new Date()).slice(0, 3);
-                if (upcomingEvents.length === 0) {
-                  return (
-                    <div className="text-center py-8">
-                      <CalendarDays className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-                      <p className="text-muted-foreground">
-                        No upcoming events scheduled. Check back soon!
-                      </p>
-                    </div>
-                  );
-                }
-                return (
-                  <div className="grid gap-3 md:grid-cols-3">
-                    {upcomingEvents.map((event) => {
-                      const config = getEventTypeConfig(event.event_type);
-                      const EventIcon = config.icon;
-                      const eventDate = new Date(event.scheduled_date);
-                      return (
-                        <div
-                          key={event.id}
-                          className="p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
-                          onClick={() => setSelectedEvent(event)}
-                        >
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className={`p-1.5 rounded ${config.color}`}>
-                              <EventIcon className="h-3.5 w-3.5" />
-                            </div>
-                            <Badge variant="outline" className="text-xs">
-                              {config.label}
-                            </Badge>
-                          </div>
-                          <h4 className="font-medium text-sm mb-2 line-clamp-2">{event.title}</h4>
-                          <div className="space-y-1 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1.5">
-                              <Calendar className="h-3 w-3" />
-                              <span>{eventDate.toLocaleDateString()}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <Clock className="h-3 w-3" />
-                              <span>{eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                            </div>
-                            {event.instructor && (
-                              <div className="flex items-center gap-1.5">
-                                <Users className="h-3 w-3" />
-                                <span>{event.instructor}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Live Feed and Community Hub - Side by Side */}
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
-          {/* Live Feed Section */}
+          {/* Live Feed Section - Video Thumbnail Only */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <Radio className="h-5 w-5 text-red-500" />
-                    <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 rounded-full animate-pulse" />
-                  </div>
-                  <CardTitle>Live Training Feed</CardTitle>
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Radio className="h-5 w-5 text-destructive" />
+                  <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-destructive rounded-full animate-pulse" />
                 </div>
-                {liveSessions.length > 0 ? (
-                  <Badge variant="secondary" className="gap-1">
-                    <Calendar className="h-3 w-3" />
-                    {liveSessions.length} Upcoming
-                  </Badge>
-                ) : (
-                  <Badge variant="secondary" className="gap-1">
-                    <Video className="h-3 w-3" />
-                    1 Video Available
-                  </Badge>
-                )}
+                <CardTitle>Live Training Feed</CardTitle>
               </div>
-              <CardDescription>
-                Watch training videos and join live sessions with expert instructors
-              </CardDescription>
             </CardHeader>
             <CardContent>
-              {/* Featured Intro Video */}
+              {/* Featured Intro Video - Thumbnail Only */}
               <div
-                className="relative p-4 rounded-lg border bg-gradient-to-r from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 transition-colors cursor-pointer mb-3"
+                className="relative rounded-lg overflow-hidden cursor-pointer group"
                 onClick={() => setVideoModalOpen(true)}
               >
-                <div className="flex items-center gap-4">
-                  <div className="shrink-0 p-3 rounded-full bg-primary/20 text-primary">
-                    <Video className="h-6 w-6" />
+                <img
+                  src="https://img.youtube.com/vi/xZ1FAm7IoA4/maxresdefault.jpg"
+                  alt="Introduction to AI Prompting"
+                  className="w-full aspect-video object-cover rounded-lg"
+                />
+                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                  <div className="p-4 rounded-full bg-primary/90 text-primary-foreground shadow-lg group-hover:scale-110 transition-transform">
+                    <Play className="h-8 w-8" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge className="bg-primary/90 text-primary-foreground text-xs">Session 1</Badge>
-                    </div>
-                    <h4 className="font-medium">Introduction to AI Prompting</h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">Watch the intro video to get started with your training</p>
-                  </div>
-                  <Button size="sm" className="gap-2 shrink-0">
-                    <Play className="h-3.5 w-3.5" />
-                    Watch Now
-                  </Button>
                 </div>
               </div>
 
-              {/* Live Sessions */}
-              {liveSessionsLoading ? (
-                <div className="flex items-center justify-center py-4">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : liveSessions.length === 0 ? (
-                <div className="text-center py-4">
-                  <p className="text-sm text-muted-foreground">
-                    No live sessions scheduled yet. Check back soon!
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
+              {/* Live Sessions as thumbnails */}
+              {!liveSessionsLoading && liveSessions.filter(s => new Date(s.scheduled_date) >= new Date()).length > 0 && (
+                <div className="mt-3 grid grid-cols-2 gap-2">
                   {liveSessions.filter(s => new Date(s.scheduled_date) >= new Date()).slice(0, 2).map((session) => (
                     <div
                       key={session.id}
-                      className="relative p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors"
+                      className="relative rounded-lg overflow-hidden cursor-pointer group bg-muted aspect-video flex items-center justify-center"
                     >
-                      <div className="absolute top-3 right-3">
-                        <Badge variant="secondary" className="text-xs">Upcoming</Badge>
+                      <div className="text-center p-2">
+                        <Video className="h-6 w-6 mx-auto text-muted-foreground mb-1" />
+                        <p className="text-xs font-medium line-clamp-2">{session.title}</p>
                       </div>
-                      <h4 className="font-medium pr-16 mb-2">{session.title}</h4>
-                      <div className="space-y-1.5 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-3.5 w-3.5" />
-                          <span>{session.instructor}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-3.5 w-3.5" />
-                          <span>{new Date(session.scheduled_date).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-3.5 w-3.5" />
-                          <span>{new Date(session.scheduled_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        </div>
-                      </div>
-                      <div className="mt-3 flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">
-                          {session.duration_minutes} min
-                        </span>
-                        <Button size="sm" variant="outline">
-                          Notify Me
-                        </Button>
+                      <div className="absolute top-1.5 right-1.5">
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Live</Badge>
                       </div>
                     </div>
                   ))}
@@ -546,6 +421,181 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Upcoming Events with Calendar - Below Feed & Community */}
+        <div className="mt-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="h-5 w-5 text-primary" />
+                  <CardTitle>Upcoming Events</CardTitle>
+                </div>
+                {(() => {
+                  const upcomingEvents = events.filter(e => new Date(e.scheduled_date) >= new Date());
+                  return upcomingEvents.length > 0 ? (
+                    <Badge variant="secondary" className="gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {upcomingEvents.length} Upcoming
+                    </Badge>
+                  ) : null;
+                })()}
+              </div>
+              <CardDescription>
+                Training sessions, webinars, office hours, and community events
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 lg:grid-cols-[1fr_auto]">
+                {/* Calendar */}
+                <div className="order-2 lg:order-1">
+                  <DashboardCalendar
+                    events={events}
+                    onSelectEvent={setSelectedEvent}
+                    loading={eventsLoading}
+                  />
+                </div>
+                {/* Event List */}
+                <div className="order-1 lg:order-2 lg:w-80">
+                  {eventsLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : (() => {
+                    const upcomingEvents = events.filter(e => new Date(e.scheduled_date) >= new Date()).slice(0, 4);
+                    if (upcomingEvents.length === 0) {
+                      return (
+                        <div className="text-center py-4">
+                          <p className="text-sm text-muted-foreground">
+                            No upcoming events scheduled.
+                          </p>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="space-y-3">
+                        {upcomingEvents.map((event) => {
+                          const config = getEventTypeConfig(event.event_type);
+                          const EventIcon = config.icon;
+                          const eventDate = new Date(event.scheduled_date);
+                          return (
+                            <div
+                              key={event.id}
+                              className="p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                              onClick={() => setSelectedEvent(event)}
+                            >
+                              <div className="flex items-center gap-2 mb-1.5">
+                                <div className={`p-1 rounded ${config.color}`}>
+                                  <EventIcon className="h-3 w-3" />
+                                </div>
+                                <span className="text-xs font-medium">{config.label}</span>
+                              </div>
+                              <h4 className="font-medium text-sm line-clamp-1">{event.title}</h4>
+                              <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                                <span>{eventDate.toLocaleDateString()}</span>
+                                <span>{eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Inline calendar component for dashboard
+function DashboardCalendar({
+  events,
+  onSelectEvent,
+  loading,
+}: {
+  events: any[];
+  onSelectEvent: (event: any) => void;
+  loading: boolean;
+}) {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+
+  const eventDates = new Map<string, any[]>();
+  events.forEach((event) => {
+    const dateKey = new Date(event.scheduled_date).toDateString();
+    if (!eventDates.has(dateKey)) eventDates.set(dateKey, []);
+    eventDates.get(dateKey)!.push(event);
+  });
+
+  const days = [];
+  for (let i = 0; i < firstDay; i++) {
+    days.push(<div key={`empty-${i}`} />);
+  }
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day);
+    const dateKey = date.toDateString();
+    const dayEvents = eventDates.get(dateKey) || [];
+    const isToday = date.toDateString() === today.toDateString();
+
+    days.push(
+      <button
+        key={day}
+        onClick={() => dayEvents.length > 0 && onSelectEvent(dayEvents[0])}
+        className={`relative aspect-square flex flex-col items-center justify-center rounded-md text-sm transition-colors ${
+          isToday
+            ? 'bg-primary text-primary-foreground font-bold'
+            : dayEvents.length > 0
+            ? 'hover:bg-muted cursor-pointer font-medium'
+            : 'text-muted-foreground hover:bg-muted/50'
+        }`}
+      >
+        {day}
+        {dayEvents.length > 0 && (
+          <span className={`absolute bottom-0.5 h-1.5 w-1.5 rounded-full ${isToday ? 'bg-primary-foreground' : 'bg-primary'}`} />
+        )}
+      </button>
+    );
+  }
+
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  return (
+    <div className="select-none">
+      <div className="flex items-center justify-between mb-3">
+        <button
+          onClick={() => setCurrentMonth(new Date(year, month - 1, 1))}
+          className="p-1 rounded hover:bg-muted text-muted-foreground"
+        >
+          ‹
+        </button>
+        <span className="font-medium text-sm">
+          {monthNames[month]} {year}
+        </span>
+        <button
+          onClick={() => setCurrentMonth(new Date(year, month + 1, 1))}
+          className="p-1 rounded hover:bg-muted text-muted-foreground"
+        >
+          ›
+        </button>
+      </div>
+      <div className="grid grid-cols-7 gap-0.5 text-center mb-1">
+        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
+          <div key={d} className="text-xs font-medium text-muted-foreground py-1">
+            {d}
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-0.5">
+        {days}
       </div>
     </div>
   );
