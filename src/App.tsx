@@ -20,6 +20,7 @@ import Questionnaire from "./pages/Questionnaire";
 import TopicSelection from "./pages/TopicSelection";
 import Lesson from "./pages/Lesson";
 import AdminDashboard from "./pages/AdminDashboard";
+import Ideas from "./pages/Ideas";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
@@ -63,6 +64,11 @@ const App = () => (
                   <Route path="/training/:sessionId" element={
                     <ProtectedRoute requireOnboarding>
                       <TrainingWorkspace />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/ideas" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Ideas />
                     </ProtectedRoute>
                   } />
 
