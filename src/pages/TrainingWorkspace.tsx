@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth, type UserProfile } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ALL_SESSION_CONTENT, type ModuleContent } from '@/data/trainingContent';
@@ -390,24 +390,24 @@ Feel free to ask me for more detailed feedback!`;
 
         {/* Middle Column - Practice Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <ScrollArea className="flex-1" viewportRef={contentScrollRef}>
-            <div className="p-6">
-              {selectedModule && (
-                <div className="max-w-3xl mx-auto space-y-6">
-                  {/* Module Header */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="secondary">{selectedModule.type}</Badge>
-                      <span className="text-sm text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {selectedModule.estimatedTime}
-                      </span>
-                    </div>
-                    <h2 className="text-2xl font-bold">{selectedModule.title}</h2>
-                    <p className="text-muted-foreground mt-1">{selectedModule.description}</p>
+          <div className="flex-1 flex flex-col p-6 overflow-y-auto" ref={contentScrollRef}>
+            {selectedModule && (
+              <div className="max-w-3xl mx-auto flex flex-col min-h-full w-full">
+                {/* Module Header */}
+                <div className="shrink-0 mb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="secondary">{selectedModule.type}</Badge>
+                    <span className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {selectedModule.estimatedTime}
+                    </span>
                   </div>
+                  <h2 className="text-2xl font-bold">{selectedModule.title}</h2>
+                  <p className="text-muted-foreground mt-1">{selectedModule.description}</p>
+                </div>
 
-                  {/* Practice Task */}
+                {/* Practice Task - fills remaining space */}
+                <div className="flex-1 flex flex-col">
                   <PracticeTaskCard
                     module={selectedModule}
                     practiceInput={practiceInput}
@@ -420,9 +420,9 @@ Feel free to ask me for more detailed feedback!`;
                     hasNextModule={!!nextModule}
                   />
                 </div>
-              )}
-            </div>
-          </ScrollArea>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right Column - Andrea AI Coach */}
