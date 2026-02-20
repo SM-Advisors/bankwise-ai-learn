@@ -1,10 +1,9 @@
-import smAdvisorsIcon from '@/assets/sm-advisors-icon.svg';
-import smAdvisorsLogo from '@/assets/sm-advisors-logo.svg';
-import smAdvisorsLogoFull from '@/assets/sm-advisors-logo-full.svg';
-import smAdvisorsLogoWhite from '@/assets/sm-advisors-logo-white.svg';
+// Real SM Advisors brand assets
+import smAdvisorsLogo from '@/assets/SM ADVISORS LOGO_Web_White Background.svg';
+import smAdvisorsSpark from '@/assets/SM ADVISORS SPARK_Merch_Transparent.svg';
 
 interface LogoProps {
-  /** 'icon' = starburst only | 'compact' = starburst + name | 'full' = starburst + name + tagline | 'white' = white version for dark backgrounds */
+  /** 'icon' = starburst spark only | 'compact' | 'full' = full logo with white bg | 'white' = same full logo (white bg works on light + dark via container) */
   variant?: 'icon' | 'compact' | 'full' | 'white';
   className?: string;
   size?: 'sm' | 'md' | 'lg';
@@ -17,13 +16,8 @@ const HEIGHT_MAP: Record<string, Record<string, string>> = {
 };
 
 export function Logo({ variant = 'compact', className = '', size = 'md' }: LogoProps) {
-  const logoSrc = {
-    icon: smAdvisorsIcon,
-    compact: smAdvisorsLogo,
-    full: smAdvisorsLogoFull,
-    white: smAdvisorsLogoWhite,
-  }[variant];
-
+  // icon variant uses the transparent spark; all others use the full logo
+  const logoSrc = variant === 'icon' ? smAdvisorsSpark : smAdvisorsLogo;
   const sizeClass = HEIGHT_MAP[size][variant];
 
   return (
