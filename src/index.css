@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,7 +7,7 @@
 /* SM Advisors AI Enablement Platform Design System
    Professional, enterprise-friendly aesthetic for financial institutions
    Colors: Dark navy (#202735), SM Advisors orange (#dd4124)
-   Font: Montserrat
+   Body font: Inter | Display/heading font: Playfair Display
 */
 
 @layer base {
@@ -129,11 +129,11 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Inter', sans-serif;
   }
 
   h1, h2, h3 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Playfair Display', serif;
   }
 }
 
