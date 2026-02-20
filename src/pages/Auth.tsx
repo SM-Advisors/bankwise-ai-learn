@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { GraduationCap, Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Logo } from '@/components/Logo';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
@@ -129,9 +130,9 @@ export default function Auth() {
         toast({ title: 'Signup Failed', description: error.message, variant: 'destructive' });
       }
     } else {
-      toast({ 
-        title: 'Account Created!', 
-        description: 'Welcome to AI Training. Let\'s set up your profile.' 
+      toast({
+        title: 'Account Created!',
+        description: 'Welcome to SM Advisors. Let\'s set up your profile.'
       });
       navigate('/onboarding');
     }
@@ -170,9 +171,7 @@ export default function Auth() {
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <div className="p-3 rounded-xl bg-primary">
-                <GraduationCap className="h-8 w-8 text-primary-foreground" />
-              </div>
+              <Logo variant="full" size="lg" />
             </div>
             <CardTitle className="text-2xl font-display">Reset Password</CardTitle>
             <CardDescription>
@@ -247,14 +246,11 @@ export default function Auth() {
     <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-xl bg-primary">
-              <GraduationCap className="h-8 w-8 text-primary-foreground" />
-            </div>
+          <div className="flex justify-center mb-6">
+            <Logo variant="full" size="lg" />
           </div>
-          <CardTitle className="text-2xl font-display">AI Training Platform</CardTitle>
           <CardDescription>
-            Sign in to access your personalized learning experience
+            Sign in to access your personalized AI enablement experience
           </CardDescription>
         </CardHeader>
         <CardContent>

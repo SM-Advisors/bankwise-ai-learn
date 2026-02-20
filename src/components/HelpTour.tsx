@@ -31,8 +31,8 @@ interface TourStep {
 
 const TOUR_STEPS: TourStep[] = [
   {
-    title: 'Welcome to BankWise AI Training!',
-    description: "Let's show you around the platform. This quick tour will highlight the key areas you'll use during your AI training journey.",
+    title: 'Welcome to SM Advisors AI Enablement!',
+    description: "Let's show you around the platform. This quick tour will highlight the key areas you'll use during your AI enablement journey.",
     icon: Sparkles,
     tips: [
       'This tour takes about 1 minute to complete',

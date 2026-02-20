@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 60">
+  <!-- SM Advisors white logo for dark backgrounds: icon + white text -->
+  <!-- Starburst icon centered at 30,30 -->
+  <g transform="translate(30,30)">
+    <polygon
+      fill="#dd4124"
+      points="
+        0,-28
+        3.5,-11.8
+        8,-24.2
+        8.5,-8.1
+        19.8,-19.8
+        11.9,-5.5
+        28,-8
+        13.2,-0.8
+        28,0
+        13.2,0.8
+        24.2,8
+        10.3,5
+        19.8,19.8
+        5.5,11.9
+        8,24.2
+        0.8,13.2
+        0,28
+        -0.8,13.2
+        -8,24.2
+        -5.5,11.9
+        -19.8,19.8
+        -10.3,5
+        -24.2,8
+        -13.2,0.8
+        -28,0
+        -13.2,-0.8
+        -24.2,-8
+        -11.9,-5.5
+        -19.8,-19.8
+        -8.5,-8.1
+        -8,-24.2
+        -3.5,-11.8
+      "
+    />
+    <circle r="9.4" fill="#ffffff"/>
+    <circle r="5.3" fill="#dd4124"/>
+  </g>
+
+  <!-- "SM ADVISORS" text in white -->
+  <text
+    x="68"
+    y="35"
+    font-family="Montserrat, Arial, sans-serif"
+    font-weight="700"
+    font-size="18"
+    fill="#ffffff"
+    letter-spacing="2"
+  >SM ADVISORS</text>
+</svg>

@@ -6,15 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { GraduationCap, Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { z } from 'zod';
+import { Logo } from '@/components/Logo';
 
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 
 export default function ResetPassword() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
@@ -37,7 +38,7 @@ export default function ResetPassword() {
       // Check URL for code parameter (PKCE flow - used by Supabase by default)
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
-      
+
       if (code) {
         // Exchange the code for a session - this triggers the PASSWORD_RECOVERY event
         const { error } = await supabase.auth.exchangeCodeForSession(code);
@@ -53,13 +54,13 @@ export default function ResetPassword() {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get('access_token');
       const type = hashParams.get('type');
-      
+
       if (type === 'recovery' && accessToken) {
         const { error } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: hashParams.get('refresh_token') || '',
         });
-        
+
         if (!error) {
           setIsValidSession(true);
         }
@@ -72,7 +73,7 @@ export default function ResetPassword() {
       if (session) {
         setIsValidSession(true);
       }
-      
+
       setIsCheckingSession(false);
       return () => subscription.unsubscribe();
     };
@@ -82,7 +83,7 @@ export default function ResetPassword() {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const passwordResult = passwordSchema.safeParse(password);
     if (!passwordResult.success) {
       toast({ title: 'Error', description: passwordResult.error.errors[0].message, variant: 'destructive' });
@@ -124,9 +125,7 @@ export default function ResetPassword() {
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <div className="p-3 rounded-xl bg-primary">
-                <GraduationCap className="h-8 w-8 text-primary-foreground" />
-              </div>
+              <Logo variant="full" size="lg" />
             </div>
             <CardTitle className="text-2xl font-display">Invalid or Expired Link</CardTitle>
             <CardDescription>
@@ -173,9 +172,7 @@ export default function ResetPassword() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-xl bg-primary">
-              <GraduationCap className="h-8 w-8 text-primary-foreground" />
-            </div>
+            <Logo variant="full" size="lg" />
           </div>
           <CardTitle className="text-2xl font-display">Set New Password</CardTitle>
           <CardDescription>

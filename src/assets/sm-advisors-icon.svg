@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- SM Advisors starburst icon - 16-point starburst -->
+  <g transform="translate(50,50)">
+    <!-- Outer starburst rays using a star polygon approach -->
+    <!-- 16-point starburst: alternating outer (r=48) and inner (r=20) points -->
+    <polygon
+      fill="#dd4124"
+      points="
+        0,-48
+        5.9,-20.1
+        13.6,-41.4
+        14.5,-13.8
+        33.9,-33.9
+        20.4,-9.4
+        48,-13.6
+        22.6,-1.4
+        48,0
+        22.6,1.4
+        41.4,13.6
+        17.7,8.5
+        33.9,33.9
+        9.4,20.4
+        13.6,41.4
+        1.4,22.6
+        0,48
+        -1.4,22.6
+        -13.6,41.4
+        -9.4,20.4
+        -33.9,33.9
+        -17.7,8.5
+        -41.4,13.6
+        -22.6,1.4
+        -48,0
+        -22.6,-1.4
+        -48,-13.6
+        -20.4,-9.4
+        -33.9,-33.9
+        -14.5,-13.8
+        -13.6,-41.4
+        -5.9,-20.1
+      "
+    />
+    <!-- Central white ring -->
+    <circle r="16" fill="#ffffff"/>
+    <!-- Central orange dot -->
+    <circle r="9" fill="#dd4124"/>
+  </g>
+</svg>

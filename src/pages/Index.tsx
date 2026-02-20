@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { GraduationCap, BookOpen, Sparkles, ArrowRight, ShieldCheck, Settings, LogIn } from 'lucide-react';
+import { BookOpen, Sparkles, ArrowRight, ShieldCheck, Settings, LogIn } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
+import { Logo } from '@/components/Logo';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -40,7 +41,6 @@ const Index = () => {
             onClick={() => navigate('/dashboard')}
             className="gap-2"
           >
-            <GraduationCap className="h-4 w-4" />
             Dashboard
           </Button>
         ) : (
@@ -69,19 +69,24 @@ const Index = () => {
         <div className="max-w-3xl mx-auto text-center">
           {/* Hero Section */}
           <div className="animate-fade-in mb-12">
+            {/* SM Advisors Logo */}
+            <div className="flex justify-center mb-8">
+              <Logo variant="full" size="lg" />
+            </div>
+
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent text-sm font-medium mb-6">
               <Sparkles className="h-4 w-4" />
-              AI-Powered Training for Banking Professionals
+              Your Partner in AI Enablement
             </div>
 
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-              Transform Your Banking Skills with{' '}
-              <span className="text-accent">AI Training</span>
+              Transform Your Team with{' '}
+              <span className="text-accent">AI Enablement</span>
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Personalized learning experiences tailored to your role and interaction preferences.
-              Practical, job-ready skills for community and regional bank professionals.
+              Practical, job-ready AI skills for your organization.
             </p>
 
             <Button
