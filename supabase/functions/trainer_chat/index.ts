@@ -447,6 +447,53 @@ ${learnerState?.progressSummary ? `- Learner's Practice: ${learnerState.progress
       }
     }
 
+    // Detect compliance exceptions in the user's message
+    const userMessage = (messages.filter(m => m.role === "user").pop()?.content || "").toLowerCase();
+    let exceptionFlag = false;
+    let exceptionType: string | null = null;
+
+    // PII detection: SSN patterns, account numbers, customer names in quotes
+    const piiPatterns = [
+      /\b\d{3}-?\d{2}-?\d{4}\b/,          // SSN
+      /\baccount\s*#?\s*\d{6,}\b/i,         // Account numbers
+      /\brouting\s*#?\s*\d{9}\b/i,          // Routing numbers
+      /\b\d{13,19}\b/,                       // Credit card numbers
+    ];
+    if (piiPatterns.some(p => p.test(userMessage))) {
+      exceptionFlag = true;
+      exceptionType = "pii_sharing";
+    }
+
+    // Compliance bypass detection
+    const bypassPhrases = [
+      "skip compliance", "ignore policy", "bypass", "skip the review",
+      "without approval", "skip audit", "no need to check", "forget the rules",
+    ];
+    if (!exceptionFlag && bypassPhrases.some(phrase => userMessage.includes(phrase))) {
+      exceptionFlag = true;
+      exceptionType = "compliance_bypass";
+    }
+
+    // Data export detection
+    const exportPhrases = [
+      "export all customer", "download all", "extract all records",
+      "bulk export", "dump the database", "scrape all",
+    ];
+    if (!exceptionFlag && exportPhrases.some(phrase => userMessage.includes(phrase))) {
+      exceptionFlag = true;
+      exceptionType = "data_export";
+    }
+
+    // Inappropriate use detection
+    const inappropriatePhrases = [
+      "write my resignation", "personal tax", "my homework",
+      "not work related", "personal use", "for my side business",
+    ];
+    if (!exceptionFlag && inappropriatePhrases.some(phrase => userMessage.includes(phrase))) {
+      exceptionFlag = true;
+      exceptionType = "inappropriate_use";
+    }
+
     // Log prompt telemetry (fire-and-forget, non-blocking)
     if (userId) {
       supabase
@@ -456,6 +503,8 @@ ${learnerState?.progressSummary ? `- Learner's Practice: ${learnerState.progress
           session_id: lessonId ? parseInt(lessonId) : null,
           module_id: moduleId || null,
           event_type: "prompt_submitted",
+          exception_flag: exceptionFlag,
+          exception_type: exceptionType,
         })
         .then(() => {});
     }

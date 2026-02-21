@@ -21,6 +21,7 @@ import { getEventTypeConfig } from '@/components/EventModal';
 import { UsersManagement } from '@/components/UsersManagement';
 import { ProgressDashboard } from '@/components/admin/ProgressDashboard';
 import { IdeasInbox } from '@/components/admin/IdeasInbox';
+import { CSuiteReports } from '@/components/admin/CSuiteReports';
 import { learningStyles } from '@/data/learningStyles';
 import { departments } from '@/data/topics';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
@@ -55,7 +56,8 @@ import {
   MessageCircle,
   Link,
   CalendarDays,
-  BarChart3
+  BarChart3,
+  PieChart as PieChartIcon
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -439,10 +441,14 @@ export default function AdminDashboard() {
       </div>
 
       <Tabs defaultValue="users" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-11 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-12 lg:w-auto lg:inline-grid">
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Users</span>
+          </TabsTrigger>
+          <TabsTrigger value="csuite" className="flex items-center gap-2">
+            <PieChartIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">C-Suite</span>
           </TabsTrigger>
           <TabsTrigger value="reporting" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
@@ -489,6 +495,11 @@ export default function AdminDashboard() {
         {/* Users Management Tab */}
         <TabsContent value="users" className="space-y-6">
           <UsersManagement />
+        </TabsContent>
+
+        {/* C-Suite Reports Tab */}
+        <TabsContent value="csuite" className="space-y-6">
+          <CSuiteReports />
         </TabsContent>
 
         {/* Reporting Tab */}
