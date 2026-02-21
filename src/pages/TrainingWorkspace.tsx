@@ -316,7 +316,18 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
   const handleTrainerSubmit = async () => {
     if (!trainerInput.trim()) return;
 
+    // If the user is asking for a review and there are practice messages, embed the transcript
+    const isReviewRequest = activeMessages.length > 0 && /review|check|look at|feedback|evaluate/i.test(trainerInput);
+    let messageContent = trainerInput;
+    if (isReviewRequest) {
+      const transcript = activeMessages
+        .map(m => `[${m.role === 'user' ? 'My Prompt' : 'AI Response'}]: ${m.content}`)
+        .join('\n\n');
+      messageContent = `${trainerInput}\n\nHere is my practice conversation:\n\n---\n${transcript}\n---`;
+    }
+
     const userMessage: Message = { role: 'user', content: trainerInput };
+    const apiMessage: Message = { role: 'user', content: messageContent };
     setTrainerMessages(prev => [...prev, userMessage]);
     setTrainerInput('');
     setIsTrainerLoading(true);
@@ -327,7 +338,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           lessonId: sessionId || '1',
           moduleId: selectedModule?.id,
           sessionNumber: parseInt(sessionId || '1'),
-          messages: [...trainerMessages, userMessage],
+          messages: [...trainerMessages, apiMessage],
           practiceConversation: activeMessages.length > 0 ? activeMessages : undefined,
           learnerState: {
             currentCardTitle: selectedModule?.title,
@@ -370,7 +381,18 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
   };
 
   const handleQuickAction = async (prompt: string) => {
+    // If this is a review-related prompt and there are practice messages, embed the transcript
+    const isReviewRequest = activeMessages.length > 0 && /review|check|look at|feedback|evaluate/i.test(prompt);
+    let apiContent = prompt;
+    if (isReviewRequest) {
+      const transcript = activeMessages
+        .map(m => `[${m.role === 'user' ? 'My Prompt' : 'AI Response'}]: ${m.content}`)
+        .join('\n\n');
+      apiContent = `${prompt}\n\nHere is my practice conversation:\n\n---\n${transcript}\n---`;
+    }
+
     const userMessage: Message = { role: 'user', content: prompt };
+    const apiMessage: Message = { role: 'user', content: apiContent };
     setTrainerMessages(prev => [...prev, userMessage]);
     setSuggestedPrompts([]);
     setIsTrainerLoading(true);
@@ -381,7 +403,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           lessonId: sessionId || '1',
           moduleId: selectedModule?.id,
           sessionNumber: parseInt(sessionId || '1'),
-          messages: [...trainerMessages, userMessage],
+          messages: [...trainerMessages, apiMessage],
           practiceConversation: activeMessages.length > 0 ? activeMessages : undefined,
           learnerState: {
             currentCardTitle: selectedModule?.title,

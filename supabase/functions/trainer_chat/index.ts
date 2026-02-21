@@ -391,6 +391,8 @@ serve(async (req) => {
       userId: bodyUserId,
     } = requestBody;
 
+    console.log("[trainer_chat] practiceConversation received:", practiceConversation ? `${practiceConversation.length} messages` : "none");
+
     // For greeting requests, messages can be empty
     if (!greeting && (!lessonId || !messages || !Array.isArray(messages))) {
       return new Response(
@@ -663,18 +665,19 @@ ${aiMemories.map((m, i) => `${i + 1}. ${m.is_pinned ? "[PINNED] " : ""}${m.conte
 
 ---` : ""}
 
-${practiceConversation && practiceConversation.length > 0 ? `## LEARNER'S PRACTICE CONVERSATION
-The learner is practicing prompting an AI in the center panel. Here is their conversation so far:
+${practiceConversation && practiceConversation.length > 0 ? `## LEARNER'S PRACTICE CONVERSATION (${practiceConversation.length} messages)
+IMPORTANT: The learner has a practice conversation in the center panel. You CAN see it — it is provided below. DO NOT say you cannot see their conversation. When they ask you to review it, analyze the conversation shown here:
 
-${practiceConversation.map(m => `**[${m.role === "user" ? "Learner's Prompt" : "AI Response"}]:** ${m.content}`).join("\n\n")}
+${practiceConversation.map((m, i) => `[${i + 1}] **${m.role === "user" ? "Learner's Prompt" : "AI Response"}:** ${m.content}`).join("\n\n")}
 
 ---
-YOUR COACHING ROLE: You are watching this practice conversation. When reviewing it:
-- Comment on the QUALITY of the learner's prompts (specificity, structure, context provided)
-- Note how the AI's response quality reflected their prompt quality
-- Suggest specific improvements to their prompting technique
-- Reference the module's success criteria when evaluating
-- If they haven't submitted for review yet, you can still comment on what you're seeing
+REVIEW INSTRUCTIONS: When the learner asks you to review their practice conversation (or mentions "review", "check", "look at", "feedback on" their practice):
+1. You HAVE their full conversation above — reference specific prompts by number
+2. Comment on the QUALITY of the learner's prompts (specificity, structure, context provided)
+3. Note how the AI's response quality reflected their prompt quality
+4. Suggest specific improvements to their prompting technique
+5. Reference the module's success criteria when evaluating
+6. If they haven't submitted for review yet, you can still comment on what you're seeing
 
 ---` : ""}
 
