@@ -15,7 +15,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { EventModal, getEventTypeConfig } from '@/components/EventModal';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import {
-  Loader2, Play, CheckCircle, Lock, Sparkles, Bot,
+  Loader2, Play, CheckCircle, Sparkles, Bot,
   Building2, HelpCircle, BookOpen, Shield, Lightbulb,
   Radio, Calendar, Users, Clock, MessageCircle, ExternalLink,
   CalendarDays, Video, Settings, Brain
@@ -99,8 +99,7 @@ export default function Dashboard() {
   const getSessionStatus = (sessionId: number) => {
     if (sessionProgress[sessionId - 1]) return 'completed';
     if (sessionId === currentSession) return 'current';
-    if (sessionId < currentSession) return 'completed';
-    return 'locked';
+    return 'available';
   };
 
   const getLobLabel = (lob: string | null) => {
@@ -254,7 +253,7 @@ export default function Dashboard() {
         <div className="mb-6">
           <h2 className="text-2xl font-display font-bold mb-2">Your Learning Track</h2>
           <p className="text-muted-foreground">
-            Complete each session to unlock the next. Your training is customized based on your 
+            Your training is customized based on your 
             {' '}<span className="text-primary font-medium">{profile.learning_style}</span> learning style.
           </p>
         </div>
@@ -268,21 +267,17 @@ export default function Dashboard() {
             return (
               <Card 
                 key={session.id} 
-                className={`transition-all ${
-                  status === 'locked' ? 'opacity-60' : 'hover:shadow-lg'
-                }`}
+                className="transition-all hover:shadow-lg"
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className={`p-3 rounded-lg ${
                       status === 'completed' ? 'bg-green-100 text-green-600' :
                       status === 'current' ? 'bg-primary/10 text-primary' :
-                      'bg-muted text-muted-foreground'
+                      'bg-secondary text-secondary-foreground'
                     }`}>
                       {status === 'completed' ? (
                         <CheckCircle className="h-6 w-6" />
-                      ) : status === 'locked' ? (
-                        <Lock className="h-6 w-6" />
                       ) : (
                         <IconComponent className="h-6 w-6" />
                       )}
@@ -294,7 +289,7 @@ export default function Dashboard() {
                     }>
                       {status === 'completed' ? 'Completed' :
                        status === 'current' ? 'In Progress' :
-                       'Locked'}
+                       'Available'}
                     </Badge>
                   </div>
                   <CardTitle className="text-lg mt-4">
@@ -305,7 +300,6 @@ export default function Dashboard() {
                 <CardContent>
                   <Button 
                     className="w-full gap-2"
-                    disabled={status === 'locked'}
                     variant={status === 'completed' ? 'outline' : 'default'}
                     onClick={() => handleStartSession(session.id)}
                   >
@@ -318,8 +312,8 @@ export default function Dashboard() {
                       </>
                     ) : (
                       <>
-                        <Lock className="h-4 w-4" />
-                        Complete Previous Session
+                        <Play className="h-4 w-4" />
+                        Start Session
                       </>
                     )}
                   </Button>
