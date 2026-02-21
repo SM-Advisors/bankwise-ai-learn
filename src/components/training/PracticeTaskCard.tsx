@@ -49,42 +49,42 @@ export function PracticeTaskCard({
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 items-center justify-center">
+    <div className="flex flex-col flex-1 min-h-0 items-center justify-center bg-[hsl(222,19%,11%)] text-[hsl(210,40%,98%)]">
       {/* Centered Welcome / Task Title — Copilot style */}
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-2xl mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-semibold text-foreground text-center mb-2 tracking-tight">
+        <h2 className="text-3xl md:text-4xl font-semibold text-[hsl(210,40%,98%)] text-center mb-2 tracking-tight">
           {module.content.practiceTask.title}
         </h2>
-        <p className="text-base text-muted-foreground text-center max-w-lg mb-6">
+        <p className="text-base text-[hsl(215,20%,65%)] text-center max-w-lg mb-6">
           {module.content.practiceTask.instructions}
         </p>
 
         {/* Collapsible details — compact */}
         <div className="w-full max-w-lg space-y-1 mb-4">
           <Collapsible open={scenarioOpen} onOpenChange={setScenarioOpen}>
-            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-3 py-2 rounded-lg hover:bg-muted/50">
+            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-[hsl(215,20%,65%)] hover:text-[hsl(210,40%,98%)] transition-colors w-full px-3 py-2 rounded-lg hover:bg-[hsl(222,19%,17%)]">
               <AlertCircle className="h-4 w-4 shrink-0" />
               <span>View Scenario</span>
               <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${scenarioOpen ? 'rotate-180' : ''}`} />
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="mt-1 bg-muted/40 border border-border p-4 rounded-xl">
-                <p className="text-sm whitespace-pre-wrap">{module.content.practiceTask.scenario}</p>
+              <div className="mt-1 bg-[hsl(222,19%,15%)] border border-[hsl(222,19%,20%)] p-4 rounded-xl">
+                <p className="text-sm whitespace-pre-wrap text-[hsl(215,20%,75%)]">{module.content.practiceTask.scenario}</p>
               </div>
             </CollapsibleContent>
           </Collapsible>
 
           <Collapsible open={criteriaOpen} onOpenChange={setCriteriaOpen}>
-            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-3 py-2 rounded-lg hover:bg-muted/50">
-              <Target className="h-4 w-4 text-primary shrink-0" />
+            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-[hsl(215,20%,65%)] hover:text-[hsl(210,40%,98%)] transition-colors w-full px-3 py-2 rounded-lg hover:bg-[hsl(222,19%,17%)]">
+              <Target className="h-4 w-4 text-[hsl(10,76%,55%)] shrink-0" />
               <span>Success Criteria</span>
               <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${criteriaOpen ? 'rotate-180' : ''}`} />
             </CollapsibleTrigger>
             <CollapsibleContent>
               <ul className="mt-1 space-y-1.5 px-3 pb-2">
                 {module.content.practiceTask.successCriteria.map((criteria, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                  <li key={idx} className="flex items-start gap-2 text-sm text-[hsl(215,20%,75%)]">
+                    <CheckCircle className="h-4 w-4 text-[hsl(215,20%,55%)] shrink-0 mt-0.5" />
                     {criteria}
                   </li>
                 ))}
@@ -97,22 +97,22 @@ export function PracticeTaskCard({
       {/* Completion Banner */}
       {isCompleted && (
         <div className="w-full max-w-2xl mx-auto mb-4 px-4">
-          <div className="p-4 bg-primary/10 border border-primary/20 rounded-2xl text-center">
-            <div className="flex items-center justify-center gap-2 text-primary font-medium">
+          <div className="p-4 bg-[hsl(10,76%,55%,0.15)] border border-[hsl(10,76%,55%,0.3)] rounded-2xl text-center">
+            <div className="flex items-center justify-center gap-2 text-[hsl(10,76%,55%)] font-medium">
               <CheckCircle className="h-5 w-5" />
               Practice Submitted!
             </div>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-[hsl(215,20%,65%)] mt-1">
               Check Andrea's feedback on the right panel →
             </p>
             <div className="mt-3">
               {hasNextModule && onContinueToNext ? (
-                <Button onClick={onContinueToNext} className="gap-2 rounded-full">
+                <Button onClick={onContinueToNext} className="gap-2 rounded-full bg-[hsl(10,76%,55%)] hover:bg-[hsl(10,76%,45%)] text-white">
                   Continue to Next Module
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               ) : onCompleteSession ? (
-                <Button onClick={onCompleteSession} className="gap-2 rounded-full">
+                <Button onClick={onCompleteSession} className="gap-2 rounded-full bg-[hsl(10,76%,55%)] hover:bg-[hsl(10,76%,45%)] text-white">
                   Complete Session
                   <CheckCircle className="h-4 w-4" />
                 </Button>
@@ -124,7 +124,7 @@ export function PracticeTaskCard({
 
       {/* Copilot-Style Composer Bar */}
       <div className="w-full max-w-2xl mx-auto px-4 pb-2">
-        <div className="rounded-2xl border border-border bg-card shadow-sm">
+        <div className="rounded-2xl border border-[hsl(222,19%,22%)] bg-[hsl(222,19%,15%)] shadow-lg">
           <label htmlFor="practice-response" className="sr-only">
             Your Response
           </label>
@@ -134,29 +134,29 @@ export function PracticeTaskCard({
             onChange={(e) => onPracticeInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={`Message ${module.content.practiceTask.title}...`}
-            className="min-h-[56px] max-h-[180px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm rounded-t-2xl px-4 pt-3.5 pb-0"
+            className="min-h-[56px] max-h-[180px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-[hsl(210,40%,98%)] placeholder:text-[hsl(215,20%,45%)] rounded-t-2xl px-4 pt-3.5 pb-0"
             aria-describedby="practice-instructions composer-hint"
           />
-          {/* Toolbar row — mirrors Copilot bottom bar */}
+          {/* Toolbar row */}
           <div className="flex items-center justify-between px-3 py-2">
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" disabled>
+            <div className="flex items-center gap-1 text-[hsl(215,20%,50%)]">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-[hsl(215,20%,50%)] hover:text-[hsl(210,40%,98%)] hover:bg-[hsl(222,19%,20%)]" disabled>
                 <Plus className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-full text-xs px-3" disabled>
+              <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-full text-xs px-3 text-[hsl(215,20%,50%)] hover:text-[hsl(210,40%,98%)] hover:bg-[hsl(222,19%,20%)]" disabled>
                 <SlidersHorizontal className="h-3.5 w-3.5" />
                 Tools
               </Button>
             </div>
             <div className="flex items-center gap-2">
-              <span id="composer-hint" className="text-[10px] text-muted-foreground/50 hidden sm:inline">
+              <span id="composer-hint" className="text-[10px] text-[hsl(215,20%,35%)] hidden sm:inline">
                 Ctrl+Enter
               </span>
               <Button
                 size="icon"
                 onClick={onSubmit}
                 disabled={isLoading || !practiceInput.trim()}
-                className="h-8 w-8 rounded-full"
+                className="h-8 w-8 rounded-full bg-[hsl(215,20%,50%)] hover:bg-[hsl(215,20%,60%)] text-[hsl(222,19%,11%)]"
                 aria-label="Submit for review"
               >
                 {isLoading ? (
@@ -177,17 +177,17 @@ export function PracticeTaskCard({
             <button
               key={idx}
               onClick={() => handleHintClick(hint)}
-              className="text-left p-4 rounded-xl border border-border bg-card hover:bg-muted/50 hover:border-primary/30 transition-all group"
+              className="text-left p-4 rounded-xl border border-[hsl(222,19%,20%)] bg-[hsl(222,19%,14%)] hover:bg-[hsl(222,19%,18%)] hover:border-[hsl(222,19%,25%)] transition-all group"
             >
-              <Lightbulb className="h-5 w-5 text-primary mb-2 group-hover:scale-110 transition-transform" />
-              <p className="text-sm font-medium text-foreground line-clamp-2">{hint}</p>
-              <p className="text-xs text-muted-foreground mt-1">Try this approach</p>
+              <Lightbulb className="h-5 w-5 text-[hsl(215,20%,50%)] mb-2 group-hover:text-[hsl(10,76%,55%)] group-hover:scale-110 transition-all" />
+              <p className="text-sm font-medium text-[hsl(210,40%,90%)] line-clamp-2">{hint}</p>
+              <p className="text-xs text-[hsl(215,20%,45%)] mt-1">Try this approach</p>
             </button>
           ))}
         </div>
         {module.content.practiceTask.hints.length > 3 && (
           <div className="text-center mt-2">
-            <button className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <button className="text-xs text-[hsl(215,20%,45%)] hover:text-[hsl(210,40%,90%)] transition-colors">
               See more ↓
             </button>
           </div>
