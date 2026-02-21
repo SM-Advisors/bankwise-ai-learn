@@ -18,17 +18,25 @@ export function useUserRole() {
 
     const fetchRole = async () => {
       setLoading(true);
+      // Use security definer function to bypass RLS
       const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .maybeSingle();
+        .rpc('get_user_role', { _user_id: user.id });
 
       if (error) {
         console.error('Error fetching user role:', error);
-        setRole('user'); // Default to user if error
+        // Fallback: try direct table query
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (fallbackError) {
+          console.error('Fallback role fetch also failed:', fallbackError);
+        }
+        setRole((fallbackData?.role as AppRole) || 'user');
       } else {
-        setRole((data?.role as AppRole) || 'user');
+        setRole((data as AppRole) || 'user');
       }
       setLoading(false);
     };
