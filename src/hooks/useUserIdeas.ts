@@ -10,6 +10,11 @@ export interface UserIdea {
   title: string;
   description: string;
   status: IdeaStatus;
+  votes: number;
+  roi_impact: string | null;
+  category: string | null;
+  submitter_name: string | null;
+  submitter_department: string | null;
   created_at: string;
   updated_at: string;
 }
