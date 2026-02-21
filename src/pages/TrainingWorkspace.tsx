@@ -47,21 +47,57 @@ export default function TrainingWorkspace() {
 
   const session = sessionId ? ALL_SESSION_CONTENT[parseInt(sessionId)] : null;
 
-  // Initialize trainer with context-aware greeting
+  // Initialize trainer with dynamic AI-generated greeting
   const hasGreetedRef = useRef(false);
   useEffect(() => {
     if (profile && session && selectedModule && !hasGreetedRef.current) {
       hasGreetedRef.current = true;
-      const greeting = `Hi! I'm **Andrea**, your AI Training Coach 👋
 
-**How this works:**
-1. Click a module on the left to view the learning content
-2. Practice what you learn in the center area
-3. I'll review your work and give you tips when needed
+      // Call the greeting API for a personalized welcome
+      const fetchGreeting = async () => {
+        try {
+          const response = await supabase.functions.invoke('trainer_chat', {
+            body: {
+              lessonId: sessionId || '1',
+              moduleId: selectedModule.id,
+              sessionNumber: parseInt(sessionId || '1'),
+              messages: [],
+              greeting: true,
+              learnerState: {
+                currentCardTitle: selectedModule.title,
+                completedModules: Array.from(completedModules),
+                displayName: profile.display_name || undefined,
+                bankRole: profile.bank_role || undefined,
+                lineOfBusiness: profile.line_of_business || undefined,
+              },
+            },
+          });
 
-I won't interrupt you constantly—I'm here when you need guidance. Good luck with "${selectedModule.title}"!`;
-      
-      setTrainerMessages([{ role: 'assistant', content: greeting }]);
+          if (response.error) throw response.error;
+
+          const replyData = response.data;
+          const greetingText = replyData?.reply || `Hi! I'm Andrea, your AI Training Coach. Ready to work on "${selectedModule.title}"?`;
+          const prompts = replyData?.suggestedPrompts || [];
+
+          setTrainerMessages([{
+            role: 'assistant',
+            content: greetingText,
+            suggestedPrompts: prompts,
+            coachingAction: replyData?.coachingAction || 'celebrate',
+          }]);
+          setSuggestedPrompts(prompts);
+        } catch (error) {
+          console.error('Greeting API error:', error);
+          // Fallback to a simple greeting if API fails
+          const name = profile.display_name ? `, ${profile.display_name}` : '';
+          setTrainerMessages([{
+            role: 'assistant',
+            content: `Hi${name}! I'm **Andrea**, your AI Training Coach. Let's get started with "${selectedModule.title}"!`,
+          }]);
+        }
+      };
+
+      fetchGreeting();
     }
   }, [profile, session, selectedModule]);
 
@@ -228,10 +264,15 @@ Feel free to ask me for more detailed feedback!`;
         body: {
           lessonId: sessionId || '1',
           moduleId: selectedModule?.id,
+          sessionNumber: parseInt(sessionId || '1'),
           messages: [...trainerMessages, userMessage],
           learnerState: {
             currentCardTitle: selectedModule?.title,
             progressSummary: practiceInput ? `Has submitted practice: "${practiceInput.substring(0, 100)}..."` : 'Working on module',
+            completedModules: Array.from(completedModules),
+            displayName: profile?.display_name || undefined,
+            bankRole: profile?.bank_role || undefined,
+            lineOfBusiness: profile?.line_of_business || undefined,
           },
         },
       });
@@ -246,6 +287,10 @@ Feel free to ask me for more detailed feedback!`;
         role: 'assistant',
         content: replyText,
         suggestedPrompts: prompts,
+        coachingAction: replyData?.coachingAction,
+        hintAvailable: replyData?.hintAvailable,
+        complianceFlag: replyData?.complianceFlag,
+        memorySuggestion: replyData?.memorySuggestion,
       };
       setTrainerMessages(prev => [...prev, assistantMessage]);
       setSuggestedPrompts(prompts);
@@ -270,10 +315,15 @@ Feel free to ask me for more detailed feedback!`;
         body: {
           lessonId: sessionId || '1',
           moduleId: selectedModule?.id,
+          sessionNumber: parseInt(sessionId || '1'),
           messages: [...trainerMessages, userMessage],
           learnerState: {
             currentCardTitle: selectedModule?.title,
             progressSummary: practiceInput ? `Current practice input: "${practiceInput.substring(0, 200)}..."` : 'Working on module',
+            completedModules: Array.from(completedModules),
+            displayName: profile?.display_name || undefined,
+            bankRole: profile?.bank_role || undefined,
+            lineOfBusiness: profile?.line_of_business || undefined,
           },
         },
       });
@@ -288,6 +338,10 @@ Feel free to ask me for more detailed feedback!`;
         role: 'assistant',
         content: replyText,
         suggestedPrompts: prompts,
+        coachingAction: replyData?.coachingAction,
+        hintAvailable: replyData?.hintAvailable,
+        complianceFlag: replyData?.complianceFlag,
+        memorySuggestion: replyData?.memorySuggestion,
       };
       setTrainerMessages(prev => [...prev, assistantMessage]);
       setSuggestedPrompts(prompts);

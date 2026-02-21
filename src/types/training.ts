@@ -4,6 +4,17 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   suggestedPrompts?: string[];
+  coachingAction?: 'socratic' | 'explain' | 'review' | 'celebrate' | 'redirect';
+  hintAvailable?: boolean;
+  complianceFlag?: {
+    type: string;
+    severity: 'info' | 'warning' | 'critical';
+    message: string;
+  };
+  memorySuggestion?: {
+    content: string;
+    reason: string;
+  };
 }
 
 export interface BankPolicy {

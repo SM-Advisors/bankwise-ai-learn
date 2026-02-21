@@ -117,9 +117,10 @@ export function useAIMemories() {
   const createMemory = async (memory: { content: string; source?: string; context?: string }) => {
     if (!user) return { success: false, error: 'Not authenticated' };
     try {
+      // Auto-pin saved memories so Andrea can see them immediately
       const { error } = await (supabase
         .from('ai_memories' as any)
-        .insert({ ...memory, user_id: user.id }) as any);
+        .insert({ ...memory, user_id: user.id, is_pinned: true }) as any);
       if (error) throw error;
       await fetchMemories();
       return { success: true };

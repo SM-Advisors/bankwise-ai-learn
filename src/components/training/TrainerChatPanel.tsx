@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark } from 'lucide-react';
+import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark, Lightbulb, AlertTriangle, HelpCircle, CheckCircle2, ArrowRight } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { type Message } from '@/types/training';
 
@@ -182,7 +182,39 @@ export function TrainerChatPanel({
                     <AvatarFallback>A</AvatarFallback>
                   </Avatar>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm text-muted-foreground">Thinking...</span>
+                  <span className="text-sm text-muted-foreground">
+                    {activeQuickAction === 'review' ? 'Reviewing your work...' :
+                     activeQuickAction === 'hint' ? 'Preparing a hint...' :
+                     'Thinking...'}
+                  </span>
+                </div>
+              )}
+
+              {/* Compliance warning banner */}
+              {messages.length > 0 && messages[messages.length - 1]?.complianceFlag && (
+                <div className={`mx-1 p-2 rounded-md flex items-center gap-2 text-xs ${
+                  messages[messages.length - 1].complianceFlag?.severity === 'critical'
+                    ? 'bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/20'
+                    : messages[messages.length - 1].complianceFlag?.severity === 'warning'
+                    ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20'
+                    : 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20'
+                }`}>
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                  <span>{messages[messages.length - 1].complianceFlag?.severity === 'critical' ? 'Compliance Alert' : 'Coaching Note'}</span>
+                </div>
+              )}
+
+              {/* Hint available nudge */}
+              {messages.length > 0 && messages[messages.length - 1]?.hintAvailable && !isLoading && (
+                <div className="mx-1">
+                  <button
+                    onClick={() => onQuickAction('Give me a hint')}
+                    className="w-full p-2 rounded-md bg-primary/5 border border-primary/20 flex items-center gap-2 text-xs text-primary hover:bg-primary/10 transition-colors"
+                  >
+                    <Lightbulb className="h-3.5 w-3.5 animate-pulse" />
+                    <span>Andrea has a hint for you</span>
+                    <ArrowRight className="h-3 w-3 ml-auto" />
+                  </button>
                 </div>
               )}
               <div ref={messagesEndRef} />
