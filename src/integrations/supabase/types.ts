@@ -283,6 +283,42 @@ export type Database = {
         }
         Relationships: []
       }
+      practice_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          is_submitted: boolean
+          messages: Json
+          module_id: string
+          session_id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_submitted?: boolean
+          messages?: Json
+          module_id: string
+          session_id: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_submitted?: boolean
+          messages?: Json
+          module_id?: string
+          session_id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       prompt_events: {
         Row: {
           created_at: string | null
