@@ -16,6 +16,7 @@ import { PracticeChatPanel } from '@/components/training/PracticeChatPanel';
 import { ModuleListSidebar } from '@/components/training/ModuleListSidebar';
 import { type Message, type BankPolicy } from '@/types/training';
 import { useAIMemories } from '@/hooks/useAIPreferences';
+import { usePracticeConversations } from '@/hooks/usePracticeConversations';
 import { Loader2, ArrowLeft, Shield } from 'lucide-react';
 
 export default function TrainingWorkspace() {
@@ -28,7 +29,6 @@ export default function TrainingWorkspace() {
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const [selectedModule, setSelectedModule] = useState<ModuleContent | null>(null);
-  const [practiceMessages, setPracticeMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
   const [trainerMessages, setTrainerMessages] = useState<Message[]>([]);
   const [trainerInput, setTrainerInput] = useState('');
   const [isTrainerLoading, setIsTrainerLoading] = useState(false);
@@ -46,6 +46,19 @@ export default function TrainingWorkspace() {
   const { createMemory } = useAIMemories();
 
   const session = sessionId ? ALL_SESSION_CONTENT[parseInt(sessionId)] : null;
+
+  // Practice conversations hook — persists to database
+  const {
+    conversations: practiceConversations,
+    activeConversation,
+    activeConversationId,
+    activeMessages,
+    createConversation,
+    appendMessage,
+    markSubmitted,
+    startNewChat,
+    selectConversation,
+  } = usePracticeConversations(sessionId || '1', selectedModule?.id || null);
 
   // Initialize trainer with dynamic AI-generated greeting
   const hasGreetedRef = useRef(false);
@@ -113,11 +126,10 @@ export default function TrainingWorkspace() {
     }
   }, [session, selectedModule]);
 
-  // Reset practice when module changes
+  // Reset when module changes
   const prevModuleRef = useRef<string | null>(null);
   useEffect(() => {
     if (selectedModule && selectedModule.id !== prevModuleRef.current) {
-      setPracticeMessages([]);
       prevModuleRef.current = selectedModule.id;
       contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -169,14 +181,26 @@ export default function TrainingWorkspace() {
     if (!message.trim() || !selectedModule) return;
 
     const userMsg = { role: 'user' as const, content: message };
-    const updatedMessages = [...practiceMessages, userMsg];
-    setPracticeMessages(updatedMessages);
+
+    // If no active conversation, create one with the first message
+    let convId = activeConversationId;
+    if (!convId) {
+      convId = await createConversation(userMsg);
+      if (!convId) return;
+    } else {
+      // Append user message to existing conversation
+      await appendMessage(userMsg);
+    }
+
     setIsPracticeLoading(true);
 
     try {
+      // Build the full messages array for the API call
+      const allMessages = [...activeMessages, userMsg];
+
       const response = await supabase.functions.invoke('practice_chat', {
         body: {
-          messages: updatedMessages,
+          messages: allMessages,
           moduleTitle: selectedModule.content.practiceTask.title,
           scenario: selectedModule.content.practiceTask.scenario,
           sessionNumber: parseInt(sessionId || '1'),
@@ -186,13 +210,15 @@ export default function TrainingWorkspace() {
       if (response.error) throw response.error;
 
       const reply = response.data?.reply || "I'd be happy to help. Could you provide more details?";
-      setPracticeMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+      const assistantMsg = { role: 'assistant' as const, content: reply };
+      await appendMessage(assistantMsg);
     } catch (error) {
       console.error('Practice chat error:', error);
-      setPracticeMessages(prev => [...prev, {
-        role: 'assistant',
+      const errorMsg = {
+        role: 'assistant' as const,
         content: "I'm having a brief connection issue. Please try again in a moment.",
-      }]);
+      };
+      await appendMessage(errorMsg);
     } finally {
       setIsPracticeLoading(false);
     }
@@ -200,14 +226,9 @@ export default function TrainingWorkspace() {
 
   // Submit the practice conversation to Andrea for review
   const handleSubmitForReview = async () => {
-    if (!selectedModule || practiceMessages.length === 0) return;
+    if (!selectedModule || activeMessages.length === 0) return;
 
     setIsTrainerLoading(true);
-
-    // Format the practice conversation for Andrea to review
-    const conversationSummary = practiceMessages
-      .map(m => `[${m.role === 'user' ? 'Learner' : 'AI'}]: ${m.content}`)
-      .join('\n\n');
 
     try {
       const response = await supabase.functions.invoke('trainer_chat', {
@@ -219,10 +240,10 @@ export default function TrainingWorkspace() {
             role: 'user',
             content: 'Please review my practice conversation.',
           }],
-          practiceConversation: practiceMessages,
+          practiceConversation: activeMessages,
           learnerState: {
             currentCardTitle: selectedModule.title,
-            progressSummary: `Submitted practice conversation with ${practiceMessages.filter(m => m.role === 'user').length} prompts for review`,
+            progressSummary: `Submitted practice conversation with ${activeMessages.filter(m => m.role === 'user').length} prompts for review`,
             completedModules: Array.from(completedModules),
             displayName: profile?.display_name || undefined,
             bankRole: profile?.bank_role || undefined,
@@ -251,7 +272,7 @@ export default function TrainingWorkspace() {
     } catch (error) {
       console.error('Review error:', error);
       // Offline fallback
-      const offlineFeedback = `I've reviewed your practice conversation (${practiceMessages.filter(m => m.role === 'user').length} prompts).
+      const offlineFeedback = `I've reviewed your practice conversation (${activeMessages.filter(m => m.role === 'user').length} prompts).
 
 **Quick Assessment:**
 ${selectedModule.content.practiceTask.successCriteria.map((c, i) => `${i + 1}. ${c}`).join('\n')}
@@ -264,6 +285,9 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
     } finally {
       setIsTrainerLoading(false);
     }
+
+    // Mark conversation as submitted in database
+    await markSubmitted();
 
     // Mark module as completed
     setModuleCompleted(true);
@@ -294,11 +318,11 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           moduleId: selectedModule?.id,
           sessionNumber: parseInt(sessionId || '1'),
           messages: [...trainerMessages, userMessage],
-          practiceConversation: practiceMessages.length > 0 ? practiceMessages : undefined,
+          practiceConversation: activeMessages.length > 0 ? activeMessages : undefined,
           learnerState: {
             currentCardTitle: selectedModule?.title,
-            progressSummary: practiceMessages.length > 0
-              ? `Has ${practiceMessages.filter(m => m.role === 'user').length} practice prompts in the conversation`
+            progressSummary: activeMessages.length > 0
+              ? `Has ${activeMessages.filter(m => m.role === 'user').length} practice prompts in the conversation`
               : 'Working on module',
             completedModules: Array.from(completedModules),
             displayName: profile?.display_name || undefined,
@@ -348,11 +372,11 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           moduleId: selectedModule?.id,
           sessionNumber: parseInt(sessionId || '1'),
           messages: [...trainerMessages, userMessage],
-          practiceConversation: practiceMessages.length > 0 ? practiceMessages : undefined,
+          practiceConversation: activeMessages.length > 0 ? activeMessages : undefined,
           learnerState: {
             currentCardTitle: selectedModule?.title,
-            progressSummary: practiceMessages.length > 0
-              ? `Has ${practiceMessages.filter(m => m.role === 'user').length} practice prompts in the conversation`
+            progressSummary: activeMessages.length > 0
+              ? `Has ${activeMessages.filter(m => m.role === 'user').length} practice prompts in the conversation`
               : 'Working on module',
             completedModules: Array.from(completedModules),
             displayName: profile?.display_name || undefined,
@@ -410,12 +434,15 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
   const currentModuleIndex = session.modules.findIndex(m => m.id === selectedModule?.id);
   const nextModule = session.modules[currentModuleIndex + 1];
 
+  // Determine if the active conversation has been submitted
+  const isActiveConversationSubmitted = activeConversation?.is_submitted || false;
+
   return (
     <div className="h-screen flex flex-col bg-background">
-      <BankPolicyModal 
-        open={policyModalOpen} 
-        onOpenChange={setPolicyModalOpen} 
-        policy={selectedPolicy} 
+      <BankPolicyModal
+        open={policyModalOpen}
+        onOpenChange={setPolicyModalOpen}
+        policy={selectedPolicy}
       />
 
       {/* Top Bar */}
@@ -481,14 +508,19 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           {selectedModule && (
             <PracticeChatPanel
               module={selectedModule}
-              messages={practiceMessages}
+              messages={activeMessages}
               onSendMessage={handlePracticeSendMessage}
               isLoading={isPracticeLoading}
               isCompleted={moduleCompleted}
+              isSubmitted={isActiveConversationSubmitted}
               onSubmitForReview={handleSubmitForReview}
               onContinueToNext={nextModule ? () => setSelectedModule(nextModule) : undefined}
               onCompleteSession={!nextModule ? handleCompleteSession : undefined}
               hasNextModule={!!nextModule}
+              conversations={practiceConversations}
+              activeConversationId={activeConversationId}
+              onNewChat={startNewChat}
+              onSelectConversation={selectConversation}
             />
           )}
         </div>

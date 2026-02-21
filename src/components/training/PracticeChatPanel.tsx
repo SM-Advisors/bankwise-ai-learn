@@ -8,8 +8,10 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/component
 import {
   Loader2, Send, Lightbulb, AlertCircle, Target, CheckCircle,
   ChevronRight, ChevronDown, Bot, User, Mic, AudioLines, Plus, SlidersHorizontal,
+  MessageSquarePlus, History, Clock, ChevronUp,
 } from 'lucide-react';
 import { type ModuleContent } from '@/data/trainingContent';
+import { type PracticeConversation } from '@/hooks/usePracticeConversations';
 
 interface PracticeMessage {
   role: 'user' | 'assistant';
@@ -22,10 +24,15 @@ interface PracticeChatPanelProps {
   onSendMessage: (message: string) => void;
   isLoading: boolean;
   isCompleted: boolean;
+  isSubmitted: boolean;
   onSubmitForReview: () => void;
   onContinueToNext?: () => void;
   onCompleteSession?: () => void;
   hasNextModule: boolean;
+  conversations: PracticeConversation[];
+  activeConversationId: string | null;
+  onNewChat: () => void;
+  onSelectConversation: (id: string) => void;
 }
 
 export function PracticeChatPanel({
@@ -34,14 +41,20 @@ export function PracticeChatPanel({
   onSendMessage,
   isLoading,
   isCompleted,
+  isSubmitted,
   onSubmitForReview,
   onContinueToNext,
   onCompleteSession,
   hasNextModule,
+  conversations,
+  activeConversationId,
+  onNewChat,
+  onSelectConversation,
 }: PracticeChatPanelProps) {
   const [input, setInput] = useState('');
   const [scenarioOpen, setScenarioOpen] = useState(false);
   const [criteriaOpen, setCriteriaOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'work' | 'web'>('work');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -68,11 +81,42 @@ export function PracticeChatPanel({
   };
 
   const hasConversation = messages.length > 0;
+  const pastConversations = conversations.filter(c => c.id !== activeConversationId);
+
+  // Format relative time
+  const formatRelativeTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
 
   return (
     <div className="flex flex-col flex-1 min-h-0 items-center bg-background text-foreground">
-      {/* Work / Web Toggle — top center */}
-      <div className="w-full flex justify-center pt-4 pb-2">
+      {/* Top bar: Work/Web toggle + New Chat + History */}
+      <div className="w-full flex items-center justify-between px-4 pt-4 pb-2">
+        {/* Left: New Chat button */}
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onNewChat}
+            className="h-8 gap-1.5 rounded-full text-sm px-3 text-muted-foreground hover:text-foreground hover:bg-muted"
+          >
+            <MessageSquarePlus className="h-4 w-4" />
+            New Chat
+          </Button>
+        </div>
+
+        {/* Center: Work / Web Toggle */}
         <div className="inline-flex items-center rounded-full border border-border bg-card p-0.5 shadow-sm">
           <button
             onClick={() => setActiveTab('work')}
@@ -94,6 +138,69 @@ export function PracticeChatPanel({
           >
             Web
           </button>
+        </div>
+
+        {/* Right: History dropdown */}
+        <div className="relative">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setHistoryOpen(!historyOpen)}
+            className="h-8 gap-1.5 rounded-full text-sm px-3 text-muted-foreground hover:text-foreground hover:bg-muted"
+            disabled={conversations.length === 0}
+          >
+            <History className="h-4 w-4" />
+            {conversations.length > 0 && (
+              <span className="text-xs">{conversations.length}</span>
+            )}
+          </Button>
+
+          {/* History dropdown panel */}
+          {historyOpen && pastConversations.length > 0 && (
+            <>
+              {/* Click-away backdrop */}
+              <div className="fixed inset-0 z-40" onClick={() => setHistoryOpen(false)} />
+              <div className="absolute right-0 top-full mt-1 w-72 bg-popover border border-border rounded-xl shadow-lg z-50 overflow-hidden">
+                <div className="px-3 py-2 border-b border-border">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Conversation History
+                  </p>
+                </div>
+                <ScrollArea className="max-h-64">
+                  <div className="p-1.5 space-y-0.5">
+                    {pastConversations.map((conv) => (
+                      <button
+                        key={conv.id}
+                        onClick={() => {
+                          onSelectConversation(conv.id);
+                          setHistoryOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-muted transition-colors group"
+                      >
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-foreground truncate flex-1">
+                            {conv.title}
+                          </p>
+                          {conv.is_submitted && (
+                            <CheckCircle className="h-3.5 w-3.5 text-accent shrink-0" />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <Clock className="h-3 w-3 text-muted-foreground/60" />
+                          <span className="text-xs text-muted-foreground">
+                            {formatRelativeTime(conv.updated_at)}
+                          </span>
+                          <span className="text-xs text-muted-foreground/60">
+                            · {conv.messages.length} messages
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -221,25 +328,29 @@ export function PracticeChatPanel({
               </div>
             )}
 
-            {/* Completion Banner — inside chat */}
-            {isCompleted && (
+            {/* Submitted indicator — inside chat */}
+            {isSubmitted && (
               <div className="w-full">
                 <div className="p-4 bg-accent/10 border border-accent/20 rounded-2xl text-center">
                   <div className="flex items-center justify-center gap-2 text-accent font-medium">
                     <CheckCircle className="h-5 w-5" />
-                    Practice Complete!
+                    Submitted for Review
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Andrea has reviewed your conversation →
+                    Andrea has reviewed this conversation. You can keep chatting or start a new one.
                   </p>
-                  <div className="mt-3">
+                  <div className="mt-3 flex items-center justify-center gap-2">
+                    <Button variant="outline" size="sm" onClick={onNewChat} className="gap-2 rounded-full">
+                      <MessageSquarePlus className="h-4 w-4" />
+                      New Chat
+                    </Button>
                     {hasNextModule && onContinueToNext ? (
-                      <Button onClick={onContinueToNext} className="gap-2 rounded-full">
+                      <Button onClick={onContinueToNext} size="sm" className="gap-2 rounded-full">
                         Continue to Next Module
                         <ChevronRight className="h-4 w-4" />
                       </Button>
                     ) : onCompleteSession ? (
-                      <Button onClick={onCompleteSession} className="gap-2 rounded-full">
+                      <Button onClick={onCompleteSession} size="sm" className="gap-2 rounded-full">
                         Complete Session
                         <CheckCircle className="h-4 w-4" />
                       </Button>
@@ -254,8 +365,8 @@ export function PracticeChatPanel({
         </ScrollArea>
       )}
 
-      {/* Submit for Review button — appears after 1+ exchanges */}
-      {hasConversation && !isCompleted && !isLoading && (
+      {/* Submit for Review button — appears after 1+ exchanges, not yet submitted */}
+      {hasConversation && !isSubmitted && !isLoading && (
         <div className="w-full max-w-2xl mx-auto px-4 pt-2">
           <button
             onClick={onSubmitForReview}
@@ -267,59 +378,57 @@ export function PracticeChatPanel({
         </div>
       )}
 
-      {/* Copilot-Style Composer Bar — matches PracticeTaskCard exactly */}
-      {!isCompleted && (
-        <div className="w-full max-w-2xl mx-auto px-4 pb-2 pt-2">
-          <div className="rounded-2xl border border-border bg-card shadow-sm">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={hasConversation ? "Continue the conversation..." : `Message ${module.content.practiceTask.title}...`}
-              className="min-h-[56px] max-h-[180px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-foreground placeholder:text-muted-foreground/60 rounded-t-2xl px-4 pt-3.5 pb-0"
-            />
-            {/* Toolbar row */}
-            <div className="flex items-center justify-between px-3 py-2">
-              <div className="flex items-center gap-1">
+      {/* Copilot-Style Composer Bar — ALWAYS visible (even after completion) */}
+      <div className="w-full max-w-2xl mx-auto px-4 pb-2 pt-2">
+        <div className="rounded-2xl border border-border bg-card shadow-sm">
+          <Textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={hasConversation ? "Continue the conversation..." : `Message ${module.content.practiceTask.title}...`}
+            className="min-h-[56px] max-h-[180px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-foreground placeholder:text-muted-foreground/60 rounded-t-2xl px-4 pt-3.5 pb-0"
+          />
+          {/* Toolbar row */}
+          <div className="flex items-center justify-between px-3 py-2">
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
+                <Plus className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-full text-sm px-3 text-muted-foreground hover:text-foreground hover:bg-muted">
+                <SlidersHorizontal className="h-4 w-4" />
+                Tools
+              </Button>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
+                <Mic className="h-5 w-5" />
+              </Button>
+              {input.trim() ? (
+                <Button
+                  size="icon"
+                  onClick={handleSend}
+                  disabled={isLoading}
+                  className="h-8 w-8 rounded-full"
+                  aria-label="Send message"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              ) : (
                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
-                  <Plus className="h-5 w-5" />
+                  <AudioLines className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-full text-sm px-3 text-muted-foreground hover:text-foreground hover:bg-muted">
-                  <SlidersHorizontal className="h-4 w-4" />
-                  Tools
-                </Button>
-              </div>
-              <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
-                  <Mic className="h-5 w-5" />
-                </Button>
-                {input.trim() ? (
-                  <Button
-                    size="icon"
-                    onClick={handleSend}
-                    disabled={isLoading}
-                    className="h-8 w-8 rounded-full"
-                    aria-label="Send message"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4" />
-                    )}
-                  </Button>
-                ) : (
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
-                    <AudioLines className="h-5 w-5" />
-                  </Button>
-                )}
-              </div>
+              )}
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Suggestion Cards — same style as PracticeTaskCard */}
-      {!hasConversation && !isCompleted && (
+      {!hasConversation && (
         <div className="w-full max-w-2xl mx-auto px-4 pb-6 pt-3">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {module.content.practiceTask.hints.slice(0, 3).map((hint, idx) => (
