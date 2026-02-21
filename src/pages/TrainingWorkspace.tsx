@@ -16,7 +16,7 @@ import { PracticeTaskCard } from '@/components/training/PracticeTaskCard';
 import { ModuleListSidebar } from '@/components/training/ModuleListSidebar';
 import { type Message, type BankPolicy } from '@/types/training';
 import { useAIMemories } from '@/hooks/useAIPreferences';
-import { Loader2, ArrowLeft, Clock, Shield } from 'lucide-react';
+import { Loader2, ArrowLeft, Shield } from 'lucide-react';
 
 export default function TrainingWorkspace() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -443,38 +443,20 @@ Feel free to ask me for more detailed feedback!`;
         />
 
         {/* Middle Column - Practice Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 flex flex-col p-6 overflow-y-auto" ref={contentScrollRef}>
+        <div className="flex-1 flex flex-col overflow-hidden bg-background">
+          <div className="flex-1 flex flex-col overflow-y-auto" ref={contentScrollRef}>
             {selectedModule && (
-              <div className="max-w-3xl mx-auto flex flex-col min-h-full w-full">
-                {/* Module Header */}
-                <div className="shrink-0 mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary">{selectedModule.type}</Badge>
-                    <span className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {selectedModule.estimatedTime}
-                    </span>
-                  </div>
-                  <h2 className="text-2xl font-bold">{selectedModule.title}</h2>
-                  <p className="text-muted-foreground mt-1">{selectedModule.description}</p>
-                </div>
-
-                {/* Practice Task - fills remaining space */}
-                <div className="flex-1 flex flex-col">
-                  <PracticeTaskCard
-                    module={selectedModule}
-                    practiceInput={practiceInput}
-                    onPracticeInputChange={setPracticeInput}
-                    onSubmit={handlePracticeSubmit}
-                    isLoading={isPracticeLoading}
-                    isCompleted={moduleCompleted}
-                    onContinueToNext={nextModule ? () => setSelectedModule(nextModule) : undefined}
-                    onCompleteSession={!nextModule ? handleCompleteSession : undefined}
-                    hasNextModule={!!nextModule}
-                  />
-                </div>
-              </div>
+              <PracticeTaskCard
+                  module={selectedModule}
+                  practiceInput={practiceInput}
+                  onPracticeInputChange={setPracticeInput}
+                  onSubmit={handlePracticeSubmit}
+                  isLoading={isPracticeLoading}
+                  isCompleted={moduleCompleted}
+                  onContinueToNext={nextModule ? () => setSelectedModule(nextModule) : undefined}
+                  onCompleteSession={!nextModule ? handleCompleteSession : undefined}
+                  hasNextModule={!!nextModule}
+                />
             )}
           </div>
         </div>

@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import { Loader2, Send, Lightbulb, AlertCircle, Target, CheckCircle, ChevronRight, ChevronDown, Plus, SlidersHorizontal } from 'lucide-react';
+import { Loader2, Send, Lightbulb, CheckCircle, ChevronRight, Plus, SlidersHorizontal, Mic, AudioLines } from 'lucide-react';
 import { type ModuleContent } from '@/data/trainingContent';
 
 interface PracticeTaskCardProps {
@@ -28,8 +27,7 @@ export function PracticeTaskCard({
   onCompleteSession,
   hasNextModule,
 }: PracticeTaskCardProps) {
-  const [scenarioOpen, setScenarioOpen] = useState(false);
-  const [criteriaOpen, setCriteriaOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'work' | 'web'>('work');
 
   const handleHintClick = (hint: string) => {
     if (practiceInput.trim()) {
@@ -49,82 +47,71 @@ export function PracticeTaskCard({
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 items-center justify-center bg-[hsl(222,19%,11%)] text-[hsl(210,40%,98%)]">
-      {/* Centered Welcome / Task Title — Copilot style */}
-      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-2xl mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-semibold text-[hsl(210,40%,98%)] text-center mb-2 tracking-tight">
-          {module.content.practiceTask.title}
-        </h2>
-        <p className="text-base text-[hsl(215,20%,65%)] text-center max-w-lg mb-6">
-          {module.content.practiceTask.instructions}
-        </p>
-
-        {/* Collapsible details — compact */}
-        <div className="w-full max-w-lg space-y-1 mb-4">
-          <Collapsible open={scenarioOpen} onOpenChange={setScenarioOpen}>
-            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-[hsl(215,20%,65%)] hover:text-[hsl(210,40%,98%)] transition-colors w-full px-3 py-2 rounded-lg hover:bg-[hsl(222,19%,17%)]">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>View Scenario</span>
-              <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${scenarioOpen ? 'rotate-180' : ''}`} />
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <div className="mt-1 bg-[hsl(222,19%,15%)] border border-[hsl(222,19%,20%)] p-4 rounded-xl">
-                <p className="text-sm whitespace-pre-wrap text-[hsl(215,20%,75%)]">{module.content.practiceTask.scenario}</p>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-
-          <Collapsible open={criteriaOpen} onOpenChange={setCriteriaOpen}>
-            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-[hsl(215,20%,65%)] hover:text-[hsl(210,40%,98%)] transition-colors w-full px-3 py-2 rounded-lg hover:bg-[hsl(222,19%,17%)]">
-              <Target className="h-4 w-4 text-[hsl(10,76%,55%)] shrink-0" />
-              <span>Success Criteria</span>
-              <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${criteriaOpen ? 'rotate-180' : ''}`} />
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <ul className="mt-1 space-y-1.5 px-3 pb-2">
-                {module.content.practiceTask.successCriteria.map((criteria, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm text-[hsl(215,20%,75%)]">
-                    <CheckCircle className="h-4 w-4 text-[hsl(215,20%,55%)] shrink-0 mt-0.5" />
-                    {criteria}
-                  </li>
-                ))}
-              </ul>
-            </CollapsibleContent>
-          </Collapsible>
+    <div className="flex flex-col flex-1 min-h-0 items-center bg-background text-foreground">
+      {/* Work / Web Toggle — top center */}
+      <div className="w-full flex justify-center pt-4 pb-2">
+        <div className="inline-flex items-center rounded-full border border-border bg-card p-0.5 shadow-sm">
+          <button
+            onClick={() => setActiveTab('work')}
+            className={`px-5 py-1.5 text-sm font-medium rounded-full transition-colors ${
+              activeTab === 'work'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Work
+          </button>
+          <button
+            onClick={() => setActiveTab('web')}
+            className={`px-5 py-1.5 text-sm font-medium rounded-full transition-colors ${
+              activeTab === 'web'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Web
+          </button>
         </div>
       </div>
 
-      {/* Completion Banner */}
-      {isCompleted && (
-        <div className="w-full max-w-2xl mx-auto mb-4 px-4">
-          <div className="p-4 bg-[hsl(10,76%,55%,0.15)] border border-[hsl(10,76%,55%,0.3)] rounded-2xl text-center">
-            <div className="flex items-center justify-center gap-2 text-[hsl(10,76%,55%)] font-medium">
-              <CheckCircle className="h-5 w-5" />
-              Practice Submitted!
-            </div>
-            <p className="text-sm text-[hsl(215,20%,65%)] mt-1">
-              Check Andrea's feedback on the right panel →
-            </p>
-            <div className="mt-3">
-              {hasNextModule && onContinueToNext ? (
-                <Button onClick={onContinueToNext} className="gap-2 rounded-full bg-[hsl(10,76%,55%)] hover:bg-[hsl(10,76%,45%)] text-white">
-                  Continue to Next Module
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              ) : onCompleteSession ? (
-                <Button onClick={onCompleteSession} className="gap-2 rounded-full bg-[hsl(10,76%,55%)] hover:bg-[hsl(10,76%,45%)] text-white">
-                  Complete Session
-                  <CheckCircle className="h-4 w-4" />
-                </Button>
-              ) : null}
+      {/* Centered Welcome Message */}
+      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-2xl mx-auto px-4">
+        <h2 className="text-3xl md:text-4xl font-semibold text-foreground text-center mb-2 tracking-tight">
+          Welcome, how can I help?
+        </h2>
+
+        {/* Completion Banner */}
+        {isCompleted && (
+          <div className="w-full max-w-lg mt-6">
+            <div className="p-4 bg-accent/10 border border-accent/20 rounded-2xl text-center">
+              <div className="flex items-center justify-center gap-2 text-accent font-medium">
+                <CheckCircle className="h-5 w-5" />
+                Practice Submitted!
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                Check Andrea's feedback on the right panel →
+              </p>
+              <div className="mt-3">
+                {hasNextModule && onContinueToNext ? (
+                  <Button onClick={onContinueToNext} className="gap-2 rounded-full">
+                    Continue to Next Module
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                ) : onCompleteSession ? (
+                  <Button onClick={onCompleteSession} className="gap-2 rounded-full">
+                    Complete Session
+                    <CheckCircle className="h-4 w-4" />
+                  </Button>
+                ) : null}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Copilot-Style Composer Bar */}
       <div className="w-full max-w-2xl mx-auto px-4 pb-2">
-        <div className="rounded-2xl border border-[hsl(222,19%,22%)] bg-[hsl(222,19%,15%)] shadow-lg">
+        <div className="rounded-2xl border border-border bg-card shadow-sm">
           <label htmlFor="practice-response" className="sr-only">
             Your Response
           </label>
@@ -134,60 +121,66 @@ export function PracticeTaskCard({
             onChange={(e) => onPracticeInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={`Message ${module.content.practiceTask.title}...`}
-            className="min-h-[56px] max-h-[180px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-[hsl(210,40%,98%)] placeholder:text-[hsl(215,20%,45%)] rounded-t-2xl px-4 pt-3.5 pb-0"
-            aria-describedby="practice-instructions composer-hint"
+            className="min-h-[56px] max-h-[180px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-foreground placeholder:text-muted-foreground/60 rounded-t-2xl px-4 pt-3.5 pb-0"
+            aria-describedby="composer-hint"
           />
           {/* Toolbar row */}
           <div className="flex items-center justify-between px-3 py-2">
-            <div className="flex items-center gap-1 text-[hsl(215,20%,50%)]">
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-[hsl(215,20%,50%)] hover:text-[hsl(210,40%,98%)] hover:bg-[hsl(222,19%,20%)]" disabled>
-                <Plus className="h-4 w-4" />
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
+                <Plus className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-full text-xs px-3 text-[hsl(215,20%,50%)] hover:text-[hsl(210,40%,98%)] hover:bg-[hsl(222,19%,20%)]" disabled>
-                <SlidersHorizontal className="h-3.5 w-3.5" />
+              <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-full text-sm px-3 text-muted-foreground hover:text-foreground hover:bg-muted">
+                <SlidersHorizontal className="h-4 w-4" />
                 Tools
               </Button>
             </div>
-            <div className="flex items-center gap-2">
-              <span id="composer-hint" className="text-[10px] text-[hsl(215,20%,35%)] hidden sm:inline">
-                Ctrl+Enter
-              </span>
-              <Button
-                size="icon"
-                onClick={onSubmit}
-                disabled={isLoading || !practiceInput.trim()}
-                className="h-8 w-8 rounded-full bg-[hsl(215,20%,50%)] hover:bg-[hsl(215,20%,60%)] text-[hsl(222,19%,11%)]"
-                aria-label="Submit for review"
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
+                <Mic className="h-5 w-5" />
               </Button>
+              {practiceInput.trim() ? (
+                <Button
+                  size="icon"
+                  onClick={onSubmit}
+                  disabled={isLoading}
+                  className="h-8 w-8 rounded-full"
+                  aria-label="Submit for review"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              ) : (
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
+                  <AudioLines className="h-5 w-5" />
+                </Button>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Suggestion Cards — Copilot style */}
+      {/* Suggestion Cards */}
       <div className="w-full max-w-2xl mx-auto px-4 pb-6 pt-3">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {module.content.practiceTask.hints.slice(0, 3).map((hint, idx) => (
             <button
               key={idx}
               onClick={() => handleHintClick(hint)}
-              className="text-left p-4 rounded-xl border border-[hsl(222,19%,20%)] bg-[hsl(222,19%,14%)] hover:bg-[hsl(222,19%,18%)] hover:border-[hsl(222,19%,25%)] transition-all group"
+              className="text-left p-4 rounded-xl border border-border bg-card hover:bg-muted/50 hover:border-border transition-all group shadow-sm"
             >
-              <Lightbulb className="h-5 w-5 text-[hsl(215,20%,50%)] mb-2 group-hover:text-[hsl(10,76%,55%)] group-hover:scale-110 transition-all" />
-              <p className="text-sm font-medium text-[hsl(210,40%,90%)] line-clamp-2">{hint}</p>
-              <p className="text-xs text-[hsl(215,20%,45%)] mt-1">Try this approach</p>
+              <Lightbulb className="h-5 w-5 text-muted-foreground mb-2 group-hover:text-accent transition-colors" />
+              <p className="text-sm font-medium text-foreground line-clamp-2">{hint}</p>
+              <p className="text-xs text-muted-foreground mt-1">Try this approach</p>
             </button>
           ))}
         </div>
         {module.content.practiceTask.hints.length > 3 && (
-          <div className="text-center mt-2">
-            <button className="text-xs text-[hsl(215,20%,45%)] hover:text-[hsl(210,40%,90%)] transition-colors">
+          <div className="text-center mt-3">
+            <button className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               See more ↓
             </button>
           </div>
