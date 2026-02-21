@@ -208,42 +208,6 @@ export type Database = {
           },
         ]
       }
-      practice_conversations: {
-        Row: {
-          id: string
-          user_id: string
-          session_id: string
-          module_id: string
-          title: string
-          messages: Json
-          is_submitted: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          session_id: string
-          module_id: string
-          title?: string
-          messages?: Json
-          is_submitted?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          session_id?: string
-          module_id?: string
-          title?: string
-          messages?: Json
-          is_submitted?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       lesson_content_chunks: {
         Row: {
           chunk_index: number
