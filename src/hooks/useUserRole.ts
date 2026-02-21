@@ -18,26 +18,54 @@ export function useUserRole() {
 
     const fetchRole = async () => {
       setLoading(true);
-      // Use security definer function to bypass RLS
-      const { data, error } = await supabase
+      console.log('[useUserRole] Fetching role for user:', user.id);
+
+      // Approach 1: Use security definer function to bypass RLS
+      const { data: rpcData, error: rpcError } = await supabase
         .rpc('get_user_role', { _user_id: user.id });
 
-      if (error) {
-        console.error('Error fetching user role:', error);
-        // Fallback: try direct table query
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .maybeSingle();
+      console.log('[useUserRole] RPC result:', { rpcData, rpcError });
 
-        if (fallbackError) {
-          console.error('Fallback role fetch also failed:', fallbackError);
-        }
-        setRole((fallbackData?.role as AppRole) || 'user');
-      } else {
-        setRole((data as AppRole) || 'user');
+      if (!rpcError && rpcData) {
+        console.log('[useUserRole] Role from RPC:', rpcData);
+        setRole(rpcData as AppRole);
+        setLoading(false);
+        return;
       }
+
+      // Approach 2: Direct table query (may be blocked by RLS)
+      const { data: directData, error: directError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
+
+      console.log('[useUserRole] Direct query result:', { directData, directError });
+
+      if (!directError && directData && directData.length > 0) {
+        // If multiple rows, prefer admin
+        const hasAdmin = directData.some((r: any) => r.role === 'admin');
+        const resolvedRole = hasAdmin ? 'admin' : (directData[0].role as AppRole);
+        console.log('[useUserRole] Role from direct query:', resolvedRole);
+        setRole(resolvedRole);
+        setLoading(false);
+        return;
+      }
+
+      // Approach 3: Use has_role to check specifically for admin
+      const { data: isAdminResult, error: hasRoleError } = await supabase
+        .rpc('has_role', { _user_id: user.id, _role: 'admin' });
+
+      console.log('[useUserRole] has_role(admin) result:', { isAdminResult, hasRoleError });
+
+      if (!hasRoleError && isAdminResult === true) {
+        console.log('[useUserRole] Confirmed admin via has_role');
+        setRole('admin');
+        setLoading(false);
+        return;
+      }
+
+      console.log('[useUserRole] Defaulting to user role');
+      setRole('user');
       setLoading(false);
     };
 
