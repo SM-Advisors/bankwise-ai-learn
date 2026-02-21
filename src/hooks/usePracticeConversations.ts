@@ -113,39 +113,52 @@ export function usePracticeConversations(sessionId: string, moduleId: string | n
     }
   }, [user?.id, sessionId, moduleId]);
 
-  // Append a message to the active conversation
-  const appendMessage = useCallback(async (message: PracticeMessage) => {
-    if (!activeConversationId) return;
+  // Append a message to the active conversation (or a specific one by ID)
+  const appendMessage = useCallback(async (message: PracticeMessage, targetConversationId?: string) => {
+    const convId = targetConversationId || activeConversationId;
+    if (!convId) return;
 
-    const conv = conversations.find(c => c.id === activeConversationId);
-    if (!conv) return;
+    // Use functional state update to always read the latest conversations
+    let updatedMessages: PracticeMessage[] = [];
 
-    const updatedMessages = [...conv.messages, message];
+    setConversations(prev => {
+      const conv = prev.find(c => c.id === convId);
+      if (!conv) return prev;
 
-    // Update title if this is the first user message
-    const isFirstUserMessage = conv.messages.length === 0 && message.role === 'user';
-    const updates: Record<string, unknown> = {
-      messages: updatedMessages as unknown as Record<string, unknown>[],
-    };
-    if (isFirstUserMessage) {
-      updates.title = message.content.slice(0, 50) + (message.content.length > 50 ? '...' : '');
-    }
+      updatedMessages = [...conv.messages, message];
 
-    // Optimistically update local state
-    setConversations(prev =>
-      prev.map(c =>
-        c.id === activeConversationId
-          ? { ...c, messages: updatedMessages, ...(isFirstUserMessage ? { title: updates.title as string } : {}) }
+      // Update title if this is the first user message
+      const isFirstUserMessage = conv.messages.length === 0 && message.role === 'user';
+      const titleUpdate = isFirstUserMessage
+        ? message.content.slice(0, 50) + (message.content.length > 50 ? '...' : '')
+        : conv.title;
+
+      return prev.map(c =>
+        c.id === convId
+          ? { ...c, messages: updatedMessages, title: titleUpdate }
           : c
-      )
-    );
+      );
+    });
 
-    // Persist to DB
+    // Persist to DB (read updatedMessages from the closure set above)
+    // We need to read the latest state for the DB update
     try {
+      // Re-read from state to ensure we have the right messages
+      const convForDb = conversations.find(c => c.id === convId);
+      const messagesForDb = convForDb ? [...convForDb.messages, message] : [message];
+      const isFirstUserMessage = convForDb && convForDb.messages.length === 0 && message.role === 'user';
+
+      const updates: Record<string, unknown> = {
+        messages: messagesForDb as unknown as Record<string, unknown>[],
+      };
+      if (isFirstUserMessage) {
+        updates.title = message.content.slice(0, 50) + (message.content.length > 50 ? '...' : '');
+      }
+
       const { error } = await supabase
         .from('practice_conversations')
         .update(updates)
-        .eq('id', activeConversationId);
+        .eq('id', convId);
 
       if (error) throw error;
     } catch (err) {

@@ -182,11 +182,16 @@ export default function TrainingWorkspace() {
 
     const userMsg = { role: 'user' as const, content: message };
 
-    // If no active conversation, create one with the first message
+    // Track the conversation ID and messages for this send operation
     let convId = activeConversationId;
+    let messagesForApi = [...activeMessages, userMsg];
+
     if (!convId) {
+      // Create a new conversation with the first message
       convId = await createConversation(userMsg);
       if (!convId) return;
+      // For a brand new conversation, the only message is the user's first one
+      messagesForApi = [userMsg];
     } else {
       // Append user message to existing conversation
       await appendMessage(userMsg);
@@ -195,12 +200,9 @@ export default function TrainingWorkspace() {
     setIsPracticeLoading(true);
 
     try {
-      // Build the full messages array for the API call
-      const allMessages = [...activeMessages, userMsg];
-
       const response = await supabase.functions.invoke('practice_chat', {
         body: {
-          messages: allMessages,
+          messages: messagesForApi,
           moduleTitle: selectedModule.content.practiceTask.title,
           scenario: selectedModule.content.practiceTask.scenario,
           sessionNumber: parseInt(sessionId || '1'),
@@ -211,14 +213,15 @@ export default function TrainingWorkspace() {
 
       const reply = response.data?.reply || "I'd be happy to help. Could you provide more details?";
       const assistantMsg = { role: 'assistant' as const, content: reply };
-      await appendMessage(assistantMsg);
+      // Pass the convId explicitly to avoid stale closure
+      await appendMessage(assistantMsg, convId);
     } catch (error) {
       console.error('Practice chat error:', error);
       const errorMsg = {
         role: 'assistant' as const,
         content: "I'm having a brief connection issue. Please try again in a moment.",
       };
-      await appendMessage(errorMsg);
+      await appendMessage(errorMsg, convId);
     } finally {
       setIsPracticeLoading(false);
     }
