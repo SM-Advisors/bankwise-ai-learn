@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import { Loader2, Send, Sparkles, Lightbulb, AlertCircle, Target, CheckCircle, ChevronRight, ChevronDown } from 'lucide-react';
+import { Loader2, Send, Lightbulb, AlertCircle, Target, CheckCircle, ChevronRight, ChevronDown, Plus, SlidersHorizontal } from 'lucide-react';
 import { type ModuleContent } from '@/data/trainingContent';
 
 interface PracticeTaskCardProps {
@@ -32,7 +32,6 @@ export function PracticeTaskCard({
   const [criteriaOpen, setCriteriaOpen] = useState(false);
 
   const handleHintClick = (hint: string) => {
-    // Insert the hint text into the textarea, appending on a new line if there's existing content
     if (practiceInput.trim()) {
       onPracticeInputChange(practiceInput + '\n' + hint);
     } else {
@@ -50,60 +49,55 @@ export function PracticeTaskCard({
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
-      {/* Centered Task Header */}
-      <div className="text-center py-6">
-        <div className="inline-flex items-center gap-2 text-primary mb-2">
-          <Sparkles className="h-5 w-5" aria-hidden="true" />
-          <h3 className="text-lg font-semibold">
-            {module.content.practiceTask.title}
-          </h3>
-        </div>
-        <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+    <div className="flex flex-col flex-1 min-h-0 items-center justify-center">
+      {/* Centered Welcome / Task Title — Copilot style */}
+      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-2xl mx-auto px-4">
+        <h2 className="text-3xl md:text-4xl font-semibold text-foreground text-center mb-2 tracking-tight">
+          {module.content.practiceTask.title}
+        </h2>
+        <p className="text-base text-muted-foreground text-center max-w-lg mb-6">
           {module.content.practiceTask.instructions}
         </p>
+
+        {/* Collapsible details — compact */}
+        <div className="w-full max-w-lg space-y-1 mb-4">
+          <Collapsible open={scenarioOpen} onOpenChange={setScenarioOpen}>
+            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-3 py-2 rounded-lg hover:bg-muted/50">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>View Scenario</span>
+              <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${scenarioOpen ? 'rotate-180' : ''}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-1 bg-muted/40 border border-border p-4 rounded-xl">
+                <p className="text-sm whitespace-pre-wrap">{module.content.practiceTask.scenario}</p>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+
+          <Collapsible open={criteriaOpen} onOpenChange={setCriteriaOpen}>
+            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-3 py-2 rounded-lg hover:bg-muted/50">
+              <Target className="h-4 w-4 text-primary shrink-0" />
+              <span>Success Criteria</span>
+              <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${criteriaOpen ? 'rotate-180' : ''}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <ul className="mt-1 space-y-1.5 px-3 pb-2">
+                {module.content.practiceTask.successCriteria.map((criteria, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                    {criteria}
+                  </li>
+                ))}
+              </ul>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
       </div>
-
-      {/* Collapsible Scenario */}
-      <Collapsible open={scenarioOpen} onOpenChange={setScenarioOpen} className="mx-auto w-full max-w-2xl mb-3">
-        <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-4 py-2 rounded-lg hover:bg-muted/50">
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          <span>View Scenario</span>
-          <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${scenarioOpen ? 'rotate-180' : ''}`} />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="mt-2 bg-accent/50 border border-accent p-4 rounded-lg">
-            <p className="text-sm whitespace-pre-wrap">{module.content.practiceTask.scenario}</p>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Collapsible Success Criteria */}
-      <Collapsible open={criteriaOpen} onOpenChange={setCriteriaOpen} className="mx-auto w-full max-w-2xl mb-4">
-        <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-4 py-2 rounded-lg hover:bg-muted/50">
-          <Target className="h-4 w-4 text-primary shrink-0" />
-          <span>Success Criteria</span>
-          <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${criteriaOpen ? 'rotate-180' : ''}`} />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <ul className="mt-2 space-y-1.5 px-4">
-            {module.content.practiceTask.successCriteria.map((criteria, idx) => (
-              <li key={idx} className="flex items-start gap-2 text-sm">
-                <CheckCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                {criteria}
-              </li>
-            ))}
-          </ul>
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Flex spacer pushes composer toward bottom */}
-      <div className="flex-1" />
 
       {/* Completion Banner */}
       {isCompleted && (
-        <div className="mx-auto w-full max-w-2xl mb-4">
-          <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl text-center">
+        <div className="w-full max-w-2xl mx-auto mb-4 px-4">
+          <div className="p-4 bg-primary/10 border border-primary/20 rounded-2xl text-center">
             <div className="flex items-center justify-center gap-2 text-primary font-medium">
               <CheckCircle className="h-5 w-5" />
               Practice Submitted!
@@ -113,12 +107,12 @@ export function PracticeTaskCard({
             </p>
             <div className="mt-3">
               {hasNextModule && onContinueToNext ? (
-                <Button onClick={onContinueToNext} className="gap-2">
+                <Button onClick={onContinueToNext} className="gap-2 rounded-full">
                   Continue to Next Module
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               ) : onCompleteSession ? (
-                <Button onClick={onCompleteSession} className="gap-2">
+                <Button onClick={onCompleteSession} className="gap-2 rounded-full">
                   Complete Session
                   <CheckCircle className="h-4 w-4" />
                 </Button>
@@ -128,25 +122,9 @@ export function PracticeTaskCard({
         </div>
       )}
 
-      {/* Hint Chips */}
-      <div className="mx-auto w-full max-w-2xl mb-3 px-2">
-        <div className="flex flex-wrap gap-2 justify-center">
-          {module.content.practiceTask.hints.map((hint, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleHintClick(hint)}
-              className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border bg-background hover:bg-muted hover:border-primary/30 transition-colors text-muted-foreground hover:text-foreground"
-            >
-              <Lightbulb className="h-3 w-3 text-highlight shrink-0" />
-              <span className="line-clamp-1">{hint}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Glass-Style Composer Bar */}
-      <div className="mx-auto w-full max-w-2xl px-2 pb-4">
-        <div className="relative rounded-2xl border border-border/60 bg-background/80 backdrop-blur-sm shadow-lg">
+      {/* Copilot-Style Composer Bar */}
+      <div className="w-full max-w-2xl mx-auto px-4 pb-2">
+        <div className="rounded-2xl border border-border bg-card shadow-sm">
           <label htmlFor="practice-response" className="sr-only">
             Your Response
           </label>
@@ -155,29 +133,65 @@ export function PracticeTaskCard({
             value={practiceInput}
             onChange={(e) => onPracticeInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Write your prompt or response here based on the scenario above..."
-            className="min-h-[100px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 pr-14 text-sm rounded-2xl"
+            placeholder={`Message ${module.content.practiceTask.title}...`}
+            className="min-h-[56px] max-h-[180px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm rounded-t-2xl px-4 pt-3.5 pb-0"
             aria-describedby="practice-instructions composer-hint"
           />
-          <div className="flex items-center justify-between px-3 pb-3">
-            <span id="composer-hint" className="text-[10px] text-muted-foreground/60">
-              Ctrl+Enter to submit
-            </span>
-            <Button
-              size="icon"
-              onClick={onSubmit}
-              disabled={isLoading || !practiceInput.trim()}
-              className="h-8 w-8 rounded-full"
-              aria-label="Submit for review"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
+          {/* Toolbar row — mirrors Copilot bottom bar */}
+          <div className="flex items-center justify-between px-3 py-2">
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" disabled>
+                <Plus className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-full text-xs px-3" disabled>
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                Tools
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <span id="composer-hint" className="text-[10px] text-muted-foreground/50 hidden sm:inline">
+                Ctrl+Enter
+              </span>
+              <Button
+                size="icon"
+                onClick={onSubmit}
+                disabled={isLoading || !practiceInput.trim()}
+                className="h-8 w-8 rounded-full"
+                aria-label="Submit for review"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
+
+      {/* Suggestion Cards — Copilot style */}
+      <div className="w-full max-w-2xl mx-auto px-4 pb-6 pt-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {module.content.practiceTask.hints.slice(0, 3).map((hint, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleHintClick(hint)}
+              className="text-left p-4 rounded-xl border border-border bg-card hover:bg-muted/50 hover:border-primary/30 transition-all group"
+            >
+              <Lightbulb className="h-5 w-5 text-primary mb-2 group-hover:scale-110 transition-transform" />
+              <p className="text-sm font-medium text-foreground line-clamp-2">{hint}</p>
+              <p className="text-xs text-muted-foreground mt-1">Try this approach</p>
+            </button>
+          ))}
+        </div>
+        {module.content.practiceTask.hints.length > 3 && (
+          <div className="text-center mt-2">
+            <button className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              See more ↓
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
