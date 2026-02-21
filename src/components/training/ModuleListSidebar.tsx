@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChevronLeft, ChevronRight, Search, MessageSquare, BookOpen, Library, NotebookPen, PlusCircle, LayoutGrid, CheckCircle, FileText, Lightbulb, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, CheckCircle, FileText, Lightbulb, Play } from 'lucide-react';
 import { type ModuleContent } from '@/data/trainingContent';
 
 interface ModuleListSidebarProps {
@@ -36,9 +36,9 @@ export function ModuleListSidebar({
       aria-label="Training modules navigation"
     >
       {/* Header */}
-      <div className="px-3 pt-3 pb-1 flex items-center justify-between shrink-0">
+      <div className="px-3 pt-3 pb-2 flex items-center justify-between shrink-0">
         {!collapsed && (
-          <span className="font-semibold text-sm text-foreground tracking-tight">Training</span>
+          <span className="font-semibold text-sm text-foreground tracking-tight">Modules</span>
         )}
         <Button
           variant="ghost"
@@ -52,79 +52,51 @@ export function ModuleListSidebar({
       </div>
 
       {!collapsed && (
-        <>
-          {/* Search */}
-          <div className="px-3 py-1.5">
-            <button className="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors">
-              <Search className="h-4 w-4 shrink-0" />
-              <span>Search</span>
-            </button>
-          </div>
+        <ScrollArea className="flex-1 px-2 pb-2">
+          <nav className="space-y-2" aria-label="Module list">
+            {modules.map((module, idx) => {
+              const IconComponent = getModuleIcon(module.type);
+              const isSelected = selectedModule?.id === module.id;
+              const isCompleted = completedModules.has(module.id);
 
-          {/* Chat (active) */}
-          <div className="px-3 py-0.5">
-            <button className="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm font-medium text-foreground bg-muted rounded-lg border-l-2 border-accent">
-              <MessageSquare className="h-4 w-4 shrink-0 text-accent" />
-              <span>Chat</span>
-            </button>
-          </div>
-
-          {/* Modules section */}
-          <div className="px-3 pt-3 pb-1">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Modules</span>
-          </div>
-
-          <ScrollArea className="flex-1 px-1">
-            <nav className="px-2 space-y-0.5" aria-label="Module list">
-              {modules.map((module, idx) => {
-                const IconComponent = getModuleIcon(module.type);
-                const isSelected = selectedModule?.id === module.id;
-                const isCompleted = completedModules.has(module.id);
-
-                return (
-                  <button
-                    key={module.id}
-                    className={`flex items-center gap-2.5 w-full px-2.5 py-2 text-sm rounded-lg transition-colors text-left ${
-                      isSelected
-                        ? 'bg-muted text-foreground font-medium'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                    }`}
-                    onClick={() => onSelectModule(module)}
-                    aria-pressed={isSelected}
-                    aria-label={`${isCompleted ? 'Completed: ' : ''}${idx + 1}. ${module.title}`}
-                  >
+              return (
+                <button
+                  key={module.id}
+                  className={`flex items-start gap-3 w-full p-3 text-sm rounded-xl border transition-all text-left ${
+                    isSelected
+                      ? 'bg-accent/10 border-accent shadow-sm text-foreground'
+                      : 'bg-card border-border hover:border-accent/40 hover:shadow-sm text-muted-foreground hover:text-foreground'
+                  }`}
+                  onClick={() => onSelectModule(module)}
+                  aria-pressed={isSelected}
+                  aria-label={`${isCompleted ? 'Completed: ' : ''}${idx + 1}. ${module.title}`}
+                >
+                  <div className={`mt-0.5 flex items-center justify-center h-7 w-7 rounded-lg shrink-0 ${
+                    isCompleted
+                      ? 'bg-accent/15 text-accent'
+                      : isSelected
+                        ? 'bg-accent/15 text-accent'
+                        : 'bg-muted text-muted-foreground'
+                  }`}>
                     {isCompleted ? (
-                      <CheckCircle className="h-4 w-4 shrink-0 text-accent" />
+                      <CheckCircle className="h-4 w-4" />
                     ) : (
-                      <IconComponent className={`h-4 w-4 shrink-0 ${isSelected ? 'text-accent' : ''}`} />
+                      <IconComponent className="h-4 w-4" />
                     )}
-                    <span className="truncate">{module.title}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </ScrollArea>
-
-          {/* Bottom navigation items */}
-          <div className="border-t border-border px-3 py-2 space-y-0.5 shrink-0">
-            <button className="flex items-center gap-2.5 w-full px-2.5 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors">
-              <Library className="h-4 w-4 shrink-0" />
-              <span>Library</span>
-            </button>
-            <button className="flex items-center gap-2.5 w-full px-2.5 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors">
-              <NotebookPen className="h-4 w-4 shrink-0" />
-              <span>Notebooks</span>
-            </button>
-            <button className="flex items-center gap-2.5 w-full px-2.5 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors">
-              <PlusCircle className="h-4 w-4 shrink-0" />
-              <span>Create</span>
-            </button>
-            <button className="flex items-center gap-2.5 w-full px-2.5 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors">
-              <LayoutGrid className="h-4 w-4 shrink-0" />
-              <span>Apps</span>
-            </button>
-          </div>
-        </>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className={`block truncate font-medium ${isSelected ? 'text-foreground' : ''}`}>
+                      {module.title}
+                    </span>
+                    <span className="block text-xs text-muted-foreground capitalize mt-0.5">
+                      {module.type}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </nav>
+        </ScrollArea>
       )}
     </aside>
   );
