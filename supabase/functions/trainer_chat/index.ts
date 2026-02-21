@@ -17,6 +17,7 @@ interface TrainerChatRequest {
   sessionNumber?: number;
   messages: Message[];
   greeting?: boolean; // If true, generate a personalized greeting instead of a normal reply
+  practiceConversation?: Message[]; // The learner's practice chat from the center panel
   learnerState?: {
     currentCardTitle?: string;
     progressSummary?: string;
@@ -385,6 +386,7 @@ serve(async (req) => {
       sessionNumber,
       messages,
       greeting,
+      practiceConversation,
       learnerState,
       userId: bodyUserId,
     } = requestBody;
@@ -658,6 +660,21 @@ Adapt your responses to match these preferences while maintaining your coaching 
 ${aiMemories.length > 0 ? `## LEARNER MEMORIES
 The learner has saved these insights. Reference them when relevant:
 ${aiMemories.map((m, i) => `${i + 1}. ${m.is_pinned ? "[PINNED] " : ""}${m.content}${m.context ? ` (from: ${m.context})` : ""}`).join("\n")}
+
+---` : ""}
+
+${practiceConversation && practiceConversation.length > 0 ? `## LEARNER'S PRACTICE CONVERSATION
+The learner is practicing prompting an AI in the center panel. Here is their conversation so far:
+
+${practiceConversation.map(m => `**[${m.role === "user" ? "Learner's Prompt" : "AI Response"}]:** ${m.content}`).join("\n\n")}
+
+---
+YOUR COACHING ROLE: You are watching this practice conversation. When reviewing it:
+- Comment on the QUALITY of the learner's prompts (specificity, structure, context provided)
+- Note how the AI's response quality reflected their prompt quality
+- Suggest specific improvements to their prompting technique
+- Reference the module's success criteria when evaluating
+- If they haven't submitted for review yet, you can still comment on what you're seeing
 
 ---` : ""}
 

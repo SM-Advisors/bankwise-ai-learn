@@ -12,11 +12,11 @@ import { VideoModal } from '@/components/VideoModal';
 import { BankPolicyModal } from '@/components/BankPolicyModal';
 import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { TrainerChatPanel } from '@/components/training/TrainerChatPanel';
-import { PracticeTaskCard } from '@/components/training/PracticeTaskCard';
+import { PracticeChatPanel } from '@/components/training/PracticeChatPanel';
 import { ModuleListSidebar } from '@/components/training/ModuleListSidebar';
 import { type Message, type BankPolicy } from '@/types/training';
 import { useAIMemories } from '@/hooks/useAIPreferences';
-import { Loader2, ArrowLeft, Clock, Shield } from 'lucide-react';
+import { Loader2, ArrowLeft, Shield } from 'lucide-react';
 
 export default function TrainingWorkspace() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -28,7 +28,7 @@ export default function TrainingWorkspace() {
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const [selectedModule, setSelectedModule] = useState<ModuleContent | null>(null);
-  const [practiceInput, setPracticeInput] = useState('');
+  const [practiceMessages, setPracticeMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
   const [trainerMessages, setTrainerMessages] = useState<Message[]>([]);
   const [trainerInput, setTrainerInput] = useState('');
   const [isTrainerLoading, setIsTrainerLoading] = useState(false);
@@ -117,7 +117,7 @@ export default function TrainingWorkspace() {
   const prevModuleRef = useRef<string | null>(null);
   useEffect(() => {
     if (selectedModule && selectedModule.id !== prevModuleRef.current) {
-      setPracticeInput('');
+      setPracticeMessages([]);
       prevModuleRef.current = selectedModule.id;
       contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -164,90 +164,118 @@ export default function TrainingWorkspace() {
     }
   };
 
-  const handlePracticeSubmit = async () => {
-    if (!practiceInput.trim() || !selectedModule) return;
+  // Handle sending a message in the practice chat (center panel)
+  const handlePracticeSendMessage = async (message: string) => {
+    if (!message.trim() || !selectedModule) return;
 
+    const userMsg = { role: 'user' as const, content: message };
+    const updatedMessages = [...practiceMessages, userMsg];
+    setPracticeMessages(updatedMessages);
     setIsPracticeLoading(true);
+
     try {
-      const response = await supabase.functions.invoke('submission_review', {
+      const response = await supabase.functions.invoke('practice_chat', {
+        body: {
+          messages: updatedMessages,
+          moduleTitle: selectedModule.content.practiceTask.title,
+          scenario: selectedModule.content.practiceTask.scenario,
+          sessionNumber: parseInt(sessionId || '1'),
+        },
+      });
+
+      if (response.error) throw response.error;
+
+      const reply = response.data?.reply || "I'd be happy to help. Could you provide more details?";
+      setPracticeMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+    } catch (error) {
+      console.error('Practice chat error:', error);
+      setPracticeMessages(prev => [...prev, {
+        role: 'assistant',
+        content: "I'm having a brief connection issue. Please try again in a moment.",
+      }]);
+    } finally {
+      setIsPracticeLoading(false);
+    }
+  };
+
+  // Submit the practice conversation to Andrea for review
+  const handleSubmitForReview = async () => {
+    if (!selectedModule || practiceMessages.length === 0) return;
+
+    setIsTrainerLoading(true);
+
+    // Format the practice conversation for Andrea to review
+    const conversationSummary = practiceMessages
+      .map(m => `[${m.role === 'user' ? 'Learner' : 'AI'}]: ${m.content}`)
+      .join('\n\n');
+
+    try {
+      const response = await supabase.functions.invoke('trainer_chat', {
         body: {
           lessonId: sessionId || '1',
-          moduleId: selectedModule?.id,
-          submission: practiceInput,
-          rubric: selectedModule?.content.practiceTask.successCriteria.join('\n'),
+          moduleId: selectedModule.id,
+          sessionNumber: parseInt(sessionId || '1'),
+          messages: [...trainerMessages, {
+            role: 'user',
+            content: 'Please review my practice conversation.',
+          }],
+          practiceConversation: practiceMessages,
           learnerState: {
-            currentCardTitle: selectedModule?.content.practiceTask.title,
-            attemptNumber: 1,
-            progressSummary: `Working on ${selectedModule?.title}`,
+            currentCardTitle: selectedModule.title,
+            progressSummary: `Submitted practice conversation with ${practiceMessages.filter(m => m.role === 'user').length} prompts for review`,
+            completedModules: Array.from(completedModules),
+            displayName: profile?.display_name || undefined,
+            bankRole: profile?.bank_role || undefined,
+            lineOfBusiness: profile?.line_of_business || undefined,
           },
         },
       });
 
       if (response.error) throw response.error;
-      
-      const feedbackData = response.data?.feedback;
-      if (feedbackData) {
-        const formattedFeedback = `📝 **I've reviewed your submission!**
 
-**Feedback Summary:**
-${feedbackData.summary}
+      const replyData = response.data;
+      const replyText = replyData?.reply || 'I\'ve reviewed your practice conversation. Let me know if you have questions!';
+      const prompts = replyData?.suggestedPrompts || [];
 
-**✅ Strengths:**
-${feedbackData.strengths?.map((s: string) => `• ${s}`).join('\n') || '• Good effort!'}
-
-**⚠️ Areas for Improvement:**
-${feedbackData.issues?.map((i: string) => `• ${i}`).join('\n') || '• No major issues found.'}
-
-**🔧 Suggested Fixes:**
-${feedbackData.fixes?.map((f: string) => `• ${f}`).join('\n') || '• Continue practicing.'}
-
-**🚀 Next Steps:**
-${feedbackData.next_steps?.map((n: string) => `• ${n}`).join('\n') || '• Move on to the next module.'}
-
-Feel free to ask me any questions about this feedback!`;
-        
-        setTrainerMessages(prev => [...prev, { role: 'assistant', content: formattedFeedback }]);
-      } else {
-        setTrainerMessages(prev => [...prev, { role: 'assistant', content: 'Your practice has been submitted! Let me know if you have any questions.' }]);
-      }
-      setModuleCompleted(true);
-      
-      const newCompletedModules = new Set(completedModules);
-      newCompletedModules.add(selectedModule.id);
-      setCompletedModules(newCompletedModules);
-      
-      if (sessionId) {
-        const progressKey = `session_${sessionId}_progress` as const;
-        await updateProgress({
-          [progressKey]: { completedModules: Array.from(newCompletedModules) },
-        });
-      }
+      setTrainerMessages(prev => [...prev,
+        { role: 'user' as const, content: 'Please review my practice conversation.' },
+        {
+          role: 'assistant' as const,
+          content: replyText,
+          suggestedPrompts: prompts,
+          coachingAction: replyData?.coachingAction || 'review',
+          hintAvailable: replyData?.hintAvailable,
+        },
+      ]);
+      setSuggestedPrompts(prompts);
     } catch (error) {
-      console.error('Practice error:', error);
-      toast({
-        title: 'Connection Issue',
-        description: 'Using offline mode. Your practice has been recorded.',
-        variant: 'default',
-      });
-      const offlineFeedback = `📝 **I've received your submission!**
+      console.error('Review error:', error);
+      // Offline fallback
+      const offlineFeedback = `I've reviewed your practice conversation (${practiceMessages.filter(m => m.role === 'user').length} prompts).
 
-I'm having a brief connection issue, but here's my initial assessment based on the task criteria:
+**Quick Assessment:**
+${selectedModule.content.practiceTask.successCriteria.map((c, i) => `${i + 1}. ${c}`).join('\n')}
 
-**What you wrote:**
-"${practiceInput}"
-
-**Success Criteria Check:**
-${selectedModule?.content.practiceTask.successCriteria.map((c, i) => `${i + 1}. ${c}`).join('\n')}
-
-Feel free to ask me for more detailed feedback!`;
-      setTrainerMessages(prev => [...prev, { role: 'assistant', content: offlineFeedback }]);
-      setModuleCompleted(true);
-      
-      const newCompletedModules = new Set(completedModules);
-      newCompletedModules.add(selectedModule.id);
-      setCompletedModules(newCompletedModules);
+I'm having a connection issue for detailed feedback. Ask me specific questions about your prompts!`;
+      setTrainerMessages(prev => [...prev,
+        { role: 'user' as const, content: 'Please review my practice conversation.' },
+        { role: 'assistant' as const, content: offlineFeedback },
+      ]);
     } finally {
-      setIsPracticeLoading(false);
+      setIsTrainerLoading(false);
+    }
+
+    // Mark module as completed
+    setModuleCompleted(true);
+    const newCompletedModules = new Set(completedModules);
+    newCompletedModules.add(selectedModule.id);
+    setCompletedModules(newCompletedModules);
+
+    if (sessionId) {
+      const progressKey = `session_${sessionId}_progress` as const;
+      await updateProgress({
+        [progressKey]: { completedModules: Array.from(newCompletedModules) },
+      });
     }
   };
 
@@ -266,9 +294,12 @@ Feel free to ask me for more detailed feedback!`;
           moduleId: selectedModule?.id,
           sessionNumber: parseInt(sessionId || '1'),
           messages: [...trainerMessages, userMessage],
+          practiceConversation: practiceMessages.length > 0 ? practiceMessages : undefined,
           learnerState: {
             currentCardTitle: selectedModule?.title,
-            progressSummary: practiceInput ? `Has submitted practice: "${practiceInput.substring(0, 100)}..."` : 'Working on module',
+            progressSummary: practiceMessages.length > 0
+              ? `Has ${practiceMessages.filter(m => m.role === 'user').length} practice prompts in the conversation`
+              : 'Working on module',
             completedModules: Array.from(completedModules),
             displayName: profile?.display_name || undefined,
             bankRole: profile?.bank_role || undefined,
@@ -296,7 +327,7 @@ Feel free to ask me for more detailed feedback!`;
       setSuggestedPrompts(prompts);
     } catch (error) {
       console.error('Trainer error:', error);
-      const contextualResponse = generateContextualResponse(trainerInput, selectedModule, profile, practiceInput);
+      const contextualResponse = generateContextualResponse(trainerInput, selectedModule, profile);
       setTrainerMessages(prev => [...prev, { role: 'assistant', content: contextualResponse }]);
       setSuggestedPrompts([]);
     } finally {
@@ -317,9 +348,12 @@ Feel free to ask me for more detailed feedback!`;
           moduleId: selectedModule?.id,
           sessionNumber: parseInt(sessionId || '1'),
           messages: [...trainerMessages, userMessage],
+          practiceConversation: practiceMessages.length > 0 ? practiceMessages : undefined,
           learnerState: {
             currentCardTitle: selectedModule?.title,
-            progressSummary: practiceInput ? `Current practice input: "${practiceInput.substring(0, 200)}..."` : 'Working on module',
+            progressSummary: practiceMessages.length > 0
+              ? `Has ${practiceMessages.filter(m => m.role === 'user').length} practice prompts in the conversation`
+              : 'Working on module',
             completedModules: Array.from(completedModules),
             displayName: profile?.display_name || undefined,
             bankRole: profile?.bank_role || undefined,
@@ -347,7 +381,7 @@ Feel free to ask me for more detailed feedback!`;
       setSuggestedPrompts(prompts);
     } catch (error) {
       console.error('Trainer error:', error);
-      const contextualResponse = generateContextualResponse(prompt, selectedModule, profile, practiceInput);
+      const contextualResponse = generateContextualResponse(prompt, selectedModule, profile);
       setTrainerMessages(prev => [...prev, { role: 'assistant', content: contextualResponse }]);
       setSuggestedPrompts([]);
     } finally {
@@ -442,41 +476,21 @@ Feel free to ask me for more detailed feedback!`;
           onSelectModule={handleModuleSelect}
         />
 
-        {/* Middle Column - Practice Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 flex flex-col p-6 overflow-y-auto" ref={contentScrollRef}>
-            {selectedModule && (
-              <div className="max-w-3xl mx-auto flex flex-col min-h-full w-full">
-                {/* Module Header */}
-                <div className="shrink-0 mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary">{selectedModule.type}</Badge>
-                    <span className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {selectedModule.estimatedTime}
-                    </span>
-                  </div>
-                  <h2 className="text-2xl font-bold">{selectedModule.title}</h2>
-                  <p className="text-muted-foreground mt-1">{selectedModule.description}</p>
-                </div>
-
-                {/* Practice Task - fills remaining space */}
-                <div className="flex-1 flex flex-col">
-                  <PracticeTaskCard
-                    module={selectedModule}
-                    practiceInput={practiceInput}
-                    onPracticeInputChange={setPracticeInput}
-                    onSubmit={handlePracticeSubmit}
-                    isLoading={isPracticeLoading}
-                    isCompleted={moduleCompleted}
-                    onContinueToNext={nextModule ? () => setSelectedModule(nextModule) : undefined}
-                    onCompleteSession={!nextModule ? handleCompleteSession : undefined}
-                    hasNextModule={!!nextModule}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+        {/* Middle Column - Practice Chat Area */}
+        <div className="flex-1 flex flex-col overflow-hidden" ref={contentScrollRef}>
+          {selectedModule && (
+            <PracticeChatPanel
+              module={selectedModule}
+              messages={practiceMessages}
+              onSendMessage={handlePracticeSendMessage}
+              isLoading={isPracticeLoading}
+              isCompleted={moduleCompleted}
+              onSubmitForReview={handleSubmitForReview}
+              onContinueToNext={nextModule ? () => setSelectedModule(nextModule) : undefined}
+              onCompleteSession={!nextModule ? handleCompleteSession : undefined}
+              hasNextModule={!!nextModule}
+            />
+          )}
         </div>
 
         {/* Right Column - Andrea AI Coach */}
@@ -525,39 +539,17 @@ function generateContextualResponse(
   input: string,
   module: ModuleContent | null,
   userProfile: UserProfile | null,
-  userPractice: string
 ): string {
   const lowerInput = input.toLowerCase();
-  
+
   if (lowerInput.includes('review') || lowerInput.includes('feedback')) {
-    if (userPractice) {
-      return `Let me review your practice work.
-
-**Your Prompt:**
-"${userPractice.substring(0, 200)}${userPractice.length > 200 ? '...' : ''}"
-
-**Feedback based on ${userProfile?.learning_style} learning style:**
-
-✅ **What's working:**
-- You've started crafting a prompt for the task
-- Your intent is clear
-
-📝 **Suggestions for improvement:**
-${module?.content.practiceTask.hints.map(h => `- ${h}`).join('\n')}
-
-**Success Criteria to check:**
-${module?.content.practiceTask.successCriteria.map((c, i) => `${i + 1}. ${c}`).join('\n')}
-
-Would you like me to show you an example of a strong prompt for this scenario?`;
-    } else {
-      return `I'd be happy to review your work! Please complete the practice task in the center panel first, then ask me to review it.
+    return `I'd be happy to review your practice! Start a conversation with the AI in the center panel, then click "Submit for Review" when you're ready.
 
 The current task is: **${module?.content.practiceTask.title}**
 
 ${module?.content.practiceTask.instructions}`;
-    }
   }
-  
+
   if (lowerInput.includes('example') || lowerInput.includes('show me')) {
     const examples = module?.content.examples;
     if (examples && examples.length > 0) {
@@ -566,19 +558,16 @@ ${module?.content.practiceTask.instructions}`;
 
 **${ex.title}**
 
-❌ **Less Effective:**
-"${ex.bad || 'Not specified'}"
+**Less Effective:** "${ex.bad || 'Not specified'}"
 
-✅ **More Effective:**
-"${ex.good}"
+**More Effective:** "${ex.good}"
 
-**Why it works:**
-${ex.explanation}
+**Why it works:** ${ex.explanation}
 
-Would you like to see how to apply this pattern to your specific task?`;
+Try applying this pattern in your practice conversation in the center panel.`;
     }
   }
-  
+
   if (lowerInput.includes('hint') || lowerInput.includes('help') || lowerInput.includes('stuck')) {
     return `Here are some hints for the current task:
 
@@ -589,22 +578,18 @@ ${module?.content.practiceTask.hints.map((h, i) => `${i + 1}. ${h}`).join('\n')}
 **Remember the key points:**
 ${module?.content.keyPoints?.slice(0, 3).map(k => `• ${k}`).join('\n')}
 
-What specific part would you like more guidance on?`;
+Try sending one of these as a prompt in the center panel!`;
   }
-  
-  return `I'm here to help you with "${module?.title}".
 
-Based on your **${userProfile?.learning_style}** learning style, I'd suggest:
-${userProfile?.learning_style === 'example-based' ? '- Let me show you a concrete example first' :
-  userProfile?.learning_style === 'explanation-based' ? '- Let me walk you through the concept step by step' :
-  userProfile?.learning_style === 'hands-on' ? '- Try the practice task and I\'ll give you feedback' :
-  '- Let me explain the underlying logic and framework'}
+  return `I'm here to coach you on "${module?.title}".
+
+**How this works:** Use the center panel to practice prompting a real AI. I'll watch your conversation and help you improve.
 
 You can ask me to:
-• Review your practice work
-• Show examples relevant to your role
-• Explain concepts in more detail
-• Provide hints for the current task
+- Review your practice conversation
+- Show examples relevant to your role
+- Explain concepts in more detail
+- Provide hints for the current task
 
 What would be most helpful?`;
 }
