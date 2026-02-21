@@ -393,31 +393,46 @@ export type Database = {
       }
       user_ideas: {
         Row: {
+          category: string | null
           created_at: string | null
           description: string
           id: string
+          roi_impact: string | null
           status: string
+          submitter_department: string | null
+          submitter_name: string | null
           title: string
           updated_at: string | null
           user_id: string
+          votes: number | null
         }
         Insert: {
+          category?: string | null
           created_at?: string | null
           description?: string
           id?: string
+          roi_impact?: string | null
           status?: string
+          submitter_department?: string | null
+          submitter_name?: string | null
           title: string
           updated_at?: string | null
           user_id: string
+          votes?: number | null
         }
         Update: {
+          category?: string | null
           created_at?: string | null
           description?: string
           id?: string
+          roi_impact?: string | null
           status?: string
+          submitter_department?: string | null
+          submitter_name?: string | null
           title?: string
           updated_at?: string | null
           user_id?: string
+          votes?: number | null
         }
         Relationships: []
       }
