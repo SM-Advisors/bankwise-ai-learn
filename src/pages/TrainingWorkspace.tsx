@@ -233,6 +233,13 @@ export default function TrainingWorkspace() {
 
     setIsTrainerLoading(true);
 
+    // Build the conversation transcript to embed directly in the message
+    const conversationTranscript = activeMessages
+      .map(m => `[${m.role === 'user' ? 'My Prompt' : 'AI Response'}]: ${m.content}`)
+      .join('\n\n');
+
+    const reviewRequest = `Please review my practice conversation below:\n\n---\n${conversationTranscript}\n---`;
+
     try {
       const response = await supabase.functions.invoke('trainer_chat', {
         body: {
@@ -241,7 +248,7 @@ export default function TrainingWorkspace() {
           sessionNumber: parseInt(sessionId || '1'),
           messages: [...trainerMessages, {
             role: 'user',
-            content: 'Please review my practice conversation.',
+            content: reviewRequest,
           }],
           practiceConversation: activeMessages,
           learnerState: {
@@ -262,7 +269,7 @@ export default function TrainingWorkspace() {
       const prompts = replyData?.suggestedPrompts || [];
 
       setTrainerMessages(prev => [...prev,
-        { role: 'user' as const, content: 'Please review my practice conversation.' },
+        { role: 'user' as const, content: `Please review my practice conversation (${activeMessages.filter(m => m.role === 'user').length} prompts submitted).` },
         {
           role: 'assistant' as const,
           content: replyText,
@@ -282,7 +289,7 @@ ${selectedModule.content.practiceTask.successCriteria.map((c, i) => `${i + 1}. $
 
 I'm having a connection issue for detailed feedback. Ask me specific questions about your prompts!`;
       setTrainerMessages(prev => [...prev,
-        { role: 'user' as const, content: 'Please review my practice conversation.' },
+        { role: 'user' as const, content: `Please review my practice conversation (${activeMessages.filter(m => m.role === 'user').length} prompts submitted).` },
         { role: 'assistant' as const, content: offlineFeedback },
       ]);
     } finally {
