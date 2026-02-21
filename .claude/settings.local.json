@@ -13,7 +13,21 @@
       "Bash(npm run build:*)",
       "Bash(where:*)",
       "Bash(cmd /c \"where node && where npm\")",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npx @anthropic-ai/claude-code:*)",
+      "Bash(cmd /c \"npm run build\")",
+      "Bash(npx vite build:*)",
+      "Bash(cmd.exe /c \"where npm\")",
+      "Bash(powershell.exe:*)",
+      "Bash(cmd /c \"cd /d C:\\\\Users\\\\coryk\\\\OneDrive\\\\Documents\\\\GitHub Repos\\\\bankwise-ai-learn && npm run build\")",
+      "Bash(cmd /c \"cd /d C:\\\\Users\\\\coryk\\\\OneDrive\\\\Documents\\\\GitHub Repos\\\\bankwise-ai-learn && npx vite build\")",
+      "Bash(powershell -Command \"Set-Location ''C:\\\\Users\\\\coryk\\\\OneDrive\\\\Documents\\\\GitHub Repos\\\\bankwise-ai-learn''; npm run build 2>&1\")",
+      "Bash(powershell -Command \"Get-Command node -ErrorAction SilentlyContinue\")",
+      "Bash(powershell:*)",
+      "Bash(git stash:*)",
+      "Bash(cd:*)",
+      "Bash(dir:*)",
+      "Bash(\"C:\\\\Users\\\\coryk\\\\OneDrive\\\\Documents\\\\GitHub Repos\\\\bankwise-ai-learn\\\\src\\\\hooks\\\\useReporting.ts\" << 'ENDOFFILE'\nPLACEHOLDER\nENDOFFILE)"
     ]
   }
 }
