@@ -200,7 +200,7 @@ export default function TrainingWorkspace() {
     setIsPracticeLoading(true);
 
     try {
-      const response = await supabase.functions.invoke('practice_chat', {
+      const response = await supabase.functions.invoke('ai-practice', {
         body: {
           messages: messagesForApi,
           moduleTitle: selectedModule.content.practiceTask.title,

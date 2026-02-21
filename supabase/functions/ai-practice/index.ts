@@ -5,20 +5,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-interface PracticeRequest {
-  prompt: string;
-  context: {
-    sessionId: string;
-    moduleId?: string;
-    moduleTitle?: string;
-    taskTitle?: string;
-    taskInstructions?: string;
-    scenario?: string;
-    successCriteria?: string[];
-    learningStyle?: string;
-    proficiencyLevel?: number;
-    lineOfBusiness?: string;
-  };
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
+
+interface PracticeChatRequest {
+  messages: Message[];
+  moduleTitle: string;
+  scenario: string;
+  sessionNumber?: number;
 }
 
 serve(async (req) => {
@@ -27,89 +23,104 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, context }: PracticeRequest = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error("ANTHROPIC_API_KEY is not configured");
     }
 
-    // Build evaluation system prompt
-    const systemPrompt = `You are an AI Practice Evaluator for a banking AI training platform. Your job is to evaluate a learner's practice prompt/response and provide constructive feedback.
+    const { messages, moduleTitle, scenario, sessionNumber }: PracticeChatRequest = await req.json();
 
-## LEARNER CONTEXT
-- Learning Style: ${context.learningStyle || 'Not specified'}
-- AI Proficiency Level: ${context.proficiencyLevel ?? 4}/8
-- Line of Business: ${context.lineOfBusiness?.replace('_', ' ') || 'Banking'}
-- Current Session: ${context.sessionId}
-- Current Module: ${context.moduleTitle || 'Not specified'}
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "messages array is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-## PRACTICE TASK
-Title: ${context.taskTitle || 'Practice Exercise'}
-Instructions: ${context.taskInstructions || 'Complete the practice task'}
-Scenario: ${context.scenario || 'General banking scenario'}
+    const systemPrompt = `You are an AI assistant being used by a banking professional as part of their day-to-day work. You are NOT a coach or tutor — you are the actual AI tool they are practicing with.
 
-## SUCCESS CRITERIA
-${context.successCriteria ? context.successCriteria.map((c, i) => `${i + 1}. ${c}`).join('\n') : 'Evaluate for clarity, specificity, and appropriateness'}
+## YOUR ROLE
+You are a general-purpose AI assistant (like ChatGPT or Claude) that a banker is using at their desk. Respond naturally and helpfully to whatever they ask.
 
-## YOUR EVALUATION APPROACH
+## SCENARIO CONTEXT
+The user is working on: "${moduleTitle}"
+${scenario ? `\nSituation: ${scenario}` : ""}
 
-1. **Acknowledge the effort** - Start with what they did well
-2. **Evaluate against criteria** - Check each success criterion
-3. **Provide specific feedback** - Point to exact parts that could improve
-4. **Give actionable suggestions** - Concrete next steps, not vague advice
-5. **Encourage iteration** - Suggest they refine and resubmit
+## CRITICAL BEHAVIOR RULES
 
-Adapt your feedback style to their proficiency level:
-- Level 0-2: Be very encouraging, explain concepts gently
-- Level 3-5: Balance praise with constructive critique
-- Level 6-8: Be direct, focus on nuance and advanced techniques
+1. MIRROR PROMPT QUALITY: The quality of your response should directly reflect the quality of their prompt.
+   - Vague prompt → Give a generic, surface-level response (so they learn specificity matters)
+   - Specific prompt with clear context → Give a detailed, tailored response (so they see the payoff)
+   - Prompt with output format specified → Match that format exactly
+   - Prompt missing key details → Respond but note what you'd need to do better
 
-Format your response with clear sections using markdown.`;
+2. ACT LIKE A REAL AI TOOL:
+   - Respond as a helpful AI assistant would in a real work scenario
+   - Do NOT mention that this is a training exercise
+   - Do NOT coach them on prompt technique (that's someone else's job)
+   - Do NOT break the fourth wall or reference "the module" or "the exercise"
+   - If they ask you something outside the scenario, respond naturally
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+3. BANKING REALISM:
+   - Use appropriate banking terminology in your responses
+   - If they ask you to draft something, draft it properly
+   - If they ask for analysis, provide realistic analysis
+   - Reference realistic regulatory frameworks (OCC, FDIC, etc.) when relevant
+   - Use realistic but clearly fake data (Jane Doe, Acme Corp, etc.)
+
+4. RESPONSE LENGTH:
+   - Match response length to what a real AI tool would provide
+   - Short prompts get shorter responses
+   - Detailed requests get detailed responses
+   - Don't pad responses — be as concise as the task demands
+
+5. BE HONEST ABOUT LIMITATIONS:
+   - If they ask for something you can't do (access real systems, look up real data), say so naturally
+   - Suggest what information they'd need to provide for you to help`;
+
+    const claudeMessages = messages.map((m) => ({
+      role: m.role as "user" | "assistant",
+      content: m.content,
+    }));
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Please evaluate the following practice submission for the task "${context.taskTitle || 'Practice Exercise'}":\n\n---\n${prompt}\n---\n\nProvide constructive feedback based on the success criteria.` },
-        ],
-        max_tokens: 600,
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1500,
+        system: systemPrompt,
+        messages: claudeMessages,
       }),
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Claude API error:", response.status, errorText);
+
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "AI credits depleted. Please contact your administrator." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error("AI gateway error");
+
+      throw new Error(`Claude API error: ${response.status}`);
     }
 
-    const data = await response.json();
-    const aiResponse = data.choices?.[0]?.message?.content || "Your practice response has been received. The AI trainer can provide more detailed feedback.";
+    const claudeResponse = await response.json();
+    const reply = claudeResponse.content?.[0]?.text || "I'd be happy to help. Could you provide more details about what you need?";
 
     return new Response(
-      JSON.stringify({ response: aiResponse }),
+      JSON.stringify({ reply }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("AI Practice error:", error);
+    console.error("Practice chat error:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
