@@ -60,8 +60,10 @@ import {
   BarChart3,
   PieChart as PieChartIcon,
   Database,
-  RefreshCw
+  RefreshCw,
+  Upload,
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const iconMap: Record<string, React.ElementType> = {
   Calculator,
@@ -154,6 +156,7 @@ export default function AdminDashboard() {
   const [editingPolicy, setEditingPolicy] = useState<any>(null);
   const [editForm, setEditForm] = useState({ title: '', content: '', summary: '' });
   const [isCreating, setIsCreating] = useState(false);
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
   const [newPolicyForm, setNewPolicyForm] = useState({
     policy_type: '',
     title: '',
@@ -162,6 +165,7 @@ export default function AdminDashboard() {
     icon: 'BookOpen',
     display_order: 0,
     is_active: true,
+    source_file_path: '' as string | null,
   });
 
   // Live session state
@@ -275,9 +279,63 @@ export default function AdminDashboard() {
         icon: 'BookOpen',
         display_order: policies.length,
         is_active: true,
+        source_file_path: null,
       });
     } else {
       toast({ title: 'Error', description: result.error, variant: 'destructive' });
+    }
+  };
+  // Handle document upload and AI parsing
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (!['pdf', 'docx', 'doc'].includes(ext || '')) {
+      toast({ title: 'Unsupported file', description: 'Please upload a .pdf or .docx file.', variant: 'destructive' });
+      return;
+    }
+
+    setIsUploadingDoc(true);
+    try {
+      // Upload to storage
+      const filePath = `${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from('policy-documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Call edge function to parse
+      const { data: parseResult, error: parseError } = await supabase.functions.invoke('parse-policy-document', {
+        body: { file_path: filePath, file_name: file.name },
+      });
+
+      if (parseError) throw parseError;
+
+      if (parseResult?.error) {
+        toast({ title: 'Processing failed', description: parseResult.error, variant: 'destructive' });
+        return;
+      }
+
+      // Pre-fill the form with extracted content
+      setNewPolicyForm((prev) => ({
+        ...prev,
+        title: parseResult.inferred_title || prev.title,
+        content: parseResult.content || prev.content,
+        summary: parseResult.summary || prev.summary,
+        source_file_path: filePath,
+        policy_type: prev.policy_type || 'uploaded',
+      }));
+
+      toast({ title: 'Document processed', description: 'Content extracted successfully. Review and save.' });
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast({ title: 'Upload failed', description: err instanceof Error ? err.message : 'Unknown error', variant: 'destructive' });
+    } finally {
+      setIsUploadingDoc(false);
+      // Reset file input
+      e.target.value = '';
     }
   };
 
@@ -1242,6 +1300,51 @@ export default function AdminDashboard() {
               </DialogHeader>
               <ScrollArea className="flex-1 pr-4">
                 <div className="space-y-4 py-4">
+                  {/* Document Upload */}
+                  <div className="rounded-lg border-2 border-dashed border-border p-6 text-center">
+                    <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-sm font-medium mb-1">Upload a policy document</p>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Upload a .pdf or .docx file — Andrea will extract and format the content automatically
+                    </p>
+                    <label className="inline-flex items-center gap-2 cursor-pointer">
+                      <Button variant="outline" size="sm" asChild disabled={isUploadingDoc}>
+                        <span>
+                          {isUploadingDoc ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                              Processing…
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="h-4 w-4 mr-1" />
+                              Choose File
+                            </>
+                          )}
+                        </span>
+                      </Button>
+                      <input
+                        type="file"
+                        accept=".pdf,.docx,.doc"
+                        onChange={handleDocumentUpload}
+                        className="hidden"
+                        disabled={isUploadingDoc}
+                      />
+                    </label>
+                    {newPolicyForm.source_file_path && (
+                      <p className="text-xs text-primary mt-2 flex items-center justify-center gap-1">
+                        <CheckCircle className="h-3 w-3" />
+                        Document processed — review content below
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="relative flex items-center gap-3">
+                    <div className="flex-1 border-t border-border" />
+                    <span className="text-xs text-muted-foreground">or fill in manually</span>
+                    <div className="flex-1 border-t border-border" />
+                  </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="new-type">Policy Type (e.g., ai_usage, data_security)</Label>
@@ -1288,7 +1391,7 @@ export default function AdminDashboard() {
                   <X className="h-4 w-4 mr-2" />
                   Cancel
                 </Button>
-                <Button onClick={handleCreatePolicy}>
+                <Button onClick={handleCreatePolicy} disabled={isUploadingDoc}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Policy
                 </Button>
