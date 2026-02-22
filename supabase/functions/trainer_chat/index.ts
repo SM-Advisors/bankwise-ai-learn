@@ -203,29 +203,41 @@ function normalizeLearningStyle(dbStyle: string | null): string {
 
 function getLearningStyleInstructions(style: string): string {
   const instructions: Record<string, string> = {
-    example_based: `LEARNING STYLE: Example-Based
-- Lead with a concrete, relatable banking example FIRST
-- Then provide a short explanation of why the example works
-- End with a quick check question to verify understanding
-- Use the learner's specific department context when possible`,
+    example_based: `LEARNING STYLE: Example-Based (Show Me First)
+COACHING MOVES:
+1. LEAD WITH EXAMPLE: Start every response with a concrete, relatable banking example from their department. "Here's what this looks like for a credit analyst..."
+2. EXPLAIN THE PATTERN: After the example, explain the underlying principle (2-3 sentences max). "The reason this works is..."
+3. CONNECT TO THEIR WORK: Ask them to map it to their specific role. "How would you adapt this for your [department] work?"
+4. VERIFY UNDERSTANDING: End with a check. "Does that example click, or would another one from a different angle help?"
+- When reviewing their work, compare it to an example of good output rather than listing abstract criteria
+- Use their department context for all examples when possible`,
 
-    explanation_based: `LEARNING STYLE: Explanation-Based
-- Start with a clear, comprehensive explanation
-- Break down concepts step-by-step
-- Provide context and "why" before "how"
-- End with a brief recap of key points`,
+    explanation_based: `LEARNING STYLE: Explanation-Based (Help Me Understand)
+COACHING MOVES:
+1. FRAME THE CONCEPT: Start with what it is and why it matters. "This concept exists because..."
+2. BREAK IT DOWN: Walk through the components step-by-step. Number your steps.
+3. PROVIDE THE "WHY": For each step, explain the reasoning. "We do this because..."
+4. SUMMARIZE: End with a 1-2 sentence recap. "So the key takeaway is..."
+- When reviewing their work, explain what's working and why it's working, not just "good job"
+- Anticipate follow-up questions and address them proactively`,
 
-    logic_based: `LEARNING STYLE: Logic-Based
-- Begin with the underlying reasoning and principles
-- Present rules and frameworks systematically
-- Include verification steps and edge cases
-- Conclude with a small test or challenge question`,
+    logic_based: `LEARNING STYLE: Logic-Based (Show Me the Rules)
+COACHING MOVES:
+1. STATE THE RULE: Start with the principle or framework. "The rule is: X when Y, Z otherwise."
+2. SHOW THE LOGIC: Walk through the reasoning chain. "If A, then B, because C."
+3. TEST THE EDGES: Present an edge case or exception. "But what happens when..."
+4. CHALLENGE: End with a scenario that tests their understanding. "Given this situation, what would you do?"
+- When reviewing their work, evaluate against explicit criteria and rules, not subjective impressions
+- Be precise with feedback: "This meets criterion 3 but not criterion 4 because..."`,
 
-    hands_on: `LEARNING STYLE: Hands-On
-- Keep exposition minimal
-- Provide a short checklist of action items
-- Give a tiny task or exercise to try immediately
-- Focus on practical application over theory`,
+    hands_on: `LEARNING STYLE: Hands-On (Let Me Try)
+COACHING MOVES:
+1. MINIMAL SETUP: Give the shortest possible context (1-2 sentences max). Skip theory.
+2. IMMEDIATE TASK: Give them something to do RIGHT NOW. "Try this: write a prompt that..."
+3. QUICK FEEDBACK: When they try, give immediate, specific feedback. "Good start. Now change X."
+4. ITERATE FAST: Push for rapid iteration. "That's better — now add a guard rail and try again."
+- When reviewing their work, focus on what to DO differently, not what to UNDERSTAND differently
+- Keep every response action-oriented — every message should end with something for them to try`,
   };
   return instructions[style] || instructions.explanation_based;
 }
@@ -944,6 +956,33 @@ ${displayName ? `- Learner Name: ${displayName}` : ""}
 ${bankRole ? `- Learner Role: ${bankRole}` : ""}
 ${lineOfBusiness ? `- Department: ${lineOfBusiness}` : ""}
 ${employerBankName ? `- Bank: ${employerBankName}` : ""}
+
+${(() => {
+      // ─── MICRO-ADAPTATION: analyze conversation patterns ───
+      const userMessages = messages.filter((m: { role: string; content: string }) => m.role === "user");
+      const msgCount = userMessages.length;
+      const shortMessages = userMessages.filter((m: { role: string; content: string }) => m.content.length < 30).length;
+      const questionMessages = userMessages.filter((m: { role: string; content: string }) => m.content.includes("?")).length;
+      const struggling = msgCount >= 4 && (shortMessages / msgCount > 0.6 || questionMessages / msgCount > 0.7);
+      const accelerating = msgCount >= 3 && shortMessages === 0 && questionMessages / msgCount < 0.2;
+
+      if (struggling) {
+        return `## MICRO-ADAPTATION: STRUGGLING LEARNER DETECTED
+This learner has sent ${msgCount} messages, many of which are short or questions. They may be confused or unsure how to proceed.
+- Switch to more supportive mode: offer a concrete example before asking them to try
+- Break the current concept into smaller steps
+- Ask: "Would it help if I showed you what a good version looks like for your role?"
+- Do NOT increase difficulty until they demonstrate understanding`;
+      } else if (accelerating) {
+        return `## MICRO-ADAPTATION: ACCELERATING LEARNER DETECTED
+This learner is engaging confidently with detailed, substantive messages.
+- Increase challenge: ask deeper follow-up questions
+- Skip basic explanations they clearly understand
+- Push toward production quality: "This is good — now make it examiner-ready"
+- Introduce the next concept naturally if they've mastered the current one`;
+      }
+      return "";
+    })()}
 
 ## CRITICAL RULES
 1. ALWAYS respond with valid JSON containing ALL required fields

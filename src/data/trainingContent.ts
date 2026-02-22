@@ -1860,6 +1860,533 @@ export const KNOWLEDGE_CHECKS: Record<number, string[]> = {
   ],
 };
 
+// ─── ELECTIVE ADD-ON MODULES (4 Learning Paths × 3 Modules) ────────────
+
+export interface ElectivePath {
+  id: string;
+  title: string;
+  description: string;
+  prerequisite: string; // Session completion required
+  modules: ModuleContent[];
+}
+
+export const ELECTIVE_PATHS: ElectivePath[] = [
+  {
+    id: 'advanced_prompting',
+    title: 'Advanced Prompt Engineering',
+    description: 'Master chain-of-thought, multi-shot, and self-review techniques for complex banking work',
+    prerequisite: 'Session 3',
+    modules: [
+      {
+        id: 'E1-1',
+        title: 'Chain-of-Thought Mastery',
+        type: 'document',
+        description: 'Deep-dive CoT for complex financial analysis with documented reasoning chains',
+        estimatedTime: '15 min',
+        learningObjectives: [
+          'Build multi-step reasoning chains for credit decisions',
+          'Document auditable AI reasoning for regulatory review',
+          'Apply CoT to financial ratio analysis with step-by-step validation',
+        ],
+        content: {
+          overview: 'Chain-of-thought prompting goes beyond simply asking the AI to "show its work." At an advanced level, you design the reasoning structure — specifying which steps to take, what to evaluate at each step, and how to connect conclusions across steps. This creates auditable reasoning chains that stand up to regulatory scrutiny. In credit analysis, this means the AI walks through each ratio, each risk factor, and each trend before reaching a conclusion — and you can verify every step.',
+          keyPoints: [
+            'Advanced CoT structures the reasoning path explicitly: evaluate each input independently, identify interactions between inputs, synthesize a conclusion, then stress-test the conclusion',
+            'For credit decisions: build a 5-step chain — (1) ratio extraction, (2) individual ratio assessment, (3) cross-ratio interaction analysis, (4) risk synthesis, (5) recommendation with confidence level',
+            'Document the chain for audit: each step should be independently verifiable so an examiner can trace the AI reasoning',
+            'CoT reduces hallucination because each step constrains the next — the AI cannot jump to a conclusion without building to it',
+            'Common failure: asking for CoT without structuring the steps. "Think step by step" is weaker than "First evaluate X, then assess Y, then compare Z"',
+          ],
+          practiceTask: {
+            title: 'Build a 5-Step CoT Credit Analysis',
+            instructions: 'Design a chain-of-thought prompt that walks through a complete credit assessment with documented reasoning at each step.',
+            scenario: 'You are analyzing a commercial borrower with the following metrics: DSCR 1.15, Current Ratio 1.4, Debt-to-Equity 2.8, LTV 78%. Build a 5-step CoT prompt that: (1) evaluates each ratio individually with Strong/Acceptable/Weak rating, (2) identifies cross-ratio interactions (e.g., high leverage + thin coverage), (3) identifies the top 3 risk factors, (4) synthesizes an overall risk assessment, (5) provides a confidence level for the assessment. Each step should reference the output of previous steps.',
+            hints: [
+              'Structure each step explicitly in the prompt',
+              'Reference previous step outputs in later steps',
+              'Include industry benchmarks for comparison',
+              'Ask for confidence level at the end',
+            ],
+            successCriteria: [
+              'Prompt includes all 5 structured steps with clear instructions for each',
+              'Later steps explicitly reference outputs from earlier steps',
+              'Each ratio is evaluated individually before cross-analysis',
+              'Final assessment includes a confidence level with justification',
+              'Reasoning chain is auditable — an examiner could trace each conclusion to its source',
+            ],
+          },
+        },
+      },
+      {
+        id: 'E1-2',
+        title: 'Multi-Shot Prompting',
+        type: 'document',
+        description: 'Using 2-3 examples to train AI on your exact format, style, and quality standards',
+        estimatedTime: '15 min',
+        learningObjectives: [
+          'Design few-shot prompts that lock in output format and quality',
+          'Select effective examples that capture format, tone, and compliance patterns',
+          'Apply multi-shot to recurring banking deliverables',
+        ],
+        content: {
+          overview: 'Multi-shot prompting provides the AI with 2-3 examples of the exact output you want before asking it to produce the real thing. This is the most reliable technique for consistent formatting in banking — board report commentary that always matches your template, credit memo sections that follow your bank\'s standard, or compliance letters that always include required disclosures. The key is selecting the right examples: they should demonstrate format, tone, compliance language, and quality simultaneously.',
+          keyPoints: [
+            'Two examples are the sweet spot: enough to establish a pattern, not so many that the prompt becomes unwieldy',
+            'Select examples that show different scenarios with the same format — this teaches the AI the invariant structure',
+            'Include compliance language in your examples — the AI will reproduce it consistently if it appears in both examples',
+            'Multi-shot eliminates the "every response looks different" problem — critical for team-shared deliverables',
+            'Combine with self-review: provide examples, generate output, then ask the AI to verify it matches the example format',
+          ],
+          practiceTask: {
+            title: 'Create a 3-Example Few-Shot Prompt',
+            instructions: 'Build a multi-shot prompt for a recurring banking deliverable with 3 carefully selected examples.',
+            scenario: 'Choose a banking deliverable you produce regularly (variance commentary, credit memo section, customer letter, compliance memo). Provide 3 examples that demonstrate the format, tone, and required compliance language. Then ask the AI to produce a new instance for a different scenario. Annotate why you chose each example — what pattern does it teach the AI?',
+            hints: [
+              'Choose examples that show the same format but different content',
+              'Include compliance language in every example',
+              'Annotate what each example teaches',
+              'Test by requesting a new scenario after the examples',
+            ],
+            successCriteria: [
+              'Three examples provided that share consistent format and structure',
+              'Examples demonstrate both format invariants and content variation',
+              'At least one compliance element appears consistently across all examples',
+              'Annotations explain why each example was selected',
+              'The request for new output is specific and different from the examples',
+            ],
+          },
+        },
+      },
+      {
+        id: 'E1-3',
+        title: 'Self-Review Loops',
+        type: 'document',
+        description: 'Prompting AI to critique, score, and improve its own output before human review',
+        estimatedTime: '15 min',
+        learningObjectives: [
+          'Build self-review prompts with specific evaluation criteria',
+          'Design generate-critique-revise loops for high-stakes banking outputs',
+          'Combine self-review with VERIFY for layered quality assurance',
+        ],
+        content: {
+          overview: 'Self-review prompting asks the AI to evaluate its own output against a checklist before you review it. At an advanced level, you can build complete generate-critique-revise loops: the AI generates a draft, scores it against your criteria, identifies gaps, and produces a revised version — all in a single interaction or two-prompt sequence. Combined with VERIFY, this creates two layers of quality assurance before any human reviews the output.',
+          keyPoints: [
+            'Self-review checklist design: be specific. "Check for accuracy" is weak. "Verify each ratio has a Strong/Acceptable/Weak rating with reasoning" is strong.',
+            'Generate-critique-revise loop: Prompt 1 generates the draft. Prompt 2 (or a follow-up in the same conversation) critiques it against 5-7 specific criteria, then produces a revised version.',
+            'Scoring rubric: ask the AI to rate each criterion as Fully Met / Partially Met / Missing. This mirrors how submission_review evaluates learner work.',
+            'Self-review catches ~60-70% of surface-level issues before human review — formatting gaps, missing disclaimers, inconsistent terminology',
+            'Layer with VERIFY: AI self-review catches formatting and completeness issues. VERIFY catches factual and hallucination issues. Together they cover most failure modes.',
+          ],
+          practiceTask: {
+            title: 'Build a Self-Review Loop for a Board Report',
+            instructions: 'Design a complete generate-critique-revise prompt chain for a high-stakes banking deliverable.',
+            scenario: 'You need to produce a quarterly risk summary for the board. Design a two-prompt sequence: Prompt 1 generates the draft risk summary (specify the sections and format). Prompt 2 critiques the draft against a 5-item checklist, rates each criterion, and produces a revised version. Then describe which items you would also check with VERIFY (items the AI cannot self-verify, like factual accuracy of citations).',
+            hints: [
+              'Specify the draft format in Prompt 1',
+              'Make your critique checklist specific to the deliverable',
+              'Use Fully Met / Partially Met / Missing ratings',
+              'Identify what self-review CANNOT catch (those go to VERIFY)',
+            ],
+            successCriteria: [
+              'Two-prompt sequence is well-structured (generate, then critique-revise)',
+              'Self-review checklist has 5+ specific criteria relevant to the deliverable',
+              'Criteria use measurable ratings (Fully Met / Partially Met / Missing)',
+              'Identifies items that require VERIFY (factual accuracy beyond self-review)',
+              'The combined approach (self-review + VERIFY) covers both formatting and factual quality',
+            ],
+          },
+        },
+      },
+    ],
+  },
+  {
+    id: 'multi_modal',
+    title: 'Multi-Modal AI for Banking',
+    description: 'Apply AI to documents, meetings, and data visualization beyond text prompts',
+    prerequisite: 'Session 3',
+    modules: [
+      {
+        id: 'E2-1',
+        title: 'Document Analysis with AI',
+        type: 'document',
+        description: 'Extract, structure, and analyze data from financial statements, tax returns, and loan documents',
+        estimatedTime: '15 min',
+        learningObjectives: [
+          'Extract structured data from unstructured financial documents using AI',
+          'Apply PII sanitization to document analysis workflows',
+          'Design a document extraction prompt with validation steps',
+        ],
+        content: {
+          overview: 'Financial documents — tax returns, financial statements, appraisals, insurance certificates — contain valuable data locked in unstructured formats. AI can extract, structure, and analyze this data dramatically faster than manual transcription. The key is designing extraction prompts that specify exactly what data to pull, what format to output, and what validation checks to apply. And since financial documents almost always contain PII, sanitization must be the first step.',
+          keyPoints: [
+            'Always sanitize before extraction: remove or redact names, SSNs, account numbers, and addresses before any AI processing',
+            'Specify extraction schema: tell the AI exactly what fields to extract and in what format (table, JSON, structured list)',
+            'Include validation rules: ask the AI to flag values that seem unusual (e.g., DSCR below 0.5 or above 5.0)',
+            'Multi-document comparison: once data is extracted, use a follow-up prompt to compare across documents (current vs prior year)',
+            'Limitations: AI may misread scanned documents, transposed numbers, or unusual formatting. VERIFY all extracted numbers against source documents.',
+          ],
+          practiceTask: {
+            title: 'Design a Financial Document Extraction Prompt',
+            instructions: 'Create a prompt that extracts structured data from a financial statement.',
+            scenario: 'Design a prompt to extract key financial data from a borrower\'s annual financial statement. The prompt should: (1) specify the fields to extract (revenue, expenses, net income, total assets, total liabilities, equity, key ratios), (2) output format (table with Current Year and Prior Year columns), (3) validation checks (flag unusual values), (4) a sanitization reminder. Test it with sample data you create.',
+            hints: [
+              'Start with sanitization instructions',
+              'Specify exact fields and output format',
+              'Include validation rules for unusual values',
+              'Note that all extracted data needs VERIFY',
+            ],
+            successCriteria: [
+              'Includes sanitization instructions as the first step',
+              'Specifies exact fields to extract with clear definitions',
+              'Output format is structured (table or schema)',
+              'Includes at least 2 validation rules for unusual values',
+              'Notes that VERIFY must be applied to all extracted numbers',
+            ],
+          },
+        },
+      },
+      {
+        id: 'E2-2',
+        title: 'Meeting Intelligence',
+        type: 'document',
+        description: 'Transcription summaries, action items, and compliance considerations for banking meetings',
+        estimatedTime: '15 min',
+        learningObjectives: [
+          'Design structured meeting summary prompts with action item extraction',
+          'Apply compliance considerations to meeting intelligence in banking',
+          'Create reusable meeting summary templates for different meeting types',
+        ],
+        content: {
+          overview: 'Banking meetings generate decisions, commitments, and action items that need accurate documentation — loan committee decisions, board meeting minutes, customer review discussions. AI can transform raw meeting notes or transcripts into structured summaries with extracted action items, decision records, and follow-up assignments. The compliance consideration is critical: meeting content may contain MNPI, customer PII, or strategic decisions that require careful handling.',
+          keyPoints: [
+            'Meeting summary structure: Attendees → Key Decisions → Discussion Points → Action Items (with owners and deadlines) → Follow-Up Required',
+            'Compliance for meeting intelligence: review what was discussed before processing. Customer-specific discussions require PII sanitization. Board strategic discussions may contain MNPI.',
+            'Action item extraction: ask AI to identify commitments (who, what, by when) and categorize by urgency (immediate, this week, this quarter)',
+            'Meeting type templates: different meetings need different summary structures. Loan committee needs decision documentation. Board needs formal minutes format. Customer meetings need follow-up action focus.',
+            'Always review AI-generated minutes for accuracy — AI may misinterpret banking jargon, abbreviations, or implied decisions',
+          ],
+          practiceTask: {
+            title: 'Create a Meeting Summary Template',
+            instructions: 'Design a reusable prompt template for summarizing a banking meeting.',
+            scenario: 'Choose a meeting type you attend regularly (loan committee, team standup, customer review, board committee). Design a prompt template that: (1) structures the summary for that meeting type, (2) extracts action items with owners and deadlines, (3) flags any compliance-sensitive content for review, (4) could be reused every time this meeting occurs.',
+            hints: [
+              'What structure does your meeting type need?',
+              'How should action items be formatted?',
+              'What compliance-sensitive content might appear?',
+              'What would make this reusable for every meeting?',
+            ],
+            successCriteria: [
+              'Summary structure matches the specific meeting type (not generic)',
+              'Action items include owner, deadline, and categorization',
+              'Compliance flag identifies sensitive content types for this meeting type',
+              'Template is reusable — parameterized for different instances of the same meeting',
+              'Notes that AI summary must be reviewed for accuracy before distribution',
+            ],
+          },
+        },
+      },
+      {
+        id: 'E2-3',
+        title: 'Data Visualization with AI',
+        type: 'document',
+        description: 'Using AI to describe, interpret, and improve financial charts and dashboards',
+        estimatedTime: '15 min',
+        learningObjectives: [
+          'Use AI to generate descriptions and interpretations of financial data',
+          'Design prompts that produce presentation-ready data narratives',
+          'Apply AI to dashboard commentary and trend interpretation',
+        ],
+        content: {
+          overview: 'AI cannot create charts directly in a text conversation, but it excels at the work around charts: generating narrative descriptions of data trends, writing dashboard commentary, suggesting improvements to data presentations, and producing the text that accompanies financial visualizations. For banking professionals, this means board report chart descriptions, ALM dashboard commentary, portfolio trend narratives, and performance summary text — all generated consistently and formatted for your audience.',
+          keyPoints: [
+            'Data narrative generation: feed AI the raw numbers and ask it to write the narrative that would accompany a chart (trend description, key insights, recommended actions)',
+            'Dashboard commentary: for each metric on a dashboard, AI can generate standard commentary (current value, trend direction, comparison to target, implications)',
+            'Chart improvement suggestions: describe your current chart to AI and ask for presentation improvements (better labels, clearer comparisons, audience-appropriate complexity)',
+            'Audience calibration: board-level commentary differs from operational dashboard text. Specify the audience in your prompt.',
+            'VERIFY all numbers in generated narratives — AI may round, transpose, or calculate percentages incorrectly',
+          ],
+          practiceTask: {
+            title: 'Generate Dashboard Commentary',
+            instructions: 'Create a prompt that generates narrative commentary for a financial dashboard.',
+            scenario: 'You have a monthly performance dashboard with these metrics: Net Interest Margin (3.45%, up from 3.32%), Efficiency Ratio (62.1%, target 60%), Loan Growth YTD (8.2%, target 7%), Non-Performing Assets (0.82%, up from 0.71%). Write a prompt that generates: (1) one-paragraph executive summary, (2) metric-by-metric commentary with trend analysis, (3) three follow-up questions for the management meeting. Specify the audience as the bank\'s executive committee.',
+            hints: [
+              'Specify the audience level explicitly',
+              'Ask for both positive and concerning trends',
+              'Include follow-up questions for discussion',
+              'Note that all percentages need VERIFY',
+            ],
+            successCriteria: [
+              'Prompt includes all 4 metrics with correct values',
+              'Specifies the audience (executive committee)',
+              'Requests structured output (summary, metric commentary, questions)',
+              'Output would be presentation-ready for executives',
+              'Notes that VERIFY should check all percentage calculations',
+            ],
+          },
+        },
+      },
+    ],
+  },
+  {
+    id: 'ai_leadership',
+    title: 'AI Leadership & Strategy',
+    description: 'Lead AI adoption in your department with business cases, governance, and scaling plans',
+    prerequisite: 'Session 3',
+    modules: [
+      {
+        id: 'E3-1',
+        title: 'AI Champion Playbook',
+        type: 'document',
+        description: 'Advocating for AI adoption with business cases, peer training, and resistance management',
+        estimatedTime: '15 min',
+        learningObjectives: [
+          'Draft a 1-page AI adoption proposal for a department head',
+          'Address common resistance objections with evidence-based responses',
+          'Design a peer training approach for your team',
+        ],
+        content: {
+          overview: 'Being good at AI yourself is step one. Getting your team and department to adopt AI is where the real organizational value unlocks. This module gives you the playbook: how to build a compelling business case, address common resistance objections, design peer training that actually sticks, and position yourself as the go-to AI resource without being seen as "pushing technology." The most effective AI champions lead by example and results, not by evangelism.',
+          keyPoints: [
+            'Business case structure: Problem (time spent, inconsistency, quality gaps) → Solution (specific AI applications) → Evidence (your ROI measurements from Module 4-3) → Ask (resources, approval, timeline)',
+            'Common resistance objections and responses: "AI will replace us" → "AI handles the repetitive parts so you can focus on judgment and relationships"; "It\'s not accurate" → "That\'s why we use VERIFY — here\'s what it caught last month"; "Compliance won\'t allow it" → "Here are the guard rails and documentation standards we built"',
+            'Peer training approach: show, don\'t tell. Demo your agent handling a real task. Share the time savings. Let colleagues try with their own work. Provide the template, not a lecture.',
+            'Positioning: present results first, technology second. "I saved 6 hours last month on variance commentary" is more compelling than "I built an AI agent"',
+            'Start with the willing: find 2-3 colleagues who are curious and help them succeed. Their results become your next business case.',
+          ],
+          practiceTask: {
+            title: 'Draft Your AI Adoption Proposal',
+            instructions: 'Create a 1-page AI adoption proposal for your department head.',
+            scenario: 'Write a 1-page proposal that includes: (1) The problem — what tasks consume too much time or produce inconsistent results, (2) The solution — specific AI applications you have tested, (3) Evidence — your ROI data from the curriculum, (4) The ask — what you need (approval, training time, tool access), (5) Timeline — 30-day milestones. Write it in a tone your department head would find credible and actionable.',
+            hints: [
+              'Lead with the problem, not the technology',
+              'Include your actual ROI numbers',
+              'Anticipate one objection and address it',
+              'Make the ask specific and reasonable',
+            ],
+            successCriteria: [
+              'All 5 sections present (problem, solution, evidence, ask, timeline)',
+              'Problem statement references real tasks from the learner\'s work',
+              'Evidence includes specific ROI measurements, not generic claims',
+              'The ask is specific and reasonable (not "give me unlimited AI access")',
+              'Written in a professional tone appropriate for a department head',
+            ],
+          },
+        },
+      },
+      {
+        id: 'E3-2',
+        title: 'AI Governance for Banking',
+        type: 'document',
+        description: 'Model risk management, AI policies, vendor evaluation, and audit readiness',
+        estimatedTime: '15 min',
+        learningObjectives: [
+          'Describe how model risk management applies to AI use in banking',
+          'Create an AI use policy checklist for a department',
+          'Identify audit readiness requirements for AI-assisted work products',
+        ],
+        content: {
+          overview: 'AI governance in banking is not optional — regulators expect it. This module covers the governance framework: model risk management principles applied to AI, department-level AI use policies, vendor evaluation for AI tools, and what auditors and examiners will look for. You do not need to build the governance framework for your bank — that is compliance and IT\'s job. But you need to understand it well enough to operate within it and advocate for practical policies that enable AI use without creating compliance risk.',
+          keyPoints: [
+            'Model risk management (SR 11-7 / OCC 2011-12): AI outputs used in decision-making may qualify as "models" requiring validation, documentation, and ongoing monitoring',
+            'Department AI use policy checklist: approved tools, approved use cases, prohibited use cases, data handling rules, documentation requirements, escalation path for edge cases',
+            'Vendor AI evaluation: data retention policies, training data usage, SOC 2 / SOC 3 compliance, BAA availability, regulatory compliance claims, contract termination and data deletion provisions',
+            'Audit readiness: maintain a log of AI-assisted work products with date, tool used, prompt summary (not full prompt), reviewer name, and disposition (used as-is, modified, rejected)',
+            'Your role: follow the policy, document your use, escalate edge cases, and provide feedback to improve the policy over time',
+          ],
+          practiceTask: {
+            title: 'Create a Department AI Policy Checklist',
+            instructions: 'Draft an AI use policy checklist for your department.',
+            scenario: 'Create a checklist that covers: (1) Approved AI tools and how to verify approval status, (2) Approved use cases for your department (at least 5), (3) Prohibited use cases (at least 3), (4) Data handling rules specific to your department, (5) Documentation requirements for AI-assisted work, (6) Who to contact for edge cases. Format it as a practical reference document.',
+            hints: [
+              'What tools has your bank approved?',
+              'What tasks in your department are clearly appropriate for AI?',
+              'What data must never go into an AI tool?',
+              'How would you document AI use for an auditor?',
+            ],
+            successCriteria: [
+              'All 6 sections addressed with department-specific content',
+              'Approved use cases are specific to the department (not generic)',
+              'Prohibited use cases identify real risks for the department',
+              'Data handling rules reference specific data types handled by the department',
+              'Documentation requirements are practical and auditor-ready',
+            ],
+          },
+        },
+      },
+      {
+        id: 'E3-3',
+        title: 'Scaling AI Across the Bank',
+        type: 'exercise',
+        description: 'Design a bank-wide AI strategy with department prioritization and rollout planning',
+        estimatedTime: '15 min',
+        learningObjectives: [
+          'Prioritize departments for AI rollout based on impact and readiness',
+          'Design a 30-60-90 day implementation plan for two departments',
+          'Define success metrics and executive reporting for AI initiatives',
+        ],
+        content: {
+          overview: 'Scaling AI from one person to one department to the whole bank requires a deliberate strategy. This module takes you from individual user to strategic thinker: which departments should adopt first, what does a realistic rollout look like, and how do you report results to executive leadership? The best scaling strategies start with departments that have high repetition, established AI champions, and manageable compliance complexity — then use their success to build momentum for more complex departments.',
+          keyPoints: [
+            'Department prioritization criteria: (1) Volume of repetitive tasks, (2) Existing AI champion or willing advocate, (3) Compliance complexity (lower = easier to start), (4) Data sensitivity (institutional data first, customer data later)',
+            '30-60-90 plan structure: Days 1-30 = pilot (2-3 users, 1 department, measure everything). Days 31-60 = expand (full department, share templates, refine standards). Days 61-90 = scale (second department, executive reporting, policy refinement).',
+            'Executive reporting: monthly 1-page report with hours saved, quality improvements, compliance adherence, next steps. Keep it quantitative and concise.',
+            'Success metrics: adoption rate (% of department using AI weekly), time savings (hours/month), quality consistency (reduction in rework), compliance (zero policy violations)',
+            'Common scaling mistakes: rolling out to too many departments at once, not measuring results, not training adequately, not adjusting templates for different departments',
+          ],
+          practiceTask: {
+            title: 'Draft a 30-60-90 AI Rollout Plan',
+            instructions: 'Design an AI rollout plan for two departments at your bank.',
+            scenario: 'Choose two departments: your own (pilot department) and one other department you think would benefit from AI. Design a 30-60-90 day plan covering: (1) Days 1-30: pilot activities, users, tasks, measurements, (2) Days 31-60: department expansion, template sharing, standard setting, (3) Days 61-90: second department onboarding, executive report draft, policy recommendations. Include specific success metrics for each phase.',
+            hints: [
+              'Which department is most ready for AI?',
+              'Start with 2-3 users, not the whole department',
+              'What metrics will executives care about?',
+              'What templates can transfer between departments?',
+            ],
+            successCriteria: [
+              'Two specific departments identified with rationale for selection',
+              'Each 30-day phase has specific activities, not vague goals',
+              'Pilot phase includes measurement plan with specific metrics',
+              'Expansion phase includes template sharing and standards',
+              'Executive report section includes quantitative metrics',
+              'Plan is realistic for the bank size and resources available',
+            ],
+          },
+        },
+      },
+    ],
+  },
+  {
+    id: 'compliance_deep_dive',
+    title: 'Compliance Deep Dive',
+    description: 'Fair lending, audit readiness, and vendor AI risk assessment for regulated banking',
+    prerequisite: 'Session 3',
+    modules: [
+      {
+        id: 'E4-1',
+        title: 'AI & Fair Lending',
+        type: 'document',
+        description: 'ECOA/CRA implications, disparate impact risk, and bias awareness in AI-assisted lending',
+        estimatedTime: '15 min',
+        learningObjectives: [
+          'Identify fair lending risks in AI-assisted credit analysis',
+          'Evaluate prompts for potential disparate impact through proxy variables',
+          'Apply bias mitigation strategies to AI-assisted lending workflows',
+        ],
+        content: {
+          overview: 'Fair lending laws — ECOA, Fair Housing Act, CRA — apply to AI-assisted lending work just as they apply to manual processes. The risk with AI is that prompts or outputs may inadvertently incorporate proxy variables (geography, industry, property type) that correlate with protected classes. This module teaches you to evaluate AI-assisted lending work for fair lending risks, recognize proxy variable patterns, and build mitigation into your prompts and review processes. This is not legal advice — it is awareness that helps you know when to escalate to compliance.',
+          keyPoints: [
+            'Proxy variable awareness: geography (zip codes), industry type, property neighborhood, and income sources can serve as proxies for protected characteristics under ECOA',
+            'Prompt audit for fair lending: review any credit analysis prompt to ensure it does not ask the AI to evaluate or weight factors that correlate with protected classes',
+            'Disparate impact risk: even neutral-sounding prompts can produce disparate impact if the underlying data or framing reflects historical patterns',
+            'Mitigation strategies: (1) remove geographic variables unless operationally necessary, (2) review AI output for patterns across demographic proxies, (3) document fair lending review for every AI-assisted credit decision',
+            'Escalation rule: if you suspect an AI output reflects potential bias — geographic concentration, industry-based assumptions, income source weighting — escalate to compliance before using the output',
+          ],
+          practiceTask: {
+            title: 'Fair Lending Prompt Audit',
+            instructions: 'Evaluate a credit analysis prompt for potential fair lending risks.',
+            scenario: 'Review this prompt: "Analyze the risk profile for this commercial loan application. The business is located in the downtown district, serves a primarily Spanish-speaking customer base, and operates in an industry with high employee turnover. Consider location-based risk factors and community demographics in your assessment." Identify the fair lending risks, explain which variables could serve as proxies, and rewrite the prompt to eliminate those risks while preserving legitimate credit analysis.',
+            hints: [
+              'Which variables could correlate with protected characteristics?',
+              'What is the difference between legitimate credit factors and proxy variables?',
+              'How would you preserve the analytical value while removing bias risk?',
+              'When would you escalate this to compliance?',
+            ],
+            successCriteria: [
+              'Correctly identifies at least 3 proxy variable risks in the original prompt',
+              'Explains how each proxy variable could correlate with protected characteristics',
+              'Rewritten prompt preserves legitimate credit analysis without proxy variables',
+              'Notes that fair lending review should be documented for this type of analysis',
+              'Identifies escalation trigger — when to involve compliance',
+            ],
+          },
+        },
+      },
+      {
+        id: 'E4-2',
+        title: 'AI Audit Readiness',
+        type: 'document',
+        description: 'Documenting AI use for examiners with version control and audit trail best practices',
+        estimatedTime: '15 min',
+        learningObjectives: [
+          'Create an AI usage log template suitable for regulatory examination',
+          'Describe version control best practices for AI-assisted work products',
+          'Identify what examiners will ask about AI use and how to prepare',
+        ],
+        content: {
+          overview: 'Regulatory examiners are increasingly asking about AI use in banking. Your preparation now determines whether those questions are comfortable or uncomfortable. This module covers what to document, how to version-control AI work products, and what examiners will ask. The goal is not to create bureaucracy — it is to build habits that make AI use defensible and transparent, so when the examiner asks "Do you use AI?" your answer is confident and documented.',
+          keyPoints: [
+            'AI usage log: date, task name, AI tool used, prompt summary (1-2 sentences, not full prompt), output disposition (used as-is / modified / rejected), reviewer name',
+            'Version control: save iterations of important AI-assisted documents. If you refined a credit memo through 3 prompts, keep the final version and note that it was AI-assisted and human-reviewed.',
+            'Examiner questions to prepare for: "What AI tools do you use?", "How do you validate AI output?", "How do you protect customer data?", "Who reviews AI-generated work?", "How do you document AI use?"',
+            'Defensibility standard: could you explain your AI use, data handling, and review process to an examiner without hesitation? If not, improve your documentation.',
+            'Team coordination: audit readiness is a team activity. Everyone using AI should follow the same documentation standards.',
+          ],
+          practiceTask: {
+            title: 'Create Your AI Usage Log Template',
+            instructions: 'Design a department-level AI usage log template for regulatory readiness.',
+            scenario: 'Create an AI usage log template that your department could use starting tomorrow. Include: (1) column definitions with examples, (2) instructions for what constitutes a "prompt summary" (not the full prompt, but enough context for an auditor), (3) clear disposition categories, (4) a section for periodic review notes. Also prepare brief answers to the 5 examiner questions listed in the key points.',
+            hints: [
+              'Keep columns practical — 5-7 max',
+              'Show an example row with realistic data',
+              'Prompt summary should be 1-2 sentences, not the full prompt',
+              'Prepare your examiner Q&A responses',
+            ],
+            successCriteria: [
+              'Log template has clear column definitions with examples',
+              'Includes a realistic example row with banking-relevant data',
+              'Prompt summary guidance is specific (1-2 sentences, not full text)',
+              'Disposition categories are clear and mutually exclusive',
+              'All 5 examiner questions have prepared, confident responses',
+            ],
+          },
+        },
+      },
+      {
+        id: 'E4-3',
+        title: 'Vendor AI Risk Assessment',
+        type: 'exercise',
+        description: 'Evaluating third-party AI tools with due diligence, data handling, and contract provisions',
+        estimatedTime: '15 min',
+        learningObjectives: [
+          'Complete a structured vendor AI risk assessment',
+          'Identify critical contract provisions for AI vendor agreements',
+          'Evaluate data handling and retention policies for banking compliance',
+        ],
+        content: {
+          overview: 'Your bank will evaluate AI vendors — and your input as a user matters. This module gives you a structured assessment framework covering the areas that matter most: data handling (where does your data go?), security certifications (SOC 2, penetration testing), regulatory compliance (can the vendor support your examination requirements?), contract provisions (data deletion, breach notification), and business continuity (what happens if the vendor goes down?). A thorough vendor assessment protects the bank and ensures the tool actually works for your use case.',
+          keyPoints: [
+            'Data handling: Where is data stored? Is it used for model training? What is the retention period? Can data be deleted on request? Is encryption in transit and at rest?',
+            'Security certifications: SOC 2 Type II (required), penetration testing (required), BAA for PII handling (required if applicable), FedRAMP (preferred for cloud)',
+            'Contract provisions: data deletion upon termination, breach notification timeline (72 hours max), liability for AI errors, right to audit, subprocessor disclosure',
+            'Regulatory support: can the vendor provide documentation for examiners? Do they have a banking-specific compliance offering? Have they passed FFIEC-based evaluations?',
+            'Practical evaluation: test with YOUR banking scenarios, not the vendor\'s demos. A tool that demos well may underperform on your specific document types, compliance language, or formatting requirements.',
+          ],
+          practiceTask: {
+            title: 'Complete a Vendor AI Risk Assessment',
+            instructions: 'Fill out a vendor risk assessment checklist for an AI tool your bank uses or is evaluating.',
+            scenario: 'Choose an AI tool (real or hypothetical). Complete a risk assessment covering: (1) Data handling — 5 questions with answers or "need to research", (2) Security certifications — checklist with pass/fail/unknown, (3) Contract provisions — 5 critical terms to negotiate, (4) Regulatory support — what examiner documentation the vendor provides, (5) Practical evaluation — results of testing with 3 banking scenarios. Conclude with a recommendation: approve, approve with conditions, or reject.',
+            hints: [
+              'Start with data handling — it is the dealbreaker',
+              'Be honest about what you know vs what needs research',
+              'Name specific contract terms, not vague "good contract"',
+              'Test with real banking tasks, not generic prompts',
+            ],
+            successCriteria: [
+              'All 5 assessment areas addressed with specific content',
+              'Data handling questions are specific and answered honestly',
+              'Security checklist distinguishes between pass/fail/unknown',
+              'At least 3 specific contract provisions named with reasoning',
+              'Practical evaluation uses banking-specific test scenarios',
+              'Recommendation is clear with supporting rationale',
+            ],
+          },
+        },
+      },
+    ],
+  },
+];
+
 export const ALL_SESSION_CONTENT: Record<number, SessionContent> = {
   1: SESSION_1_CONTENT,
   2: SESSION_2_CONTENT,
