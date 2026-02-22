@@ -557,7 +557,23 @@ EVALUATION FOCUS:
 - Is this a real task they have actually used AI for?
 - Are time estimates reasonable and honest?
 - Does the quality assessment go beyond "it's faster"?
-- Is the manager recommendation specific enough to act on?` : moduleId === "4-5" ? `## MODULE 4-5 RUBRIC: AI INTEGRATION PLAN (SESSION 4 CAPSTONE)
+- Is the manager recommendation specific enough to act on?` : moduleId === "4-4" ? `## MODULE 4-4 RUBRIC: AI TOOL LANDSCAPE
+This submission tests the learner's ability to evaluate AI tools using the 6-point checklist.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Checklist Coverage | Fewer than 4 of 6 criteria addressed | All 6 criteria addressed | All 6 with specific evidence or research notes |
+| Data Privacy Assessment | Vague ("seems secure") | Specific retention/training policy noted | Full privacy analysis with gaps identified |
+| Output Quality Testing | No banking-specific test | Tested with 1 banking scenario | Tested with 3+ scenarios with quality ratings |
+| Gap Identification | No concerns noted | 1+ concern identified | Concerns ranked by severity with mitigation paths |
+| Recommendation Quality | Vague or missing | Clear approve/reject with rationale | Phased recommendation with deployment plan |
+
+EVALUATION FOCUS:
+- Does the evaluation address the data privacy question first (dealbreaker criterion)?
+- Is the output quality assessment based on actual banking tasks, not generic demos?
+- Are gaps and concerns honest and specific?
+- Is the recommendation actionable by IT or compliance?` : moduleId === "4-5" ? `## MODULE 4-5 RUBRIC: AI INTEGRATION PLAN (SESSION 4 CAPSTONE)
 This is the Session 4 Capstone — the culmination of the entire SMILE curriculum. Evaluate as a real deliverable.
 
 3-LEVEL RUBRIC:
