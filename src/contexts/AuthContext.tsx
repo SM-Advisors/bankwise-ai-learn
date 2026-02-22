@@ -20,6 +20,7 @@ export interface UserProfile {
   onboarding_completed: boolean;
   tour_completed: boolean;
   current_session: number;
+  last_login_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -202,12 +203,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
+
+      // Update last_login_at
+      if (data.user) {
+        await supabase
+          .from('user_profiles')
+          .update({ last_login_at: new Date().toISOString() })
+          .eq('user_id', data.user.id);
+      }
+
       return { error: null };
     } catch (error) {
       return { error: error as Error };
