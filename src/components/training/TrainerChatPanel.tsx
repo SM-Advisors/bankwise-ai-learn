@@ -19,7 +19,7 @@ interface TrainerChatPanelProps {
   onQuickAction: (prompt: string) => void;
   isLoading: boolean;
   suggestedPrompts?: string[];
-  onSaveMemory?: (content: string) => void;
+  onSaveMemory?: (content: string, source?: string) => void;
 }
 
 type QuickActionType = 'review' | 'example' | 'hint' | null;
@@ -41,6 +41,8 @@ export function TrainerChatPanel({
   const [activeQuickAction, setActiveQuickAction] = useState<QuickActionType>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [savedIndex, setSavedIndex] = useState<number | null>(null);
+  const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<number>>(new Set());
+  const [savedSuggestions, setSavedSuggestions] = useState<Set<number>>(new Set());
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -133,57 +135,95 @@ export function TrainerChatPanel({
                 </div>
               )}
               {messages.map((message, idx) => (
-                <div
-                  key={idx}
-                  className={`group relative rounded-lg ${
-                    message.role === 'assistant'
-                      ? 'p-3 bg-muted'
-                      : 'p-3 bg-primary text-primary-foreground ml-4'
-                  }`}
-                >
-                  {message.role === 'assistant' && (
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-5 w-5">
-                          <AvatarImage src={andreaCoach} alt="Andrea" />
-                          <AvatarFallback>A</AvatarFallback>
-                        </Avatar>
-                        <span className="text-xs font-medium text-muted-foreground">Andrea</span>
-                      </div>
-                      <div className="flex items-center gap-0.5">
-                        <button
-                          onClick={() => handleCopy(message.content, idx)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-background/60"
-                          title="Copy response"
-                        >
-                          {copiedIndex === idx ? (
-                            <Check className="h-3.5 w-3.5 text-green-500" />
-                          ) : (
-                            <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                          )}
-                        </button>
-                        {onSaveMemory && (
+                <div key={idx} className="space-y-2">
+                  <div
+                    className={`group relative rounded-lg ${
+                      message.role === 'assistant'
+                        ? 'p-3 bg-muted'
+                        : 'p-3 bg-primary text-primary-foreground ml-4'
+                    }`}
+                  >
+                    {message.role === 'assistant' && (
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-5 w-5">
+                            <AvatarImage src={andreaCoach} alt="Andrea" />
+                            <AvatarFallback>A</AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs font-medium text-muted-foreground">Andrea</span>
+                        </div>
+                        <div className="flex items-center gap-0.5">
                           <button
-                            onClick={() => handleSaveMemory(message.content, idx)}
+                            onClick={() => handleCopy(message.content, idx)}
                             className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-background/60"
-                            title="Save as memory"
+                            title="Copy response"
                           >
-                            {savedIndex === idx ? (
+                            {copiedIndex === idx ? (
                               <Check className="h-3.5 w-3.5 text-green-500" />
                             ) : (
-                              <Bookmark className="h-3.5 w-3.5 text-muted-foreground" />
+                              <Copy className="h-3.5 w-3.5 text-muted-foreground" />
                             )}
                           </button>
-                        )}
+                          {onSaveMemory && (
+                            <button
+                              onClick={() => handleSaveMemory(message.content, idx)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-background/60"
+                              title="Save as memory"
+                            >
+                              {savedIndex === idx ? (
+                                <Check className="h-3.5 w-3.5 text-green-500" />
+                              ) : (
+                                <Bookmark className="h-3.5 w-3.5 text-muted-foreground" />
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {message.role === 'user' && (
+                      <div className="mb-1" />
+                    )}
+                    <div className={`prose prose-sm max-w-none ${message.role === 'assistant' ? 'dark:prose-invert' : ''} [&>h1]:text-base [&>h1]:font-bold [&>h1]:mt-3 [&>h1]:mb-2 [&>h2]:text-sm [&>h2]:font-semibold [&>h2]:mt-2 [&>h2]:mb-1 [&>h3]:text-sm [&>h3]:font-semibold [&>h3]:mt-2 [&>h3]:mb-1 [&>p]:mb-1.5 [&>p]:text-sm [&>p]:leading-relaxed [&>ul]:my-1.5 [&>ul]:pl-4 [&>ol]:my-1.5 [&>ol]:pl-4 [&>li]:mb-0.5 [&>li]:text-sm [&>table]:w-full [&>table]:border-collapse [&>table]:my-2 [&_th]:border [&_th]:border-border [&_th]:px-2 [&_th]:py-1 [&_th]:bg-muted [&_th]:text-left [&_th]:font-semibold [&_th]:text-xs [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_td]:text-xs`}>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+                    </div>
+                  </div>
+
+                  {/* Memory suggestion card */}
+                  {message.memorySuggestion && onSaveMemory && !dismissedSuggestions.has(idx) && !savedSuggestions.has(idx) && (
+                    <div className="ml-2 p-2.5 rounded-lg border border-accent/30 bg-accent/5 flex items-start gap-2">
+                      <Bookmark className="h-3.5 w-3.5 text-accent shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-foreground leading-snug">{message.memorySuggestion.content}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{message.memorySuggestion.reason}</p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <button
+                            onClick={() => {
+                              onSaveMemory(message.memorySuggestion!.content, 'andrea_suggested');
+                              setSavedSuggestions(prev => new Set(prev).add(idx));
+                            }}
+                            className="text-[10px] font-medium text-accent hover:text-accent/80 transition-colors"
+                          >
+                            Save to memories
+                          </button>
+                          <span className="text-muted-foreground/30">|</span>
+                          <button
+                            onClick={() => setDismissedSuggestions(prev => new Set(prev).add(idx))}
+                            className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            Dismiss
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
-                  {message.role === 'user' && (
-                    <div className="mb-1" />
+
+                  {/* Saved confirmation for memory suggestion */}
+                  {message.memorySuggestion && savedSuggestions.has(idx) && (
+                    <div className="ml-2 p-2 rounded-lg border border-green-500/20 bg-green-500/5 flex items-center gap-2">
+                      <Check className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                      <p className="text-[10px] text-green-700 dark:text-green-400 font-medium">Saved to memories</p>
+                    </div>
                   )}
-                  <div className={`prose prose-sm max-w-none ${message.role === 'assistant' ? 'dark:prose-invert' : ''} [&>h1]:text-base [&>h1]:font-bold [&>h1]:mt-3 [&>h1]:mb-2 [&>h2]:text-sm [&>h2]:font-semibold [&>h2]:mt-2 [&>h2]:mb-1 [&>h3]:text-sm [&>h3]:font-semibold [&>h3]:mt-2 [&>h3]:mb-1 [&>p]:mb-1.5 [&>p]:text-sm [&>p]:leading-relaxed [&>ul]:my-1.5 [&>ul]:pl-4 [&>ol]:my-1.5 [&>ol]:pl-4 [&>li]:mb-0.5 [&>li]:text-sm [&>table]:w-full [&>table]:border-collapse [&>table]:my-2 [&_th]:border [&_th]:border-border [&_th]:px-2 [&_th]:py-1 [&_th]:bg-muted [&_th]:text-left [&_th]:font-semibold [&_th]:text-xs [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_td]:text-xs`}>
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
-                  </div>
                 </div>
               ))}
               {isLoading && (

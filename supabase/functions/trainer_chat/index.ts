@@ -622,7 +622,8 @@ You MUST respond with valid JSON in this exact format:
   "reply": "Your response here",
   "suggestedPrompts": ["Follow-up 1", "Follow-up 2"],
   "coachingAction": "socratic|explain|review|celebrate|redirect",
-  "hintAvailable": true/false
+  "hintAvailable": true/false,
+  "memorySuggestion": { "content": "Concise insight to remember", "reason": "Why this is worth saving" }
 }
 
 FIELD DEFINITIONS:
@@ -635,6 +636,13 @@ FIELD DEFINITIONS:
   - "celebrate" — you're acknowledging a win or progress
   - "redirect" — you're steering them back on track
 - "hintAvailable": Set to true if you're holding back a specific hint or example that could help them. The UI will show a "Get hint" button.
+- "memorySuggestion" (OPTIONAL — include only when genuinely useful, NOT on every message): Suggest saving an insight when the learner:
+  - Has a learning breakthrough or "aha moment"
+  - Discovers a useful prompting technique or pattern
+  - States a work preference or workflow that Andrea should remember
+  - Grasps a key concept worth reinforcing later
+  - Completes a strong practice conversation (after review)
+  The "content" should be concise (1 sentence) and written as a fact about the learner, e.g. "Prefers structured prompts with role + task + context format" or "Learned that specificity in prompts dramatically improves AI output quality". The "reason" is a short note for the learner explaining why this is worth saving (shown in the UI). Omit this field entirely when there's nothing noteworthy to save.
 
 ${complianceCoachingBlock ? `## COMPLIANCE COACHING REQUIRED\n${complianceCoachingBlock}\n\n---\n` : ""}
 

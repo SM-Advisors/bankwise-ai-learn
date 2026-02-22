@@ -582,14 +582,19 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           onQuickAction={handleQuickAction}
           isLoading={isTrainerLoading}
           suggestedPrompts={suggestedPrompts}
-          onSaveMemory={async (content) => {
+          onSaveMemory={async (content, source) => {
             const result = await createMemory({
               content,
-              source: 'user_saved',
+              source: source || 'user_saved',
               context: selectedModule ? `Session ${sessionId} - ${selectedModule.title}` : undefined,
             });
             if (result.success) {
-              toast({ title: 'Memory saved', description: 'Andrea will remember this insight.' });
+              toast({
+                title: 'Memory saved',
+                description: source === 'andrea_suggested'
+                  ? 'Andrea\'s suggestion has been saved to your memories.'
+                  : 'Andrea will remember this insight.',
+              });
             }
           }}
         />
