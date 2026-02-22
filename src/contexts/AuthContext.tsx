@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Error fetching profile:', error);
       return null;
     }
-    return data as UserProfile | null;
+    return data as unknown as UserProfile | null;
   };
 
   const fetchProgress = async (userId: string) => {
@@ -110,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Error creating profile:', error);
       return null;
     }
-    return data as UserProfile;
+    return data as unknown as UserProfile;
   };
 
   const createProgress = async (userId: string) => {
@@ -213,11 +213,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Check if user is deactivated
       if (data?.user) {
-        const { data: profileCheck } = await supabase
+        const { data: profileCheck } = await (supabase
           .from('user_profiles')
           .select('is_active')
           .eq('user_id', data.user.id)
-          .maybeSingle();
+          .maybeSingle() as any);
         if (profileCheck?.is_active === false) {
           await supabase.auth.signOut();
           return { error: new Error('Your account has been deactivated. Please contact your administrator.') };

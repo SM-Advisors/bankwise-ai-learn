@@ -239,9 +239,14 @@ export type Database = {
           author_name: string
           author_role: string | null
           body: string
+          category: string
           created_at: string
           id: string
+          linked_content_id: string | null
+          linked_content_type: string | null
           reply_count: number
+          source_type: string
+          status: string
           title: string
           updated_at: string
           user_id: string
@@ -250,9 +255,14 @@ export type Database = {
           author_name: string
           author_role?: string | null
           body: string
+          category?: string
           created_at?: string
           id?: string
+          linked_content_id?: string | null
+          linked_content_type?: string | null
           reply_count?: number
+          source_type?: string
+          status?: string
           title: string
           updated_at?: string
           user_id: string
@@ -261,14 +271,104 @@ export type Database = {
           author_name?: string
           author_role?: string | null
           body?: string
+          category?: string
           created_at?: string
           id?: string
+          linked_content_id?: string | null
+          linked_content_type?: string | null
           reply_count?: number
+          source_type?: string
+          status?: string
           title?: string
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      department_roles: {
+        Row: {
+          created_at: string
+          department_id: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          department_id: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_roles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      departments: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          icon: string | null
+          id: string
+          industry_id: string
+          is_active: boolean
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          icon?: string | null
+          id?: string
+          industry_id: string
+          is_active?: boolean
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          icon?: string | null
+          id?: string
+          industry_id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "departments_industry_id_fkey"
+            columns: ["industry_id"]
+            isOneToOne: false
+            referencedRelation: "industries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       events: {
         Row: {
@@ -326,6 +426,102 @@ export type Database = {
           },
         ]
       }
+      executive_submissions: {
+        Row: {
+          body: string
+          community_topic_id: string | null
+          created_at: string
+          department_id: string | null
+          id: string
+          idea_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_notes: string | null
+          status: string
+          submission_type: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          community_topic_id?: string | null
+          created_at?: string
+          department_id?: string | null
+          id?: string
+          idea_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          submission_type?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          community_topic_id?: string | null
+          created_at?: string
+          department_id?: string | null
+          id?: string
+          idea_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          submission_type?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_submissions_community_topic_id_fkey"
+            columns: ["community_topic_id"]
+            isOneToOne: false
+            referencedRelation: "community_topics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "executive_submissions_idea_id_fkey"
+            columns: ["idea_id"]
+            isOneToOne: false
+            referencedRelation: "user_ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      industries: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lesson_content_chunks: {
         Row: {
           chunk_index: number
@@ -362,6 +558,45 @@ export type Database = {
           source?: string | null
           text?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      level_change_requests: {
+        Row: {
+          created_at: string
+          current_level: string
+          evidence_summary: string
+          expires_at: string
+          id: string
+          proposed_level: string
+          rationale: string
+          responded_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_level: string
+          evidence_summary: string
+          expires_at?: string
+          id?: string
+          proposed_level: string
+          rationale: string
+          responded_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_level?: string
+          evidence_summary?: string
+          expires_at?: string
+          id?: string
+          proposed_level?: string
+          rationale?: string
+          responded_at?: string | null
+          status?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -494,6 +729,27 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limit_events: {
+        Row: {
+          created_at: string
+          function_name: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          function_name: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          function_name?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       registration_codes: {
         Row: {
           code: string
@@ -537,6 +793,108 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      response_feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          message_index: number | null
+          message_preview: string | null
+          module_id: string | null
+          rating: number
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          message_index?: number | null
+          message_preview?: string | null
+          module_id?: string | null
+          rating: number
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          message_index?: number | null
+          message_preview?: string | null
+          module_id?: string | null
+          rating?: number
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      skill_observations: {
+        Row: {
+          created_at: string
+          evidence: string
+          id: string
+          module_id: string | null
+          observed_level: string
+          observed_skill: string
+          session_number: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          evidence: string
+          id?: string
+          module_id?: string | null
+          observed_level: string
+          observed_skill: string
+          session_number?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          evidence?: string
+          id?: string
+          module_id?: string | null
+          observed_level?: string
+          observed_skill?: string
+          session_number?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      submission_scores: {
+        Row: {
+          attempt_number: number | null
+          created_at: string
+          id: string
+          module_id: string | null
+          scores: Json
+          session_id: string
+          summary: string | null
+          user_id: string
+        }
+        Insert: {
+          attempt_number?: number | null
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          scores: Json
+          session_id: string
+          summary?: string | null
+          user_id: string
+        }
+        Update: {
+          attempt_number?: number | null
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          scores?: Json
+          session_id?: string
+          summary?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       training_progress: {
         Row: {
@@ -648,8 +1006,12 @@ export type Database = {
           created_at: string | null
           description: string
           id: string
+          linked_agent_id: string | null
           roi_impact: string | null
+          source: string
+          source_context: string | null
           status: string
+          submitted_to_exec: boolean
           submitter_department: string | null
           submitter_name: string | null
           title: string
@@ -662,8 +1024,12 @@ export type Database = {
           created_at?: string | null
           description?: string
           id?: string
+          linked_agent_id?: string | null
           roi_impact?: string | null
+          source?: string
+          source_context?: string | null
           status?: string
+          submitted_to_exec?: boolean
           submitter_department?: string | null
           submitter_name?: string | null
           title: string
@@ -676,8 +1042,12 @@ export type Database = {
           created_at?: string | null
           description?: string
           id?: string
+          linked_agent_id?: string | null
           roi_impact?: string | null
+          source?: string
+          source_context?: string | null
           status?: string
+          submitted_to_exec?: boolean
           submitter_department?: string | null
           submitter_name?: string | null
           title?: string
@@ -685,7 +1055,15 @@ export type Database = {
           user_id?: string
           votes?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_ideas_linked_agent_id_fkey"
+            columns: ["linked_agent_id"]
+            isOneToOne: false
+            referencedRelation: "user_agents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_profiles: {
         Row: {
@@ -693,9 +1071,11 @@ export type Database = {
           bank_role: string | null
           created_at: string | null
           current_session: number | null
+          department_id: string | null
           display_name: string | null
           employer_bank_name: string | null
           id: string
+          is_active: boolean
           last_login_at: string | null
           learning_style:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -716,9 +1096,11 @@ export type Database = {
           bank_role?: string | null
           created_at?: string | null
           current_session?: number | null
+          department_id?: string | null
           display_name?: string | null
           employer_bank_name?: string | null
           id?: string
+          is_active?: boolean
           last_login_at?: string | null
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -739,9 +1121,11 @@ export type Database = {
           bank_role?: string | null
           created_at?: string | null
           current_session?: number | null
+          department_id?: string | null
           display_name?: string | null
           employer_bank_name?: string | null
           id?: string
+          is_active?: boolean
           last_login_at?: string | null
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -757,7 +1141,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_profiles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
