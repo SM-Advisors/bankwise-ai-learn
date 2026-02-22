@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark, Lightbulb, AlertTriangle, HelpCircle, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark, Lightbulb, AlertTriangle, ArrowRight, CheckCircle2 } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { type Message } from '@/types/training';
 
@@ -37,6 +37,7 @@ export function TrainerChatPanel({
   onSaveMemory,
 }: TrainerChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [activeQuickAction, setActiveQuickAction] = useState<QuickActionType>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [savedIndex, setSavedIndex] = useState<number | null>(null);
@@ -80,11 +81,8 @@ export function TrainerChatPanel({
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       onSubmit();
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
-  };
-
-  const formatTimestamp = () => {
-    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -118,6 +116,22 @@ export function TrainerChatPanel({
           {/* Messages - scrollable area */}
           <ScrollArea className="flex-1">
             <div className="p-3 space-y-3">
+              {/* Loading skeleton while Andrea's greeting loads */}
+              {messages.length === 0 && (
+                <div className="p-3 rounded-lg bg-muted animate-pulse">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Avatar className="h-5 w-5">
+                      <AvatarImage src={andreaCoach} alt="Andrea" />
+                      <AvatarFallback>A</AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs font-medium text-muted-foreground">Andrea</span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-3 bg-muted-foreground/10 rounded w-3/4" />
+                    <div className="h-3 bg-muted-foreground/10 rounded w-1/2" />
+                  </div>
+                </div>
+              )}
               {messages.map((message, idx) => (
                 <div
                   key={idx}
@@ -136,29 +150,28 @@ export function TrainerChatPanel({
                         </Avatar>
                         <span className="text-xs font-medium text-muted-foreground">Andrea</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-muted-foreground/60">{formatTimestamp()}</span>
+                      <div className="flex items-center gap-0.5">
                         <button
                           onClick={() => handleCopy(message.content, idx)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-background/50"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-background/60"
                           title="Copy response"
                         >
                           {copiedIndex === idx ? (
-                            <Check className="h-3 w-3 text-green-500" />
+                            <Check className="h-3.5 w-3.5 text-green-500" />
                           ) : (
-                            <Copy className="h-3 w-3 text-muted-foreground" />
+                            <Copy className="h-3.5 w-3.5 text-muted-foreground" />
                           )}
                         </button>
                         {onSaveMemory && (
                           <button
                             onClick={() => handleSaveMemory(message.content, idx)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-background/50"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-background/60"
                             title="Save as memory"
                           >
                             {savedIndex === idx ? (
-                              <Check className="h-3 w-3 text-green-500" />
+                              <Check className="h-3.5 w-3.5 text-green-500" />
                             ) : (
-                              <Bookmark className="h-3 w-3 text-muted-foreground" />
+                              <Bookmark className="h-3.5 w-3.5 text-muted-foreground" />
                             )}
                           </button>
                         )}
@@ -166,9 +179,7 @@ export function TrainerChatPanel({
                     </div>
                   )}
                   {message.role === 'user' && (
-                    <div className="flex justify-end mb-1">
-                      <span className="text-[10px] opacity-60">{formatTimestamp()}</span>
-                    </div>
+                    <div className="mb-1" />
                   )}
                   <div className={`prose prose-sm max-w-none ${message.role === 'assistant' ? 'dark:prose-invert' : ''} [&>h1]:text-base [&>h1]:font-bold [&>h1]:mt-3 [&>h1]:mb-2 [&>h2]:text-sm [&>h2]:font-semibold [&>h2]:mt-2 [&>h2]:mb-1 [&>h3]:text-sm [&>h3]:font-semibold [&>h3]:mt-2 [&>h3]:mb-1 [&>p]:mb-1.5 [&>p]:text-sm [&>p]:leading-relaxed [&>ul]:my-1.5 [&>ul]:pl-4 [&>ol]:my-1.5 [&>ol]:pl-4 [&>li]:mb-0.5 [&>li]:text-sm [&>table]:w-full [&>table]:border-collapse [&>table]:my-2 [&_th]:border [&_th]:border-border [&_th]:px-2 [&_th]:py-1 [&_th]:bg-muted [&_th]:text-left [&_th]:font-semibold [&_th]:text-xs [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_td]:text-xs`}>
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
@@ -242,75 +253,85 @@ export function TrainerChatPanel({
 
           {/* Quick Actions */}
           <div className="px-3 py-2 border-t bg-muted/30">
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1.5">
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs h-7 gap-1"
+                className="text-xs h-7 gap-1.5 rounded-md"
                 disabled={isLoading}
                 aria-label="Ask Andrea to review your practice work"
                 onClick={() => handleQuickActionClick('Can you review my practice work?', 'review')}
               >
                 {activeQuickAction === 'review' && isLoading ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
-                ) : null}
+                ) : (
+                  <CheckCircle2 className="h-3 w-3" />
+                )}
                 Review my work
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs h-7 gap-1"
+                className="text-xs h-7 gap-1.5 rounded-md"
                 disabled={isLoading}
                 aria-label="Ask Andrea to show you an example"
                 onClick={() => handleQuickActionClick('Show me an example', 'example')}
               >
                 {activeQuickAction === 'example' && isLoading ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
-                ) : null}
+                ) : (
+                  <Lightbulb className="h-3 w-3" />
+                )}
                 Show example
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs h-7 gap-1"
+                className="text-xs h-7 gap-1.5 rounded-md"
                 disabled={isLoading}
                 aria-label="Ask Andrea for a hint"
                 onClick={() => handleQuickActionClick('I need a hint', 'hint')}
               >
                 {activeQuickAction === 'hint' && isLoading ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
-                ) : null}
+                ) : (
+                  <ArrowRight className="h-3 w-3" />
+                )}
                 Get hint
               </Button>
             </div>
           </div>
 
-          {/* Composer - pinned to bottom (Copilot-style) */}
-          <div className="p-3 border-t shrink-0 bg-gradient-to-t from-muted/50 to-transparent">
+          {/* Composer - pinned to bottom */}
+          <div className="p-3 border-t shrink-0">
             <div className="flex gap-2 items-end">
               <div className="shrink-0">
-                <Avatar className="h-10 w-10 border-2 border-primary/20 shadow-sm">
+                <Avatar className="h-8 w-8 border-2 border-primary/20 shadow-sm">
                   <AvatarImage src={andreaCoach} alt="Andrea" className="object-cover" />
                   <AvatarFallback className="text-sm">A</AvatarFallback>
                 </Avatar>
               </div>
               <div className="flex-1 flex flex-col gap-1.5">
                 <Textarea
+                  ref={inputRef}
                   value={input}
                   onChange={(e) => onInputChange(e.target.value)}
                   placeholder="Ask Andrea for help..."
-                  className="min-h-[40px] max-h-[100px] resize-none text-sm"
+                  className="min-h-[40px] max-h-[100px] resize-none text-sm rounded-xl"
                   onKeyDown={handleKeyDown}
                 />
-                <Button
-                  size="sm"
-                  onClick={onSubmit}
-                  disabled={isLoading || !input.trim()}
-                  className="gap-1.5 self-end h-7 text-xs"
-                >
-                  <Send className="h-3 w-3" />
-                  Send
-                </Button>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground/50">Enter to send</span>
+                  <Button
+                    size="sm"
+                    onClick={() => { onSubmit(); setTimeout(() => inputRef.current?.focus(), 100); }}
+                    disabled={isLoading || !input.trim()}
+                    className="gap-1.5 h-7 text-xs rounded-md"
+                  >
+                    <Send className="h-3 w-3" />
+                    Send
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

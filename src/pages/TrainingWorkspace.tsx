@@ -41,6 +41,7 @@ export default function TrainingWorkspace() {
   const [selectedPolicy, setSelectedPolicy] = useState<BankPolicy | null>(null);
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
+  const [policyDropdownOpen, setPolicyDropdownOpen] = useState(false);
 
   const { policies } = useBankPolicies();
   const { createMemory } = useAIMemories();
@@ -492,30 +493,43 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         </div>
         <div className="flex items-center gap-3">
           {policies.length > 0 && (
-            <div className="relative group">
-              <Button variant="outline" size="sm" className="gap-2">
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => setPolicyDropdownOpen(!policyDropdownOpen)}
+                aria-expanded={policyDropdownOpen}
+                aria-haspopup="true"
+              >
                 <Shield className="h-4 w-4" />
                 Bank Policies
               </Button>
-              <div className="absolute right-0 top-full mt-1 w-64 bg-popover border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                <div className="p-2 space-y-1">
-                  {policies.map((policy) => (
-                    <button
-                      key={policy.id}
-                      className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
-                      onClick={() => {
-                        setSelectedPolicy(policy as BankPolicy);
-                        setPolicyModalOpen(true);
-                      }}
-                    >
-                      <div className="font-medium">{policy.title}</div>
-                      <div className="text-xs text-muted-foreground line-clamp-1">
-                        {policy.summary || 'View policy details'}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {policyDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setPolicyDropdownOpen(false)} />
+                  <div className="absolute right-0 top-full mt-1 w-64 bg-popover border rounded-lg shadow-lg z-50">
+                    <div className="p-2 space-y-1">
+                      {policies.map((policy) => (
+                        <button
+                          key={policy.id}
+                          className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
+                          onClick={() => {
+                            setSelectedPolicy(policy as BankPolicy);
+                            setPolicyModalOpen(true);
+                            setPolicyDropdownOpen(false);
+                          }}
+                        >
+                          <div className="font-medium">{policy.title}</div>
+                          <div className="text-xs text-muted-foreground line-clamp-1">
+                            {policy.summary || 'View policy details'}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
           <Badge variant="secondary">{profile.learning_style}</Badge>

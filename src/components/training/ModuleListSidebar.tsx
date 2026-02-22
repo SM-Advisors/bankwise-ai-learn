@@ -38,7 +38,12 @@ export function ModuleListSidebar({
       {/* Header */}
       <div className="px-3 pt-3 pb-2 flex items-center justify-between shrink-0">
         {!collapsed && (
-          <span className="font-semibold text-sm text-foreground tracking-tight">Modules</span>
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-sm text-foreground tracking-tight">Modules</span>
+            <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+              {completedModules.size}/{modules.length}
+            </span>
+          </div>
         )}
         <Button
           variant="ghost"
@@ -50,6 +55,13 @@ export function ModuleListSidebar({
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
       </div>
+
+      {/* Collapsed: show module count */}
+      {collapsed && (
+        <div className="flex flex-col items-center gap-1 px-1 pt-2">
+          <span className="text-[10px] text-muted-foreground font-medium">{completedModules.size}/{modules.length}</span>
+        </div>
+      )}
 
       {!collapsed && (
         <ScrollArea className="flex-1 px-2 pb-2">
