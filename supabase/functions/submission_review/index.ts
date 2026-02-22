@@ -18,6 +18,15 @@ interface SubmissionReviewRequest {
     guardRails?: Array<{ rule: string; alternative: string }>;
     complianceAnchors?: string[];
   };
+  workflowData?: {
+    trigger?: string;
+    steps?: Array<{ name: string; aiPromptTemplate: string; humanReview: boolean; outputDescription: string }>;
+    finalOutput?: string;
+  };
+  departmentContext?: {
+    bankRole?: string;
+    lineOfBusiness?: string;
+  };
   learnerState?: {
     currentCardTitle?: string;
     attemptNumber?: number;
@@ -238,7 +247,7 @@ serve(async (req) => {
     }
 
     const requestBody: SubmissionReviewRequest = await req.json();
-    const { lessonId, moduleId, submission, rubric, agentTemplate, learnerState, userId: bodyUserId } = requestBody;
+    const { lessonId, moduleId, submission, rubric, agentTemplate, workflowData, departmentContext, learnerState, userId: bodyUserId } = requestBody;
 
     if (!lessonId || !submission) {
       return new Response(
@@ -365,8 +374,49 @@ EVALUATION FOCUS:
 - Do guard rails cover common edge cases (personal advice, legal questions, off-topic)?
 - Are compliance anchors real regulatory phrases (FDCPA, TILA, ECOA disclosures)?
 - Is the identity specific enough to produce consistent behavior?
-- Would this template produce a useful, safe AI agent for banking?` : `## RUBRIC
+- Would this template produce a useful, safe AI agent for banking?` : moduleId === "3-3" && workflowData ? `## WORKFLOW RUBRIC
+This submission is an AI workflow from the Workflow Studio. Evaluate workflow COMPLETENESS and QUALITY.
+
+SCORING WEIGHTS:
+- Trigger (15%): Clear, specific event that starts the workflow
+- Steps (30%): At least 3 distinct steps with clear AI + human roles
+- Review Checkpoints (25%): At least 2 human review points built into the sequence
+- Prompt Templates (20%): Each step has a clear AI prompt template that could be used immediately
+- Final Output (10%): Clear description of the deliverable
+
+WORKFLOW DATA:
+Trigger: ${workflowData.trigger || "MISSING"}
+Steps: ${workflowData.steps?.filter(s => s.name).length || 0} defined${workflowData.steps?.filter(s => s.name).map(s => ` (${s.name}${s.humanReview ? " [review]" : ""})`).join(",") || ""}
+Review Checkpoints: ${workflowData.steps?.filter(s => s.humanReview && s.name).length || 0}
+Final Output: ${workflowData.finalOutput || "MISSING"}
+
+EVALUATION FOCUS:
+- Is the trigger specific to a real banking event (not generic)?
+- Do steps alternate between AI work and human review — not all AI in sequence?
+- Are prompt templates specific enough to use immediately?
+- Would this workflow be reusable by a colleague without additional explanation?
+- Does the workflow respect compliance requirements (review before external output)?` : moduleId === "3-5" ? `## CAPSTONE RUBRIC
+This is the Session 3 Capstone submission. Evaluate against ALL training objectives from Sessions 1-3.
+
+SCORING WEIGHTS:
+- CLEAR Framework (20%): Does the submission demonstrate proper prompt structure (Context, Length, Examples, Audience, Role)?
+- Advanced Technique (20%): Is at least one advanced technique applied (chain-of-thought, multi-shot, or self-review)?
+- Compliance Awareness (20%): Are data handling, decision boundaries, and documentation addressed?
+- Department Relevance (20%): Is the task specific to a real banking function and department?
+- Reflection Quality (20%): Does the reflection honestly identify both strengths and limitations?
+
+EVALUATION FOCUS:
+- Does this look like real work, not a hypothetical exercise?
+- Are there 3+ prompts showing iteration and refinement?
+- Is all customer data properly anonymized?
+- Would the final output be usable in a real banking context?
+- Is the reflection honest about what AI did well and where it fell short?` : `## RUBRIC
 ${rubric ? (typeof rubric === "string" ? rubric : JSON.stringify(rubric, null, 2)) : "Evaluate based on clarity, specificity, context, and appropriateness for banking use cases."}`}
+
+${departmentContext?.lineOfBusiness ? `## DEPARTMENT CONTEXT
+The learner works in: ${departmentContext.lineOfBusiness === "accounting_finance" ? "Accounting & Finance" : departmentContext.lineOfBusiness === "credit_administration" ? "Credit Administration" : "Executive & Leadership"}
+${departmentContext.bankRole ? `Their role: ${departmentContext.bankRole}` : ""}
+Evaluate whether the submission is relevant to their department. Note if examples and terminology are appropriate for their line of business.` : ""}
 
 ## SUBMISSION CONTEXT
 - Lesson ID: ${lessonId}

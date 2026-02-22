@@ -8,7 +8,7 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/component
 import {
   Loader2, Send, Lightbulb, AlertCircle, Target, CheckCircle,
   ChevronRight, ChevronDown, Bot, User, Mic, AudioLines, Plus, SlidersHorizontal,
-  MessageSquarePlus, History, Clock,
+  MessageSquarePlus, History, Clock, Building2,
 } from 'lucide-react';
 import { type ModuleContent } from '@/data/trainingContent';
 import { type PracticeConversation } from '@/hooks/usePracticeConversations';
@@ -33,6 +33,8 @@ interface PracticeChatPanelProps {
   activeConversationId: string | null;
   onNewChat: () => void;
   onSelectConversation: (id: string) => void;
+  departmentLabel?: string;
+  lineOfBusiness?: string;
 }
 
 export function PracticeChatPanel({
@@ -50,6 +52,8 @@ export function PracticeChatPanel({
   activeConversationId,
   onNewChat,
   onSelectConversation,
+  departmentLabel,
+  lineOfBusiness,
 }: PracticeChatPanelProps) {
   const [input, setInput] = useState('');
   const [scenarioOpen, setScenarioOpen] = useState(false);
@@ -58,6 +62,16 @@ export function PracticeChatPanel({
   const [activeTab, setActiveTab] = useState<'work' | 'web'>('work');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Department-specific scenario and hints (Session 3)
+  const deptScenarios = module.content.practiceTask.departmentScenarios;
+  const lobKey = lineOfBusiness as 'accounting_finance' | 'credit_administration' | 'executive_leadership' | undefined;
+  const activeScenario = (deptScenarios && lobKey && deptScenarios[lobKey]?.scenario)
+    ? deptScenarios[lobKey].scenario
+    : module.content.practiceTask.scenario;
+  const activeHints = (deptScenarios && lobKey && deptScenarios[lobKey]?.hints)
+    ? deptScenarios[lobKey].hints
+    : module.content.practiceTask.hints;
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -228,6 +242,12 @@ export function PracticeChatPanel({
       {/* Empty state — shown before any messages */}
       {!hasConversation && (
         <div className="flex-1 flex flex-col items-center justify-center w-full max-w-2xl mx-auto px-4">
+          {departmentLabel && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-2">
+              <Building2 className="h-3.5 w-3.5" />
+              {departmentLabel}
+            </div>
+          )}
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1">Practice Task</p>
           <h2 className="text-xl md:text-2xl font-semibold text-foreground text-center mb-1 tracking-tight">
             {module.content.practiceTask.title}
@@ -244,7 +264,7 @@ export function PracticeChatPanel({
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="mt-1 bg-card border border-border p-4 rounded-xl">
-                  <p className="text-sm whitespace-pre-wrap text-muted-foreground">{module.content.practiceTask.scenario}</p>
+                  <p className="text-sm whitespace-pre-wrap text-muted-foreground">{activeScenario}</p>
                 </div>
               </CollapsibleContent>
             </Collapsible>
@@ -428,7 +448,7 @@ export function PracticeChatPanel({
       {!hasConversation && (
         <div className="w-full max-w-2xl mx-auto px-4 pb-6 pt-3">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {module.content.practiceTask.hints.slice(0, 3).map((hint, idx) => (
+            {activeHints.slice(0, 3).map((hint, idx) => (
               <button
                 key={idx}
                 onClick={() => handleHintClick(hint)}

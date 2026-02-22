@@ -25,6 +25,16 @@ interface AgentContext {
   isDeployed?: boolean;
 }
 
+interface WorkflowContext {
+  name?: string;
+  status?: string;
+  trigger?: string;
+  steps?: Array<{ name: string; aiPromptTemplate: string; humanReview: boolean; outputDescription: string }>;
+  finalOutput?: string;
+  stepCount?: number;
+  checkpointCount?: number;
+}
+
 interface TrainerChatRequest {
   lessonId: string;
   moduleId?: string;
@@ -33,6 +43,7 @@ interface TrainerChatRequest {
   greeting?: boolean; // If true, generate a personalized greeting instead of a normal reply
   practiceConversation?: Message[]; // The learner's practice chat from the center panel
   agentContext?: AgentContext; // The learner's agent data from Agent Studio
+  workflowContext?: WorkflowContext; // The learner's workflow data from Workflow Studio
   learnerState?: {
     currentCardTitle?: string;
     progressSummary?: string;
@@ -463,6 +474,7 @@ serve(async (req) => {
       greeting,
       practiceConversation,
       agentContext,
+      workflowContext,
       learnerState,
       userId: bodyUserId,
     } = requestBody;
@@ -782,6 +794,25 @@ AGENT COACHING RULES:
 - If their template is incomplete, guide them to fill in missing sections
 - Comment on system prompt quality: word count, specificity, banking relevance
 - Never write the entire template for them — guide them to do it themselves
+---
+
+` : ""}${workflowContext ? `## LEARNER'S AI WORKFLOW
+The learner is building an AI workflow in the Workflow Studio. Here is their current workflow:
+- Workflow Name: ${workflowContext.name || "Unnamed"}
+- Status: ${workflowContext.status || "draft"}
+${workflowContext.trigger ? `- Trigger: ${workflowContext.trigger}` : "- Trigger: NOT SET"}
+${workflowContext.steps?.filter(s => s.name).length ? `- Steps: ${workflowContext.steps.filter(s => s.name).map((s, i) => `${i + 1}. ${s.name}${s.humanReview ? " [REVIEW]" : ""}`).join(", ")}` : "- Steps: NONE DEFINED"}
+- Review Checkpoints: ${workflowContext.checkpointCount ?? workflowContext.steps?.filter(s => s.humanReview && s.name).length ?? 0}
+${workflowContext.finalOutput ? `- Final Output: ${workflowContext.finalOutput}` : "- Final Output: NOT SET"}
+
+WORKFLOW COACHING RULES:
+- Help them structure their workflow with clear step boundaries
+- Ensure at least 2 human review checkpoints exist — this is the compliance mechanism
+- Suggest step refinements: "What if you split step 2 into analysis and formatting?"
+- Push for specific AI prompt templates in each step, not vague descriptions
+- Celebrate when the workflow has a clear trigger, 3+ steps, and review checkpoints
+- If they have fewer than 2 review checkpoints, flag it immediately
+- Never build the entire workflow for them — guide them to structure it themselves
 ---
 
 ` : ""}## CURRENT CONTEXT

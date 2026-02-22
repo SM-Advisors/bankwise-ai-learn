@@ -24,6 +24,7 @@ import {
 import { computeOverallProgress, computeSessionProgress, getModuleStates, getCompletedModuleCount, getSessionModuleTotal } from '@/utils/computeProgress';
 import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';
 import type { SessionProgressData, SkillSignal } from '@/types/progress';
+import { CompletionSummary } from '@/components/capstone/CompletionSummary';
 
 const SESSIONS = [
   {
@@ -288,6 +289,23 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Completion Summary — shown when Session 3 is completed */}
+        {sessionProgress[2] && (
+          <div className="mb-8">
+            <CompletionSummary
+              userName={profile.display_name || 'Learner'}
+              completedAt={(() => {
+                const s3 = getSessionProgressData(3);
+                return s3?.capstoneData?.completedAt;
+              })()}
+              skillSignals={allSkillSignals}
+              totalModulesCompleted={totalCompletedModules}
+              totalModules={totalModules}
+              onViewCertificate={() => navigate('/training/3')}
+            />
+          </div>
+        )}
 
         {/* Learning Track */}
         <div className="mb-6">

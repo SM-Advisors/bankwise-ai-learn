@@ -16,6 +16,18 @@ interface PracticeChatRequest {
   scenario: string;
   sessionNumber?: number;
   customSystemPrompt?: string; // User's deployed agent system prompt (Session 3)
+  bankRole?: string; // User's role (Session 3 department personalization)
+  lineOfBusiness?: string; // User's department (Session 3 department personalization)
+}
+
+// Map lineOfBusiness enum to readable department name
+function getDepartmentName(lob: string | undefined): string {
+  const map: Record<string, string> = {
+    accounting_finance: "Accounting & Finance",
+    credit_administration: "Credit Administration",
+    executive_leadership: "Executive & Leadership",
+  };
+  return map[lob || ""] || "";
 }
 
 serve(async (req) => {
@@ -29,7 +41,15 @@ serve(async (req) => {
       throw new Error("ANTHROPIC_API_KEY is not configured");
     }
 
-    const { messages, moduleTitle, scenario, sessionNumber, customSystemPrompt }: PracticeChatRequest = await req.json();
+    const { messages, moduleTitle, scenario, sessionNumber, customSystemPrompt, bankRole, lineOfBusiness }: PracticeChatRequest = await req.json();
+
+    // Build department context block for Session 3
+    const departmentName = getDepartmentName(lineOfBusiness);
+    const departmentContext = (bankRole || departmentName) ? `
+DEPARTMENT CONTEXT:
+${departmentName ? `The user works in: ${departmentName}` : ""}
+${bankRole ? `Their role: ${bankRole}` : ""}
+Tailor your responses to be relevant to their department. Use terminology, examples, and realistic scenarios appropriate for their line of business.` : "";
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
@@ -46,6 +66,7 @@ serve(async (req) => {
 SCENARIO CONTEXT:
 The user is working on: "${moduleTitle}"
 ${scenario ? `Situation: ${scenario}` : ""}
+${departmentContext}
 
 META-INSTRUCTIONS:
 - Stay in character as the agent described above
@@ -61,6 +82,7 @@ You are a general-purpose AI assistant (like ChatGPT or Claude) that a banker is
 ## SCENARIO CONTEXT
 The user is working on: "${moduleTitle}"
 ${scenario ? `\nSituation: ${scenario}` : ""}
+${departmentContext}
 
 ## CRITICAL BEHAVIOR RULES
 

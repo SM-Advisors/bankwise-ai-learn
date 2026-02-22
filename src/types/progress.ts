@@ -25,10 +25,21 @@ export interface SkillSignal {
   timestamp: string;
 }
 
+export interface CapstoneData {
+  selectedOption: string; // 'A' | 'B' | 'C' | 'D' | 'custom'
+  customTask?: string;
+  reflectionWorkWell?: string;
+  reflectionWentWrong?: string;
+  reflectionDoNextTime?: string;
+  completedAt?: string;
+  certificateGenerated?: boolean;
+}
+
 export interface SessionProgressData {
   completedModules: string[];
   moduleEngagement?: Record<string, ModuleEngagement>;
   skillSignals?: SkillSignal[];
+  capstoneData?: CapstoneData;
 }
 
 export type ModuleState = 'not_started' | 'content_viewed' | 'practicing' | 'submitted' | 'completed';

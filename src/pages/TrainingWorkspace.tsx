@@ -21,8 +21,13 @@ import { deriveSkillSignals } from '@/utils/deriveSkillSignals';
 import { useAIMemories } from '@/hooks/useAIPreferences';
 import { usePracticeConversations } from '@/hooks/usePracticeConversations';
 import { useUserAgents } from '@/hooks/useUserAgents';
+import { useUserWorkflows } from '@/hooks/useUserWorkflows';
 import { AgentStudioPanel } from '@/components/agent-studio/AgentStudioPanel';
-import { Loader2, ArrowLeft, Shield, Bot } from 'lucide-react';
+import { WorkflowStudioPanel } from '@/components/workflow-studio/WorkflowStudioPanel';
+import { CapstonePanel } from '@/components/capstone/CapstonePanel';
+import type { CapstoneData } from '@/types/progress';
+import type { WorkflowData } from '@/types/workflow';
+import { Loader2, ArrowLeft, Shield, Bot, Building2 } from 'lucide-react';
 
 export default function TrainingWorkspace() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -51,13 +56,47 @@ export default function TrainingWorkspace() {
   const { policies } = useBankPolicies();
   const { createMemory } = useAIMemories();
   const { activeAgent, draftAgent } = useUserAgents();
+  const { draftWorkflow } = useUserWorkflows();
 
   // Determine if current module is an Agent Studio module
   const isAgentModule = sessionId === '2' && (selectedModule?.id === '2-3' || selectedModule?.id === '2-5');
 
-  // For Session 3: determine if a deployed agent is active
+  // For Session 3: determine special module types
   const isSession3 = sessionId === '3';
+  const isWorkflowModule = isSession3 && selectedModule?.id === '3-3';
+  const isCapstoneModule = isSession3 && selectedModule?.id === '3-5';
   const deployedAgent = activeAgent;
+
+  // Department info for Session 3
+  const getDepartmentLabel = (lob: string | null) => {
+    switch (lob) {
+      case 'accounting_finance': return 'Accounting & Finance';
+      case 'credit_administration': return 'Credit Administration';
+      case 'executive_leadership': return 'Executive & Leadership';
+      default: return null;
+    }
+  };
+  const departmentLabel = isSession3 ? getDepartmentLabel(profile?.line_of_business ?? null) : null;
+
+  // Capstone state (from session_3_progress)
+  const getCapstoneData = (): CapstoneData | null => {
+    if (!progress) return null;
+    const s3 = progress.session_3_progress as SessionProgressData | null;
+    return s3?.capstoneData || null;
+  };
+
+  const updateCapstoneData = async (updates: Partial<CapstoneData>) => {
+    if (!sessionId) return;
+    const progressKey = 'session_3_progress' as const;
+    const currentProgress = (progress?.[progressKey] as SessionProgressData) || { completedModules: Array.from(completedModules) };
+    const existing = currentProgress.capstoneData || { selectedOption: '' };
+    await updateProgress({
+      [progressKey]: {
+        ...currentProgress,
+        capstoneData: { ...existing, ...updates },
+      },
+    } as any);
+  };
 
   // Module engagement tracking state
   const [moduleEngagement, setModuleEngagement] = useState<Record<string, ModuleEngagement>>({});
@@ -277,6 +316,8 @@ export default function TrainingWorkspace() {
           sessionNumber: parseInt(sessionId || '1'),
           // Session 3: use deployed agent's custom system prompt if available
           ...(isSession3 && deployedAgent?.system_prompt ? { customSystemPrompt: deployedAgent.system_prompt } : {}),
+          // Session 3: department context
+          ...(isSession3 ? { bankRole: profile?.bank_role, lineOfBusiness: profile?.line_of_business } : {}),
         },
       });
 
@@ -333,6 +374,7 @@ export default function TrainingWorkspace() {
             }],
             practiceConversation: activeMessages,
             agentContext: agentContextForAndrea,
+            workflowContext: workflowContextForAndrea,
             learnerState: {
               currentCardTitle: selectedModule.title,
               progressSummary: `Submitted practice conversation with ${activeMessages.filter(m => m.role === 'user').length} prompts for review`,
@@ -351,6 +393,10 @@ export default function TrainingWorkspace() {
             rubric,
             // Pass agent template for modules 2-3 and 2-5 for agent-specific rubrics
             ...(isAgentModule && currentAgent?.template_data ? { agentTemplate: currentAgent.template_data } : {}),
+            // Session 3: department context for role-specific evaluation
+            ...(isSession3 ? { departmentContext: { bankRole: profile?.bank_role, lineOfBusiness: profile?.line_of_business } } : {}),
+            // Module 3-3: workflow-specific rubric
+            ...(isWorkflowModule && draftWorkflow?.workflow_data ? { workflowData: draftWorkflow.workflow_data } : {}),
             learnerState: {
               currentCardTitle: selectedModule.title,
               attemptNumber: 1,
@@ -480,6 +526,17 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
     systemPrompt: currentAgent.system_prompt,
     templateData: currentAgent.template_data,
     isDeployed: currentAgent.is_deployed,
+  } : undefined;
+
+  // Build workflow context for Andrea when user is working on 3-3
+  const workflowContextForAndrea = isWorkflowModule && draftWorkflow ? {
+    name: draftWorkflow.name,
+    status: draftWorkflow.status,
+    trigger: draftWorkflow.workflow_data?.trigger || '',
+    steps: draftWorkflow.workflow_data?.steps || [],
+    finalOutput: draftWorkflow.workflow_data?.finalOutput || '',
+    stepCount: draftWorkflow.workflow_data?.steps?.filter((s: any) => s.name?.trim()).length || 0,
+    checkpointCount: draftWorkflow.workflow_data?.steps?.filter((s: any) => s.humanReview && s.name?.trim()).length || 0,
   } : undefined;
 
   const handleTrainerSubmit = async () => {
@@ -720,10 +777,10 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           onSelectModule={handleModuleSelect}
         />
 
-        {/* Middle Column - Practice Chat Area / Agent Studio */}
+        {/* Middle Column - Practice Chat Area / Agent Studio / Workflow Studio / Capstone */}
         <div className="flex-1 flex flex-col overflow-hidden" ref={contentScrollRef}>
           {/* Session 3 deployed agent banner */}
-          {isSession3 && deployedAgent && selectedModule && (
+          {isSession3 && deployedAgent && selectedModule && !isWorkflowModule && !isCapstoneModule && (
             <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 border-b border-primary/10">
               <Bot className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium text-primary">
@@ -735,9 +792,39 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
             </div>
           )}
 
+          {/* Session 3 department banner */}
+          {isSession3 && departmentLabel && selectedModule && !isWorkflowModule && !isCapstoneModule && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/5 border-b border-blue-500/10">
+              <Building2 className="h-4 w-4 text-blue-500" />
+              <span className="text-sm font-medium text-blue-600">
+                {departmentLabel}
+              </span>
+            </div>
+          )}
+
           {selectedModule && isAgentModule ? (
             <AgentStudioPanel
               module={selectedModule}
+            />
+          ) : selectedModule && isWorkflowModule ? (
+            <WorkflowStudioPanel
+              onSubmitForReview={(workflowData: WorkflowData, workflowName: string) => {
+                // Trigger a review submission via the trainer
+                handleSubmitForReview();
+              }}
+            />
+          ) : selectedModule && isCapstoneModule ? (
+            <CapstonePanel
+              capstoneData={getCapstoneData()}
+              onCapstoneUpdate={updateCapstoneData}
+              onSendPracticeMessage={handlePracticeSendMessage}
+              practiceMessages={activeMessages}
+              isPracticeLoading={isPracticeLoading}
+              onSubmitForReview={handleSubmitForReview}
+              isSubmitting={isTrainerLoading}
+              departmentLabel={departmentLabel || undefined}
+              userName={profile?.display_name || undefined}
+              bankName={profile?.employer_bank_name || undefined}
             />
           ) : selectedModule ? (
             <PracticeChatPanel
@@ -755,6 +842,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
               activeConversationId={activeConversationId}
               onNewChat={startNewChat}
               onSelectConversation={selectConversation}
+              departmentLabel={isSession3 ? (departmentLabel || undefined) : undefined}
+              lineOfBusiness={isSession3 ? (profile?.line_of_business || undefined) : undefined}
             />
           ) : null}
         </div>

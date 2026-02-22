@@ -24,6 +24,11 @@ export interface ModuleContent {
       scenario: string;
       hints: string[];
       successCriteria: string[];
+      departmentScenarios?: {
+        accounting_finance: { scenario: string; hints: string[] };
+        credit_administration: { scenario: string; hints: string[] };
+        executive_leadership: { scenario: string; hints: string[] };
+      };
     };
   };
 }
@@ -899,6 +904,20 @@ export const SESSION_3_CONTENT: SessionContent = {
             'Notes at least one compliance consideration per use case',
             'Draft prompt starters are specific enough to use immediately — not vague placeholders',
           ],
+          departmentScenarios: {
+            accounting_finance: {
+              scenario: 'As an accounting/finance professional, build 3 AI use cases specific to your department. Consider variance analysis, reconciliations, board report commentary, financial summaries, and budget preparation. For each use case: name the task, identify the audience (board, CFO, auditors, etc.), note the key compliance consideration (data accuracy, GAAP references, etc.), and write the first line of the prompt.',
+              hints: ['What financial reports do you prepare most often?', 'Who reviews your variance commentary?', 'What data accuracy checks are required?', 'Which reports go to the board vs. internal use?'],
+            },
+            credit_administration: {
+              scenario: 'As a credit professional, build 3 AI use cases specific to your department. Consider credit memos, risk assessments, annual loan reviews, borrower document analysis, and portfolio monitoring. For each use case: name the task, identify the audience (credit committee, loan officer, examiner, etc.), note the key compliance consideration (fair lending, PII protection, etc.), and write the first line of the prompt.',
+              hints: ['What credit documents do you draft or review most often?', 'Who sees the final output — committee, examiner, or borrower?', 'What PII must be protected in credit analysis?', 'Which tasks follow a repeatable template?'],
+            },
+            executive_leadership: {
+              scenario: 'As an executive/leadership professional, build 3 AI use cases specific to your role. Consider board presentations, strategic summaries, decision support memos, market analysis, and stakeholder communications. For each use case: name the task, identify the audience (board, shareholders, regulators, etc.), note the key compliance consideration (public disclosure rules, material information, etc.), and write the first line of the prompt.',
+              hints: ['What strategic documents do you prepare for the board?', 'Which communications go external vs. internal?', 'What sensitivity considerations apply to executive communications?', 'Where would consistent formatting save the most time?'],
+            },
+          },
         },
       },
     },
@@ -975,6 +994,20 @@ The Line: If the output directly commits the bank to an action, creates a custom
             'Addresses documentation — how AI assistance is recorded in work products',
             'Written in actionable language ("Check that...", "Verify that...", "Confirm that...") not abstract principles',
           ],
+          departmentScenarios: {
+            accounting_finance: {
+              scenario: 'As an accounting/finance professional, customize the 5-step Pre-Task Compliance Check for your department. Think about: financial data sensitivity (account balances, transaction details, customer financial statements), GAAP/regulatory reporting requirements, audit trail documentation, and who reviews your AI-assisted work products (CFO, auditors, board). Your checklist should be practical enough to use before every AI-assisted financial task.',
+              hints: ['What financial data types require special protection?', 'How do GAAP references need to be verified?', 'What does your audit documentation require?', 'Who signs off on AI-assisted financial reports?'],
+            },
+            credit_administration: {
+              scenario: 'As a credit professional, customize the 5-step Pre-Task Compliance Check for your department. Think about: borrower PII/NPI protection, fair lending considerations (ECOA, CRA), credit decision documentation requirements, and regulatory examination readiness. Your checklist should cover loan review documents, credit memos, and risk assessments.',
+              hints: ['What borrower data must never enter an AI prompt?', 'How do fair lending rules apply to AI-assisted analysis?', 'What credit decisions require human sign-off?', 'What would an examiner look for in your AI documentation?'],
+            },
+            executive_leadership: {
+              scenario: 'As an executive leader, customize the 5-step Pre-Task Compliance Check for your role. Think about: material non-public information handling, board communication sensitivity, strategic data protection, and public disclosure rules. Your checklist should cover board presentations, strategic memos, and stakeholder communications.',
+              hints: ['What information is material and non-public?', 'How should board-level data be handled with AI?', 'What public disclosure rules apply to your communications?', 'Who reviews AI-assisted executive communications?'],
+            },
+          },
         },
       },
     },
@@ -1067,6 +1100,20 @@ Final Output: Reviewed, compliant response letter ready to send.`,
             'Steps alternate between AI drafting and human verification — not all AI steps in sequence without review',
             'Written clearly enough for a colleague to follow without additional explanation',
           ],
+          departmentScenarios: {
+            accounting_finance: {
+              scenario: 'As an accounting/finance professional, document a complete AI workflow for a financial task you do regularly. Good candidates: monthly variance commentary for the board report, quarterly account reconciliation review, or financial statement analysis. Include the trigger (e.g., "month-end close completed"), 3-5 AI steps with human review at each checkpoint, and the final deliverable format.',
+              hints: ['What triggers your monthly/quarterly financial tasks?', 'Where does AI draft and where do you verify figures?', 'What accuracy checks are required before submission?', 'What does the final board-ready deliverable look like?'],
+            },
+            credit_administration: {
+              scenario: 'As a credit professional, document a complete AI workflow for a credit task you do regularly. Good candidates: annual loan review preparation, new loan application analysis, or credit memo drafting from unstructured borrower documents. Include the trigger (e.g., "annual review date approaching"), 3-5 AI steps with human review at each checkpoint, and the final deliverable format.',
+              hints: ['What triggers your loan review or credit analysis process?', 'Where does AI analyze and where does a human verify risk factors?', 'What compliance checks happen before committee presentation?', 'What format does the credit committee expect?'],
+            },
+            executive_leadership: {
+              scenario: 'As an executive leader, document a complete AI workflow for a strategic task you do regularly. Good candidates: board meeting preparation, strategic initiative summary, or competitive analysis brief. Include the trigger (e.g., "quarterly board meeting T-2 weeks"), 3-5 AI steps with human review at each checkpoint, and the final deliverable format.',
+              hints: ['What triggers your board or strategic preparation?', 'Where does AI draft and where do you add strategic judgment?', 'What sensitivity review happens before distribution?', 'What format does the board or C-suite expect?'],
+            },
+          },
         },
       },
     },
@@ -1148,6 +1195,20 @@ For each item, note whether it is Fully Met, Partially Met, or Missing. Then pro
             'The technique choice is justified in one sentence explaining why it fits this specific scenario',
             'The output of the prompt would be usable by a senior credit officer without major revision',
           ],
+          departmentScenarios: {
+            accounting_finance: {
+              scenario: 'Apply an advanced technique to this finance scenario: You need to draft variance commentary for a budget line item where actual expenses exceeded budget by 12%. The commentary will go to the CFO and board audit committee. Choose chain-of-thought (to show reasoning), multi-shot (to match existing commentary format), or self-review (to catch errors before the CFO sees it). Label your technique choice and explain why.',
+              hints: ['Which technique helps ensure accurate financial reasoning?', 'Would matching prior commentary format matter here?', 'Would a self-check catch calculation or framing errors?', 'What would the CFO expect from variance commentary?'],
+            },
+            credit_administration: {
+              scenario: 'Apply an advanced technique to this credit scenario: You need to draft a risk assessment for a manufacturing company seeking a $750,000 equipment loan. The assessment will go to the senior credit officer and then to the credit committee. Choose chain-of-thought (to show auditable reasoning), multi-shot (to match credit memo format), or self-review (to catch risk factor gaps). Label your technique choice and explain why.',
+              hints: ['Which technique produces auditable reasoning for examiners?', 'Does format consistency matter for credit committee review?', 'Would a self-check catch missing risk factors?', 'What level of detail does the credit committee expect?'],
+            },
+            executive_leadership: {
+              scenario: 'Apply an advanced technique to this executive scenario: You need to prepare a strategic briefing for the board on a proposed fintech partnership. The briefing must cover opportunity, risks, competitive landscape, and resource requirements. Choose chain-of-thought (to show reasoning behind recommendations), multi-shot (to match board briefing format), or self-review (to ensure balanced risk/opportunity framing). Label your technique choice and explain why.',
+              hints: ['Which technique shows clear reasoning for strategic decisions?', 'Does matching prior board briefing format matter?', 'Would a self-check ensure balanced risk/opportunity presentation?', 'What framing does your board expect for strategic proposals?'],
+            },
+          },
         },
       },
     },
