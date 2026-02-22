@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -18,13 +19,14 @@ import { useAppSettings } from '@/hooks/useAppSettings';
 import {
   Loader2, Play, CheckCircle, Sparkles, Bot,
   Building2, HelpCircle, BookOpen, Shield, Lightbulb,
-  Radio, Calendar, Users, Clock, MessageCircle, ExternalLink,
+  Radio, Calendar, Users, MessageCircle, ExternalLink,
   CalendarDays, Video, Settings, Brain, Cpu, Zap
 } from 'lucide-react';
 import { computeOverallProgress, computeSessionProgress, getModuleStates, getCompletedModuleCount, getSessionModuleTotal } from '@/utils/computeProgress';
 import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';
 import type { SessionProgressData, SkillSignal } from '@/types/progress';
 import { CompletionSummary } from '@/components/capstone/CompletionSummary';
+import { DashboardChat } from '@/components/DashboardChat';
 
 const SESSIONS = [
   {
@@ -70,6 +72,17 @@ export default function Dashboard() {
   const { agents, isLoading: agentsLoading } = useUserAgents();
 
   const communityUrl = appSettings.community_slack_url;
+
+  // Fetch org name for the header
+  const [orgName, setOrgName] = useState<string | null>(null);
+  useEffect(() => {
+    if (profile?.organization_id) {
+      (supabase.from('organizations' as any).select('name').eq('id', profile.organization_id).maybeSingle() as any)
+        .then(({ data }: any) => {
+          if (data?.name) setOrgName(data.name);
+        });
+    }
+  }, [profile?.organization_id]);
 
   // Auto-start tour for new users who haven't completed it
   useEffect(() => {
@@ -174,9 +187,9 @@ export default function Dashboard() {
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            {profile.employer_bank_name && (
+            {(orgName || profile.employer_bank_name) && (
               <p className="text-xs text-muted-foreground/70 font-medium tracking-wide uppercase">
-                {profile.employer_bank_name}
+                {orgName || profile.employer_bank_name}
               </p>
             )}
             <h1 className="text-xl font-display font-bold">AI Training Dashboard</h1>
@@ -680,6 +693,9 @@ export default function Dashboard() {
           </Card>
         </div>
       </div>
+
+      {/* Andrea Dashboard Chat */}
+      <DashboardChat profile={profile} progress={progress} />
     </div>
   );
 }

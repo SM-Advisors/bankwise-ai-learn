@@ -645,6 +645,9 @@ RESPONSE FORMAT — MANDATORY:
       );
     }
 
+    // ─── DASHBOARD MODE ───────────────────────────────────────────────
+    const isDashboardMode = lessonId === 'dashboard';
+
     // ─── COMPLIANCE PRE-PROCESSING ─────────────────────────────────────
     const latestUserMessage = messages.filter(m => m.role === "user").pop()?.content || "";
     const complianceFlag = detectComplianceIssues(latestUserMessage);
@@ -654,40 +657,75 @@ RESPONSE FORMAT — MANDATORY:
     }
 
     // ─── RAG RETRIEVAL ───────────────────────────────────────────────────
-    const ragQuery = `${learnerState?.currentCardTitle || ""} ${latestUserMessage}`.trim();
-
-    const chunks = await retrieveLessonContext(supabase, {
-      lessonId,
-      moduleId,
-      query: ragQuery,
-      topK: 6,
-    });
-
-    const policies = await retrieveBankPolicies(supabaseUrl);
-
-    // Build context section from chunks
     let contextSection = "";
-    if (chunks.length > 0) {
-      contextSection = `## RETRIEVED LESSON CONTENT
+    let policiesSection = "";
+
+    if (isDashboardMode) {
+      // Dashboard mode: skip RAG and bank policies, inject module navigation map
+      contextSection = `## MODULE NAVIGATION MAP
+You can direct learners to specific modules. Here is the complete curriculum:
+
+Session 1: AI Prompting & Personalization (8 modules)
+- Module 1-1: What is AI Prompting? (intro video, 4 min)
+- Module 1-2: Anatomy of a Good Prompt (5 elements)
+- Module 1-3: The CLEAR Framework (Context, Length, Examples, Audience, Requirements)
+- Module 1-4: Good vs Bad Prompts (side-by-side banking comparisons)
+- Module 1-5: Setting Context for Banking AI (role, task, security context)
+- Module 1-6: Data Security in Prompts (PII protection, placeholders)
+- Module 1-7: Prompt Iteration & Refinement (iterative improvement)
+- Module 1-8: Capstone (complete banking prompt exercise)
+
+Session 2: Building Your AI Agent (5 modules)
+- Module 2-1: What is an AI Agent? (agents vs one-off prompts)
+- Module 2-2: Agent Architecture (system prompts, guard rails, compliance anchors)
+- Module 2-3: Custom Instructions Template (5-section template builder)
+- Module 2-4: Tool Integration (evaluating data source connections)
+- Module 2-5: Build Your Agent Capstone (assemble + test agent)
+
+Session 3: Role-Specific Training (5 modules)
+- Module 3-1: Department AI Use Cases (role-specific prompt examples)
+- Module 3-2: Compliance & AI (3 pillars, pre-task compliance checklist)
+- Module 3-3: Workflow Examples (multi-step AI workflows for banking)
+- Module 3-4: Advanced Techniques (chain-of-thought, multi-shot, self-review)
+- Module 3-5: Capstone Project (real banking task with advanced techniques)
+
+When recommending a module, say: "Head to Session X — [title]" and briefly explain why it's relevant.
+To navigate there, they click the session card on the dashboard.`;
+      policiesSection = "";
+    } else {
+      // Normal mode: RAG retrieval + bank policies
+      const ragQuery = `${learnerState?.currentCardTitle || ""} ${latestUserMessage}`.trim();
+
+      const chunks = await retrieveLessonContext(supabase, {
+        lessonId,
+        moduleId,
+        query: ragQuery,
+        topK: 6,
+      });
+
+      const policies = await retrieveBankPolicies(supabaseUrl);
+
+      // Build context section from chunks
+      if (chunks.length > 0) {
+        contextSection = `## RETRIEVED LESSON CONTENT
 The following content chunks are from the lesson materials. Use this information to ground your responses:
 
 ${chunks.map((chunk, i) => `[Chunk ${i + 1}]${chunk.source ? ` (Source: ${chunk.source})` : ""}
 ${chunk.text}`).join("\n\n")}
 
 ---`;
-    } else {
-      contextSection = `## NO LESSON CONTENT AVAILABLE
+      } else {
+        contextSection = `## NO LESSON CONTENT AVAILABLE
 No specific lesson content was found for this module. You should:
 1. Draw on your banking AI knowledge to help the learner
 2. Be transparent: "I don't have the specific lesson content loaded, but here's what I know..."
 3. Encourage them to click on the module in the left panel to review the content
 DO NOT invent specific lesson content that doesn't exist.`;
-    }
+      }
 
-    // Build bank policies section
-    let policiesSection = "";
-    if (policies.length > 0) {
-      policiesSection = `## BANK POLICIES & GUIDELINES
+      // Build bank policies section
+      if (policies.length > 0) {
+        policiesSection = `## BANK POLICIES & GUIDELINES
 The following are the bank's official policies regarding AI usage. Reference these when relevant:
 
 ${policies.map((policy) => `### ${policy.title} (${policy.policy_type})
@@ -695,14 +733,24 @@ ${policy.summary ? `**Summary:** ${policy.summary}\n` : ""}
 ${policy.content}`).join("\n\n")}
 
 ---`;
+      }
     }
 
     // ─── BUILD FULL SYSTEM PROMPT ──────────────────────────────────────
+    const dashboardCoachingDepth = `SESSION COACHING DEPTH: Dashboard Navigator
+You are in NAVIGATOR mode. The learner is on the dashboard, not in a training module.
+- Be helpful and concise — this is a quick-help context, not a lesson
+- Direct them to specific modules when they ask about topics
+- If they ask "where should I start?", check their progress and suggest the next uncompleted module
+- If they ask about a topic, map it to the right module and explain what they'll learn there
+- Keep responses to 2-3 sentences max — they can go deeper in the actual module
+- Reference their completed modules to avoid repeating content`;
+
     const systemPrompt = `${buildAndreaPersona()}
 
 ${buildSocraticRules()}
 
-${getSessionCoachingDepth(effectiveSessionNumber)}
+${isDashboardMode ? dashboardCoachingDepth : getSessionCoachingDepth(effectiveSessionNumber)}
 
 ## RESPONSE FORMAT — CRITICAL
 You MUST respond with valid JSON in this exact format:

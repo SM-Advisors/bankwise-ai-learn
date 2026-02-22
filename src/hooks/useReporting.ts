@@ -142,10 +142,10 @@ const EXCEPTION_COLORS: Record<string, string> = {
 const SKILL_COLORS = ['#10b981', '#3b82f6', '#8b5cf6'];
 
 // ---------------------------------------------------------------------------
-// Main reporting hook (existing, unchanged)
+// Main reporting hook
 // ---------------------------------------------------------------------------
 
-export function useReporting() {
+export function useReporting(organizationId: string | null = null) {
   const [userProgress, setUserProgress] = useState<UserProgressRow[]>([]);
   const [promptStats, setPromptStats] = useState<PromptEventStats>({
     total_prompts: 0,
@@ -159,10 +159,16 @@ export function useReporting() {
     try {
       setLoading(true);
 
-      const { data: profiles } = await (supabase
+      let profilesQuery = supabase
         .from('user_profiles' as any)
         .select('user_id, display_name, bank_role, line_of_business, ai_proficiency_level')
-        .eq('onboarding_completed', true) as any);
+        .eq('onboarding_completed', true);
+
+      if (organizationId) {
+        profilesQuery = profilesQuery.eq('organization_id', organizationId);
+      }
+
+      const { data: profiles } = await (profilesQuery as any);
 
       const { data: progressData } = await (supabase
         .from('training_progress' as any)
@@ -172,6 +178,8 @@ export function useReporting() {
       (progressData || []).forEach((p: any) => {
         progressMap.set(p.user_id, p);
       });
+
+      const profileUserIds = new Set((profiles || []).map((p: any) => p.user_id));
 
       const combined: UserProgressRow[] = (profiles || []).map((profile: any) => {
         const prog = progressMap.get(profile.user_id);
@@ -190,15 +198,20 @@ export function useReporting() {
 
       const { data: events } = await (supabase
         .from('prompt_events' as any)
-        .select('event_type, session_id, exception_flag, exception_type') as any);
+        .select('event_type, session_id, exception_flag, exception_type, user_id') as any);
 
-      if (events && events.length > 0) {
-        const total_prompts = events.filter((e: any) => e.event_type === 'prompt_submitted').length;
-        const total_exceptions = events.filter((e: any) => e.exception_flag).length;
+      // Filter events to only users in the org if organizationId is set
+      const filteredEvents = organizationId
+        ? (events || []).filter((e: any) => profileUserIds.has(e.user_id))
+        : (events || []);
+
+      if (filteredEvents.length > 0) {
+        const total_prompts = filteredEvents.filter((e: any) => e.event_type === 'prompt_submitted').length;
+        const total_exceptions = filteredEvents.filter((e: any) => e.exception_flag).length;
         const by_session: Record<number, number> = {};
         const by_exception_type: Record<string, number> = {};
 
-        events.forEach((e: any) => {
+        filteredEvents.forEach((e: any) => {
           if (e.session_id) by_session[e.session_id] = (by_session[e.session_id] || 0) + 1;
           if (e.exception_flag && e.exception_type) {
             by_exception_type[e.exception_type] = (by_exception_type[e.exception_type] || 0) + 1;
@@ -206,6 +219,8 @@ export function useReporting() {
         });
 
         setPromptStats({ total_prompts, total_exceptions, by_session, by_exception_type });
+      } else {
+        setPromptStats({ total_prompts: 0, total_exceptions: 0, by_session: {}, by_exception_type: {} });
       }
     } catch (err) {
       console.error('Error fetching reporting data:', err);
@@ -214,7 +229,7 @@ export function useReporting() {
     }
   };
 
-  useEffect(() => { fetchReporting(); }, []);
+  useEffect(() => { fetchReporting(); }, [organizationId]);
   return { userProgress, promptStats, loading, refetch: fetchReporting };
 }
 
@@ -222,7 +237,7 @@ export function useReporting() {
 // C-Suite KPI hook
 // ---------------------------------------------------------------------------
 
-export function useCSuiteKPIs(): CSuiteKPIs {
+export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs {
   const [kpis, setKpis] = useState<CSuiteKPIs>({
     totalEnrolled: 0,
     enrollmentRate: 0,
@@ -249,6 +264,18 @@ export function useCSuiteKPIs(): CSuiteKPIs {
 
   const fetchKPIs = async () => {
     try {
+      // Build queries with optional org filter
+      let allProfilesQuery = supabase.from('user_profiles' as any).select('user_id');
+      let enrolledProfilesQuery = supabase
+        .from('user_profiles' as any)
+        .select('user_id, display_name, bank_role, line_of_business, ai_proficiency_level')
+        .eq('onboarding_completed', true);
+
+      if (organizationId) {
+        allProfilesQuery = allProfilesQuery.eq('organization_id', organizationId);
+        enrolledProfilesQuery = enrolledProfilesQuery.eq('organization_id', organizationId);
+      }
+
       // Fetch all base data in parallel
       const [
         { data: allProfiles },
@@ -257,11 +284,8 @@ export function useCSuiteKPIs(): CSuiteKPIs {
         { data: promptEvents },
         { data: ideasData },
       ] = await Promise.all([
-        (supabase.from('user_profiles' as any).select('user_id') as any),
-        (supabase
-          .from('user_profiles' as any)
-          .select('user_id, display_name, bank_role, line_of_business, ai_proficiency_level')
-          .eq('onboarding_completed', true) as any),
+        (allProfilesQuery as any),
+        (enrolledProfilesQuery as any),
         (supabase
           .from('training_progress' as any)
           .select('user_id, session_1_completed, session_2_completed, session_3_completed') as any),
@@ -276,8 +300,15 @@ export function useCSuiteKPIs(): CSuiteKPIs {
 
       const profiles: any[] = enrolledProfiles || [];
       const progress: any[] = progressData || [];
-      const events: any[] = promptEvents || [];
       const ideas: IdeaItem[] = (ideasData || []) as IdeaItem[];
+
+      // Build a set of user IDs in this org to filter prompt_events
+      const orgUserIds = new Set(profiles.map((p: any) => p.user_id));
+      const allOrgUserIds = new Set((allProfiles || []).map((p: any) => p.user_id));
+
+      const events: any[] = organizationId
+        ? (promptEvents || []).filter((e: any) => allOrgUserIds.has(e.user_id))
+        : (promptEvents || []);
 
       // ── Section A: Progress & Skill ────────────────────────────────────
       const totalAllUsers = (allProfiles || []).length;
@@ -470,7 +501,7 @@ export function useCSuiteKPIs(): CSuiteKPIs {
     }
   };
 
-  useEffect(() => { fetchKPIs(); }, []);
+  useEffect(() => { fetchKPIs(); }, [organizationId]);
   return kpis;
 }
 

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAllUsersWithRoles, AppRole } from '@/hooks/useUserRole';
+import { useOrganizations } from '@/hooks/useOrganizations';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,7 +31,7 @@ import {
 } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Edit, Loader2, CheckCircle, Clock, Shield } from 'lucide-react';
+import { Users, Edit, Loader2, CheckCircle, Clock, Shield, Building2 } from 'lucide-react';
 
 const LOB_LABELS: Record<string, string> = {
   accounting_finance: 'Accounting & Finance',
@@ -41,6 +42,7 @@ const LOB_LABELS: Record<string, string> = {
 export function UsersManagement() {
   const { toast } = useToast();
   const { users, loading, updateUserProfile, updateUserRole } = useAllUsersWithRoles();
+  const { organizations, loading: orgsLoading } = useOrganizations();
   const [editingUser, setEditingUser] = useState<any>(null);
   const [editForm, setEditForm] = useState({
     display_name: '',
@@ -49,6 +51,15 @@ export function UsersManagement() {
     role: 'user' as AppRole,
   });
   const [saving, setSaving] = useState(false);
+
+  // Build a map of org ID -> org name for display
+  const orgNameMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    organizations.forEach((org) => {
+      map[org.id] = org.name;
+    });
+    return map;
+  }, [organizations]);
 
   const handleEditUser = (user: any) => {
     setEditingUser(user);
@@ -91,13 +102,13 @@ export function UsersManagement() {
   const getSessionProgress = (user: any) => {
     const progress = user.progress;
     if (!progress) return { completed: 0, total: 3, percentage: 0 };
-    
+
     const completed = [
       progress.session_1_completed,
       progress.session_2_completed,
       progress.session_3_completed,
     ].filter(Boolean).length;
-    
+
     return { completed, total: 3, percentage: (completed / 3) * 100 };
   };
 
@@ -133,6 +144,7 @@ export function UsersManagement() {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Role</TableHead>
+                    <TableHead>Organization</TableHead>
                     <TableHead>Line of Business</TableHead>
                     <TableHead>Access Level</TableHead>
                     <TableHead>Progress</TableHead>
@@ -142,6 +154,9 @@ export function UsersManagement() {
                 <TableBody>
                   {users.map((user) => {
                     const sessionProgress = getSessionProgress(user);
+                    const orgName = user.organization_id
+                      ? orgNameMap[user.organization_id] || 'Unknown'
+                      : null;
                     return (
                       <TableRow key={user.id}>
                         <TableCell>
@@ -159,6 +174,16 @@ export function UsersManagement() {
                         </TableCell>
                         <TableCell>
                           <span className="text-sm">{user.bank_role || '-'}</span>
+                        </TableCell>
+                        <TableCell>
+                          {orgName ? (
+                            <Badge variant="secondary" className="gap-1 text-xs">
+                              <Building2 className="h-3 w-3" />
+                              {orgName}
+                            </Badge>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">-</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           <span className="text-sm">

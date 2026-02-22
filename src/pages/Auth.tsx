@@ -32,6 +32,7 @@ export default function Auth() {
   
   // Signup form state
   const [signupName, setSignupName] = useState('');
+  const [signupCode, setSignupCode] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
@@ -90,20 +91,25 @@ export default function Auth() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate inputs
     const nameResult = nameSchema.safeParse(signupName);
     if (!nameResult.success) {
       toast({ title: 'Error', description: nameResult.error.errors[0].message, variant: 'destructive' });
       return;
     }
-    
+
+    if (!signupCode.trim()) {
+      toast({ title: 'Error', description: 'Registration code is required', variant: 'destructive' });
+      return;
+    }
+
     const emailResult = emailSchema.safeParse(signupEmail);
     if (!emailResult.success) {
       toast({ title: 'Error', description: emailResult.error.errors[0].message, variant: 'destructive' });
       return;
     }
-    
+
     const passwordResult = passwordSchema.safeParse(signupPassword);
     if (!passwordResult.success) {
       toast({ title: 'Error', description: passwordResult.error.errors[0].message, variant: 'destructive' });
@@ -116,7 +122,29 @@ export default function Auth() {
     }
 
     setIsLoading(true);
-    const { error } = await signUp(signupEmail, signupPassword, signupName);
+
+    // Validate registration code BEFORE creating the account
+    const { data: codeResult, error: codeError } = await supabase.rpc(
+      'validate_registration_code',
+      { input_code: signupCode }
+    );
+
+    if (codeError) {
+      setIsLoading(false);
+      toast({ title: 'Error', description: 'Unable to validate registration code. Please try again.', variant: 'destructive' });
+      return;
+    }
+
+    const codeData = typeof codeResult === 'string' ? JSON.parse(codeResult) : codeResult;
+
+    if (!codeData?.valid) {
+      setIsLoading(false);
+      toast({ title: 'Invalid Code', description: codeData?.error || 'Registration code is not valid.', variant: 'destructive' });
+      return;
+    }
+
+    // Code is valid — create the account with organization assignment
+    const { error } = await signUp(signupEmail, signupPassword, signupName, codeData.organization_id);
     setIsLoading(false);
 
     if (error) {
@@ -132,7 +160,7 @@ export default function Auth() {
     } else {
       toast({
         title: 'Account Created!',
-        description: 'Welcome to SM Advisors. Let\'s set up your profile.'
+        description: `Welcome to ${codeData.organization_name}. Let's set up your profile.`
       });
       navigate('/onboarding');
     }
@@ -323,6 +351,21 @@ export default function Auth() {
                     onChange={(e) => setSignupName(e.target.value)}
                     required
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-code">Registration Code</Label>
+                  <Input
+                    id="signup-code"
+                    type="text"
+                    placeholder="Enter your organization code"
+                    value={signupCode}
+                    onChange={(e) => setSignupCode(e.target.value.toUpperCase())}
+                    className="font-mono tracking-wider"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Your organization administrator will provide this code
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>

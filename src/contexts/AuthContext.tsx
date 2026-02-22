@@ -11,6 +11,7 @@ export interface UserProfile {
   user_id: string;
   display_name: string | null;
   employer_bank_name: string | null;
+  organization_id: string | null;
   line_of_business: LineOfBusiness | null;
   bank_role: string | null;
   learning_style: LearningStyleType | null;
@@ -40,7 +41,7 @@ interface AuthContextType {
   profile: UserProfile | null;
   progress: TrainingProgress | null;
   loading: boolean;
-  signUp: (email: string, password: string, displayName: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, displayName: string, organizationId?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: Error | null }>;
@@ -86,15 +87,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data as unknown as TrainingProgress | null;
   };
 
-  const createProfile = async (userId: string, displayName: string) => {
+  const createProfile = async (userId: string, displayName: string, organizationId?: string) => {
+    const insertData: Record<string, unknown> = {
+      user_id: userId,
+      display_name: displayName,
+      onboarding_completed: false,
+      current_session: 1,
+    };
+    if (organizationId) {
+      insertData.organization_id = organizationId;
+    }
+
     const { data, error } = await supabase
       .from('user_profiles')
-      .insert({
-        user_id: userId,
-        display_name: displayName,
-        onboarding_completed: false,
-        current_session: 1,
-      })
+      .insert(insertData)
       .select()
       .single();
 
@@ -168,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, displayName: string) => {
+  const signUp = async (email: string, password: string, displayName: string, organizationId?: string) => {
     try {
       const redirectUrl = `${window.location.origin}/onboarding`;
 
@@ -182,9 +188,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error;
 
-      // Create profile for the new user
+      // Create profile for the new user (with org assignment if provided)
       if (data.user) {
-        await createProfile(data.user.id, displayName);
+        await createProfile(data.user.id, displayName, organizationId);
         await createProgress(data.user.id);
       }
 

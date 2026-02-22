@@ -6,38 +6,30 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Slider } from '@/components/ui/slider';
 import { Progress } from '@/components/ui/progress';
+import { ProficiencyAssessment } from '@/components/ProficiencyAssessment';
 import { useToast } from '@/hooks/use-toast';
 import {
-  ArrowRight, ArrowLeft, Building2, Briefcase, Brain,
-  Lightbulb, CheckCircle, User, Loader2, Landmark
+  ArrowRight, ArrowLeft, Brain,
+  Lightbulb, CheckCircle, User, Loader2
 } from 'lucide-react';
 
 const LOB_OPTIONS: { value: LineOfBusiness; label: string; description: string }[] = [
-  { 
-    value: 'accounting_finance', 
-    label: 'Accounting & Finance', 
-    description: 'Financial reporting, reconciliation, and analysis' 
+  {
+    value: 'accounting_finance',
+    label: 'Accounting & Finance',
+    description: 'Financial reporting, reconciliation, and analysis'
   },
-  { 
-    value: 'credit_administration', 
-    label: 'Credit Administration', 
-    description: 'Loan processing, credit analysis, and documentation' 
+  {
+    value: 'credit_administration',
+    label: 'Credit Administration',
+    description: 'Loan processing, credit analysis, and documentation'
   },
-  { 
-    value: 'executive_leadership', 
-    label: 'Executive & Leadership', 
-    description: 'Strategic planning and organizational management' 
+  {
+    value: 'executive_leadership',
+    label: 'Executive & Leadership',
+    description: 'Strategic planning and organizational management'
   },
-];
-
-const PROFICIENCY_LEVELS = [
-  { level: 0, label: 'True Beginner', description: 'Never used AI tools before' },
-  { level: 2, label: 'Basic', description: 'Tried ChatGPT a few times' },
-  { level: 4, label: 'Comfortable', description: 'Use AI regularly for simple tasks' },
-  { level: 6, label: 'Proficient', description: 'Create custom prompts and workflows' },
-  { level: 8, label: 'Advanced', description: 'Build agents and complex automations' },
 ];
 
 const LEARNING_STYLE_QUESTIONS = [
@@ -67,15 +59,15 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const { user, profile, updateProfile, loading } = useAuth();
   const { toast } = useToast();
-  
+
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Profile form state
   const [bankRole, setBankRole] = useState(profile?.bank_role || '');
-  const [employerBankName, setEmployerBankName] = useState(profile?.employer_bank_name || '');
   const [lineOfBusiness, setLineOfBusiness] = useState<LineOfBusiness | null>(profile?.line_of_business || null);
   const [aiProficiency, setAiProficiency] = useState(profile?.ai_proficiency_level ?? 0);
+  const [proficiencyCompleted, setProficiencyCompleted] = useState(false);
   const [learningStyle, setLearningStyle] = useState<LearningStyleType | null>(profile?.learning_style || null);
   const [techLearningStyle, setTechLearningStyle] = useState<LearningStyleType | null>(profile?.tech_learning_style || null);
 
@@ -94,7 +86,8 @@ export default function Onboarding() {
     );
   }
 
-  const totalSteps = 5;
+  // 4 steps: (1) Role + LOB, (2) AI Proficiency Assessment, (3) Learning Style, (4) Tech Learning Style
+  const totalSteps = 4;
   const progressPercent = (step / totalSteps) * 100;
 
   const handleNext = () => {
@@ -102,19 +95,20 @@ export default function Onboarding() {
       toast({ title: 'Required', description: 'Please complete all fields', variant: 'destructive' });
       return;
     }
-    if (step === 2 && !employerBankName.trim()) {
-      toast({ title: 'Required', description: 'Please enter your employer bank name', variant: 'destructive' });
+    // Step 2 (proficiency) is handled by the ProficiencyAssessment component's onComplete
+    if (step === 2 && !proficiencyCompleted) {
+      toast({ title: 'Required', description: 'Please complete the AI proficiency assessment', variant: 'destructive' });
       return;
     }
-    if (step === 4 && !learningStyle) {
+    if (step === 3 && !learningStyle) {
       toast({ title: 'Required', description: 'Please select a learning style', variant: 'destructive' });
       return;
     }
-    if (step === 5 && !techLearningStyle) {
+    if (step === 4 && !techLearningStyle) {
       toast({ title: 'Required', description: 'Please select a tech learning style', variant: 'destructive' });
       return;
     }
-    
+
     if (step < totalSteps) {
       setStep(step + 1);
     } else {
@@ -128,11 +122,17 @@ export default function Onboarding() {
     }
   };
 
+  const handleProficiencyComplete = (score: number) => {
+    setAiProficiency(score);
+    setProficiencyCompleted(true);
+    // Auto-advance to next step
+    setStep(3);
+  };
+
   const handleComplete = async () => {
     setIsSubmitting(true);
-    
+
     const { error } = await updateProfile({
-      employer_bank_name: employerBankName,
       line_of_business: lineOfBusiness,
       bank_role: bankRole,
       ai_proficiency_level: aiProficiency,
@@ -149,14 +149,6 @@ export default function Onboarding() {
       toast({ title: 'Profile Complete!', description: 'Let\'s start your training journey.' });
       navigate('/dashboard');
     }
-  };
-
-  const getProficiencyLabel = (value: number) => {
-    const level = PROFICIENCY_LEVELS.find(l => l.level === value) || 
-                  PROFICIENCY_LEVELS.reduce((prev, curr) => 
-                    Math.abs(curr.level - value) < Math.abs(prev.level - value) ? curr : prev
-                  );
-    return level;
   };
 
   return (
@@ -203,16 +195,16 @@ export default function Onboarding() {
 
                 <div className="space-y-3">
                   <Label>Line of Business</Label>
-                  <RadioGroup 
-                    value={lineOfBusiness || ''} 
+                  <RadioGroup
+                    value={lineOfBusiness || ''}
                     onValueChange={(v) => setLineOfBusiness(v as LineOfBusiness)}
                   >
                     {LOB_OPTIONS.map((option) => (
                       <div
                         key={option.value}
                         className={`relative flex items-start p-4 rounded-lg border cursor-pointer transition-all ${
-                          lineOfBusiness === option.value 
-                            ? 'border-primary bg-primary/5' 
+                          lineOfBusiness === option.value
+                            ? 'border-primary bg-primary/5'
                             : 'border-border hover:border-muted-foreground/50'
                         }`}
                         onClick={() => setLineOfBusiness(option.value)}
@@ -232,97 +224,28 @@ export default function Onboarding() {
             </>
           )}
 
-          {/* Step 2: Employer Bank */}
+          {/* Step 2: AI Proficiency Assessment (self-contained component) */}
           {step === 2 && (
-            <>
-              <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Landmark className="h-5 w-5 text-primary" />
-                  </div>
-                  <CardTitle>Your Bank</CardTitle>
-                </div>
-                <CardDescription>
-                  Enter the name of your employer bank. This helps us customize content and policies for your institution.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="employer-bank">Employer Bank Name</Label>
-                  <Input
-                    id="employer-bank"
-                    placeholder="e.g., First National Bank, Community Trust Bank"
-                    value={employerBankName}
-                    onChange={(e) => setEmployerBankName(e.target.value)}
-                  />
-                </div>
-              </CardContent>
-            </>
-          )}
-
-          {/* Step 3: AI Proficiency */}
-          {step === 3 && (
             <>
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="p-2 rounded-lg bg-accent/10">
                     <Brain className="h-5 w-5 text-accent" />
                   </div>
-                  <CardTitle>AI Experience Level</CardTitle>
+                  <CardTitle>AI Experience Assessment</CardTitle>
                 </div>
                 <CardDescription>
-                  Help us understand your current comfort level with AI tools.
-                  This adjusts the complexity of your learning path.
+                  Answer a few quick scenarios so Andrea can calibrate your training — there are no wrong answers.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-8">
-                <div className="space-y-6">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-primary mb-2">{aiProficiency}</div>
-                    <div className="text-lg font-medium">{getProficiencyLabel(aiProficiency).label}</div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {getProficiencyLabel(aiProficiency).description}
-                    </p>
-                  </div>
-                  
-                  <Slider
-                    value={[aiProficiency]}
-                    onValueChange={(value) => setAiProficiency(value[0])}
-                    max={8}
-                    step={1}
-                    className="w-full"
-                  />
-                  
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Beginner</span>
-                    <span>Advanced</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-5 gap-2">
-                  {PROFICIENCY_LEVELS.map((level) => (
-                    <button
-                      key={level.level}
-                      onClick={() => setAiProficiency(level.level)}
-                      className={`p-3 rounded-lg border text-center transition-all ${
-                        aiProficiency === level.level
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-muted-foreground/50'
-                      }`}
-                    >
-                      <div className="text-lg font-bold">{level.level}</div>
-                      <div className="text-[10px] text-muted-foreground leading-tight">
-                        {level.label}
-                      </div>
-                    </button>
-                  ))}
-                </div>
+              <CardContent>
+                <ProficiencyAssessment onComplete={handleProficiencyComplete} />
               </CardContent>
             </>
           )}
 
-          {/* Step 4: General Learning Style */}
-          {step === 4 && (
+          {/* Step 3: General Learning Style */}
+          {step === 3 && (
             <>
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
@@ -336,8 +259,8 @@ export default function Onboarding() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <RadioGroup 
-                  value={learningStyle || ''} 
+                <RadioGroup
+                  value={learningStyle || ''}
                   onValueChange={(v) => setLearningStyle(v as LearningStyleType)}
                   className="space-y-3"
                 >
@@ -345,8 +268,8 @@ export default function Onboarding() {
                     <div
                       key={option.value}
                       className={`relative flex items-start p-4 rounded-lg border cursor-pointer transition-all ${
-                        learningStyle === option.value 
-                          ? 'border-primary bg-primary/5' 
+                        learningStyle === option.value
+                          ? 'border-primary bg-primary/5'
                           : 'border-border hover:border-muted-foreground/50'
                       }`}
                       onClick={() => setLearningStyle(option.value)}
@@ -365,8 +288,8 @@ export default function Onboarding() {
             </>
           )}
 
-          {/* Step 5: Tech Learning Style */}
-          {step === 5 && (
+          {/* Step 4: Tech Learning Style */}
+          {step === 4 && (
             <>
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
@@ -380,8 +303,8 @@ export default function Onboarding() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <RadioGroup 
-                  value={techLearningStyle || ''} 
+                <RadioGroup
+                  value={techLearningStyle || ''}
                   onValueChange={(v) => setTechLearningStyle(v as LearningStyleType)}
                   className="space-y-3"
                 >
@@ -389,8 +312,8 @@ export default function Onboarding() {
                     <div
                       key={option.value}
                       className={`relative flex items-start p-4 rounded-lg border cursor-pointer transition-all ${
-                        techLearningStyle === option.value 
-                          ? 'border-primary bg-primary/5' 
+                        techLearningStyle === option.value
+                          ? 'border-primary bg-primary/5'
                           : 'border-border hover:border-muted-foreground/50'
                       }`}
                       onClick={() => setTechLearningStyle(option.value)}
@@ -409,34 +332,36 @@ export default function Onboarding() {
             </>
           )}
 
-          {/* Navigation */}
-          <div className="flex items-center justify-between p-6 pt-0">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              disabled={step === 1}
-              className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
+          {/* Navigation — hidden on Step 2 (proficiency assessment has its own nav) */}
+          {step !== 2 && (
+            <div className="flex items-center justify-between p-6 pt-0">
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                disabled={step === 1}
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Button>
 
-            <Button onClick={handleNext} disabled={isSubmitting} className="gap-2">
-              {isSubmitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : step === totalSteps ? (
-                <>
-                  Complete Setup
-                  <CheckCircle className="h-4 w-4" />
-                </>
-              ) : (
-                <>
-                  Next
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </div>
+              <Button onClick={handleNext} disabled={isSubmitting} className="gap-2">
+                {isSubmitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : step === totalSteps ? (
+                  <>
+                    Complete Setup
+                    <CheckCircle className="h-4 w-4" />
+                  </>
+                ) : (
+                  <>
+                    Next
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </Card>
       </div>
     </div>

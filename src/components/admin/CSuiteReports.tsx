@@ -1,7 +1,16 @@
+import { useState } from 'react';
 import { useCSuiteKPIs, LOB_LABELS, type IdeaItem } from '@/hooks/useReporting';
+import { useOrganizations } from '@/hooks/useOrganizations';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Users, TrendingUp, AlertTriangle, Lightbulb, Activity,
   BarChart3, ShieldAlert, Loader2, Award, Building2,
@@ -33,7 +42,7 @@ const ROI_BADGE: Record<string, { className: string; label: string }> = {
 };
 
 // ---------------------------------------------------------------------------
-// KPI Card — board-level stat card
+// KPI Card -- board-level stat card
 // ---------------------------------------------------------------------------
 function KPICard({
   icon: Icon,
@@ -77,9 +86,11 @@ function KPICard({
 // Main Component
 // ---------------------------------------------------------------------------
 export function CSuiteReports() {
-  const kpis = useCSuiteKPIs();
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+  const { organizations, loading: orgsLoading } = useOrganizations();
+  const kpis = useCSuiteKPIs(selectedOrgId);
 
-  if (kpis.loading) {
+  if (kpis.loading && orgsLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -90,9 +101,30 @@ export function CSuiteReports() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-display font-bold text-foreground">C-Suite Executive Dashboard</h2>
-        <p className="text-muted-foreground mt-1">AI Enablement program performance, compliance, and innovation metrics</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-display font-bold text-foreground">C-Suite Executive Dashboard</h2>
+          <p className="text-muted-foreground mt-1">AI Enablement program performance, compliance, and innovation metrics</p>
+        </div>
+
+        {/* Organization filter */}
+        <div className="flex items-center gap-2">
+          <Building2 className="h-4 w-4 text-muted-foreground" />
+          <Select
+            value={selectedOrgId ?? 'all'}
+            onValueChange={(value) => setSelectedOrgId(value === 'all' ? null : value)}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="All Organizations" />
+            </SelectTrigger>
+            <SelectContent className="bg-card">
+              <SelectItem value="all">All Organizations</SelectItem>
+              {organizations.map((org) => (
+                <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <Tabs defaultValue="progress" className="space-y-6">

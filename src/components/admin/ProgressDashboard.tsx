@@ -1,9 +1,17 @@
 import { useState, useMemo } from 'react';
 import { useReporting, type UserProgressRow } from '@/hooks/useReporting';
+import { useOrganizations } from '@/hooks/useOrganizations';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Users, TrendingUp, AlertTriangle, BarChart3 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Loader2, Users, TrendingUp, AlertTriangle, BarChart3, Building2 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -18,7 +26,9 @@ const LOB_LABELS: Record<string, string> = {
 };
 
 export function ProgressDashboard() {
-  const { userProgress, promptStats, loading } = useReporting();
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+  const { organizations, loading: orgsLoading } = useOrganizations();
+  const { userProgress, promptStats, loading } = useReporting(selectedOrgId);
   const [lobFilter, setLobFilter] = useState<string | null>(null);
 
   const filteredProgress = useMemo(() => {
@@ -26,7 +36,7 @@ export function ProgressDashboard() {
     return userProgress.filter((u) => u.line_of_business === lobFilter);
   }, [userProgress, lobFilter]);
 
-  if (loading) {
+  if (loading && orgsLoading) {
     return (
       <div className="flex items-center justify-center py-16">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -83,25 +93,47 @@ export function ProgressDashboard() {
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-muted-foreground">Filter by LOB:</span>
-        <Button
-          variant={lobFilter === null ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setLobFilter(null)}
-        >
-          All
-        </Button>
-        {uniqueLobs.map((lob) => (
-          <Button
-            key={lob}
-            variant={lobFilter === lob ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setLobFilter(lob!)}
+      <div className="flex flex-wrap items-center gap-4">
+        {/* Organization filter */}
+        <div className="flex items-center gap-2">
+          <Building2 className="h-4 w-4 text-muted-foreground" />
+          <Select
+            value={selectedOrgId ?? 'all'}
+            onValueChange={(value) => setSelectedOrgId(value === 'all' ? null : value)}
           >
-            {LOB_LABELS[lob!] || lob}
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="All Organizations" />
+            </SelectTrigger>
+            <SelectContent className="bg-card">
+              <SelectItem value="all">All Organizations</SelectItem>
+              {organizations.map((org) => (
+                <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* LOB filter */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">Filter by LOB:</span>
+          <Button
+            variant={lobFilter === null ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setLobFilter(null)}
+          >
+            All
           </Button>
-        ))}
+          {uniqueLobs.map((lob) => (
+            <Button
+              key={lob}
+              variant={lobFilter === lob ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setLobFilter(lob!)}
+            >
+              {LOB_LABELS[lob!] || lob}
+            </Button>
+          ))}
+        </div>
       </div>
 
       {/* Summary Cards */}

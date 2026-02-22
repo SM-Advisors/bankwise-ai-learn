@@ -22,6 +22,7 @@ import { UsersManagement } from '@/components/UsersManagement';
 import { ProgressDashboard } from '@/components/admin/ProgressDashboard';
 import { IdeasInbox } from '@/components/admin/IdeasInbox';
 import { CSuiteReports } from '@/components/admin/CSuiteReports';
+import { OrganizationsManager } from '@/components/admin/OrganizationsManager';
 import { learningStyles } from '@/data/learningStyles';
 import { departments } from '@/data/topics';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
@@ -540,10 +541,14 @@ export default function AdminDashboard() {
       </div>
 
       <Tabs defaultValue="users" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-12 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-13 lg:w-auto lg:inline-grid">
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Users</span>
+          </TabsTrigger>
+          <TabsTrigger value="orgs" className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Orgs</span>
           </TabsTrigger>
           <TabsTrigger value="csuite" className="flex items-center gap-2">
             <PieChartIcon className="h-4 w-4" />
@@ -594,6 +599,11 @@ export default function AdminDashboard() {
         {/* Users Management Tab */}
         <TabsContent value="users" className="space-y-6">
           <UsersManagement />
+        </TabsContent>
+
+        {/* Organizations Management Tab */}
+        <TabsContent value="orgs" className="space-y-6">
+          <OrganizationsManager />
         </TabsContent>
 
         {/* C-Suite Reports Tab */}
