@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCommunityTopics } from '@/hooks/useCommunityTopics';
+import { useCommunityTopics, type TopicCategory } from '@/hooks/useCommunityTopics';
 import { useCommunityReplies } from '@/hooks/useCommunityReplies';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,7 @@ import { Separator } from '@/components/ui/separator';
 import {
   Users, Plus, Loader2, Trash2, MessageCircle, Clock,
   ArrowLeft, Link2, Paperclip, ExternalLink,
+  Lightbulb, AlertCircle, Bot, GitBranch, LayoutGrid,
 } from 'lucide-react';
 
 // ─── Helpers ──────────────────────────────────────────
@@ -193,13 +194,18 @@ export function CommunityFeed() {
   const { toast } = useToast();
 
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<TopicCategory | 'all'>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newBody, setNewBody] = useState('');
+  const [newCategory, setNewCategory] = useState<TopicCategory>('discussion');
   const [newLinks, setNewLinks] = useState<string[]>([]);
   const [posting, setPosting] = useState(false);
 
   const selectedTopic = topics.find((t) => t.id === selectedTopicId) || null;
+  const filteredTopics = categoryFilter === 'all'
+    ? topics
+    : topics.filter((t) => (t.category || 'discussion') === categoryFilter);
 
   const handleCreateTopic = async () => {
     if (!newTitle.trim()) {
@@ -212,13 +218,14 @@ export function CommunityFeed() {
     }
     setPosting(true);
     const bodyWithAttachments = encodeAttachments(newBody.trim(), newLinks);
-    const result = await createTopic(newTitle.trim(), bodyWithAttachments);
+    const result = await createTopic(newTitle.trim(), bodyWithAttachments, newCategory);
     setPosting(false);
     if (result.success) {
       toast({ title: 'Topic posted' });
       setDialogOpen(false);
       setNewTitle('');
       setNewBody('');
+      setNewCategory('discussion');
       setNewLinks([]);
     } else {
       toast({ title: result.error || 'Failed to post topic', variant: 'destructive' });
@@ -262,21 +269,39 @@ export function CommunityFeed() {
     );
   }
 
+  // ─── Category filter config ───────────────────────────
+  const CATEGORY_FILTERS: { value: TopicCategory | 'all'; label: string; icon: React.ReactNode }[] = [
+    { value: 'all', label: 'All', icon: <LayoutGrid className="h-3 w-3" /> },
+    { value: 'discussion', label: 'Discussion', icon: <Users className="h-3 w-3" /> },
+    { value: 'idea', label: 'Ideas', icon: <Lightbulb className="h-3 w-3" /> },
+    { value: 'friction_point', label: 'Friction', icon: <AlertCircle className="h-3 w-3" /> },
+    { value: 'shared_agent', label: 'Agents', icon: <Bot className="h-3 w-3" /> },
+    { value: 'shared_workflow', label: 'Workflows', icon: <GitBranch className="h-3 w-3" /> },
+  ];
+
+  const CATEGORY_BADGE: Record<TopicCategory, { label: string; className: string }> = {
+    discussion: { label: 'Discussion', className: 'bg-slate-500/10 text-slate-600 dark:text-slate-400' },
+    idea: { label: 'Idea', className: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400' },
+    friction_point: { label: 'Friction Point', className: 'bg-orange-500/10 text-orange-700 dark:text-orange-400' },
+    shared_agent: { label: 'Shared Agent', className: 'bg-blue-500/10 text-blue-700 dark:text-blue-400' },
+    shared_workflow: { label: 'Shared Workflow', className: 'bg-purple-500/10 text-purple-700 dark:text-purple-400' },
+  };
+
   // ─── Topics List ─────────────────────────────────
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <p className="text-xs text-muted-foreground">
-          {topics.length === 0
-            ? 'Start a conversation!'
-            : `${topics.length} topic${topics.length === 1 ? '' : 's'}`}
+          {topicsLoading ? '' : filteredTopics.length === 0
+            ? 'No topics in this category'
+            : `${filteredTopics.length} topic${filteredTopics.length === 1 ? '' : 's'}`}
         </p>
         <Dialog
           open={dialogOpen}
           onOpenChange={(open) => {
             setDialogOpen(open);
-            if (!open) { setNewTitle(''); setNewBody(''); setNewLinks([]); }
+            if (!open) { setNewTitle(''); setNewBody(''); setNewCategory('discussion'); setNewLinks([]); }
           }}
         >
           <DialogTrigger asChild>
@@ -293,6 +318,24 @@ export function CommunityFeed() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-2">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Category</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {(['discussion', 'idea', 'friction_point'] as TopicCategory[]).map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setNewCategory(cat)}
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                        newCategory === cat
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'border-border text-muted-foreground hover:border-primary/50'
+                      }`}
+                    >
+                      {CATEGORY_BADGE[cat].label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div>
                 <label className="text-sm font-medium mb-1.5 block">Title</label>
                 <Input
@@ -322,7 +365,7 @@ export function CommunityFeed() {
             <DialogFooter>
               <Button
                 variant="outline"
-                onClick={() => { setDialogOpen(false); setNewTitle(''); setNewBody(''); setNewLinks([]); }}
+                onClick={() => { setDialogOpen(false); setNewTitle(''); setNewBody(''); setNewCategory('discussion'); setNewLinks([]); }}
               >
                 Cancel
               </Button>
@@ -335,16 +378,36 @@ export function CommunityFeed() {
         </Dialog>
       </div>
 
+      {/* Category filter tabs */}
+      <div className="flex items-center gap-1 flex-wrap mb-2">
+        {CATEGORY_FILTERS.map((f) => (
+          <button
+            key={f.value}
+            onClick={() => setCategoryFilter(f.value)}
+            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
+              categoryFilter === f.value
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
+            }`}
+          >
+            {f.icon}
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       {/* Feed */}
       <ScrollArea className="flex-1 -mx-1 px-1" style={{ maxHeight: '320px' }}>
         {topicsLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
-        ) : topics.length === 0 ? (
+        ) : filteredTopics.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Users className="h-8 w-8 text-muted-foreground/30 mb-2" />
-            <p className="text-sm text-muted-foreground mb-2">No topics yet</p>
+            <p className="text-sm text-muted-foreground mb-2">
+              {categoryFilter === 'all' ? 'No topics yet' : `No ${CATEGORY_BADGE[categoryFilter as TopicCategory]?.label ?? categoryFilter} topics yet`}
+            </p>
             <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => setDialogOpen(true)}>
               <Plus className="h-3.5 w-3.5" />
               Start a Discussion
@@ -352,8 +415,9 @@ export function CommunityFeed() {
           </div>
         ) : (
           <div className="space-y-2">
-            {topics.map((topic) => {
+            {filteredTopics.map((topic) => {
               const { text: bodyText, attachments } = parseBodyAndAttachments(topic.body);
+              const catBadge = CATEGORY_BADGE[topic.category || 'discussion'];
               return (
                 <div
                   key={topic.id}
@@ -377,11 +441,16 @@ export function CommunityFeed() {
                           {attachments.length} attachment{attachments.length > 1 ? 's' : ''}
                         </div>
                       )}
-                      <div className="flex items-center gap-2 mt-1.5 text-[10px] text-muted-foreground">
+                      <div className="flex items-center gap-2 mt-1.5 text-[10px] text-muted-foreground flex-wrap">
                         <span className="font-medium text-foreground">{topic.author_name}</span>
                         <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
                           {formatRoleBadge(topic.author_role)}
                         </Badge>
+                        {catBadge && (
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${catBadge.className}`}>
+                            {catBadge.label}
+                          </span>
+                        )}
                         <span className="flex items-center gap-0.5">
                           <MessageCircle className="h-2.5 w-2.5" />
                           {topic.reply_count}

@@ -759,7 +759,8 @@ You MUST respond with valid JSON in this exact format:
   "suggestedPrompts": ["Follow-up 1", "Follow-up 2"],
   "coachingAction": "socratic|explain|review|celebrate|redirect",
   "hintAvailable": true/false,
-  "memorySuggestion": { "content": "Concise insight to remember", "reason": "Why this is worth saving" }
+  "memorySuggestion": { "content": "Concise insight to remember", "reason": "Why this is worth saving" },
+  "shareSuggestion": { "type": "idea|friction_point|agent|workflow", "summary": "1-sentence description of what to share", "destinations": ["community", "my_ideas", "executive"] }
 }
 
 FIELD DEFINITIONS:
@@ -779,6 +780,13 @@ FIELD DEFINITIONS:
   - Grasps a key concept worth reinforcing later
   - Completes a strong practice conversation (after review)
   The "content" should be concise (1 sentence) and written as a fact about the learner, e.g. "Prefers structured prompts with role + task + context format" or "Learned that specificity in prompts dramatically improves AI output quality". The "reason" is a short note for the learner explaining why this is worth saving (shown in the UI). Omit this field entirely when there's nothing noteworthy to save.
+- "shareSuggestion" (OPTIONAL — include RARELY, only when genuinely noteworthy, not on every message): Suggest sharing when:
+  - The learner explicitly asks to share something ("share this", "post this to the community", "send this to the Chief AI Officer")
+  - The learner describes a painful or widespread friction point that colleagues would benefit from hearing about
+  - The learner has a genuinely novel AI use case idea worth broadcasting to the organization
+  - The learner has deployed a working agent or workflow that could help others
+  - DO NOT suggest sharing for routine practice tasks, generic insights, or minor observations
+  Fields: "type" (idea|friction_point|agent|workflow), "summary" (1 sentence describing what would be shared, written as a title-like description), "destinations" (array of applicable destinations from: "community", "my_ideas", "executive" — include "executive" only for high-impact ideas or when user requests it). Omit this field entirely when there is nothing genuinely worth sharing.
 
 ${complianceCoachingBlock ? `## COMPLIANCE COACHING REQUIRED\n${complianceCoachingBlock}\n\n---\n` : ""}
 
@@ -970,12 +978,20 @@ function parseAndreaResponse(rawText: string): {
   confidenceNote?: string;
   complianceFlag?: ComplianceFlag;
   memorySuggestion?: { content: string; reason: string };
+  shareSuggestion?: { type: string; summary: string; destinations: string[] };
 } {
   const defaults = {
     reply: "I'm here to help with your training. What would you like to work on?",
     suggestedPrompts: [] as string[],
     coachingAction: "explain",
     hintAvailable: false,
+  };
+
+  const extractShareSuggestion = (parsed: Record<string, unknown>) => {
+    const s = parsed.shareSuggestion as Record<string, unknown> | undefined;
+    if (!s || typeof s !== "object") return {};
+    if (!s.type || !s.summary || !Array.isArray(s.destinations)) return {};
+    return { shareSuggestion: { type: s.type as string, summary: s.summary as string, destinations: s.destinations as string[] } };
   };
 
   try {
@@ -987,6 +1003,7 @@ function parseAndreaResponse(rawText: string): {
       hintAvailable: !!parsed.hintAvailable,
       ...(parsed.confidenceNote ? { confidenceNote: parsed.confidenceNote } : {}),
       ...(parsed.memorySuggestion ? { memorySuggestion: parsed.memorySuggestion } : {}),
+      ...extractShareSuggestion(parsed),
     };
   } catch {
     // Try to extract JSON from the response
@@ -1001,6 +1018,7 @@ function parseAndreaResponse(rawText: string): {
           hintAvailable: !!parsed.hintAvailable,
           ...(parsed.confidenceNote ? { confidenceNote: parsed.confidenceNote } : {}),
           ...(parsed.memorySuggestion ? { memorySuggestion: parsed.memorySuggestion } : {}),
+          ...extractShareSuggestion(parsed),
         };
       } catch {
         return { ...defaults, reply: rawText };

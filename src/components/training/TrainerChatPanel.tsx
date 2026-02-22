@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark, Lightbulb, AlertTriangle, ArrowRight, CheckCircle2, ChevronDown, Target, Wrench, Zap } from 'lucide-react';
+import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark, Lightbulb, AlertTriangle, ArrowRight, CheckCircle2, ChevronDown, Target, Wrench, Zap, Share2 } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { type Message } from '@/types/training';
+import { ShareDialog } from '@/components/ShareDialog';
 
 interface TrainerChatPanelProps {
   collapsed: boolean;
@@ -138,6 +139,11 @@ export function TrainerChatPanel({
   const [savedIndex, setSavedIndex] = useState<number | null>(null);
   const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<number>>(new Set());
   const [savedSuggestions, setSavedSuggestions] = useState<Set<number>>(new Set());
+  const [dismissedShareSuggestions, setDismissedShareSuggestions] = useState<Set<number>>(new Set());
+  const [shareDialogState, setShareDialogState] = useState<{
+    open: boolean;
+    suggestion: NonNullable<Message['shareSuggestion']> | null;
+  }>({ open: false, suggestion: null });
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -183,6 +189,7 @@ export function TrainerChatPanel({
   };
 
   return (
+  <>
     <aside
       className={`border-l bg-card transition-all duration-300 flex flex-col ${collapsed ? 'w-12' : 'w-full md:w-96'}`}
       aria-label="AI Training Coach panel"
@@ -317,6 +324,34 @@ export function TrainerChatPanel({
                     <div className="ml-2 p-2 rounded-lg border border-green-500/20 bg-green-500/5 flex items-center gap-2">
                       <Check className="h-3.5 w-3.5 text-green-500 shrink-0" />
                       <p className="text-[10px] text-green-700 dark:text-green-400 font-medium">Saved to memories</p>
+                    </div>
+                  )}
+
+                  {/* Share suggestion card */}
+                  {message.shareSuggestion && !dismissedShareSuggestions.has(idx) && (
+                    <div className="ml-2 p-2.5 rounded-lg border border-blue-500/30 bg-blue-500/5 flex items-start gap-2">
+                      <Share2 className="h-3.5 w-3.5 text-blue-500 shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-foreground leading-snug">{message.shareSuggestion.summary}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          Andrea thinks this is worth sharing{message.shareSuggestion.destinations.includes('executive') ? ' — including to leadership' : ''}.
+                        </p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <button
+                            onClick={() => setShareDialogState({ open: true, suggestion: message.shareSuggestion! })}
+                            className="text-[10px] font-medium text-blue-600 dark:text-blue-400 hover:opacity-80 transition-opacity"
+                          >
+                            Share this
+                          </button>
+                          <span className="text-muted-foreground/30">|</span>
+                          <button
+                            onClick={() => setDismissedShareSuggestions(prev => new Set(prev).add(idx))}
+                            className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            Dismiss
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -478,5 +513,19 @@ export function TrainerChatPanel({
         </>
       )}
     </aside>
+
+    {/* ShareDialog — rendered outside aside to avoid z-index clipping */}
+    {shareDialogState.open && shareDialogState.suggestion && (
+      <ShareDialog
+        open={shareDialogState.open}
+        onOpenChange={(open) => setShareDialogState(s => ({ ...s, open }))}
+        initialType={shareDialogState.suggestion.type}
+        initialTitle={shareDialogState.suggestion.summary}
+        initialBody=""
+        initialDestinations={shareDialogState.suggestion.destinations}
+        sourceType="andrea_suggested"
+      />
+    )}
+  </>
   );
 }

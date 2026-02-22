@@ -24,6 +24,7 @@ import { IdeasInbox } from '@/components/admin/IdeasInbox';
 import { CSuiteReports } from '@/components/admin/CSuiteReports';
 import { OrganizationsManager } from '@/components/admin/OrganizationsManager';
 import { DepartmentsManager } from '@/components/admin/DepartmentsManager';
+import { ExecutiveSubmissions } from '@/components/admin/ExecutiveSubmissions';
 import { learningStyles } from '@/data/learningStyles';
 import { departments } from '@/data/topics';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
@@ -564,6 +565,10 @@ export default function AdminDashboard() {
               <Lightbulb className="h-3.5 w-3.5" />
               Ideas
             </TabsTrigger>
+            <TabsTrigger value="submissions" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
+              <Building2 className="h-3.5 w-3.5" />
+              Submissions
+            </TabsTrigger>
             <TabsTrigger value="events" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
               <CalendarDays className="h-3.5 w-3.5" />
               Events
@@ -622,6 +627,24 @@ export default function AdminDashboard() {
         {/* Ideas Inbox Tab */}
         <TabsContent value="ideas" className="space-y-6">
           <IdeasInbox />
+        </TabsContent>
+
+        {/* Executive Submissions Tab */}
+        <TabsContent value="submissions" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-primary" />
+                Executive Submissions
+              </CardTitle>
+              <CardDescription>
+                Review and manage ideas, friction points, and shared agents submitted to leadership
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ExecutiveSubmissions />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Events Management Tab */}

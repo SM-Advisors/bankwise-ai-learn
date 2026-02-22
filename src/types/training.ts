@@ -18,6 +18,11 @@ export interface Message {
     content: string;
     reason: string;
   };
+  shareSuggestion?: {
+    type: 'idea' | 'friction_point' | 'agent' | 'workflow';
+    summary: string;
+    destinations: ('community' | 'my_ideas' | 'executive')[];
+  };
   structuredFeedback?: {
     summary: string;
     strengths: string[];

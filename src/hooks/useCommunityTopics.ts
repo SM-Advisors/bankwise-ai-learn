@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
+export type TopicCategory = 'discussion' | 'idea' | 'friction_point' | 'shared_agent' | 'shared_workflow';
+
 export interface CommunityTopic {
   id: string;
   user_id: string;
@@ -10,6 +12,10 @@ export interface CommunityTopic {
   title: string;
   body: string;
   reply_count: number;
+  category: TopicCategory;
+  source_type: string;
+  linked_content_id: string | null;
+  linked_content_type: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -43,7 +49,7 @@ export function useCommunityTopics() {
     fetchTopics();
   }, []);
 
-  const createTopic = async (title: string, body: string) => {
+  const createTopic = async (title: string, body: string, category: TopicCategory = 'discussion') => {
     if (!user) return { success: false, error: 'Not authenticated' };
     try {
       const firstName = (profile?.display_name || 'Anonymous').split(' ')[0];
@@ -57,6 +63,7 @@ export function useCommunityTopics() {
           author_role: role,
           title,
           body,
+          category,
         }) as any);
 
       if (insertError) throw insertError;
