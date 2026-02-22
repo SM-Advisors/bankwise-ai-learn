@@ -1,10 +1,9 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+﻿import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getCorsHeaders } from "../_shared/cors.ts";
+import { checkRateLimit } from "../_shared/rateLimiter.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+
 
 interface SubmissionReviewRequest {
   lessonId: string;
@@ -236,6 +235,7 @@ async function retrieveBankPolicies(supabaseUrl: string): Promise<BankPolicy[]> 
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req.headers.get("origin"));
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -277,6 +277,20 @@ serve(async (req) => {
 
     if (!userId && bodyUserId) {
       userId = bodyUserId;
+    }
+
+    // Rate limiting
+    if (userId) {
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (supabaseServiceKey) {
+        const rateCheck = await checkRateLimit(supabaseUrl, supabaseServiceKey, userId, "submission_review");
+        if (!rateCheck.allowed) {
+          return new Response(
+            JSON.stringify({ error: rateCheck.reason }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
     }
 
     // Fetch learning style and AI proficiency from user_profiles
@@ -505,6 +519,24 @@ ${learnerState?.attemptNumber ? `- Attempt #${learnerState.attemptNumber}` : ""}
           next_steps: ["Review the lesson content and try again"],
         },
       };
+    }
+
+    // Persist rubric score to DB (fire-and-forget, non-blocking)
+    if (userId) {
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (serviceKey) {
+        createClient(supabaseUrl, serviceKey)
+          .from("submission_scores")
+          .insert({
+            user_id: userId,
+            session_id: lessonId || "unknown",
+            module_id: moduleId || null,
+            attempt_number: (learnerState as any)?.attemptNumber || 1,
+            scores: feedbackData.feedback,
+            summary: feedbackData.feedback.summary || "",
+          })
+          .then(() => {});
+      }
     }
 
     return new Response(

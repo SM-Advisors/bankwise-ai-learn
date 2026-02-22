@@ -211,6 +211,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error;
 
+      // Check if user is deactivated
+      if (data?.user) {
+        const { data: profileCheck } = await supabase
+          .from('user_profiles')
+          .select('is_active')
+          .eq('user_id', data.user.id)
+          .maybeSingle();
+        if (profileCheck?.is_active === false) {
+          await supabase.auth.signOut();
+          return { error: new Error('Your account has been deactivated. Please contact your administrator.') };
+        }
+      }
+
       // Update last_login_at
       if (data.user) {
         await supabase

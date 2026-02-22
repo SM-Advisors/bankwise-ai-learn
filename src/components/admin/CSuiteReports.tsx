@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select';
 import {
   Users, TrendingUp, AlertTriangle, Lightbulb, Activity,
-  BarChart3, ShieldAlert, Loader2, Award, Building2,
+  BarChart3, ShieldAlert, Loader2, Award, Building2, Download,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -90,6 +90,46 @@ export function CSuiteReports() {
   const { organizations, loading: orgsLoading } = useOrganizations();
   const kpis = useCSuiteKPIs(selectedOrgId);
 
+  const handleExportCSV = () => {
+    if (!kpis) return;
+    const lines: string[] = [];
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+
+    lines.push(`SMILE AI Training Report — ${date}`);
+    lines.push('');
+    lines.push('PROGRAM OVERVIEW');
+    lines.push('"Metric","Value"');
+    lines.push(`"Total Enrolled","${kpis.totalEnrolled ?? 0}"`);
+    lines.push(`"Fully Completed","${kpis.fullyCompleted ?? 0}"`);
+    lines.push(`"In Progress","${(kpis.totalEnrolled ?? 0) - (kpis.fullyCompleted ?? 0)}"`);
+    lines.push(`"Completion Rate","${kpis.completionRate ?? 0}%"`);
+    lines.push(`"Avg AI Proficiency Level","${kpis.avgProficiency ?? 0}"`);
+    lines.push('');
+    lines.push('COMPLIANCE');
+    lines.push('"Exception Type","Count"');
+    (kpis.exceptionTypes || []).forEach((item) => {
+      lines.push(`"${item.label || item.type || ''}","${item.count ?? 0}"`);
+    });
+    lines.push('');
+    lines.push(`"Total Exceptions","${kpis.totalExceptions ?? 0}"`);
+    lines.push(`"Exception Rate","${kpis.exceptionRate ?? 0}%"`);
+    lines.push('');
+    lines.push('DEPARTMENT BREAKDOWN');
+    lines.push('"Department","Users","S1","S2","S3","Avg Level"');
+    (kpis.departmentBreakdowns || []).forEach((item) => {
+      lines.push(`"${item.label || item.department || ''}","${item.total ?? 0}","${item.s1 ?? 0}","${item.s2 ?? 0}","${item.s3 ?? 0}","${item.avgProficiency ?? 0}"`);
+    });
+
+    const csv = lines.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `smile-ai-report-${date}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (kpis.loading && orgsLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -124,6 +164,16 @@ export function CSuiteReports() {
               ))}
             </SelectContent>
           </Select>
+
+          {/* Export button */}
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-md border border-border hover:bg-muted transition-colors"
+            title="Export as CSV"
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </button>
         </div>
       </div>
 

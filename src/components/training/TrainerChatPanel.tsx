@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark, Lightbulb, AlertTriangle, ArrowRight, CheckCircle2, ChevronDown, Target, Wrench, Zap, Share2 } from 'lucide-react';
+import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark, Lightbulb, AlertTriangle, ArrowRight, CheckCircle2, ChevronDown, Target, Wrench, Zap, Share2, ThumbsUp, ThumbsDown } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { type Message } from '@/types/training';
 import { ShareDialog } from '@/components/ShareDialog';
 import { LevelChangeNotification } from '@/components/LevelChangeNotification';
+import { useResponseFeedback } from '@/hooks/useResponseFeedback';
 
 interface TrainerChatPanelProps {
   collapsed: boolean;
@@ -139,6 +140,8 @@ export function TrainerChatPanel({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [activeQuickAction, setActiveQuickAction] = useState<QuickActionType>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [ratedMessages, setRatedMessages] = useState<Map<number, 1 | -1>>(new Map());
+  const { submitFeedback } = useResponseFeedback();
   const [savedIndex, setSavedIndex] = useState<number | null>(null);
   const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<number>>(new Set());
   const [savedSuggestions, setSavedSuggestions] = useState<Set<number>>(new Set());
@@ -376,6 +379,40 @@ export function TrainerChatPanel({
                   {/* Structured feedback scorecard from submission_review */}
                   {message.structuredFeedback && (
                     <StructuredFeedbackCard feedback={message.structuredFeedback} />
+                  )}
+
+                  {/* Response feedback */}
+                  {message.role === 'assistant' && (
+                    <div className="flex items-center gap-1 mt-1">
+                      {ratedMessages.has(idx) ? (
+                        <span className="text-xs text-muted-foreground">
+                          {ratedMessages.get(idx) === 1 ? '👍 Thanks for the feedback!' : '👎 Thanks for the feedback!'}
+                        </span>
+                      ) : (
+                        <>
+                          <button
+                            onClick={async () => {
+                              setRatedMessages(prev => new Map(prev).set(idx, 1));
+                              await submitFeedback({ messageIndex: idx, messagePreview: message.content, rating: 1 });
+                            }}
+                            className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-green-600 transition-colors"
+                            title="Helpful"
+                          >
+                            <ThumbsUp className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              setRatedMessages(prev => new Map(prev).set(idx, -1));
+                              await submitFeedback({ messageIndex: idx, messagePreview: message.content, rating: -1 });
+                            }}
+                            className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-destructive transition-colors"
+                            title="Not helpful"
+                          >
+                            <ThumbsDown className="h-3.5 w-3.5" />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   )}
                 </div>
               ))}

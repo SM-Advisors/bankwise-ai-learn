@@ -1,9 +1,7 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+﻿import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+
 
 interface Message {
   role: "user" | "assistant";
@@ -20,6 +18,74 @@ interface PracticeChatRequest {
   lineOfBusiness?: string; // User's department (Session 3 department personalization)
 }
 
+// ─── PII & COMPLIANCE PRE-PROCESSING ───────────────────────────────────────
+interface ComplianceFlag {
+  type: string;
+  severity: "info" | "warning" | "critical";
+  message: string;
+}
+
+function detectComplianceIssues(userMessage: string): ComplianceFlag | null {
+  const lowerMessage = userMessage.toLowerCase();
+
+  // PII detection: SSN patterns, account numbers, routing numbers, credit cards
+  const piiPatterns = [
+    /\b\d{3}-?\d{2}-?\d{4}\b/,          // SSN
+    /\baccount\s*#?\s*\d{6,}\b/i,         // Account numbers
+    /\brouting\s*#?\s*\d{9}\b/i,          // Routing numbers
+    /\b\d{13,19}\b/,                       // Credit card numbers
+  ];
+  if (piiPatterns.some(p => p.test(userMessage))) {
+    return {
+      type: "pii_sharing",
+      severity: "critical",
+      message: "Message contains potential PII (SSN, account number, or card number).",
+    };
+  }
+
+  // Compliance bypass detection
+  const bypassPhrases = [
+    "skip compliance", "ignore policy", "bypass", "skip the review",
+    "without approval", "skip audit", "no need to check", "forget the rules",
+  ];
+  if (bypassPhrases.some(phrase => lowerMessage.includes(phrase))) {
+    return {
+      type: "compliance_bypass",
+      severity: "warning",
+      message: "Message suggests bypassing compliance procedures.",
+    };
+  }
+
+  // Bulk data export detection
+  const exportPhrases = [
+    "export all customer", "download all", "extract all records",
+    "bulk export", "dump the database", "scrape all",
+  ];
+  if (exportPhrases.some(phrase => lowerMessage.includes(phrase))) {
+    return {
+      type: "data_export",
+      severity: "warning",
+      message: "Message requests bulk data operations.",
+    };
+  }
+
+  return null;
+}
+
+// Practice-persona safe response for flagged messages
+function buildPracticeComplianceResponse(flag: ComplianceFlag): string {
+  if (flag.type === "pii_sharing") {
+    return "I noticed this message may contain sensitive personal information such as Social Security numbers, account numbers, or card numbers. For security, please replace any real data with placeholder values (e.g., 'SSN: XXX-XX-XXXX', 'Account #: XXXXXXXX') and resend your request.";
+  }
+  if (flag.type === "compliance_bypass") {
+    return "I'm not able to assist with requests that involve skipping or bypassing required compliance or approval procedures. Please revise your request to work within standard bank policy guidelines.";
+  }
+  if (flag.type === "data_export") {
+    return "Bulk data export requests require special authorization. I can help you work with individual records or summarize data within approved scope. Please revise your request accordingly.";
+  }
+  return "I'm unable to process this request as written. Please revise and try again.";
+}
+
 // Map lineOfBusiness enum to readable department name
 function getDepartmentName(lob: string | undefined): string {
   const map: Record<string, string> = {
@@ -31,6 +97,7 @@ function getDepartmentName(lob: string | undefined): string {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req.headers.get("origin"));
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -115,6 +182,20 @@ ${departmentContext}
 5. BE HONEST ABOUT LIMITATIONS:
    - If they ask for something you can't do (access real systems, look up real data), say so naturally
    - Suggest what information they'd need to provide for you to help`;
+
+    // ── PII / Compliance pre-check ──────────────────────────────────────────
+    const latestUserMessage = [...messages].reverse().find(m => m.role === "user")?.content || "";
+    const complianceFlag = detectComplianceIssues(latestUserMessage);
+    if (complianceFlag) {
+      console.warn(`[ai-practice] Compliance flag: ${complianceFlag.type} (${complianceFlag.severity})`);
+      return new Response(
+        JSON.stringify({
+          reply: buildPracticeComplianceResponse(complianceFlag),
+          complianceFlag: { type: complianceFlag.type, severity: complianceFlag.severity },
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const claudeMessages = messages.map((m) => ({
       role: m.role as "user" | "assistant",

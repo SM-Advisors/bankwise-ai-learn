@@ -8,7 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Settings as SettingsIcon, Brain, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Settings as SettingsIcon, Brain, Save, Loader2, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { supabase } from '@/integrations/supabase/client';
 
 const TONE_OPTIONS = [
   { value: 'professional', label: 'Professional', description: 'Formal and business-appropriate' },
@@ -40,6 +42,7 @@ export default function Settings() {
   const [roleContext, setRoleContext] = useState('');
   const [customInstructions, setCustomInstructions] = useState('');
   const [saving, setSaving] = useState(false);
+  const [deletingConversations, setDeletingConversations] = useState(false);
 
   useEffect(() => {
     if (preferences) {
@@ -50,6 +53,27 @@ export default function Settings() {
       setCustomInstructions(preferences.additional_instructions || '');
     }
   }, [preferences]);
+
+  const handleDeleteAllConversations = async () => {
+    if (!profile) return;
+    setDeletingConversations(true);
+
+    // Get user ID from supabase auth
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.id) {
+      setDeletingConversations(false);
+      return;
+    }
+
+    // Delete practice conversations and dashboard conversations
+    await Promise.all([
+      (supabase.from('practice_conversations' as any).delete().eq('user_id', user.id) as any),
+      (supabase.from('dashboard_conversations' as any).delete().eq('user_id', user.id) as any),
+    ]);
+
+    setDeletingConversations(false);
+    toast({ title: 'Conversations deleted', description: 'Your conversation history has been permanently deleted.' });
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -212,6 +236,43 @@ export default function Settings() {
                 placeholder="e.g., Always relate examples to banking. Use analogies when explaining complex concepts. Focus on practical applications."
                 className="min-h-[100px]"
               />
+            </CardContent>
+          </Card>
+
+          {/* Data & Privacy */}
+          <Card className="border-destructive/20">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2 text-destructive">
+                <Trash2 className="h-5 w-5" />
+                Data & Privacy
+              </CardTitle>
+              <CardDescription>
+                Permanently delete your conversation history with Andrea and the practice AI. This cannot be undone.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="gap-2" disabled={deletingConversations}>
+                    {deletingConversations ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                    Delete All Conversation History
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete all your conversation history with Andrea and the practice AI. Your memories, skill observations, and training progress will not be affected. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteAllConversations} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Yes, delete everything
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </CardContent>
           </Card>
 

@@ -4,11 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export type AppRole = 'admin' | 'user';
 
-// Admin emails that always get admin access regardless of database state
-const ADMIN_EMAILS = [
-  'coryk@smaiadvisors.com',
-];
-
 export function useUserRole() {
   const { user } = useAuth();
   const [role, setRole] = useState<AppRole | null>(null);
@@ -24,16 +19,7 @@ export function useUserRole() {
     const fetchRole = async () => {
       setLoading(true);
 
-      // Check admin email list first (bypasses all RLS issues)
-      const userEmail = user.email?.toLowerCase();
-      if (userEmail && ADMIN_EMAILS.includes(userEmail)) {
-        console.log('[useUserRole] Admin via email allowlist:', userEmail);
-        setRole('admin');
-        setLoading(false);
-        return;
-      }
-
-      // Fallback: check database for other users
+      // Check database role via RPC
       const { data, error } = await supabase
         .rpc('get_user_role', { _user_id: user.id });
 

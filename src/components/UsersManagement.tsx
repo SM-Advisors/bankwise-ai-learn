@@ -47,6 +47,7 @@ export function UsersManagement() {
     role: 'user' as AppRole,
   });
   const [saving, setSaving] = useState(false);
+  const [deactivatingUser, setDeactivatingUser] = useState<string | null>(null);
 
   // Build a map of org ID -> org name for display
   const orgNameMap = useMemo(() => {
@@ -65,6 +66,23 @@ export function UsersManagement() {
       line_of_business: user.line_of_business || '',
       role: user.role || 'user',
     });
+  };
+
+  const handleToggleDeactivate = async (user: any) => {
+    setDeactivatingUser(user.user_id);
+    const newIsActive = !user.is_active;
+    const result = await updateUserProfile(user.user_id, { is_active: newIsActive });
+    setDeactivatingUser(null);
+    if (result.success) {
+      toast({
+        title: newIsActive ? 'User reactivated' : 'User deactivated',
+        description: newIsActive
+          ? `${user.display_name} can now log in again.`
+          : `${user.display_name} has been deactivated and cannot log in.`,
+      });
+    } else {
+      toast({ title: 'Error', description: result.error, variant: 'destructive' });
+    }
   };
 
   const handleSaveUser = async () => {
@@ -164,7 +182,12 @@ export function UsersManagement() {
                               </span>
                             </div>
                             <div>
-                              <p className="font-medium">{user.display_name || 'No name'}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium">{user.display_name || 'No name'}</p>
+                                {user.is_active === false && (
+                                  <Badge variant="destructive" className="text-xs py-0">Deactivated</Badge>
+                                )}
+                              </div>
                               <p className="text-xs text-muted-foreground">{user.bank_role || 'No role'}</p>
                             </div>
                           </div>
@@ -217,15 +240,32 @@ export function UsersManagement() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditUser(user)}
-                            className="gap-2"
-                          >
-                            <Edit className="h-3 w-3" />
-                            Edit
-                          </Button>
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditUser(user)}
+                              className="gap-2"
+                            >
+                              <Edit className="h-3 w-3" />
+                              Edit
+                            </Button>
+                            <Button
+                              variant={user.is_active === false ? 'outline' : 'ghost'}
+                              size="sm"
+                              onClick={() => handleToggleDeactivate(user)}
+                              disabled={deactivatingUser === user.user_id}
+                              className={`gap-2 ${user.is_active === false ? 'text-green-600 border-green-600/30' : 'text-destructive hover:text-destructive'}`}
+                            >
+                              {deactivatingUser === user.user_id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : user.is_active === false ? (
+                                'Reactivate'
+                              ) : (
+                                'Deactivate'
+                              )}
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );

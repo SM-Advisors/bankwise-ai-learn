@@ -25,6 +25,7 @@ import { CSuiteReports } from '@/components/admin/CSuiteReports';
 import { OrganizationsManager } from '@/components/admin/OrganizationsManager';
 import { DepartmentsManager } from '@/components/admin/DepartmentsManager';
 import { ExecutiveSubmissions } from '@/components/admin/ExecutiveSubmissions';
+import { CommunityReviewQueue } from '@/components/admin/CommunityReviewQueue';
 import { learningStyles } from '@/data/learningStyles';
 import { departments } from '@/data/topics';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
@@ -58,6 +59,7 @@ import {
   Trash2,
   Settings,
   MessageCircle,
+  MessageSquare,
   Link,
   CalendarDays,
   BarChart3,
@@ -569,6 +571,10 @@ export default function AdminDashboard() {
               <Building2 className="h-3.5 w-3.5" />
               Submissions
             </TabsTrigger>
+            <TabsTrigger value="community" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
+              <MessageSquare className="h-3.5 w-3.5" />
+              Community
+            </TabsTrigger>
             <TabsTrigger value="events" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
               <CalendarDays className="h-3.5 w-3.5" />
               Events
@@ -645,6 +651,11 @@ export default function AdminDashboard() {
               <ExecutiveSubmissions />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Community Review Queue Tab */}
+        <TabsContent value="community" className="space-y-6">
+          <CommunityReviewQueue />
         </TabsContent>
 
         {/* Events Management Tab */}
