@@ -20,6 +20,9 @@ import {
   Radio, Calendar, Users, Clock, MessageCircle, ExternalLink,
   CalendarDays, Video, Settings, Brain
 } from 'lucide-react';
+import { computeOverallProgress, computeSessionProgress, getModuleStates, getCompletedModuleCount, getSessionModuleTotal } from '@/utils/computeProgress';
+import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';
+import type { SessionProgressData, SkillSignal } from '@/types/progress';
 
 const SESSIONS = [
   {
@@ -93,8 +96,30 @@ export default function Dashboard() {
     progress?.session_3_completed || false,
   ];
 
-  const completedSessions = sessionProgress.filter(Boolean).length;
-  const overallProgress = (completedSessions / 3) * 100;
+  const overallProgress = computeOverallProgress(progress);
+
+  // Total completed modules across all sessions
+  const totalCompletedModules = [1, 2, 3].reduce(
+    (sum, sid) => sum + getCompletedModuleCount(sid, getSessionProgressData(sid)),
+    0
+  );
+  const totalModules = [1, 2, 3].reduce(
+    (sum, sid) => sum + getSessionModuleTotal(sid),
+    0
+  );
+
+  function getSessionProgressData(sessionId: number): SessionProgressData | null {
+    if (!progress) return null;
+    const key = `session_${sessionId}_progress` as keyof typeof progress;
+    return (progress[key] as SessionProgressData) || null;
+  }
+
+  // Aggregate skill signals from all sessions
+  const allSkillSignals: SkillSignal[] = [1, 2, 3].flatMap((sid) => {
+    const data = getSessionProgressData(sid);
+    return data?.skillSignals || [];
+  });
+  const topSkills = aggregateSkillSignals(allSkillSignals).filter((s) => s.level === 'proficient').slice(0, 3);
 
   const getSessionStatus = (sessionId: number) => {
     if (sessionProgress[sessionId - 1]) return 'completed';
@@ -238,12 +263,25 @@ export default function Dashboard() {
                     <Badge variant="secondary">{getLobLabel(profile.line_of_business)}</Badge>
                     <Badge variant="outline">Level {profile.ai_proficiency_level}</Badge>
                   </div>
+                  {topSkills.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {topSkills.map((skill) => (
+                        <Badge key={skill.skill} variant="outline" className="text-xs gap-1 border-green-500/30 text-green-600">
+                          <CheckCircle className="h-3 w-3" />
+                          {skill.displayName}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="md:text-right">
                 <div className="text-sm text-muted-foreground mb-1">Overall Progress</div>
                 <div className="text-2xl font-bold text-primary">{Math.round(overallProgress)}%</div>
                 <Progress value={overallProgress} className="w-48 h-2 mt-2" />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {totalCompletedModules} of {totalModules} modules completed
+                </p>
               </div>
             </div>
           </CardContent>
@@ -263,10 +301,32 @@ export default function Dashboard() {
           {SESSIONS.map((session) => {
             const status = getSessionStatus(session.id);
             const IconComponent = session.icon;
-            
+            const sessionData = getSessionProgressData(session.id);
+            const sessionPct = status === 'completed' ? 100 : computeSessionProgress(session.id, sessionData);
+            const moduleStates = getModuleStates(session.id, sessionData);
+            const completedCount = getCompletedModuleCount(session.id, sessionData);
+            const moduleTotal = getSessionModuleTotal(session.id);
+
+            // Module dot colors by engagement state
+            const dotColor: Record<string, string> = {
+              not_started: 'bg-muted',
+              content_viewed: 'bg-blue-400',
+              practicing: 'bg-amber-400',
+              submitted: 'bg-orange-500',
+              completed: 'bg-green-500',
+            };
+
+            const dotLabel: Record<string, string> = {
+              not_started: 'Not started',
+              content_viewed: 'Content viewed',
+              practicing: 'Practicing',
+              submitted: 'Submitted',
+              completed: 'Completed',
+            };
+
             return (
-              <Card 
-                key={session.id} 
+              <Card
+                key={session.id}
                 className="transition-all hover:shadow-lg"
               >
                 <CardHeader>
@@ -298,7 +358,26 @@ export default function Dashboard() {
                   <CardDescription>{session.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button 
+                  {/* Module progress breakdown */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+                      <span>{completedCount}/{moduleTotal} modules</span>
+                      <span>{sessionPct}%</span>
+                    </div>
+                    <Progress value={sessionPct} className="h-1.5" />
+                    {/* Module state dots */}
+                    <div className="flex gap-1 mt-2">
+                      {moduleStates.map((ms) => (
+                        <div
+                          key={ms.moduleId}
+                          className={`h-2 flex-1 rounded-full transition-colors ${dotColor[ms.state] || 'bg-muted'}`}
+                          title={`${ms.title}: ${dotLabel[ms.state] || ms.state}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <Button
                     className="w-full gap-2"
                     variant={status === 'completed' ? 'outline' : 'default'}
                     onClick={() => handleStartSession(session.id)}

@@ -1,5 +1,8 @@
 import { type ModuleContent } from '@/data/trainingContent';
 
+// Re-export progress types for convenience
+export type { ModuleEngagement, ModuleState, SessionProgressData, SkillSignal } from './progress';
+
 export interface Message {
   role: 'user' | 'assistant';
   content: string;

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import type { SessionProgressData } from '@/types/progress';
 
 export type LineOfBusiness = 'accounting_finance' | 'credit_administration' | 'executive_leadership';
 export type LearningStyleType = 'example-based' | 'explanation-based' | 'hands-on' | 'logic-based';
@@ -26,11 +27,11 @@ export interface TrainingProgress {
   id: string;
   user_id: string;
   session_1_completed: boolean;
-  session_1_progress: Record<string, unknown>;
+  session_1_progress: SessionProgressData;
   session_2_completed: boolean;
-  session_2_progress: Record<string, unknown>;
+  session_2_progress: SessionProgressData;
   session_3_completed: boolean;
-  session_3_progress: Record<string, unknown>;
+  session_3_progress: SessionProgressData;
 }
 
 interface AuthContextType {

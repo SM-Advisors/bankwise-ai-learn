@@ -15,6 +15,9 @@ import { TrainerChatPanel } from '@/components/training/TrainerChatPanel';
 import { PracticeChatPanel } from '@/components/training/PracticeChatPanel';
 import { ModuleListSidebar } from '@/components/training/ModuleListSidebar';
 import { type Message, type BankPolicy } from '@/types/training';
+import type { SessionProgressData, ModuleEngagement } from '@/types/progress';
+import { DEFAULT_ENGAGEMENT } from '@/types/progress';
+import { deriveSkillSignals } from '@/utils/deriveSkillSignals';
 import { useAIMemories } from '@/hooks/useAIPreferences';
 import { usePracticeConversations } from '@/hooks/usePracticeConversations';
 import { Loader2, ArrowLeft, Shield } from 'lucide-react';
@@ -45,6 +48,9 @@ export default function TrainingWorkspace() {
 
   const { policies } = useBankPolicies();
   const { createMemory } = useAIMemories();
+
+  // Module engagement tracking state
+  const [moduleEngagement, setModuleEngagement] = useState<Record<string, ModuleEngagement>>({});
 
   const session = sessionId ? ALL_SESSION_CONTENT[parseInt(sessionId)] : null;
 
@@ -137,16 +143,43 @@ export default function TrainingWorkspace() {
     setModuleCompleted(selectedModule ? completedModules.has(selectedModule.id) : false);
   }, [selectedModule, completedModules]);
 
-  // Load completed modules from database progress
+  // Load completed modules and engagement data from database progress
   useEffect(() => {
     if (progress && sessionId) {
       const progressKey = `session_${sessionId}_progress` as keyof typeof progress;
-      const sessionProgress = progress[progressKey] as Record<string, unknown> | null;
-      if (sessionProgress && sessionProgress.completedModules) {
-        setCompletedModules(new Set(sessionProgress.completedModules as string[]));
+      const sessionProgress = progress[progressKey] as SessionProgressData | null;
+      if (sessionProgress) {
+        if (sessionProgress.completedModules) {
+          setCompletedModules(new Set(sessionProgress.completedModules as string[]));
+        }
+        if (sessionProgress.moduleEngagement) {
+          setModuleEngagement(sessionProgress.moduleEngagement);
+        }
       }
     }
   }, [progress, sessionId]);
+
+  // Helper: track engagement for a module (merges updates, persists to DB)
+  const trackModuleEngagement = async (
+    moduleId: string,
+    updates: Partial<ModuleEngagement>
+  ) => {
+    if (!sessionId) return;
+
+    const progressKey = `session_${sessionId}_progress` as keyof typeof progress;
+    const currentProgress = (progress?.[progressKey] as SessionProgressData) || { completedModules: Array.from(completedModules) };
+    const engagement = { ...(currentProgress.moduleEngagement || {}) };
+    const existing = engagement[moduleId] || { ...DEFAULT_ENGAGEMENT };
+
+    engagement[moduleId] = { ...existing, ...updates };
+
+    // Update local state immediately for responsive UI
+    setModuleEngagement(engagement);
+
+    await updateProgress({
+      [progressKey]: { ...currentProgress, moduleEngagement: engagement },
+    } as any);
+  };
 
   if (loading || !profile) {
     return (
@@ -175,6 +208,14 @@ export default function TrainingWorkspace() {
       setContentModalModule(module);
       setContentModalOpen(true);
     }
+
+    // Track content viewed engagement
+    if (!moduleEngagement[module.id]?.contentViewed) {
+      trackModuleEngagement(module.id, {
+        contentViewed: true,
+        contentViewedAt: new Date().toISOString(),
+      });
+    }
   };
 
   // Handle sending a message in the practice chat (center panel)
@@ -193,9 +234,26 @@ export default function TrainingWorkspace() {
       if (!convId) return;
       // For a brand new conversation, the only message is the user's first one
       messagesForApi = [userMsg];
+
+      // Track chat started engagement
+      if (!moduleEngagement[selectedModule.id]?.chatStarted) {
+        trackModuleEngagement(selectedModule.id, {
+          chatStarted: true,
+          chatStartedAt: new Date().toISOString(),
+          practiceMessageCount: 1,
+        });
+      }
     } else {
       // Append user message to existing conversation
       await appendMessage(userMsg);
+
+      // Increment practice message count (debounced — every 3rd message)
+      const current = moduleEngagement[selectedModule.id]?.practiceMessageCount || 0;
+      if ((current + 1) % 3 === 0 || current === 0) {
+        trackModuleEngagement(selectedModule.id, {
+          practiceMessageCount: current + 1,
+        });
+      }
     }
 
     setIsPracticeLoading(true);
@@ -356,9 +414,45 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
     if (sessionId) {
       const progressKey = `session_${sessionId}_progress` as const;
+      const currentProgress = (progress?.[progressKey] as SessionProgressData) || { completedModules: [] };
+
+      // Build engagement update with feedback and skill signals
+      const engagementUpdates: Partial<ModuleEngagement> = {
+        submitted: true,
+        submittedAt: new Date().toISOString(),
+        completed: true,
+        completedAt: new Date().toISOString(),
+        practiceMessageCount: activeMessages.filter(m => m.role === 'user').length,
+      };
+
+      if (structuredFeedback) {
+        engagementUpdates.lastFeedback = {
+          strengths: structuredFeedback.strengths,
+          issues: structuredFeedback.issues,
+          summary: structuredFeedback.summary,
+        };
+      }
+
+      const engagement = { ...(currentProgress.moduleEngagement || {}), ...moduleEngagement };
+      const existing = engagement[selectedModule.id] || { ...DEFAULT_ENGAGEMENT };
+      engagement[selectedModule.id] = { ...existing, ...engagementUpdates };
+
+      // Derive skill signals from feedback
+      let updatedSkillSignals = currentProgress.skillSignals || [];
+      if (structuredFeedback) {
+        const newSignals = deriveSkillSignals(structuredFeedback, selectedModule.id);
+        updatedSkillSignals = [...updatedSkillSignals, ...newSignals];
+      }
+
+      setModuleEngagement(engagement);
+
       await updateProgress({
-        [progressKey]: { completedModules: Array.from(newCompletedModules) },
-      });
+        [progressKey]: {
+          completedModules: Array.from(newCompletedModules),
+          moduleEngagement: engagement,
+          skillSignals: updatedSkillSignals,
+        },
+      } as any);
     }
   };
 
@@ -594,6 +688,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           modules={session.modules}
           selectedModule={selectedModule}
           completedModules={completedModules}
+          moduleEngagement={moduleEngagement}
           onSelectModule={handleModuleSelect}
         />
 
