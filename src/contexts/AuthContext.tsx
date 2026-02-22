@@ -239,7 +239,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase
         .from('user_profiles')
-        .update(updates)
+        .update(updates as any)
         .eq('user_id', user.id);
 
       if (error) throw error;
@@ -309,7 +309,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (Object.keys(profileUpdates).length > 0) {
         const { error: profileError } = await supabase
           .from('user_profiles')
-          .update(profileUpdates)
+          .update(profileUpdates as any)
           .eq('user_id', user.id);
 
         if (profileError) throw profileError;
