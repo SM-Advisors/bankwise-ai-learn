@@ -1,0 +1,1 @@
+ALTER TABLE public.user_profiles ADD COLUMN last_login_at timestamp with time zone;

@@ -147,8 +147,9 @@ export function UsersManagement() {
                     <TableHead>Organization</TableHead>
                     <TableHead>Line of Business</TableHead>
                     <TableHead>Access Level</TableHead>
-                    <TableHead>Progress</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                     <TableHead>Last Login</TableHead>
+                     <TableHead>Progress</TableHead>
+                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -198,6 +199,13 @@ export function UsersManagement() {
                             {user.role === 'admin' && <Shield className="h-3 w-3" />}
                             {user.role === 'admin' ? 'Admin' : 'User'}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm text-muted-foreground whitespace-nowrap">
+                            {user.last_login_at
+                              ? new Date(user.last_login_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
+                              : 'Never'}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2 min-w-32">

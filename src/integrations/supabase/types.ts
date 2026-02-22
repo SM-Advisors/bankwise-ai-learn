@@ -557,6 +557,7 @@ export type Database = {
           display_name: string | null
           employer_bank_name: string | null
           id: string
+          last_login_at: string | null
           learning_style:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
@@ -579,6 +580,7 @@ export type Database = {
           display_name?: string | null
           employer_bank_name?: string | null
           id?: string
+          last_login_at?: string | null
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
@@ -601,6 +603,7 @@ export type Database = {
           display_name?: string | null
           employer_bank_name?: string | null
           id?: string
+          last_login_at?: string | null
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
