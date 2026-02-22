@@ -366,7 +366,38 @@ ${contextSection}
 
 ${policiesSection}
 
-${(moduleId === "2-3" || moduleId === "2-5") && agentTemplate ? `## AGENT TEMPLATE RUBRIC
+${moduleId === "1-5" ? `## MODULE 1-5 RUBRIC: VERIFYING AI OUTPUT
+This submission tests the learner's ability to identify AI hallucinations and apply the VERIFY checklist.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Error Detection | Identifies 0-1 of 3 errors | Identifies 2 of 3 errors | Identifies all 3 errors |
+| Error Categorization | Does not categorize error types | Correctly categorizes most errors | Correctly categorizes all errors (fabricated number, invented citation, logic error) |
+| Verification Steps | Vague ("check it") | Describes a specific verification step for each error | Maps each error to a specific VERIFY letter with concrete source to check |
+
+EVALUATION FOCUS:
+- Did the learner identify the fabricated DSCR ratio?
+- Did the learner catch the invented OCC Bulletin 2025-03 citation?
+- Did the learner spot the incorrect Debt-to-Equity formula (Revenue/Equity instead of Debt/Equity)?
+- Are verification steps specific (e.g., "look up OCC Bulletin 2025-03") not generic ("review for accuracy")?` : moduleId === "1-6" ? `## MODULE 1-6 RUBRIC: SESSION 1 CAPSTONE
+This is the Session 1 Capstone. Evaluate using the 3-level rubric across all Session 1 skills.
+
+3-LEVEL RUBRIC:
+| Criterion | Weight | Developing | Proficient | Advanced |
+|-----------|--------|-----------|-----------|---------|
+| CLEAR Framework | 25% | 1-3 elements present | All 5 present | All 5 with depth + banking specificity |
+| Iteration | 20% | 1 version only | 2 iterations with identifiable changes | 3+ iterations with improvement rationale |
+| VERIFY Application | 25% | Generic "I would check it" | 2+ specific items to verify | Maps specific output elements to VERIFY steps with sources |
+| Data Security | 15% | No mention of constraints | Constraints present | Proactive synthetic data + security context |
+| Banking Quality | 15% | Generic business prompt | Banking terminology correct | Production-quality, usable in real work |
+
+EVALUATION FOCUS:
+- Does the prompt use all CLEAR letters with banking-specific content?
+- Are there at least 2 iterations showing concrete improvements?
+- Does the VERIFY reflection identify specific items (ratios, citations, logic) to check?
+- Is all customer data anonymized?
+- Would this prompt produce output usable in a real banking context?` : (moduleId === "2-3" || moduleId === "2-5") && agentTemplate ? `## AGENT TEMPLATE RUBRIC
 This submission is an AI agent template from the Agent Studio. Evaluate template COMPLETENESS and QUALITY, not prompt technique.
 
 SCORING WEIGHTS:
@@ -412,19 +443,22 @@ EVALUATION FOCUS:
 - Does the workflow respect compliance requirements (review before external output)?` : moduleId === "3-5" ? `## CAPSTONE RUBRIC
 This is the Session 3 Capstone submission. Evaluate against ALL training objectives from Sessions 1-3.
 
-SCORING WEIGHTS:
-- CLEAR Framework (20%): Does the submission demonstrate proper prompt structure (Context, Length, Examples, Audience, Role)?
-- Advanced Technique (20%): Is at least one advanced technique applied (chain-of-thought, multi-shot, or self-review)?
-- Compliance Awareness (20%): Are data handling, decision boundaries, and documentation addressed?
-- Department Relevance (20%): Is the task specific to a real banking function and department?
-- Reflection Quality (20%): Does the reflection honestly identify both strengths and limitations?
+3-LEVEL RUBRIC:
+| Criterion | Weight | Developing | Proficient | Advanced |
+|-----------|--------|-----------|-----------|---------|
+| CLEAR Framework | 20% | 1-3 elements | All 5 present | All 5 with depth + banking specificity |
+| Advanced Technique | 20% | No technique applied | 1 technique applied correctly | Technique deeply embedded with justification |
+| Compliance Awareness | 20% | No mention | Data handling and decision boundaries addressed | Full compliance checklist applied with documentation |
+| Department Relevance | 20% | Generic business task | Banking-specific task | Role-specific task with realistic scenario |
+| Reflection Quality | 20% | No reflection or generic | Identifies a strength and limitation | Honest assessment with specific next steps |
 
 EVALUATION FOCUS:
 - Does this look like real work, not a hypothetical exercise?
 - Are there 3+ prompts showing iteration and refinement?
 - Is all customer data properly anonymized?
 - Would the final output be usable in a real banking context?
-- Is the reflection honest about what AI did well and where it fell short?` : `## RUBRIC
+- Is the reflection honest about what AI did well and where it fell short?
+- Has the learner applied VERIFY to their output?` : `## RUBRIC
 ${rubric ? (typeof rubric === "string" ? rubric : JSON.stringify(rubric, null, 2)) : "Evaluate based on clarity, specificity, context, and appropriateness for banking use cases."}`}
 
 ${departmentContext?.lineOfBusiness ? `## DEPARTMENT CONTEXT

@@ -1,9 +1,12 @@
 /**
- * AI Proficiency Assessment — Hybrid Quiz + Self-Report
+ * AI Proficiency Assessment — Hybrid Self-Report + Performance-Based (v2.0)
  *
- * 6 scenario-based questions probe real AI skill dimensions.
- * Each answer scores 0, 2, 5, or 8 points.
- * A final confidence self-report adjusts the score.
+ * 4 scenario-based self-report questions + 2 performance-based items.
+ * Self-report: each answer scores 0, 2, 5, or 8 points.
+ * Performance Item 1 (multi-select): +2 per correct, -1 per distractor. Floor 0, max 8.
+ * Performance Item 2 (drag-to-rank): Correct order = 8, one swap = 5, reverse = 0.
+ * Composite = (Self-Report Average × 0.5) + (Performance Score Normalized × 0.5)
+ * Confidence adjustment: +/- 1.5 points (increased from +/- 1)
  * Output: integer 0-8 stored in user_profiles.ai_proficiency_level.
  */
 
@@ -19,6 +22,37 @@ export interface ProficiencyQuestion {
   scenario: string;
   options: ProficiencyOption[];
 }
+
+// Multi-select option for performance-based items
+export interface MultiSelectOption {
+  id: string;
+  label: string;
+  isCorrect: boolean;
+  points: number; // +2 for correct, -1 for distractor
+}
+
+// Drag-to-rank prompt for performance-based items
+export interface RankablePrompt {
+  id: string;
+  label: string;
+  text: string;
+  correctRank: number; // 1 = weakest, 3 = strongest
+}
+
+export interface PerformanceItem {
+  id: string;
+  type: 'multi_select_evaluate' | 'drag_rank';
+  dimension: string;
+  scenario: string;
+  instructions: string;
+  // For multi_select_evaluate
+  options?: MultiSelectOption[];
+  // For drag_rank
+  prompts?: RankablePrompt[];
+  maxScore: number;
+}
+
+// ─── SELF-REPORT QUESTIONS (4 retained from v1) ───────────────────────────
 
 export const PROFICIENCY_QUESTIONS: ProficiencyQuestion[] = [
   {
@@ -71,60 +105,6 @@ export const PROFICIENCY_QUESTIONS: ProficiencyQuestion[] = [
       {
         label: 'Provide a structured brief',
         description: 'Include role, financial context, desired format, items to cover, items to avoid, and any compliance considerations',
-        score: 8,
-      },
-    ],
-  },
-  {
-    id: 'output_evaluation',
-    dimension: 'Evaluating AI Output',
-    scenario: 'AI drafts a past-due account email for a customer. The tone is professional but the content is generic. What would you do next?',
-    options: [
-      {
-        label: 'Send it as written',
-        description: 'The tone and structure seem appropriate, so I\'d use it',
-        score: 0,
-      },
-      {
-        label: 'Make manual edits',
-        description: 'Adjust the parts that need it by editing the draft directly',
-        score: 2,
-      },
-      {
-        label: 'Ask AI to revise with more detail',
-        description: 'Provide the specific missing info (amounts, dates, customer name) and request a new version',
-        score: 5,
-      },
-      {
-        label: 'Rethink the prompt and regenerate',
-        description: 'Identify what the original prompt was missing, rewrite it with fuller context, and review the new output more carefully',
-        score: 8,
-      },
-    ],
-  },
-  {
-    id: 'iteration',
-    dimension: 'Working Through Problems',
-    scenario: 'Your first AI attempt at a risk assessment has the wrong format and is missing key financial ratios. What would you do?',
-    options: [
-      {
-        label: 'Complete it without AI',
-        description: 'Do the assessment manually using my usual process',
-        score: 0,
-      },
-      {
-        label: 'Rephrase and try again',
-        description: 'Reword the request to see if AI gives a better result',
-        score: 2,
-      },
-      {
-        label: 'Add the missing specifics',
-        description: 'Tell AI which format to use, which ratios to include, and give more borrower details',
-        score: 5,
-      },
-      {
-        label: 'Break it into smaller steps',
-        description: 'Handle one piece at a time — ratios first, then format, then narrative — checking each before moving on',
         score: 8,
       },
     ],
@@ -185,6 +165,57 @@ export const PROFICIENCY_QUESTIONS: ProficiencyQuestion[] = [
   },
 ];
 
+// ─── PERFORMANCE-BASED ITEMS (2 new in v2.0) ──────────────────────────────
+
+export const PERFORMANCE_ITEMS: PerformanceItem[] = [
+  {
+    id: 'prompt_evaluation',
+    type: 'multi_select_evaluate',
+    dimension: 'Prompt Evaluation',
+    scenario: 'Review this prompt: "Write me something about our loan portfolio."',
+    instructions: 'Select ALL the issues you can identify with this prompt (select all that apply):',
+    options: [
+      { id: 'missing_role', label: 'Missing specific role/audience context', isCorrect: true, points: 2 },
+      { id: 'no_format', label: 'No output format specified', isCorrect: true, points: 2 },
+      { id: 'vague_task', label: 'Vague task description ("something about")', isCorrect: true, points: 2 },
+      { id: 'no_compliance', label: 'No compliance or data handling constraints', isCorrect: true, points: 2 },
+      { id: 'too_short', label: 'The prompt is too short', isCorrect: false, points: -1 },
+      { id: 'wrong_tool', label: 'It should use a different AI tool', isCorrect: false, points: -1 },
+    ],
+    maxScore: 8,
+  },
+  {
+    id: 'prompt_ranking',
+    type: 'drag_rank',
+    dimension: 'Prompt Quality Ranking',
+    scenario: 'Rank these three prompts for a credit memo task from weakest (1) to strongest (3):',
+    instructions: 'Drag to reorder — 1 is weakest, 3 is strongest.',
+    prompts: [
+      {
+        id: 'prompt_a',
+        label: 'Prompt A',
+        text: 'Write a credit memo.',
+        correctRank: 1,
+      },
+      {
+        id: 'prompt_b',
+        label: 'Prompt B',
+        text: 'Write a credit memo for a $2M commercial real estate loan. Include financial analysis.',
+        correctRank: 2,
+      },
+      {
+        id: 'prompt_c',
+        label: 'Prompt C',
+        text: 'Act as a senior credit analyst at a community bank. Draft a credit memo for a $2M owner-occupied commercial real estate loan to ABC Properties LLC. Include: executive summary, borrower background, financial analysis (DSCR, LTV, debt-to-equity from the attached financials), risk factors, and recommendation. Format as a one-page memo for the credit committee. Do not include any actual customer PII — use the placeholder data provided.',
+        correctRank: 3,
+      },
+    ],
+    maxScore: 8,
+  },
+];
+
+// ─── CONFIDENCE LEVELS ────────────────────────────────────────────────────
+
 export const CONFIDENCE_LEVELS = [
   { value: 1, label: 'Just getting started', description: 'I\'d want guided support for most AI tasks' },
   { value: 2, label: 'Building familiarity', description: 'I can follow along with step-by-step guidance' },
@@ -193,30 +224,102 @@ export const CONFIDENCE_LEVELS = [
   { value: 5, label: 'Ready to go deeper', description: 'I\'m comfortable with AI and want to learn advanced techniques' },
 ];
 
+// ─── SCORING FUNCTIONS ────────────────────────────────────────────────────
+
 /**
- * Calculate the final proficiency score (0-8) from quiz answers + confidence.
+ * Score a multi-select performance item.
+ * +2 for each correct selection, -1 for each distractor selected. Floor: 0.
+ */
+export function scoreMultiSelect(
+  selectedIds: string[],
+  item: PerformanceItem
+): number {
+  if (!item.options) return 0;
+  let score = 0;
+  for (const option of item.options) {
+    if (selectedIds.includes(option.id)) {
+      score += option.points;
+    }
+  }
+  return Math.max(0, Math.min(item.maxScore, score));
+}
+
+/**
+ * Score a drag-to-rank performance item.
+ * Correct order = 8, one swap = 5, reverse = 0.
+ */
+export function scoreDragRank(
+  rankedIds: string[], // ordered from rank 1 (weakest) to rank N (strongest)
+  item: PerformanceItem
+): number {
+  if (!item.prompts) return 0;
+
+  const correctOrder = [...item.prompts]
+    .sort((a, b) => a.correctRank - b.correctRank)
+    .map((p) => p.id);
+
+  // Check if exact match
+  const isExactMatch = rankedIds.every((id, i) => id === correctOrder[i]);
+  if (isExactMatch) return 8;
+
+  // Check if exactly reversed
+  const reversedOrder = [...correctOrder].reverse();
+  const isReversed = rankedIds.every((id, i) => id === reversedOrder[i]);
+  if (isReversed) return 0;
+
+  // Count number of positions that differ
+  let mismatches = 0;
+  for (let i = 0; i < rankedIds.length; i++) {
+    if (rankedIds[i] !== correctOrder[i]) mismatches++;
+  }
+
+  // One swap = 2 mismatches
+  if (mismatches <= 2) return 5;
+
+  return 2; // Partial credit for other orderings
+}
+
+/**
+ * Calculate the final proficiency score (0-8) from self-report + performance + confidence.
  *
- * quizScore = average of question scores (already 0-8 scale)
- * confidenceAdjustment maps 1-5 → -1, -0.5, 0, +0.5, +1
- * finalScore = clamp(round(quizScore * 0.7 + (quizScore + confidenceAdjustment) * 0.3), 0, 8)
+ * v2.0 formula:
+ * selfReportAvg = average of self-report question scores (0-8 scale)
+ * performanceNormalized = average of performance item scores normalized to 0-8
+ * composite = selfReportAvg * 0.5 + performanceNormalized * 0.5
+ * confidenceAdjustment: maps 1-5 → -1.5, -0.75, 0, +0.75, +1.5
+ * finalScore = clamp(round(composite + confidenceAdjustment), 0, 8)
  */
 export function calculateProficiencyScore(
   answers: Record<string, number>,
-  confidence: number
+  confidence: number,
+  performanceScores?: { prompt_evaluation: number; prompt_ranking: number }
 ): number {
+  // Self-report average
   const questionIds = PROFICIENCY_QUESTIONS.map((q) => q.id);
-  const scores = questionIds.map((id) => answers[id] ?? 0);
-  const quizScore = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+  const selfReportScores = questionIds.map((id) => answers[id] ?? 0);
+  const selfReportAvg = selfReportScores.reduce((sum, s) => sum + s, 0) / selfReportScores.length;
 
+  // Performance scores (normalized to 0-8)
+  let performanceAvg = 0;
+  if (performanceScores) {
+    performanceAvg = (performanceScores.prompt_evaluation + performanceScores.prompt_ranking) / 2;
+  }
+
+  // Composite: 50% self-report + 50% performance
+  const hasPerformance = performanceScores !== undefined;
+  const composite = hasPerformance
+    ? selfReportAvg * 0.5 + performanceAvg * 0.5
+    : selfReportAvg; // Fallback to self-report only if performance not available
+
+  // Confidence adjustment (increased from +/- 1 to +/- 1.5)
   const confidenceAdjustmentMap: Record<number, number> = {
-    1: -1,
-    2: -0.5,
+    1: -1.5,
+    2: -0.75,
     3: 0,
-    4: 0.5,
-    5: 1,
+    4: 0.75,
+    5: 1.5,
   };
   const adjustment = confidenceAdjustmentMap[confidence] ?? 0;
 
-  const raw = quizScore * 0.7 + (quizScore + adjustment) * 0.3;
-  return Math.max(0, Math.min(8, Math.round(raw)));
+  return Math.max(0, Math.min(8, Math.round(composite + adjustment)));
 }

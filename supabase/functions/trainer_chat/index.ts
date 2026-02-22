@@ -679,21 +679,19 @@ RESPONSE FORMAT — MANDATORY:
       contextSection = `## MODULE NAVIGATION MAP
 You can direct learners to specific modules. Here is the complete curriculum:
 
-Session 1: AI Prompting & Personalization (8 modules)
-- Module 1-1: What is AI Prompting? (intro video, 4 min)
-- Module 1-2: Anatomy of a Good Prompt (5 elements)
-- Module 1-3: The CLEAR Framework (Context, Length, Examples, Audience, Requirements)
-- Module 1-4: Good vs Bad Prompts (side-by-side banking comparisons)
-- Module 1-5: Setting Context for Banking AI (role, task, security context)
-- Module 1-6: Data Security in Prompts (PII protection, placeholders)
-- Module 1-7: Prompt Iteration & Refinement (iterative improvement)
-- Module 1-8: Capstone (complete banking prompt exercise)
+Session 1: AI Foundations & Prompting (6 modules)
+- Module 1-1: What AI Can Do For You (AI basics, banking use cases, 5 elements of a prompt)
+- Module 1-2: The CLEAR Framework (Context, Length, Examples, Audience, Requirements + 5-Element mapping)
+- Module 1-3: Context & Data Security (5 context types, PII sanitization, synthetic data)
+- Module 1-4: Iteration & Refinement (iterative improvement + Troubleshooting Ladder)
+- Module 1-5: Verifying AI Output (hallucination types, VERIFY checklist)
+- Module 1-6: Session 1 Capstone (CLEAR + iterate + VERIFY exercise)
 
 Session 2: Building Your AI Agent (5 modules)
 - Module 2-1: What is an AI Agent? (agents vs one-off prompts)
-- Module 2-2: Agent Architecture (system prompts, guard rails, compliance anchors)
-- Module 2-3: Custom Instructions Template (5-section template builder)
-- Module 2-4: Tool Integration (evaluating data source connections)
+- Module 2-2: Agent Architecture (4 pillars, guard rails, compliance anchors, prompt security)
+- Module 2-3: Building Your Agent Template (5-section template builder)
+- Module 2-4: Tool Integration & Evaluation (evaluating data source connections)
 - Module 2-5: Build Your Agent Capstone (assemble + test agent)
 
 Session 3: Role-Specific Training (5 modules)
