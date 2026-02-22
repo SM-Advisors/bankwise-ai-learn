@@ -687,12 +687,13 @@ Session 1: AI Foundations & Prompting (6 modules)
 - Module 1-5: Verifying AI Output (hallucination types, VERIFY checklist)
 - Module 1-6: Session 1 Capstone (CLEAR + iterate + VERIFY exercise)
 
-Session 2: Building Your AI Agent (5 modules)
-- Module 2-1: What is an AI Agent? (agents vs one-off prompts)
+Session 2: Building Your AI Agent (6 modules)
+- Module 2-1: From Prompts to Agents (bridge from CLEAR to agent architecture, CLEAR-to-agent mapping)
 - Module 2-2: Agent Architecture (4 pillars, guard rails, compliance anchors, prompt security)
 - Module 2-3: Building Your Agent Template (5-section template builder)
 - Module 2-4: Tool Integration & Evaluation (evaluating data source connections)
-- Module 2-5: Build Your Agent Capstone (assemble + test agent)
+- Module 2-5: Your Living Agent (agent iteration, sharing, measuring effectiveness)
+- Module 2-6: Build Your Agent Capstone (assemble + test agent + Living Agent Plan)
 
 Session 3: Role-Specific Training (5 modules)
 - Module 3-1: Department AI Use Cases (role-specific prompt examples)
@@ -872,7 +873,7 @@ ${agentContext.templateData?.guardRails?.filter(g => g.rule.trim()).length ? `- 
 ${agentContext.templateData?.complianceAnchors?.filter(a => a.trim()).length ? `- Compliance Anchors: ${agentContext.templateData.complianceAnchors.filter(a => a.trim()).join("; ")}` : ""}
 
 AGENT COACHING RULES:
-- When the learner is working on their agent (Session 2, modules 2-3 or 2-5), reference their agent template sections specifically
+- When the learner is working on their agent (Session 2, modules 2-3 or 2-6), reference their agent template sections specifically
 - Suggest improvements to specific sections: "Your guard rails could include a redirect for investment advice"
 - Celebrate deployment: "Your agent is live for Session 3 — exciting!"
 - If their template is incomplete, guide them to fill in missing sections

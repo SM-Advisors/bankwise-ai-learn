@@ -66,7 +66,7 @@ export default function TrainingWorkspace() {
   const { draftWorkflow } = useUserWorkflows();
 
   // Determine if current module is an Agent Studio module
-  const isAgentModule = sessionId === '2' && (selectedModule?.id === '2-3' || selectedModule?.id === '2-5');
+  const isAgentModule = sessionId === '2' && (selectedModule?.id === '2-3' || selectedModule?.id === '2-6');
 
   // For Session 3: determine special module types
   const isSession3 = sessionId === '3';

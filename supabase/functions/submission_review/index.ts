@@ -397,14 +397,42 @@ EVALUATION FOCUS:
 - Are there at least 2 iterations showing concrete improvements?
 - Does the VERIFY reflection identify specific items (ratios, citations, logic) to check?
 - Is all customer data anonymized?
-- Would this prompt produce output usable in a real banking context?` : (moduleId === "2-3" || moduleId === "2-5") && agentTemplate ? `## AGENT TEMPLATE RUBRIC
+- Would this prompt produce output usable in a real banking context?` : moduleId === "2-1" ? `## MODULE 2-1 RUBRIC: FROM PROMPTS TO AGENTS (BRIDGE)
+This submission tests the learner's ability to map CLEAR framework elements to agent architecture sections.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| CLEAR-to-Agent Mapping | Maps 0-2 sections | Maps 4 of 5 sections correctly | Maps all 5 with detailed explanations |
+| Agent vs Prompt Decision | No rationale provided | Provides a clear rationale | Rationale includes frequency, compliance, and team benefit analysis |
+| Conceptual Understanding | Confuses prompts and agents | Correctly distinguishes persistent vs one-off | Articulates continuum with nuanced examples |
+
+EVALUATION FOCUS:
+- Does the learner correctly map Context → Identity, Requirements → Task List, Length/Format → Output Rules, etc.?
+- Is their agent-vs-prompt decision justified with specific reasons (frequency, compliance, sharing)?
+- Do they demonstrate understanding that agent architecture is persistent CLEAR?` : moduleId === "2-5" ? `## MODULE 2-5 RUBRIC: YOUR LIVING AGENT
+This submission tests the learner's ability to plan agent iteration, sharing, and measurement.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Monitoring Plan | Vague ("see how it goes") | 2+ specific behaviors to watch | Specific behaviors tied to expected failure modes |
+| Iteration Strategy | No guard rail identified | Names a specific guard rail to add | Guard rail tied to realistic edge case with alternative response |
+| Effectiveness Measurement | No metric defined | One task with time estimate | Task with time-before, time-after, and quality indicator |
+| Sharing Strategy | Not addressed | Identifies a colleague | Identifies colleague, what to customize, and what stays universal |
+
+EVALUATION FOCUS:
+- Are monitoring targets specific to their agent's role and task list?
+- Is the expected guard rail based on a realistic edge case for their department?
+- Does the effectiveness metric include both time savings and quality indicators?
+- Would their sharing plan actually work for a colleague?` : moduleId === "2-3" && agentTemplate ? `## AGENT TEMPLATE RUBRIC (MODULE 2-3)
 This submission is an AI agent template from the Agent Studio. Evaluate template COMPLETENESS and QUALITY, not prompt technique.
 
 SCORING WEIGHTS:
 - Identity (20%): Clear role, department, audience, and purpose defined
 - Task List (25%): At least 2 specific tasks with formats and constraints
 - Output Rules (15%): At least 2 formatting/behavior rules defined
-- Guard Rails (25%): At least 2 guard rails with alternative responses for out-of-scope requests
+- Guard Rails (25%): At least 2 guard rails with alternative responses + 1 prompt injection defense
 - Compliance Anchors (15%): At least 1 exact phrase that must appear in outputs
 
 AGENT TEMPLATE DATA:
@@ -419,7 +447,31 @@ EVALUATION FOCUS:
 - Do guard rails cover common edge cases (personal advice, legal questions, off-topic)?
 - Are compliance anchors real regulatory phrases (FDCPA, TILA, ECOA disclosures)?
 - Is the identity specific enough to produce consistent behavior?
-- Would this template produce a useful, safe AI agent for banking?` : moduleId === "3-3" && workflowData ? `## WORKFLOW RUBRIC
+- Would this template produce a useful, safe AI agent for banking?` : moduleId === "2-6" && agentTemplate ? `## SESSION 2 CAPSTONE RUBRIC (MODULE 2-6)
+This is the Session 2 Capstone. Evaluate the complete agent including template, testing, and Living Agent Plan.
+
+3-LEVEL RUBRIC:
+| Criterion | Weight | Developing | Proficient | Advanced |
+|-----------|--------|-----------|-----------|---------|
+| Identity | 15% | Generic role | Banking-specific role with audience | Detailed persona with departmental context |
+| Task List | 20% | 1 vague task | 2+ specific banking tasks | 3+ tasks with format, constraint, and edge case handling |
+| Guard Rails | 25% | 0-1 generic rails | 2+ rails with alternatives | 3+ rails including injection defense + compliance redirect |
+| Testing | 25% | 1 test type only | All 3 types attempted | All 3 with thoughtful scenarios + gap analysis |
+| Living Agent Plan | 15% | Not provided | Generic plan | Specific monitoring criteria + first iteration target |
+
+AGENT TEMPLATE DATA:
+${agentTemplate.identity ? `Identity: "${agentTemplate.identity}"` : "Identity: MISSING"}
+Tasks: ${agentTemplate.taskList?.filter(t => t.name).length || 0} defined${agentTemplate.taskList?.filter(t => t.name).map(t => ` (${t.name})`).join(",") || ""}
+Output Rules: ${agentTemplate.outputRules?.filter(r => r.trim()).length || 0} defined
+Guard Rails: ${agentTemplate.guardRails?.filter(g => g.rule.trim()).length || 0} defined
+Compliance Anchors: ${agentTemplate.complianceAnchors?.filter(a => a.trim()).length || 0} defined
+
+EVALUATION FOCUS:
+- Does the agent template cover all 5 sections with banking-specific content?
+- Are all 3 test types present (standard, edge case, out-of-scope)?
+- Does the Living Agent Plan include specific monitoring criteria (not just "see how it goes")?
+- Does the plan name a specific guard rail they expect to add and why?
+- Would this agent be shareable with a colleague in the same role?` : moduleId === "3-3" && workflowData ? `## WORKFLOW RUBRIC
 This submission is an AI workflow from the Workflow Studio. Evaluate workflow COMPLETENESS and QUALITY.
 
 SCORING WEIGHTS:

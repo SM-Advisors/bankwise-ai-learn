@@ -406,62 +406,68 @@ export const SESSION_2_CONTENT: SessionContent = {
   modules: [
     {
       id: '2-1',
-      title: 'What is an AI Agent?',
+      title: 'From Prompts to Agents',
       type: 'document',
-      description: 'Understanding AI agents and their capabilities in banking',
-      estimatedTime: '12 min',
+      description: 'Bridge from Session 1 prompting to persistent agent architecture — map CLEAR to agent sections',
+      estimatedTime: '10 min',
       learningObjectives: [
-        'Define what an AI agent is and how it differs from one-off prompting',
-        'Understand why persistent instructions create consistency',
-        'Identify use cases for agents in your banking role',
+        'Explain the difference between a one-off prompt and a persistent agent',
+        'Map CLEAR framework elements to agent architecture sections',
+        'Identify when a task warrants an agent versus a single prompt',
       ],
       content: {
-        overview: 'A standard prompt is stateless — every session you re-establish your role, your constraints, and your expectations from scratch. An AI agent inverts this by embedding persistent system instructions that define behavior, tone, compliance rules, and output formats once, so every conversation automatically inherits them. Think of the difference between giving a new temp worker instructions every morning versus training a dedicated assistant who retains everything. In banking, where regulatory consistency matters, agents eliminate the risk of forgetting a compliance disclaimer or shifting tone between customer communications.',
+        overview: 'In Session 1, you learned to craft effective prompts using CLEAR. Now we take those skills and make them persistent. A single prompt is like giving instructions once — an agent is like training a colleague who remembers your preferences, follows your rules every time, and handles variations without you re-explaining. You already know how to write the instructions (CLEAR). Now you make them permanent. This bridge module connects what you learned to what you will build.',
         keyPoints: [
-          'An AI agent is a configured assistant with persistent instructions that define its behavior before any user message arrives',
-          'Unlike one-off prompts, an agent maintains consistent behavior across hundreds of interactions without manual repetition',
-          'Agents can be specialized for specific roles — a loan officer agent behaves differently than a credit analyst agent',
-          'Banking agents are most valuable for tasks with regulatory consistency requirements, where variation in tone or compliance language creates risk',
-          'They can be configured with specific knowledge domains, output formats, tone guidelines, and explicit refusal rules',
+          'The Prompt-to-Agent Continuum: a single prompt = giving instructions once; an agent = persistent instructions that apply to every conversation automatically',
+          'CLEAR → Agent Architecture Mapping: Context becomes Identity (agentRole), Requirements become Task List (taskList[]), Length/Format becomes Output Rules (outputRules[]), Audience + Constraints become Guard Rails (guardRails[]), and a new section — Compliance Anchors (complianceAnchors[]) — adds regulatory awareness',
+          'Build an agent when: the task repeats weekly or more, requires consistent compliance language, multiple people would benefit, or has guard rails that must never be forgotten',
+          'Use a one-off prompt when: the task is truly unique, you are exploring or brainstorming, or the context will never repeat',
+          'A standard prompt is stateless — every session you re-establish your role, constraints, and expectations from scratch. An agent inverts this by embedding persistent instructions so every conversation automatically inherits them.',
           'Building an agent is a one-time investment that pays off every time you use it — the more repetitive the task, the higher the return',
-        ],
-        steps: [
-          'Identify a repetitive task that would benefit from consistent AI assistance',
-          'Define the core behavior and personality of your agent',
-          'Specify the knowledge domain and expertise required',
-          'Set boundaries and safety constraints',
-          'Test the agent with realistic scenarios from your work',
         ],
         examples: [
           {
-            title: 'Agent vs One-off Prompt',
-            bad: 'Each time: "I\'m a loan officer at a community bank. Help me draft a professional, compliant collection follow-up email. Make sure to use a supportive tone, don\'t threaten, and include regulatory disclosures..."',
-            good: 'Agent instruction (set once): "You are a Collections Communication Assistant for loan officers at a community bank. You help draft professional, compliant follow-up communications for past-due accounts. Always maintain a supportive, empathetic tone. Never use threatening language or imply legal action. Include standard FDCPA regulatory disclosures in every letter. Format outputs as ready-to-send emails with subject line, greeting, body, and sign-off."',
-            explanation: 'The agent approach embeds your role, compliance requirements, tone preferences, and output format once. Every future interaction automatically follows these guidelines — you never forget a disclosure or drift in tone.',
+            title: 'CLEAR → Agent Architecture Mapping',
+            good: `CLEAR Element → Agent Section → Why It Persists:
+
+Context → Identity (agentRole): Agent always knows its role and department context
+Requirements → Task List (taskList[]): Agent handles recurring tasks without re-explaining
+Length/Format → Output Rules (outputRules[]): Consistent formatting every time, no drift
+Audience + Constraints → Guard Rails (guardRails[]): Safety boundaries always enforced
+(New) → Compliance Anchors (complianceAnchors[]): Regulatory awareness built into every response`,
+            explanation: 'Every element of CLEAR maps directly to a section of the agent template. If you can write a good CLEAR prompt, you already know how to fill in an agent template — you just need to make each piece persistent.',
           },
           {
-            title: 'Role-Specific Agents: Loan Officer vs Credit Analyst',
-            good: `Loan Officer Agent: "You are a Customer Communication Assistant for loan officers. You draft customer-facing emails, talking points, and follow-up letters. Use warm, professional language appropriate for customers. Always include required regulatory disclosures. Never quote specific interest rates without noting they are subject to credit review."
+            title: 'When to Build an Agent vs One-Off Prompt',
+            good: `BUILD AN AGENT when:
+- Task repeats weekly or more (loan review prep, variance commentary, compliance memos)
+- Requires consistent compliance language (FDCPA disclosures, internal-use-only disclaimers)
+- Multiple people would benefit (shared template across the department)
+- Has guard rails that must never be forgotten (never quote rates, never recommend credit decisions)
 
-Credit Analyst Agent: "You are a Credit Analysis Assistant for commercial credit analysts. You help draft risk summaries, ratio commentary, and credit memo sections. Use precise financial language appropriate for internal credit committees. Always structure output as numbered sections with headers. Never make credit approval or denial recommendations — only summarize and flag risk factors."`,
-            explanation: 'Each role has different compliance requirements, audiences, and output formats. The loan officer agent optimizes for customer communication; the credit analyst agent optimizes for internal analytical precision. Building role-specific agents prevents mismatched tone and compliance language.',
+USE A ONE-OFF PROMPT when:
+- Truly unique task (one-time research, special project)
+- Exploring or brainstorming (generating ideas, testing approaches)
+- Context will never repeat (unique customer situation you will not encounter again)`,
+            explanation: 'The decision rule is simple: if you find yourself re-typing the same role, constraints, and format instructions more than twice, build an agent. The repetition is the signal.',
           },
         ],
         practiceTask: {
-          title: 'Identify Agent Opportunities',
-          instructions: 'List 3 repetitive tasks in your role that could benefit from a specialized AI agent.',
-          scenario: 'Think about your typical work week. You likely draft similar emails, memos, summaries, or analyses repeatedly — each time re-explaining your role, your audience, and your compliance requirements to the AI. For each task you identify, note: (1) the task name, (2) how often you do it, (3) why consistency matters for that task, and (4) what would go wrong if the AI produced inconsistent output.',
+          title: 'Map Your Best Prompt to Agent Architecture',
+          instructions: 'Take your best prompt from Session 1 and map its parts to the 5 agent sections. Do not build the agent yet — just map.',
+          scenario: 'Review the best prompt you wrote in Session 1 (your Capstone or the prompt you are most proud of). For each part of that prompt, identify which agent section it would become:\n\n1. Which part becomes the Identity? (Who the agent is)\n2. Which part becomes the Task List? (What it does)\n3. Which part becomes the Output Rules? (How it formats)\n4. Which part becomes the Guard Rails? (What it refuses)\n5. What Compliance Anchors would you add? (What regulatory language must always appear)\n\nAlso answer: Is this task one you would build an agent for, or is it better as a one-off prompt? Explain your reasoning.',
           hints: [
-            'What tasks do you repeat weekly?',
-            'Where does inconsistency create risk?',
-            'What takes too long but follows a pattern?',
-            'Which tasks have compliance requirements?',
+            'Look at your Session 1 Capstone prompt',
+            'What role did you specify? That becomes Identity',
+            'What format did you request? That becomes Output Rules',
+            'What constraints did you include? Those become Guard Rails',
+            'Would you use this prompt again next week?',
           ],
           successCriteria: [
-            'Lists 3 specific, named tasks — not generic categories like "writing" or "analysis"',
-            'Each task includes how frequently it is performed (daily, weekly, etc.)',
-            'At least one task identifies a compliance or consistency benefit that justifies the agent approach',
-            'Tasks are realistic for a banking role and suitable for AI assistance',
+            'Maps at least 4 of 5 agent sections to specific parts of their Session 1 prompt',
+            'Correctly identifies which CLEAR elements map to which agent sections',
+            'Provides a clear rationale for whether this task warrants an agent or a one-off prompt',
+            'If recommending an agent, explains what consistency or compliance benefit it provides',
           ],
         },
       },
@@ -470,15 +476,16 @@ Credit Analyst Agent: "You are a Credit Analysis Assistant for commercial credit
       id: '2-2',
       title: 'Agent Architecture',
       type: 'document',
-      description: 'The four pillars of effective agent design and prompt security awareness',
+      description: 'The four pillars of effective agent design, agent fundamentals, and prompt security awareness',
       estimatedTime: '15 min',
       learningObjectives: [
+        'Define what an AI agent is and how persistent instructions create consistency',
         'Describe the 4 architectural pillars of an AI agent',
         'Explain how guard rails protect against misuse and prompt injection',
         'Identify basic prompt injection risks and 3 defense patterns',
       ],
       content: {
-        overview: 'Effective agents are built on four architectural pillars: the system prompt (behavior anchor), knowledge boundaries (what the agent knows and disclaims), output format specifications (so responses are predictable), and guard rails (explicit refusal patterns for out-of-scope or non-compliant requests). Think of it like a bank\'s operating procedures — each employee follows a manual that defines what they can do independently and what requires escalation. Your agent\'s architecture is its operating manual.',
+        overview: 'An AI agent is a configured assistant with persistent instructions that define its behavior before any user message arrives. Unlike one-off prompts, an agent maintains consistent behavior across hundreds of interactions without manual repetition. In Module 2-1, you mapped CLEAR to agent sections — now you learn the architectural pillars that make agents reliable. Effective agents are built on four pillars: the system prompt (behavior anchor), knowledge boundaries (what the agent knows and disclaims), output format specifications (so responses are predictable), and guard rails (explicit refusal patterns for out-of-scope or non-compliant requests). Think of it like a bank\'s operating procedures — each employee follows a manual that defines what they can do independently and what requires escalation. Your agent\'s architecture is its operating manual.',
         keyPoints: [
           'The system prompt is the agent\'s operating manual — it defines role, scope, tone, and constraints before any user message arrives',
           'Knowledge boundaries tell the agent what to assume and what to disclaim — a credit agent should know DSCR ratios but should not give legal advice',
@@ -740,26 +747,96 @@ Review Checkpoint: Credit analyst reviews all agent-generated analysis before it
     },
     {
       id: '2-5',
+      title: 'Your Living Agent',
+      type: 'document',
+      description: 'Iterating on agents after real-world use, sharing templates, and measuring effectiveness',
+      estimatedTime: '8 min',
+      learningObjectives: [
+        'Describe how to iterate on an agent after real-world use',
+        'Explain how to share an agent template with colleagues',
+        'Identify one metric for measuring agent effectiveness',
+      ],
+      content: {
+        overview: 'Your agent is not finished when you deploy it — it is finished when it stops needing updates. A living agent improves over time as you discover gaps through real usage. Every bad response is a signal: add a guard rail, refine an output rule, or expand the task list. This module teaches you how to maintain, share, and measure your agent so it becomes a durable team asset, not a one-time exercise.',
+        keyPoints: [
+          'Agent Iteration Cycle: Use your agent for a week. When it gives a bad response, add a guard rail or output rule to prevent recurrence. Version your agent (the platform tracks versions). Review guard rails monthly.',
+          'Sharing Agents: The 5-section template makes sharing easy. Colleagues customize the Identity section while keeping your Task List, Output Rules, Guard Rails, and Compliance Anchors. Use the community hub to share templates across the team.',
+          'Measuring Effectiveness: Pick one recurring task. Track: time before AI (estimate), time with AI (actual), quality difference (subjective), and errors caught by VERIFY. This becomes your ROI baseline.',
+          'Version control: every change to your agent creates a new version. If an update makes things worse, roll back. Never overwrite without testing first.',
+          'Common iteration triggers: agent gives wrong format (update Output Rules), agent responds to out-of-scope request (add Guard Rail), agent misses compliance language (add Compliance Anchor), agent handles edge case poorly (add to Task List)',
+        ],
+        examples: [
+          {
+            title: 'Agent Iteration Example',
+            good: `Week 1 Observation: Agent drafted a collection letter without the mini-Miranda FDCPA disclosure.
+Action: Added Compliance Anchor — "Every letter includes: 'This communication is from a debt collector...'"
+
+Week 2 Observation: Agent responded to a request for investment advice with generic financial guidance.
+Action: Added Guard Rail — "Do not provide investment or financial planning advice. Respond: 'Investment questions should be directed to our wealth management team.'"
+
+Week 3 Observation: Agent formatting inconsistent — sometimes uses bullets, sometimes paragraphs.
+Action: Updated Output Rule — "Always use bullet points for lists of 3+ items. Use numbered lists for sequential steps."
+
+Result: After 3 iterations, agent handles 95% of standard requests correctly without intervention.`,
+            explanation: 'Each iteration addresses a specific failure observed in real usage. The fix is always concrete — a new rule, anchor, or guard rail — not a vague "make it better" instruction.',
+          },
+          {
+            title: 'Sharing an Agent Template',
+            good: `Original Agent (Loan Officer — Collections):
+- Identity: "Collections Communication Assistant for loan officers at First Community Bank"
+- Shared elements: Task List (3 tasks), Output Rules (3 rules), Guard Rails (3 rails), Compliance Anchors (2 anchors)
+
+Colleague's Customized Version:
+- Identity: "Collections Communication Assistant for loan officers at Second National Bank"
+- Everything else: UNCHANGED — same tasks, rules, rails, and anchors
+
+Why this works: The guard rails and compliance anchors are universal to the collections function. Only the Identity changes when the template moves to a different institution.`,
+            explanation: 'A well-designed template separates what is role-specific (Identity) from what is function-specific (everything else). This makes sharing across teams and even institutions practical.',
+          },
+        ],
+        practiceTask: {
+          title: 'Plan Your Agent Iteration Strategy',
+          instructions: 'Describe your plan for maintaining and improving your agent after deployment.',
+          scenario: 'Your agent is about to go live. Before it does, write a brief iteration plan that answers:\n\n1. What will you watch for in the first week of use? (Name 2-3 specific behaviors to monitor)\n2. What guard rail do you expect to add first? (Based on what you know about edge cases in your role)\n3. How will you measure effectiveness? (Pick one recurring task and describe: time before AI, expected time with AI, what quality indicators you will track)\n4. Who else on your team could use this agent, and what would they need to customize?',
+          hints: [
+            'What is the most likely failure mode for your agent?',
+            'What edge case will users try first?',
+            'What task do you do most often that the agent helps with?',
+            'Who on your team does similar work?',
+          ],
+          successCriteria: [
+            'Identifies at least 2 specific behaviors to monitor in the first week (not generic "see how it goes")',
+            'Names a specific guard rail to add based on a realistic edge case for their role',
+            'Describes a measurable effectiveness metric — includes time estimate and quality indicator',
+            'Identifies at least one colleague who could use the template and what they would customize',
+          ],
+        },
+      },
+    },
+    {
+      id: '2-6',
       title: 'Build Your Agent',
       type: 'exercise',
-      description: 'Assemble, test, and refine your personalized AI agent',
+      description: 'Assemble, test, and refine your personalized AI agent with a living agent plan',
       estimatedTime: '25 min',
       learningObjectives: [
         'Assemble a complete, deployable agent system prompt',
         'Test agent behavior with standard, edge-case, and out-of-scope scenarios',
         'Identify gaps and refine instructions based on test results',
+        'Describe an iteration plan for the first week of agent use',
       ],
       content: {
-        overview: 'This capstone exercise brings together everything from modules 2-1 through 2-4. Building a deployable agent means merging your architecture design and completed template into a single, testable system prompt. A good agent system prompt is typically 150-400 words — comprehensive enough to constrain behavior, short enough that the AI processes it efficiently. The real test is not whether the AI gives a perfect answer to one question — it is whether the system prompt produces consistently appropriate behavior across three different scenario types.',
+        overview: 'This capstone exercise brings together everything from modules 2-1 through 2-5. Building a deployable agent means merging your architecture design and completed template into a single, testable system prompt. A good agent system prompt is typically 150-400 words — comprehensive enough to constrain behavior, short enough that the AI processes it efficiently. The real test is not whether the AI gives a perfect answer to one question — it is whether the system prompt produces consistently appropriate behavior across three different scenario types. And the work does not end at deployment — your Living Agent Plan describes how you will iterate and improve.',
         keyPoints: [
           'A deployable system prompt is 150-400 words — comprehensive enough to constrain behavior, short enough to leave room for the task',
           'Test your agent with three scenario types: a standard task it should handle well, an edge case it should handle carefully, and an out-of-scope request it should decline',
           'If your agent responds consistently and appropriately to all three tests, the system prompt is working; inconsistency means the guard rails need sharpening',
           'Document what worked and what did not — a living system prompt improves over time as you find gaps through real usage',
+          'Your Living Agent Plan describes what you will monitor, what you expect to iterate on, and how you will measure effectiveness',
         ],
         practiceTask: {
-          title: 'Build and Test Your Agent',
-          instructions: 'Assemble your complete system prompt and test it against three scenarios.',
+          title: 'Build, Test, and Plan Your Agent',
+          instructions: 'Assemble your complete system prompt, test it against three scenarios, and write your Living Agent Plan.',
           scenario: `Part 1 — Assemble: Combine your work from modules 2-2 and 2-3 into a single system prompt. It should include:
 - Identity section (who the agent is and who it serves)
 - Task list (what it helps with and in what format)
@@ -772,19 +849,21 @@ Part 2 — Test: Describe three test messages you would send to your agent:
 2. An edge case (unusual request still in scope)
 3. An out-of-scope request the guard rails should block
 
-Part 3 — Reflect: For each test, note whether you expect the agent to pass or fail, and what you would adjust in the system prompt if it fails.`,
+Part 3 — Living Agent Plan: Write 2-3 sentences answering: What will you watch for in the first week? What guard rail do you expect to add first? How will you know if the agent is working well?`,
           hints: [
             'Start with your Module 2-3 template',
             'Test a standard, everyday task first',
             'Try an out-of-scope request next',
             'What would you adjust if guard rails fail?',
             'Is it 150-400 words?',
+            'What will you monitor in the first week?',
           ],
           successCriteria: [
             'System prompt is 150+ words and covers all five architectural sections (identity, tasks, output rules, guard rails, compliance)',
             'Includes at least one standard task test scenario with expected agent behavior described',
             'Includes at least one out-of-scope test to verify guard rails would activate',
             'Identifies at least one gap or improvement discovered during the testing thought exercise',
+            'Includes a Living Agent Plan with specific monitoring criteria and first iteration target',
             'The completed agent could be shared with a colleague in the same role and function correctly without modification',
           ],
         },
@@ -1227,7 +1306,7 @@ Final Output: Reviewed, compliant response letter ready to send.`,
           'Chain-of-thought prompting asks the AI to show its reasoning step-by-step before reaching a conclusion — useful when how it got there matters as much as what it concluded',
           'Multi-shot prompting provides 2-3 examples of the output format you want before asking for the real output — dramatically improves consistency for templated documents',
           'Self-review prompting asks the AI to critique its own output against a checklist before you review it — surfaces issues before they reach human review',
-          'Decomposition breaks a complex task into a series of simpler prompts — each producing verifiable intermediate output that feeds the next step',
+          'Decomposition breaks a complex task into a series of simpler prompts — each producing verifiable intermediate output that feeds the next step. For example, a complete annual loan review can be decomposed into: (1) ratio extraction, (2) trend analysis, (3) risk identification, (4) question generation, (5) memo assembly — each step verifiable before feeding the next',
           'When to choose: chain-of-thought for analysis tasks, multi-shot for formatted documents, self-review for high-stakes outputs, decomposition for multi-part deliverables',
         ],
         steps: [
@@ -1269,11 +1348,38 @@ Now produce commentary in the same format for: Provision for Loan Losses — Bud
 For each item, note whether it is Fully Met, Partially Met, or Missing. Then provide a revised version that addresses any gaps."`,
             explanation: 'Self-review catches the most common errors — missing disclaimers, inconsistent formatting, forgotten anonymization — before the human review step. It is like asking a colleague to proofread before submitting: the output quality improves significantly with minimal additional effort.',
           },
+          {
+            title: 'Decomposition: Breaking a Complex Task into Chained Prompts',
+            good: `Complex task: "Prepare a complete annual loan review package for a $3M commercial real estate loan."
+
+Decomposed into 5 chained prompts:
+
+Prompt 1 — Ratio Extraction:
+"Extract these ratios from the attached anonymized financial summary: DSCR, Current Ratio, Debt-to-Equity, LTV. Present as a table with Current Year, Prior Year, and Change columns."
+→ Human Review: Verify ratios against source documents using VERIFY.
+
+Prompt 2 — Trend Analysis (uses Prompt 1 output):
+"Given these verified ratios [paste reviewed table], provide year-over-year trend commentary. Flag any ratio that changed by more than 10%. Note whether each trend is Improving, Stable, or Deteriorating."
+→ Human Review: Confirm trend interpretations match institutional knowledge.
+
+Prompt 3 — Risk Identification (uses Prompts 1-2 output):
+"Based on these ratios and trends, identify the top 5 risk factors. Rate each H/M/L. For each, provide a one-sentence mitigation note."
+→ Human Review: Validate risk factors against borrower relationship knowledge.
+
+Prompt 4 — Interview Questions (uses Prompt 3 output):
+"Generate 8 interview questions for the borrower meeting, grouped by the risk factors identified. Focus on areas where trends are deteriorating."
+→ Human Review: Select and prioritize questions for the actual meeting.
+
+Prompt 5 — Memo Assembly (uses all reviewed outputs):
+"Combine the following reviewed sections into a credit memo format: [paste all reviewed outputs]. Add section headers. Human will write the recommendation section."
+→ Final Output: Complete annual review memo. Human writes recommendation.`,
+            explanation: 'Each prompt does one thing well. Each output is independently verifiable before feeding the next step. The human adds institutional knowledge at every checkpoint. If Prompt 2 produces a bad trend analysis, you fix it before it corrupts the risk identification in Prompt 3. This is why decomposition beats a single mega-prompt for complex deliverables.',
+          },
         ],
         practiceTask: {
           title: 'Apply an Advanced Technique',
           instructions: 'Select one advanced technique and apply it to a banking analysis scenario.',
-          scenario: 'Choose one of the three techniques — chain-of-thought, multi-shot, or self-review — and apply it to this scenario: You need to draft a risk assessment for a restaurant chain seeking a $400,000 working capital line of credit. The assessment will go to a senior credit officer for review. Using your chosen technique, write a prompt that is noticeably more structured and reliable than a basic prompt would be. Label which technique you are using and explain in one sentence why you chose it for this scenario.',
+          scenario: 'Choose one of the four techniques — chain-of-thought, multi-shot, self-review, or decomposition — and apply it to this scenario: You need to draft a risk assessment for a restaurant chain seeking a $400,000 working capital line of credit. The assessment will go to a senior credit officer for review. Using your chosen technique, write a prompt (or prompt chain, if using decomposition) that is noticeably more structured and reliable than a basic prompt would be. Label which technique you are using and explain in one sentence why you chose it for this scenario.',
           hints: [
             'Which technique matches this task best?',
             'Does showing reasoning help here?',
