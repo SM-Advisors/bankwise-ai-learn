@@ -86,9 +86,9 @@ BEGIN
       TO authenticated
       USING (
         EXISTS (
-          SELECT 1 FROM user_profiles
-          WHERE user_profiles.id = auth.uid()
-          AND user_profiles.role = 'admin'
+          SELECT 1 FROM user_roles
+          WHERE user_roles.user_id = auth.uid()
+          AND user_roles.role = 'admin'
         )
       );
   END IF;
@@ -112,9 +112,9 @@ BEGIN
       TO authenticated
       USING (
         EXISTS (
-          SELECT 1 FROM user_profiles
-          WHERE user_profiles.id = auth.uid()
-          AND user_profiles.role = 'admin'
+          SELECT 1 FROM user_roles
+          WHERE user_roles.user_id = auth.uid()
+          AND user_roles.role = 'admin'
         )
       );
   END IF;
