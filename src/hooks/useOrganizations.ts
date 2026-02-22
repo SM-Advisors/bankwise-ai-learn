@@ -151,6 +151,26 @@ export function useOrganizations() {
     }
   }, [fetchOrganizations]);
 
+  const updateCodeUses = useCallback(async (codeId: string, currentUses: number) => {
+    try {
+      const { error } = await (supabase
+        .from('registration_codes' as any)
+        .update({ current_uses: currentUses })
+        .eq('id', codeId) as any);
+
+      if (error) {
+        console.error('Error updating code uses:', error);
+        return { success: false, error: error.message };
+      }
+
+      await fetchOrganizations();
+      return { success: true };
+    } catch (err) {
+      console.error('Error updating code uses:', err);
+      return { success: false, error: 'Failed to update usage count' };
+    }
+  }, [fetchOrganizations]);
+
   return {
     organizations,
     registrationCodes,
@@ -159,5 +179,6 @@ export function useOrganizations() {
     createOrganization,
     createRegistrationCode,
     toggleCodeActive,
+    updateCodeUses,
   };
 }
