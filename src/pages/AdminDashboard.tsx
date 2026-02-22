@@ -1294,11 +1294,11 @@ export default function AdminDashboard() {
 
           {/* Create Policy Dialog */}
           <Dialog open={isCreating} onOpenChange={setIsCreating}>
-            <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
-              <DialogHeader className="flex-shrink-0">
+            <DialogContent className="max-w-4xl max-h-[90vh]">
+              <DialogHeader>
                 <DialogTitle>Create New Policy</DialogTitle>
               </DialogHeader>
-              <div className="flex-1 overflow-y-auto pr-4 min-h-0">
+              <div className="max-h-[70vh] overflow-y-auto pr-2">
                 <div className="space-y-4 py-4">
                   {/* Document Upload */}
                   <div className="rounded-lg border-2 border-dashed border-border p-6 text-center">
