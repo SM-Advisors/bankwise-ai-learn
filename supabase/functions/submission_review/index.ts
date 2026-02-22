@@ -108,13 +108,72 @@ interface BankPolicy {
   policy_type: string;
 }
 
-// Retrieve lesson content chunks from database
+// Generate a single query embedding via OpenAI
+async function generateQueryEmbedding(text: string): Promise<number[] | null> {
+  const apiKey = Deno.env.get("OPENAI_API_KEY");
+  if (!apiKey) return null;
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/embeddings", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "text-embedding-3-small",
+        input: text,
+        dimensions: 1536,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("OpenAI embedding error:", response.status);
+      return null;
+    }
+
+    const result = await response.json();
+    return result.data?.[0]?.embedding || null;
+  } catch (err) {
+    console.error("Embedding generation failed:", err);
+    return null;
+  }
+}
+
+// Retrieve lesson content chunks from database (vector similarity with sequential fallback)
 async function retrieveLessonContext(
   supabase: any,
   params: { lessonId: string; moduleId?: string; query: string; topK?: number }
 ): Promise<LessonChunk[]> {
-  const { lessonId, moduleId, topK = 6 } = params;
+  const { lessonId, moduleId, query: ragQuery, topK = 6 } = params;
 
+  // Try vector similarity search first
+  const queryEmbedding = await generateQueryEmbedding(ragQuery);
+
+  if (queryEmbedding) {
+    try {
+      const { data, error } = await supabase.rpc("match_lesson_chunks", {
+        query_embedding: JSON.stringify(queryEmbedding),
+        match_count: topK,
+        filter_lesson_id: lessonId,
+        filter_module_id: moduleId || null,
+        similarity_threshold: 0.3,
+      });
+
+      if (!error && data && data.length > 0) {
+        console.log(`Vector search returned ${data.length} chunks (top similarity: ${data[0]?.similarity?.toFixed(3)})`);
+        return data;
+      }
+
+      if (error) {
+        console.error("Vector search error, falling back to sequential:", error.message);
+      }
+    } catch (rpcErr) {
+      console.error("RPC call failed, falling back to sequential:", rpcErr);
+    }
+  }
+
+  // Fallback: sequential chunk retrieval (original behavior)
   let query = supabase
     .from("lesson_content_chunks")
     .select("id, text, source, metadata")

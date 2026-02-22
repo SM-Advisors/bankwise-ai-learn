@@ -6,6 +6,38 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const OPENAI_EMBEDDING_MODEL = "text-embedding-3-small";
+const EMBEDDING_DIMENSIONS = 1536;
+const EMBEDDING_BATCH_SIZE = 50;
+
+async function generateEmbeddings(
+  texts: string[],
+  apiKey: string
+): Promise<number[][]> {
+  const response = await fetch("https://api.openai.com/v1/embeddings", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: OPENAI_EMBEDDING_MODEL,
+      input: texts,
+      dimensions: EMBEDDING_DIMENSIONS,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`OpenAI Embedding API error ${response.status}: ${errorText}`);
+  }
+
+  const result = await response.json();
+  return result.data
+    .sort((a: any, b: any) => a.index - b.index)
+    .map((item: any) => item.embedding);
+}
+
 /**
  * Lesson Chunk Seeder
  *
@@ -217,12 +249,67 @@ serve(async (req) => {
       };
     }
 
+    // Auto-generate embeddings if OPENAI_API_KEY is available
+    let embeddingResult: { embedded: number; errors?: string[] } | null = null;
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    if (OPENAI_API_KEY && totalChunks > 0) {
+      console.log(`Generating embeddings for ${totalChunks} chunks...`);
+
+      // Fetch all chunks that were just inserted (no embedding yet)
+      const { data: chunksToEmbed, error: fetchErr } = await supabase
+        .from("lesson_content_chunks")
+        .select("id, text")
+        .is("embedding", null)
+        .order("lesson_id", { ascending: true })
+        .order("chunk_index", { ascending: true });
+
+      if (!fetchErr && chunksToEmbed && chunksToEmbed.length > 0) {
+        let totalEmbedded = 0;
+        const embErrors: string[] = [];
+
+        for (let i = 0; i < chunksToEmbed.length; i += EMBEDDING_BATCH_SIZE) {
+          const batch = chunksToEmbed.slice(i, i + EMBEDDING_BATCH_SIZE);
+          try {
+            const embeddings = await generateEmbeddings(
+              batch.map((c: any) => c.text),
+              OPENAI_API_KEY
+            );
+            for (let j = 0; j < batch.length; j++) {
+              const { error: updErr } = await supabase
+                .from("lesson_content_chunks")
+                .update({ embedding: JSON.stringify(embeddings[j]) })
+                .eq("id", batch[j].id);
+              if (updErr) {
+                embErrors.push(`Chunk ${batch[j].id}: ${updErr.message}`);
+              } else {
+                totalEmbedded++;
+              }
+            }
+          } catch (batchErr) {
+            embErrors.push(`Batch error: ${batchErr instanceof Error ? batchErr.message : "Unknown"}`);
+          }
+          if (i + EMBEDDING_BATCH_SIZE < chunksToEmbed.length) {
+            await new Promise((r) => setTimeout(r, 200));
+          }
+        }
+
+        embeddingResult = {
+          embedded: totalEmbedded,
+          errors: embErrors.length > 0 ? embErrors : undefined,
+        };
+        console.log(`Embedded ${totalEmbedded}/${chunksToEmbed.length} chunks`);
+      }
+    } else if (!OPENAI_API_KEY) {
+      console.log("OPENAI_API_KEY not set — skipping embedding generation. Run embed_chunks function separately.");
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         totalModules,
         totalChunks,
         sessions: results,
+        embeddings: embeddingResult,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
