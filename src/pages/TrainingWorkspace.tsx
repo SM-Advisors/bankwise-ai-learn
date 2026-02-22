@@ -20,7 +20,9 @@ import { DEFAULT_ENGAGEMENT } from '@/types/progress';
 import { deriveSkillSignals } from '@/utils/deriveSkillSignals';
 import { useAIMemories } from '@/hooks/useAIPreferences';
 import { usePracticeConversations } from '@/hooks/usePracticeConversations';
-import { Loader2, ArrowLeft, Shield } from 'lucide-react';
+import { useUserAgents } from '@/hooks/useUserAgents';
+import { AgentStudioPanel } from '@/components/agent-studio/AgentStudioPanel';
+import { Loader2, ArrowLeft, Shield, Bot } from 'lucide-react';
 
 export default function TrainingWorkspace() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -48,6 +50,14 @@ export default function TrainingWorkspace() {
 
   const { policies } = useBankPolicies();
   const { createMemory } = useAIMemories();
+  const { activeAgent, draftAgent } = useUserAgents();
+
+  // Determine if current module is an Agent Studio module
+  const isAgentModule = sessionId === '2' && (selectedModule?.id === '2-3' || selectedModule?.id === '2-5');
+
+  // For Session 3: determine if a deployed agent is active
+  const isSession3 = sessionId === '3';
+  const deployedAgent = activeAgent;
 
   // Module engagement tracking state
   const [moduleEngagement, setModuleEngagement] = useState<Record<string, ModuleEngagement>>({});
@@ -265,6 +275,8 @@ export default function TrainingWorkspace() {
           moduleTitle: selectedModule.content.practiceTask.title,
           scenario: selectedModule.content.practiceTask.scenario,
           sessionNumber: parseInt(sessionId || '1'),
+          // Session 3: use deployed agent's custom system prompt if available
+          ...(isSession3 && deployedAgent?.system_prompt ? { customSystemPrompt: deployedAgent.system_prompt } : {}),
         },
       });
 
@@ -319,6 +331,7 @@ export default function TrainingWorkspace() {
               content: reviewRequest,
             }],
             practiceConversation: activeMessages,
+            agentContext: agentContextForAndrea,
             learnerState: {
               currentCardTitle: selectedModule.title,
               progressSummary: `Submitted practice conversation with ${activeMessages.filter(m => m.role === 'user').length} prompts for review`,
@@ -335,6 +348,8 @@ export default function TrainingWorkspace() {
             moduleId: selectedModule.id,
             submission: conversationTranscript,
             rubric,
+            // Pass agent template for modules 2-3 and 2-5 for agent-specific rubrics
+            ...(isAgentModule && currentAgent?.template_data ? { agentTemplate: currentAgent.template_data } : {}),
             learnerState: {
               currentCardTitle: selectedModule.title,
               attemptNumber: 1,
@@ -456,6 +471,16 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
     }
   };
 
+  // Build agent context for Andrea when the user is working on their agent
+  const currentAgent = draftAgent || activeAgent;
+  const agentContextForAndrea = currentAgent ? {
+    name: currentAgent.name,
+    status: currentAgent.status,
+    systemPrompt: currentAgent.system_prompt,
+    templateData: currentAgent.template_data,
+    isDeployed: currentAgent.is_deployed,
+  } : undefined;
+
   const handleTrainerSubmit = async () => {
     if (!trainerInput.trim()) return;
 
@@ -483,6 +508,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           sessionNumber: parseInt(sessionId || '1'),
           messages: [...trainerMessages, apiMessage],
           practiceConversation: activeMessages.length > 0 ? activeMessages : undefined,
+          agentContext: agentContextForAndrea,
           learnerState: {
             currentCardTitle: selectedModule?.title,
             progressSummary: activeMessages.length > 0
@@ -548,6 +574,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           sessionNumber: parseInt(sessionId || '1'),
           messages: [...trainerMessages, apiMessage],
           practiceConversation: activeMessages.length > 0 ? activeMessages : undefined,
+          agentContext: agentContextForAndrea,
           learnerState: {
             currentCardTitle: selectedModule?.title,
             progressSummary: activeMessages.length > 0
@@ -692,9 +719,26 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           onSelectModule={handleModuleSelect}
         />
 
-        {/* Middle Column - Practice Chat Area */}
+        {/* Middle Column - Practice Chat Area / Agent Studio */}
         <div className="flex-1 flex flex-col overflow-hidden" ref={contentScrollRef}>
-          {selectedModule && (
+          {/* Session 3 deployed agent banner */}
+          {isSession3 && deployedAgent && selectedModule && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 border-b border-primary/10">
+              <Bot className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-primary">
+                Practicing with: {deployedAgent.name}
+              </span>
+              <span className="text-xs text-muted-foreground ml-auto">
+                Custom agent active
+              </span>
+            </div>
+          )}
+
+          {selectedModule && isAgentModule ? (
+            <AgentStudioPanel
+              module={selectedModule}
+            />
+          ) : selectedModule ? (
             <PracticeChatPanel
               module={selectedModule}
               messages={activeMessages}
@@ -711,7 +755,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
               onNewChat={startNewChat}
               onSelectConversation={selectConversation}
             />
-          )}
+          ) : null}
         </div>
 
         {/* Right Column - Andrea AI Coach */}

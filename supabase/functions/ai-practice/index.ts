@@ -15,6 +15,7 @@ interface PracticeChatRequest {
   moduleTitle: string;
   scenario: string;
   sessionNumber?: number;
+  customSystemPrompt?: string; // User's deployed agent system prompt (Session 3)
 }
 
 serve(async (req) => {
@@ -28,7 +29,7 @@ serve(async (req) => {
       throw new Error("ANTHROPIC_API_KEY is not configured");
     }
 
-    const { messages, moduleTitle, scenario, sessionNumber }: PracticeChatRequest = await req.json();
+    const { messages, moduleTitle, scenario, sessionNumber, customSystemPrompt }: PracticeChatRequest = await req.json();
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
@@ -37,7 +38,22 @@ serve(async (req) => {
       );
     }
 
-    const systemPrompt = `You are an AI assistant being used by a banking professional as part of their day-to-day work. You are NOT a coach or tutor — you are the actual AI tool they are practicing with.
+    // Use custom system prompt if provided (deployed agent for Session 3), otherwise use default
+    const systemPrompt = customSystemPrompt
+      ? `${customSystemPrompt}
+
+---
+SCENARIO CONTEXT:
+The user is working on: "${moduleTitle}"
+${scenario ? `Situation: ${scenario}` : ""}
+
+META-INSTRUCTIONS:
+- Stay in character as the agent described above
+- Use appropriate banking terminology and realistic fake data
+- Mirror prompt quality — vague prompts get generic responses, specific prompts get tailored ones
+- Do NOT mention training, exercises, or modules — act as a real AI tool
+- Follow all guard rails, output rules, and compliance anchors defined in the system prompt above`
+      : `You are an AI assistant being used by a banking professional as part of their day-to-day work. You are NOT a coach or tutor — you are the actual AI tool they are practicing with.
 
 ## YOUR ROLE
 You are a general-purpose AI assistant (like ChatGPT or Claude) that a banker is using at their desk. Respond naturally and helpfully to whatever they ask.

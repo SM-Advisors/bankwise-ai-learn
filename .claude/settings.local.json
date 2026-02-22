@@ -27,7 +27,11 @@
       "Bash(git stash:*)",
       "Bash(cd:*)",
       "Bash(dir:*)",
-      "Bash(\"C:\\\\Users\\\\coryk\\\\OneDrive\\\\Documents\\\\GitHub Repos\\\\bankwise-ai-learn\\\\src\\\\hooks\\\\useReporting.ts\" << 'ENDOFFILE'\nPLACEHOLDER\nENDOFFILE)"
+      "Bash(\"C:\\\\Users\\\\coryk\\\\OneDrive\\\\Documents\\\\GitHub Repos\\\\bankwise-ai-learn\\\\src\\\\hooks\\\\useReporting.ts\" << 'ENDOFFILE'\nPLACEHOLDER\nENDOFFILE)",
+      "Bash(if exist nul echo \"nul file exists\")",
+      "Bash(npx supabase:*)",
+      "Bash(curl:*)",
+      "Bash(grep:*)"
     ]
   }
 }

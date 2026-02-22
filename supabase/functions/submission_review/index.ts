@@ -11,6 +11,13 @@ interface SubmissionReviewRequest {
   moduleId?: string;
   submission: string;
   rubric?: string | Record<string, unknown>;
+  agentTemplate?: {
+    identity?: string;
+    taskList?: Array<{ name: string; format: string; constraint: string }>;
+    outputRules?: string[];
+    guardRails?: Array<{ rule: string; alternative: string }>;
+    complianceAnchors?: string[];
+  };
   learnerState?: {
     currentCardTitle?: string;
     attemptNumber?: number;
@@ -231,7 +238,7 @@ serve(async (req) => {
     }
 
     const requestBody: SubmissionReviewRequest = await req.json();
-    const { lessonId, moduleId, submission, rubric, learnerState, userId: bodyUserId } = requestBody;
+    const { lessonId, moduleId, submission, rubric, agentTemplate, learnerState, userId: bodyUserId } = requestBody;
 
     if (!lessonId || !submission) {
       return new Response(
@@ -336,8 +343,30 @@ ${contextSection}
 
 ${policiesSection}
 
-## RUBRIC
-${rubric ? (typeof rubric === "string" ? rubric : JSON.stringify(rubric, null, 2)) : "Evaluate based on clarity, specificity, context, and appropriateness for banking use cases."}
+${(moduleId === "2-3" || moduleId === "2-5") && agentTemplate ? `## AGENT TEMPLATE RUBRIC
+This submission is an AI agent template from the Agent Studio. Evaluate template COMPLETENESS and QUALITY, not prompt technique.
+
+SCORING WEIGHTS:
+- Identity (20%): Clear role, department, audience, and purpose defined
+- Task List (25%): At least 2 specific tasks with formats and constraints
+- Output Rules (15%): At least 2 formatting/behavior rules defined
+- Guard Rails (25%): At least 2 guard rails with alternative responses for out-of-scope requests
+- Compliance Anchors (15%): At least 1 exact phrase that must appear in outputs
+
+AGENT TEMPLATE DATA:
+${agentTemplate.identity ? `Identity: "${agentTemplate.identity}"` : "Identity: MISSING"}
+Tasks: ${agentTemplate.taskList?.filter(t => t.name).length || 0} defined${agentTemplate.taskList?.filter(t => t.name).map(t => ` (${t.name})`).join(",") || ""}
+Output Rules: ${agentTemplate.outputRules?.filter(r => r.trim()).length || 0} defined
+Guard Rails: ${agentTemplate.guardRails?.filter(g => g.rule.trim()).length || 0} defined
+Compliance Anchors: ${agentTemplate.complianceAnchors?.filter(a => a.trim()).length || 0} defined
+
+EVALUATION FOCUS:
+- Are the tasks specific to a banking function (not generic)?
+- Do guard rails cover common edge cases (personal advice, legal questions, off-topic)?
+- Are compliance anchors real regulatory phrases (FDCPA, TILA, ECOA disclosures)?
+- Is the identity specific enough to produce consistent behavior?
+- Would this template produce a useful, safe AI agent for banking?` : `## RUBRIC
+${rubric ? (typeof rubric === "string" ? rubric : JSON.stringify(rubric, null, 2)) : "Evaluate based on clarity, specificity, context, and appropriateness for banking use cases."}`}
 
 ## SUBMISSION CONTEXT
 - Lesson ID: ${lessonId}

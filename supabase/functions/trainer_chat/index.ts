@@ -11,6 +11,20 @@ interface Message {
   content: string;
 }
 
+interface AgentContext {
+  name?: string;
+  status?: string;
+  systemPrompt?: string;
+  templateData?: {
+    identity?: string;
+    taskList?: Array<{ name: string; format: string; constraint: string }>;
+    outputRules?: string[];
+    guardRails?: Array<{ rule: string; alternative: string }>;
+    complianceAnchors?: string[];
+  };
+  isDeployed?: boolean;
+}
+
 interface TrainerChatRequest {
   lessonId: string;
   moduleId?: string;
@@ -18,6 +32,7 @@ interface TrainerChatRequest {
   messages: Message[];
   greeting?: boolean; // If true, generate a personalized greeting instead of a normal reply
   practiceConversation?: Message[]; // The learner's practice chat from the center panel
+  agentContext?: AgentContext; // The learner's agent data from Agent Studio
   learnerState?: {
     currentCardTitle?: string;
     progressSummary?: string;
@@ -447,6 +462,7 @@ serve(async (req) => {
       messages,
       greeting,
       practiceConversation,
+      agentContext,
       learnerState,
       userId: bodyUserId,
     } = requestBody;
@@ -749,7 +765,26 @@ REVIEW INSTRUCTIONS: When the learner asks you to review their practice conversa
 
 ---` : ""}
 
-## CURRENT CONTEXT
+${agentContext ? `## LEARNER'S AI AGENT
+The learner is building a custom AI agent in the Agent Studio. Here is their current agent:
+- Agent Name: ${agentContext.name || "Unnamed"}
+- Status: ${agentContext.status || "draft"}${agentContext.isDeployed ? " (DEPLOYED for Session 3)" : ""}
+${agentContext.templateData?.identity ? `- Identity: ${agentContext.templateData.identity}` : ""}
+${agentContext.templateData?.taskList?.filter(t => t.name).length ? `- Tasks: ${agentContext.templateData.taskList.filter(t => t.name).map(t => t.name).join(", ")}` : ""}
+${agentContext.templateData?.outputRules?.filter(r => r.trim()).length ? `- Output Rules: ${agentContext.templateData.outputRules.filter(r => r.trim()).join("; ")}` : ""}
+${agentContext.templateData?.guardRails?.filter(g => g.rule.trim()).length ? `- Guard Rails: ${agentContext.templateData.guardRails.filter(g => g.rule.trim()).map(g => g.rule).join("; ")}` : ""}
+${agentContext.templateData?.complianceAnchors?.filter(a => a.trim()).length ? `- Compliance Anchors: ${agentContext.templateData.complianceAnchors.filter(a => a.trim()).join("; ")}` : ""}
+
+AGENT COACHING RULES:
+- When the learner is working on their agent (Session 2, modules 2-3 or 2-5), reference their agent template sections specifically
+- Suggest improvements to specific sections: "Your guard rails could include a redirect for investment advice"
+- Celebrate deployment: "Your agent is live for Session 3 — exciting!"
+- If their template is incomplete, guide them to fill in missing sections
+- Comment on system prompt quality: word count, specificity, banking relevance
+- Never write the entire template for them — guide them to do it themselves
+---
+
+` : ""}## CURRENT CONTEXT
 - Session: ${effectiveSessionNumber}
 - Lesson ID: ${lessonId}
 ${moduleId ? `- Module ID: ${moduleId}` : ""}
