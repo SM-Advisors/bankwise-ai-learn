@@ -207,6 +207,25 @@ export function PracticeChatPanel({
         </div>
       </div>
 
+      {/* Completion pill — between toolbar and content */}
+      {isCompleted && (
+        <div className="flex justify-center py-1.5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-xs">
+            <CheckCircle className="h-3 w-3 text-emerald-600" />
+            <span className="text-emerald-700 font-medium">Complete</span>
+            {hasNextModule && onContinueToNext ? (
+              <button onClick={onContinueToNext} className="text-emerald-600 hover:text-emerald-800 font-medium flex items-center gap-0.5 ml-1">
+                Next <ChevronRight className="h-3 w-3" />
+              </button>
+            ) : onCompleteSession ? (
+              <button onClick={onCompleteSession} className="text-emerald-600 hover:text-emerald-800 font-medium flex items-center gap-0.5 ml-1">
+                Finish <CheckCircle className="h-3 w-3" />
+              </button>
+            ) : null}
+          </div>
+        </div>
+      )}
+
       {/* Empty state — shown before any messages */}
       {!hasConversation && (
         <div className="flex-1 flex flex-col items-center justify-center w-full max-w-2xl mx-auto px-4">
@@ -250,29 +269,6 @@ export function PracticeChatPanel({
             </Collapsible>
           </div>
 
-          {/* Completion Banner */}
-          {isCompleted && (
-            <div className="w-full max-w-md mt-3">
-              <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-accent/5 border border-accent/15 rounded-full">
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="h-4 w-4 text-accent" />
-                  <span className="text-accent font-medium">Complete</span>
-                  <span className="text-muted-foreground">— reviewed by Andrea</span>
-                </div>
-                {hasNextModule && onContinueToNext ? (
-                  <Button size="sm" variant="ghost" onClick={onContinueToNext} className="gap-1 text-xs h-7 px-3 rounded-full hover:bg-accent/10">
-                    Next Module
-                    <ChevronRight className="h-3 w-3" />
-                  </Button>
-                ) : onCompleteSession ? (
-                  <Button size="sm" variant="ghost" onClick={onCompleteSession} className="gap-1 text-xs h-7 px-3 rounded-full hover:bg-accent/10">
-                    Complete Session
-                    <CheckCircle className="h-3 w-3" />
-                  </Button>
-                ) : null}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
