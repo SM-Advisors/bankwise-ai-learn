@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Error fetching progress:', error);
       return null;
     }
-    return data as TrainingProgress | null;
+    return data as unknown as TrainingProgress | null;
   };
 
   const createProfile = async (userId: string, displayName: string) => {
@@ -124,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Error creating progress:', error);
       return null;
     }
-    return data as TrainingProgress;
+    return data as unknown as TrainingProgress;
   };
 
   useEffect(() => {

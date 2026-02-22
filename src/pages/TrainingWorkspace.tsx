@@ -318,6 +318,7 @@ export default function TrainingWorkspace() {
       instructions: selectedModule.content.practiceTask.instructions,
     };
 
+    let structuredFeedback: Message['structuredFeedback'] | undefined;
     try {
       // Call both trainer_chat (Andrea) and submission_review (structured) in parallel
       const [trainerResponse, reviewResponse] = await Promise.allSettled([
@@ -378,7 +379,7 @@ export default function TrainingWorkspace() {
       }
 
       // Extract structured feedback from submission_review
-      let structuredFeedback: Message['structuredFeedback'] | undefined;
+      // Assign to outer-scoped structuredFeedback
       if (reviewResponse.status === 'fulfilled' && !reviewResponse.value.error) {
         const feedbackData = reviewResponse.value.data;
         if (feedbackData?.feedback) {
