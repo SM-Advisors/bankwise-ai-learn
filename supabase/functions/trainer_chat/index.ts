@@ -760,7 +760,9 @@ You MUST respond with valid JSON in this exact format:
   "coachingAction": "socratic|explain|review|celebrate|redirect",
   "hintAvailable": true/false,
   "memorySuggestion": { "content": "Concise insight to remember", "reason": "Why this is worth saving" },
-  "shareSuggestion": { "type": "idea|friction_point|agent|workflow", "summary": "1-sentence description of what to share", "destinations": ["community", "my_ideas", "executive"] }
+  "shareSuggestion": { "type": "idea|friction_point|agent|workflow", "summary": "1-sentence description of what to share", "destinations": ["community", "my_ideas", "executive"] },
+  "skillObservation": { "skill": "context_setting|specificity|data_security|formatting|compliance|clear_framework|iteration|audience_awareness", "level": "emerging|developing|proficient|advanced", "evidence": "1 sentence describing the behavior you observed" },
+  "levelSuggestion": { "currentLevel": "beginner|intermediate|advanced|expert", "proposedLevel": "beginner|intermediate|advanced|expert", "rationale": "2-3 sentences explaining why this level change is warranted", "evidenceSummary": "Brief list of behaviors observed that support this change" }
 }
 
 FIELD DEFINITIONS:
@@ -787,6 +789,20 @@ FIELD DEFINITIONS:
   - The learner has deployed a working agent or workflow that could help others
   - DO NOT suggest sharing for routine practice tasks, generic insights, or minor observations
   Fields: "type" (idea|friction_point|agent|workflow), "summary" (1 sentence describing what would be shared, written as a title-like description), "destinations" (array of applicable destinations from: "community", "my_ideas", "executive" — include "executive" only for high-impact ideas or when user requests it). Omit this field entirely when there is nothing genuinely worth sharing.
+- "skillObservation" (OPTIONAL — include when you clearly observe the learner demonstrating a specific skill at a specific level): Use this to silently record what you see. Only one skill per message. Include when:
+  - The learner writes a prompt and you can clearly assess one skill (e.g., "context_setting" at "proficient" because they included role + scenario + output format)
+  - Do NOT include for vague or ambiguous interactions where skill level is unclear
+  - Skills: context_setting, specificity, data_security, formatting, compliance, clear_framework, iteration, audience_awareness
+  - Levels: emerging (aware but struggling), developing (attempting with gaps), proficient (doing it well), advanced (exceptional, teaches others)
+  - "evidence": Describe the specific behavior you observed (1 sentence)
+  Omit this field when no clear skill observation can be made.
+- "levelSuggestion" (OPTIONAL — include VERY RARELY, at most once per session, only when you have strong evidence for a proficiency level change): Suggest when:
+  - The learner has demonstrated consistent quality across 3+ messages that clearly places them at a different level than their current profile
+  - The gap is significant (at least 1 full level up or down)
+  - NEVER suggest more than one level change per conversation
+  - currentLevel and proposedLevel must be from: beginner, intermediate, advanced, expert
+  - This will be shown to the user as a suggestion they can accept or decline
+  Omit this field in almost all messages — this should be rare and meaningful.
 
 ${complianceCoachingBlock ? `## COMPLIANCE COACHING REQUIRED\n${complianceCoachingBlock}\n\n---\n` : ""}
 
@@ -941,6 +957,38 @@ ${employerBankName ? `- Bank: ${employerBankName}` : ""}
       parsed.complianceFlag = complianceFlag;
     }
 
+    // Persist skill observation silently (fire-and-forget, non-blocking)
+    if (userId && parsed.skillObservation) {
+      const obs = parsed.skillObservation;
+      supabase
+        .from("skill_observations")
+        .insert({
+          user_id: userId,
+          observed_skill: obs.skill,
+          observed_level: obs.level,
+          evidence: obs.evidence,
+          module_id: moduleId || null,
+          session_number: effectiveSessionNumber,
+        })
+        .then(() => {});
+    }
+
+    // Persist level change request if suggested (fire-and-forget, non-blocking)
+    if (userId && parsed.levelSuggestion) {
+      const ls = parsed.levelSuggestion;
+      supabase
+        .from("level_change_requests")
+        .insert({
+          user_id: userId,
+          current_level: ls.currentLevel,
+          proposed_level: ls.proposedLevel,
+          rationale: ls.rationale,
+          evidence_summary: ls.evidenceSummary,
+          status: "pending",
+        })
+        .then(() => {});
+    }
+
     // Log prompt telemetry (fire-and-forget, non-blocking)
     if (userId) {
       supabase
@@ -979,6 +1027,8 @@ function parseAndreaResponse(rawText: string): {
   complianceFlag?: ComplianceFlag;
   memorySuggestion?: { content: string; reason: string };
   shareSuggestion?: { type: string; summary: string; destinations: string[] };
+  skillObservation?: { skill: string; level: string; evidence: string };
+  levelSuggestion?: { currentLevel: string; proposedLevel: string; rationale: string; evidenceSummary: string };
 } {
   const defaults = {
     reply: "I'm here to help with your training. What would you like to work on?",
@@ -994,6 +1044,20 @@ function parseAndreaResponse(rawText: string): {
     return { shareSuggestion: { type: s.type as string, summary: s.summary as string, destinations: s.destinations as string[] } };
   };
 
+  const extractSkillObservation = (parsed: Record<string, unknown>) => {
+    const o = parsed.skillObservation as Record<string, unknown> | undefined;
+    if (!o || typeof o !== "object") return {};
+    if (!o.skill || !o.level || !o.evidence) return {};
+    return { skillObservation: { skill: o.skill as string, level: o.level as string, evidence: o.evidence as string } };
+  };
+
+  const extractLevelSuggestion = (parsed: Record<string, unknown>) => {
+    const l = parsed.levelSuggestion as Record<string, unknown> | undefined;
+    if (!l || typeof l !== "object") return {};
+    if (!l.currentLevel || !l.proposedLevel || !l.rationale || !l.evidenceSummary) return {};
+    return { levelSuggestion: { currentLevel: l.currentLevel as string, proposedLevel: l.proposedLevel as string, rationale: l.rationale as string, evidenceSummary: l.evidenceSummary as string } };
+  };
+
   try {
     const parsed = JSON.parse(rawText);
     return {
@@ -1004,6 +1068,8 @@ function parseAndreaResponse(rawText: string): {
       ...(parsed.confidenceNote ? { confidenceNote: parsed.confidenceNote } : {}),
       ...(parsed.memorySuggestion ? { memorySuggestion: parsed.memorySuggestion } : {}),
       ...extractShareSuggestion(parsed),
+      ...extractSkillObservation(parsed),
+      ...extractLevelSuggestion(parsed),
     };
   } catch {
     // Try to extract JSON from the response
@@ -1019,6 +1085,8 @@ function parseAndreaResponse(rawText: string): {
           ...(parsed.confidenceNote ? { confidenceNote: parsed.confidenceNote } : {}),
           ...(parsed.memorySuggestion ? { memorySuggestion: parsed.memorySuggestion } : {}),
           ...extractShareSuggestion(parsed),
+          ...extractSkillObservation(parsed),
+          ...extractLevelSuggestion(parsed),
         };
       } catch {
         return { ...defaults, reply: rawText };

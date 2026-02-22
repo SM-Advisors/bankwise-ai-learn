@@ -414,6 +414,7 @@ export default function TrainingWorkspace() {
       let hintAvailable: boolean | undefined;
       let memorySuggestion: { content: string; reason: string } | undefined;
       let shareSuggestion: Message['shareSuggestion'] | undefined;
+      let levelSuggestion: Message['levelSuggestion'] | undefined;
 
       if (trainerResponse.status === 'fulfilled' && !trainerResponse.value.error) {
         const replyData = trainerResponse.value.data;
@@ -423,6 +424,7 @@ export default function TrainingWorkspace() {
         hintAvailable = replyData?.hintAvailable;
         memorySuggestion = replyData?.memorySuggestion;
         shareSuggestion = replyData?.shareSuggestion;
+        levelSuggestion = replyData?.levelSuggestion;
       } else {
         console.error('Trainer chat error during review:', trainerResponse);
       }
@@ -448,6 +450,7 @@ export default function TrainingWorkspace() {
           hintAvailable,
           memorySuggestion,
           shareSuggestion,
+          levelSuggestion,
           structuredFeedback,
         },
       ]);
@@ -600,6 +603,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         complianceFlag: replyData?.complianceFlag,
         memorySuggestion: replyData?.memorySuggestion,
         shareSuggestion: replyData?.shareSuggestion,
+        levelSuggestion: replyData?.levelSuggestion,
       };
       setTrainerMessages(prev => [...prev, assistantMessage]);
       setSuggestedPrompts(prompts);
@@ -668,6 +672,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         complianceFlag: replyData?.complianceFlag,
         memorySuggestion: replyData?.memorySuggestion,
         shareSuggestion: replyData?.shareSuggestion,
+        levelSuggestion: replyData?.levelSuggestion,
       };
       setTrainerMessages(prev => [...prev, assistantMessage]);
       setSuggestedPrompts(prompts);

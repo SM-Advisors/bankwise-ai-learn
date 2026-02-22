@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAIMemories } from '@/hooks/useAIPreferences';
+import { useSkillAssessment } from '@/hooks/useSkillAssessment';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,12 +9,31 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import {
-  ArrowLeft, Brain, Pin, PinOff, Trash2, Plus, Loader2, BookOpen
+  ArrowLeft, Brain, Pin, PinOff, Trash2, Plus, Loader2, BookOpen, TrendingUp
 } from 'lucide-react';
+
+const SKILL_DISPLAY: Record<string, string> = {
+  context_setting: 'Context Setting',
+  specificity: 'Specificity',
+  data_security: 'Data Security',
+  formatting: 'Formatting',
+  compliance: 'Compliance',
+  clear_framework: 'Clear Framework',
+  iteration: 'Iteration',
+  audience_awareness: 'Audience Awareness',
+};
+
+const LEVEL_CONFIG: Record<string, { label: string; className: string }> = {
+  emerging: { label: 'Emerging', className: 'bg-slate-500/10 text-slate-600 dark:text-slate-400' },
+  developing: { label: 'Developing', className: 'bg-blue-500/10 text-blue-700 dark:text-blue-300' },
+  proficient: { label: 'Proficient', className: 'bg-green-500/10 text-green-700 dark:text-green-300' },
+  advanced: { label: 'Advanced', className: 'bg-purple-500/10 text-purple-700 dark:text-purple-300' },
+};
 
 export default function AIMemories() {
   const navigate = useNavigate();
   const { memories, loading, createMemory, togglePin, deleteMemory } = useAIMemories();
+  const { skillSummary, loading: skillLoading } = useSkillAssessment();
   const { toast } = useToast();
 
   const [isCreating, setIsCreating] = useState(false);
@@ -211,6 +231,38 @@ export default function AIMemories() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Skill Progress Section */}
+      {!skillLoading && skillSummary.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+            <TrendingUp className="h-3.5 w-3.5" />
+            Skill Progress ({skillSummary.length} skills observed)
+          </h2>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Andrea's Observations</CardTitle>
+              <CardDescription className="text-xs">
+                Skills Andrea has assessed based on your practice work. These are observed patterns, not formal grades.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {skillSummary.map(({ skill, level }) => {
+                  const cfg = LEVEL_CONFIG[level] || LEVEL_CONFIG.emerging;
+                  return (
+                    <div key={skill} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${cfg.className}`}>
+                      <span>{SKILL_DISPLAY[skill] || skill}</span>
+                      <span className="opacity-60">·</span>
+                      <span className="opacity-80">{cfg.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 

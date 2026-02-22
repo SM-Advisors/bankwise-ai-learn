@@ -23,6 +23,17 @@ export interface Message {
     summary: string;
     destinations: ('community' | 'my_ideas' | 'executive')[];
   };
+  skillObservation?: {
+    skill: string;
+    level: 'emerging' | 'developing' | 'proficient' | 'advanced';
+    evidence: string;
+  };
+  levelSuggestion?: {
+    currentLevel: string;
+    proposedLevel: string;
+    rationale: string;
+    evidenceSummary: string;
+  };
   structuredFeedback?: {
     summary: string;
     strengths: string[];

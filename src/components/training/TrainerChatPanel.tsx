@@ -9,6 +9,7 @@ import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark, Lightb
 import andreaCoach from '@/assets/andrea-coach.png';
 import { type Message } from '@/types/training';
 import { ShareDialog } from '@/components/ShareDialog';
+import { LevelChangeNotification } from '@/components/LevelChangeNotification';
 
 interface TrainerChatPanelProps {
   collapsed: boolean;
@@ -140,6 +141,7 @@ export function TrainerChatPanel({
   const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<number>>(new Set());
   const [savedSuggestions, setSavedSuggestions] = useState<Set<number>>(new Set());
   const [dismissedShareSuggestions, setDismissedShareSuggestions] = useState<Set<number>>(new Set());
+  const [dismissedLevelSuggestions, setDismissedLevelSuggestions] = useState<Set<number>>(new Set());
   const [shareDialogState, setShareDialogState] = useState<{
     open: boolean;
     suggestion: NonNullable<Message['shareSuggestion']> | null;
@@ -353,6 +355,17 @@ export function TrainerChatPanel({
                         </div>
                       </div>
                     </div>
+                  )}
+
+                  {/* Level change suggestion */}
+                  {message.levelSuggestion && !dismissedLevelSuggestions.has(idx) && (
+                    <LevelChangeNotification
+                      suggestion={message.levelSuggestion}
+                      onAccept={async () => {
+                        setDismissedLevelSuggestions(prev => new Set(prev).add(idx));
+                      }}
+                      onDecline={() => setDismissedLevelSuggestions(prev => new Set(prev).add(idx))}
+                    />
                   )}
 
                   {/* Structured feedback scorecard from submission_review */}
