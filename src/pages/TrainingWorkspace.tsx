@@ -241,33 +241,79 @@ export default function TrainingWorkspace() {
 
     const reviewRequest = `Please review my practice conversation below:\n\n---\n${conversationTranscript}\n---`;
 
+    // Build rubric from module success criteria
+    const rubric = {
+      task: selectedModule.content.practiceTask.title,
+      criteria: selectedModule.content.practiceTask.successCriteria,
+      instructions: selectedModule.content.practiceTask.instructions,
+    };
+
     try {
-      const response = await supabase.functions.invoke('trainer_chat', {
-        body: {
-          lessonId: sessionId || '1',
-          moduleId: selectedModule.id,
-          sessionNumber: parseInt(sessionId || '1'),
-          messages: [...trainerMessages, {
-            role: 'user',
-            content: reviewRequest,
-          }],
-          practiceConversation: activeMessages,
-          learnerState: {
-            currentCardTitle: selectedModule.title,
-            progressSummary: `Submitted practice conversation with ${activeMessages.filter(m => m.role === 'user').length} prompts for review`,
-            completedModules: Array.from(completedModules),
-            displayName: profile?.display_name || undefined,
-            bankRole: profile?.bank_role || undefined,
-            lineOfBusiness: profile?.line_of_business || undefined,
+      // Call both trainer_chat (Andrea) and submission_review (structured) in parallel
+      const [trainerResponse, reviewResponse] = await Promise.allSettled([
+        supabase.functions.invoke('trainer_chat', {
+          body: {
+            lessonId: sessionId || '1',
+            moduleId: selectedModule.id,
+            sessionNumber: parseInt(sessionId || '1'),
+            messages: [...trainerMessages, {
+              role: 'user',
+              content: reviewRequest,
+            }],
+            practiceConversation: activeMessages,
+            learnerState: {
+              currentCardTitle: selectedModule.title,
+              progressSummary: `Submitted practice conversation with ${activeMessages.filter(m => m.role === 'user').length} prompts for review`,
+              completedModules: Array.from(completedModules),
+              displayName: profile?.display_name || undefined,
+              bankRole: profile?.bank_role || undefined,
+              lineOfBusiness: profile?.line_of_business || undefined,
+            },
           },
-        },
-      });
+        }),
+        supabase.functions.invoke('submission_review', {
+          body: {
+            lessonId: sessionId || '1',
+            moduleId: selectedModule.id,
+            submission: conversationTranscript,
+            rubric,
+            learnerState: {
+              currentCardTitle: selectedModule.title,
+              attemptNumber: 1,
+              progressSummary: `Submitted ${activeMessages.filter(m => m.role === 'user').length} prompts`,
+            },
+          },
+        }),
+      ]);
 
-      if (response.error) throw response.error;
+      // Extract Andrea's conversational response
+      let replyText = 'I\'ve reviewed your practice conversation. Let me know if you have questions!';
+      let prompts: string[] = [];
+      let coachingAction: string | undefined = 'review';
+      let hintAvailable: boolean | undefined;
+      let memorySuggestion: { content: string; reason: string } | undefined;
 
-      const replyData = response.data;
-      const replyText = replyData?.reply || 'I\'ve reviewed your practice conversation. Let me know if you have questions!';
-      const prompts = replyData?.suggestedPrompts || [];
+      if (trainerResponse.status === 'fulfilled' && !trainerResponse.value.error) {
+        const replyData = trainerResponse.value.data;
+        replyText = replyData?.reply || replyText;
+        prompts = replyData?.suggestedPrompts || [];
+        coachingAction = replyData?.coachingAction || 'review';
+        hintAvailable = replyData?.hintAvailable;
+        memorySuggestion = replyData?.memorySuggestion;
+      } else {
+        console.error('Trainer chat error during review:', trainerResponse);
+      }
+
+      // Extract structured feedback from submission_review
+      let structuredFeedback: Message['structuredFeedback'] | undefined;
+      if (reviewResponse.status === 'fulfilled' && !reviewResponse.value.error) {
+        const feedbackData = reviewResponse.value.data;
+        if (feedbackData?.feedback) {
+          structuredFeedback = feedbackData.feedback;
+        }
+      } else {
+        console.error('Submission review error:', reviewResponse);
+      }
 
       setTrainerMessages(prev => [...prev,
         { role: 'user' as const, content: `Please review my practice conversation (${activeMessages.filter(m => m.role === 'user').length} prompts submitted).` },
@@ -275,8 +321,10 @@ export default function TrainingWorkspace() {
           role: 'assistant' as const,
           content: replyText,
           suggestedPrompts: prompts,
-          coachingAction: replyData?.coachingAction || 'review',
-          hintAvailable: replyData?.hintAvailable,
+          coachingAction: coachingAction as Message['coachingAction'],
+          hintAvailable,
+          memorySuggestion,
+          structuredFeedback,
         },
       ]);
       setSuggestedPrompts(prompts);

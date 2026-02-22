@@ -15,6 +15,13 @@ export interface Message {
     content: string;
     reason: string;
   };
+  structuredFeedback?: {
+    summary: string;
+    strengths: string[];
+    issues: string[];
+    fixes: string[];
+    next_steps: string[];
+  };
 }
 
 export interface BankPolicy {

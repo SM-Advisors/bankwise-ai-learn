@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark, Lightbulb, AlertTriangle, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark, Lightbulb, AlertTriangle, ArrowRight, CheckCircle2, ChevronDown, Target, Wrench, Zap } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { type Message } from '@/types/training';
 
@@ -23,6 +23,101 @@ interface TrainerChatPanelProps {
 }
 
 type QuickActionType = 'review' | 'example' | 'hint' | null;
+
+function StructuredFeedbackCard({ feedback }: { feedback: NonNullable<Message['structuredFeedback']> }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="ml-2 rounded-lg border border-border bg-card overflow-hidden">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-muted/50 transition-colors"
+      >
+        <Target className="h-3.5 w-3.5 text-accent shrink-0" />
+        <span className="text-xs font-medium text-foreground flex-1">Rubric Scorecard</span>
+        <span className="text-[10px] text-muted-foreground">
+          {feedback.strengths.length} strengths · {feedback.issues.length} issues
+        </span>
+        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+      </button>
+
+      {expanded && (
+        <div className="px-3 pb-3 space-y-2.5 border-t border-border pt-2.5">
+          {/* Summary */}
+          <p className="text-xs text-muted-foreground leading-relaxed">{feedback.summary}</p>
+
+          {/* Strengths */}
+          {feedback.strengths.length > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <CheckCircle2 className="h-3 w-3 text-green-500" />
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-green-600 dark:text-green-400">Strengths</span>
+              </div>
+              <ul className="space-y-0.5">
+                {feedback.strengths.map((s, i) => (
+                  <li key={i} className="text-xs text-foreground/80 pl-4 relative before:content-['•'] before:absolute before:left-1 before:text-green-500">
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Issues */}
+          {feedback.issues.length > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <AlertTriangle className="h-3 w-3 text-amber-500" />
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">Issues</span>
+              </div>
+              <ul className="space-y-0.5">
+                {feedback.issues.map((issue, i) => (
+                  <li key={i} className="text-xs text-foreground/80 pl-4 relative before:content-['•'] before:absolute before:left-1 before:text-amber-500">
+                    {issue}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Fixes */}
+          {feedback.fixes.length > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <Wrench className="h-3 w-3 text-blue-500" />
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">Fixes</span>
+              </div>
+              <ul className="space-y-0.5">
+                {feedback.fixes.map((fix, i) => (
+                  <li key={i} className="text-xs text-foreground/80 pl-4 relative before:content-['•'] before:absolute before:left-1 before:text-blue-500">
+                    {fix}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Next Steps */}
+          {feedback.next_steps.length > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <Zap className="h-3 w-3 text-accent" />
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-accent">Next Steps</span>
+              </div>
+              <ul className="space-y-0.5">
+                {feedback.next_steps.map((step, i) => (
+                  <li key={i} className="text-xs text-foreground/80 pl-4 relative before:content-['•'] before:absolute before:left-1 before:text-accent">
+                    {step}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function TrainerChatPanel({
   collapsed,
@@ -223,6 +318,11 @@ export function TrainerChatPanel({
                       <Check className="h-3.5 w-3.5 text-green-500 shrink-0" />
                       <p className="text-[10px] text-green-700 dark:text-green-400 font-medium">Saved to memories</p>
                     </div>
+                  )}
+
+                  {/* Structured feedback scorecard from submission_review */}
+                  {message.structuredFeedback && (
+                    <StructuredFeedbackCard feedback={message.structuredFeedback} />
                   )}
                 </div>
               ))}

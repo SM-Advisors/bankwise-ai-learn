@@ -192,15 +192,14 @@ serve(async (req) => {
 
     // Get user ID from auth (preferred) or body (fallback)
     let userId: string | null = null;
-    
+
     if (authHeader?.startsWith("Bearer ")) {
-      const token = authHeader.replace("Bearer ", "");
-      const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-      if (!claimsError && claimsData?.claims?.sub) {
-        userId = claimsData.claims.sub as string;
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      if (!authError && authUser?.id) {
+        userId = authUser.id;
       }
     }
-    
+
     if (!userId && bodyUserId) {
       userId = bodyUserId;
     }
