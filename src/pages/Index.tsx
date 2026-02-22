@@ -112,9 +112,9 @@ const Index = () => {
             </div>
 
             <div className="bg-card rounded-xl border shadow-sm p-6 text-left">
-              <div className="p-2 rounded-lg bg-secondary inline-block mb-4">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={andreaCoach} alt="Andrea - AI Coach" />
+              <div className="p-1.5 rounded-lg bg-secondary inline-block mb-4">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={andreaCoach} alt="Andrea - AI Coach" className="object-cover" />
                   <AvatarFallback>A</AvatarFallback>
                 </Avatar>
               </div>

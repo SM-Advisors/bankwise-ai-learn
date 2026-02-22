@@ -199,8 +199,8 @@ export function TrainerChatPanel({
         </Button>
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={andreaCoach} alt="Andrea" />
+            <Avatar className="h-9 w-9">
+              <AvatarImage src={andreaCoach} alt="Andrea" className="object-cover" />
               <AvatarFallback>A</AvatarFallback>
             </Avatar>
             <span className="font-medium text-sm">Andrea - AI Coach</span>
@@ -217,8 +217,8 @@ export function TrainerChatPanel({
               {messages.length === 0 && (
                 <div className="p-3 rounded-lg bg-muted animate-pulse">
                   <div className="flex items-center gap-2 mb-3">
-                    <Avatar className="h-5 w-5">
-                      <AvatarImage src={andreaCoach} alt="Andrea" />
+                    <Avatar className="h-7 w-7">
+                      <AvatarImage src={andreaCoach} alt="Andrea" className="object-cover" />
                       <AvatarFallback>A</AvatarFallback>
                     </Avatar>
                     <span className="text-xs font-medium text-muted-foreground">Andrea</span>
@@ -241,8 +241,8 @@ export function TrainerChatPanel({
                     {message.role === 'assistant' && (
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-2">
-                          <Avatar className="h-5 w-5">
-                            <AvatarImage src={andreaCoach} alt="Andrea" />
+                          <Avatar className="h-7 w-7">
+                            <AvatarImage src={andreaCoach} alt="Andrea" className="object-cover" />
                             <AvatarFallback>A</AvatarFallback>
                           </Avatar>
                           <span className="text-xs font-medium text-muted-foreground">Andrea</span>
@@ -328,8 +328,8 @@ export function TrainerChatPanel({
               ))}
               {isLoading && (
                 <div className="p-3 rounded-lg bg-muted flex items-center gap-2">
-                  <Avatar className="h-5 w-5">
-                    <AvatarImage src={andreaCoach} alt="Andrea" />
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={andreaCoach} alt="Andrea" className="object-cover" />
                     <AvatarFallback>A</AvatarFallback>
                   </Avatar>
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -446,7 +446,7 @@ export function TrainerChatPanel({
           <div className="p-3 border-t shrink-0">
             <div className="flex gap-2 items-end">
               <div className="shrink-0">
-                <Avatar className="h-8 w-8 border-2 border-primary/20 shadow-sm">
+                <Avatar className="h-10 w-10 border-2 border-primary/20 shadow-sm">
                   <AvatarImage src={andreaCoach} alt="Andrea" className="object-cover" />
                   <AvatarFallback className="text-sm">A</AvatarFallback>
                 </Avatar>
