@@ -541,60 +541,62 @@ export default function AdminDashboard() {
       </div>
 
       <Tabs defaultValue="users" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-13 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="users" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Users</span>
-          </TabsTrigger>
-          <TabsTrigger value="orgs" className="flex items-center gap-2">
-            <Building2 className="h-4 w-4" />
-            <span className="hidden sm:inline">Orgs</span>
-          </TabsTrigger>
-          <TabsTrigger value="csuite" className="flex items-center gap-2">
-            <PieChartIcon className="h-4 w-4" />
-            <span className="hidden sm:inline">C-Suite</span>
-          </TabsTrigger>
-          <TabsTrigger value="reporting" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            <span className="hidden sm:inline">Reports</span>
-          </TabsTrigger>
-          <TabsTrigger value="ideas" className="flex items-center gap-2">
-            <Lightbulb className="h-4 w-4" />
-            <span className="hidden sm:inline">Ideas</span>
-          </TabsTrigger>
-          <TabsTrigger value="events" className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4" />
-            <span className="hidden sm:inline">Events</span>
-          </TabsTrigger>
-          <TabsTrigger value="live-feed" className="flex items-center gap-2">
-            <Radio className="h-4 w-4" />
-            <span className="hidden sm:inline">Live Feed</span>
-          </TabsTrigger>
-          <TabsTrigger value="programs" className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4" />
-            <span className="hidden sm:inline">Programs</span>
-          </TabsTrigger>
-          <TabsTrigger value="policies" className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            <span className="hidden sm:inline">Policies</span>
-          </TabsTrigger>
-          <TabsTrigger value="learning-styles" className="flex items-center gap-2">
-            <Brain className="h-4 w-4" />
-            <span className="hidden sm:inline">Styles</span>
-          </TabsTrigger>
-          <TabsTrigger value="departments" className="flex items-center gap-2">
-            <Building2 className="h-4 w-4" />
-            <span className="hidden sm:inline">Depts</span>
-          </TabsTrigger>
-          <TabsTrigger value="content" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Content</span>
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            <span className="hidden sm:inline">Settings</span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-1 px-1">
+          <TabsList className="inline-flex h-auto min-w-full flex-wrap gap-1 bg-muted p-1">
+            <TabsTrigger value="users" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
+              <Users className="h-3.5 w-3.5" />
+              Users
+            </TabsTrigger>
+            <TabsTrigger value="orgs" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
+              <Building2 className="h-3.5 w-3.5" />
+              Orgs
+            </TabsTrigger>
+            <TabsTrigger value="csuite" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
+              <PieChartIcon className="h-3.5 w-3.5" />
+              C-Suite
+            </TabsTrigger>
+            <TabsTrigger value="reporting" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
+              <BarChart3 className="h-3.5 w-3.5" />
+              Reports
+            </TabsTrigger>
+            <TabsTrigger value="ideas" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
+              <Lightbulb className="h-3.5 w-3.5" />
+              Ideas
+            </TabsTrigger>
+            <TabsTrigger value="events" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
+              <CalendarDays className="h-3.5 w-3.5" />
+              Events
+            </TabsTrigger>
+            <TabsTrigger value="live-feed" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
+              <Radio className="h-3.5 w-3.5" />
+              Live Feed
+            </TabsTrigger>
+            <TabsTrigger value="programs" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
+              <Sparkles className="h-3.5 w-3.5" />
+              Programs
+            </TabsTrigger>
+            <TabsTrigger value="policies" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
+              <Shield className="h-3.5 w-3.5" />
+              Policies
+            </TabsTrigger>
+            <TabsTrigger value="learning-styles" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
+              <Brain className="h-3.5 w-3.5" />
+              Styles
+            </TabsTrigger>
+            <TabsTrigger value="departments" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
+              <Building2 className="h-3.5 w-3.5" />
+              Depts
+            </TabsTrigger>
+            <TabsTrigger value="content" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
+              <FileText className="h-3.5 w-3.5" />
+              Content
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-1.5 text-xs px-2.5 py-1.5">
+              <Settings className="h-3.5 w-3.5" />
+              Settings
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Users Management Tab */}
         <TabsContent value="users" className="space-y-6">
