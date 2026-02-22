@@ -1294,11 +1294,11 @@ export default function AdminDashboard() {
 
           {/* Create Policy Dialog */}
           <Dialog open={isCreating} onOpenChange={setIsCreating}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-              <DialogHeader>
+            <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+              <DialogHeader className="flex-shrink-0">
                 <DialogTitle>Create New Policy</DialogTitle>
               </DialogHeader>
-              <ScrollArea className="flex-1 pr-4">
+              <div className="flex-1 overflow-y-auto pr-4 min-h-0">
                 <div className="space-y-4 py-4">
                   {/* Document Upload */}
                   <div className="rounded-lg border-2 border-dashed border-border p-6 text-center">
@@ -1385,7 +1385,7 @@ export default function AdminDashboard() {
                     />
                   </div>
                 </div>
-              </ScrollArea>
+              </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsCreating(false)}>
                   <X className="h-4 w-4 mr-2" />
