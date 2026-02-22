@@ -973,20 +973,28 @@ ${employerBankName ? `- Bank: ${employerBankName}` : ""}
         .then(() => {});
     }
 
-    // Persist level change request if suggested (fire-and-forget, non-blocking)
+    // Persist level change request if suggested — expire any existing pending first, then insert
     if (userId && parsed.levelSuggestion) {
       const ls = parsed.levelSuggestion;
-      supabase
-        .from("level_change_requests")
-        .insert({
-          user_id: userId,
-          current_level: ls.currentLevel,
-          proposed_level: ls.proposedLevel,
-          rationale: ls.rationale,
-          evidence_summary: ls.evidenceSummary,
-          status: "pending",
-        })
-        .then(() => {});
+      (async () => {
+        // Mark any existing pending requests as expired before creating a new one
+        await supabase
+          .from("level_change_requests")
+          .update({ status: "expired" })
+          .eq("user_id", userId)
+          .eq("status", "pending");
+        // Now insert the fresh request
+        await supabase
+          .from("level_change_requests")
+          .insert({
+            user_id: userId,
+            current_level: ls.currentLevel,
+            proposed_level: ls.proposedLevel,
+            rationale: ls.rationale,
+            evidence_summary: ls.evidenceSummary,
+            status: "pending",
+          });
+      })();
     }
 
     // Log prompt telemetry (fire-and-forget, non-blocking)

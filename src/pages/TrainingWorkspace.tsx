@@ -701,8 +701,20 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
     if (newProficiency !== undefined) {
       promises.push(updateProfile({ ai_proficiency_level: newProficiency }));
     }
-    if (pendingRequest) {
-      promises.push(respondToLevelChange(pendingRequest.id, true));
+    // Use cached pendingRequest; if missing (e.g. expired before user clicked), fetch fresh
+    let requestId = pendingRequest?.id;
+    if (!requestId && user?.id) {
+      const { data } = await (supabase
+        .from('level_change_requests' as any)
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(1) as any);
+      requestId = data?.[0]?.id;
+    }
+    if (requestId) {
+      promises.push(respondToLevelChange(requestId, true));
     }
     await Promise.all(promises);
   };

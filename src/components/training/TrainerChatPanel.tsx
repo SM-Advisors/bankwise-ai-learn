@@ -210,7 +210,7 @@ export function TrainerChatPanel({
         </Button>
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <Avatar className="h-9 w-9">
+            <Avatar className="h-14 w-14">
               <AvatarImage src={andreaCoach} alt="Andrea" className="object-cover" />
               <AvatarFallback>A</AvatarFallback>
             </Avatar>
@@ -228,7 +228,7 @@ export function TrainerChatPanel({
               {messages.length === 0 && (
                 <div className="p-3 rounded-lg bg-muted animate-pulse">
                   <div className="flex items-center gap-2 mb-3">
-                    <Avatar className="h-7 w-7">
+                    <Avatar className="h-10 w-10">
                       <AvatarImage src={andreaCoach} alt="Andrea" className="object-cover" />
                       <AvatarFallback>A</AvatarFallback>
                     </Avatar>
@@ -499,7 +499,7 @@ export function TrainerChatPanel({
           <div className="p-3 border-t shrink-0">
             <div className="flex gap-2 items-end">
               <div className="shrink-0">
-                <Avatar className="h-10 w-10 border-2 border-primary/20 shadow-sm">
+                <Avatar className="h-16 w-16 border-2 border-primary/20 shadow-sm">
                   <AvatarImage src={andreaCoach} alt="Andrea" className="object-cover" />
                   <AvatarFallback className="text-sm">A</AvatarFallback>
                 </Avatar>
