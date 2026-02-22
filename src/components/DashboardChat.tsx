@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { X, Send, Loader2, MessageCircle } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
+import andreaCoach2 from '@/assets/andrea-coach2.png';
 
 interface DashboardChatProps {
   profile: {
@@ -160,7 +161,7 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b bg-primary text-primary-foreground rounded-t-lg">
           <div className="flex items-center gap-2">
-            <img src={andreaCoach} alt="Andrea" className="h-8 w-8 rounded-full object-cover border border-primary-foreground/30" />
+            <img src={andreaCoach2} alt="Andrea" className="h-8 w-8 rounded-full object-cover border border-primary-foreground/30" />
             <div>
               <h3 className="font-semibold text-sm leading-none">Andrea</h3>
               <p className="text-xs opacity-80 mt-0.5">Your AI Training Coach</p>
@@ -182,7 +183,7 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
             {messages.length === 0 && !isLoading && (
               <div className="text-center py-6">
                 <div className="mx-auto h-12 w-12 rounded-full overflow-hidden border-2 border-primary/20 mb-3">
-                  <img src={andreaCoach} alt="Andrea" className="h-full w-full object-cover" />
+                  <img src={andreaCoach2} alt="Andrea" className="h-full w-full object-cover" />
                 </div>
                 <p className="text-sm font-medium mb-1">Hi{profile.display_name ? `, ${profile.display_name}` : ''}!</p>
                 <p className="text-xs text-muted-foreground mb-4">
