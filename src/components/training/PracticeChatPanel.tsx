@@ -119,28 +119,45 @@ export function PracticeChatPanel({
           </Button>
         </div>
 
-        {/* Center: Work / Web Toggle */}
-        <div className="inline-flex items-center rounded-full border border-border bg-card p-0.5 shadow-sm">
-          <button
-            onClick={() => setActiveTab('work')}
-            className={`px-5 py-1.5 text-sm font-medium rounded-full transition-colors ${
-              activeTab === 'work'
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            Work
-          </button>
-          <button
-            onClick={() => setActiveTab('web')}
-            className={`px-5 py-1.5 text-sm font-medium rounded-full transition-colors ${
-              activeTab === 'web'
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            Web
-          </button>
+        {/* Center: Work / Web Toggle + Completion pill */}
+        <div className="flex items-center gap-2">
+          <div className="inline-flex items-center rounded-full border border-border bg-card p-0.5 shadow-sm">
+            <button
+              onClick={() => setActiveTab('work')}
+              className={`px-5 py-1.5 text-sm font-medium rounded-full transition-colors ${
+                activeTab === 'work'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Work
+            </button>
+            <button
+              onClick={() => setActiveTab('web')}
+              className={`px-5 py-1.5 text-sm font-medium rounded-full transition-colors ${
+                activeTab === 'web'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Web
+            </button>
+          </div>
+          {isCompleted && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-xs">
+              <CheckCircle className="h-3 w-3 text-emerald-600" />
+              <span className="text-emerald-700 font-medium">Complete</span>
+              {hasNextModule && onContinueToNext ? (
+                <button onClick={onContinueToNext} className="text-emerald-600 hover:text-emerald-800 font-medium flex items-center gap-0.5 ml-0.5">
+                  Next <ChevronRight className="h-3 w-3" />
+                </button>
+              ) : onCompleteSession ? (
+                <button onClick={onCompleteSession} className="text-emerald-600 hover:text-emerald-800 font-medium flex items-center gap-0.5 ml-0.5">
+                  Finish <CheckCircle className="h-3 w-3" />
+                </button>
+              ) : null}
+            </div>
+          )}
         </div>
 
         {/* Right: History dropdown */}
@@ -207,24 +224,6 @@ export function PracticeChatPanel({
         </div>
       </div>
 
-      {/* Completion pill — between toolbar and content */}
-      {isCompleted && (
-        <div className="flex justify-center py-1.5">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-xs">
-            <CheckCircle className="h-3 w-3 text-emerald-600" />
-            <span className="text-emerald-700 font-medium">Complete</span>
-            {hasNextModule && onContinueToNext ? (
-              <button onClick={onContinueToNext} className="text-emerald-600 hover:text-emerald-800 font-medium flex items-center gap-0.5 ml-1">
-                Next <ChevronRight className="h-3 w-3" />
-              </button>
-            ) : onCompleteSession ? (
-              <button onClick={onCompleteSession} className="text-emerald-600 hover:text-emerald-800 font-medium flex items-center gap-0.5 ml-1">
-                Finish <CheckCircle className="h-3 w-3" />
-              </button>
-            ) : null}
-          </div>
-        </div>
-      )}
 
       {/* Empty state — shown before any messages */}
       {!hasConversation && (
