@@ -22,6 +22,7 @@ interface TrainerChatPanelProps {
   isLoading: boolean;
   suggestedPrompts?: string[];
   onSaveMemory?: (content: string, source?: string) => void;
+  onAcceptLevelChange?: (proposedLevel: string) => Promise<void>;
 }
 
 type QuickActionType = 'review' | 'example' | 'hint' | null;
@@ -132,6 +133,7 @@ export function TrainerChatPanel({
   isLoading,
   suggestedPrompts,
   onSaveMemory,
+  onAcceptLevelChange,
 }: TrainerChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -362,6 +364,9 @@ export function TrainerChatPanel({
                     <LevelChangeNotification
                       suggestion={message.levelSuggestion}
                       onAccept={async () => {
+                        if (onAcceptLevelChange) {
+                          await onAcceptLevelChange(message.levelSuggestion!.proposedLevel);
+                        }
                         setDismissedLevelSuggestions(prev => new Set(prev).add(idx));
                       }}
                       onDecline={() => setDismissedLevelSuggestions(prev => new Set(prev).add(idx))}

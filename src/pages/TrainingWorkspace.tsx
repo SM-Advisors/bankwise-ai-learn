@@ -19,6 +19,7 @@ import type { SessionProgressData, ModuleEngagement } from '@/types/progress';
 import { DEFAULT_ENGAGEMENT } from '@/types/progress';
 import { deriveSkillSignals } from '@/utils/deriveSkillSignals';
 import { useAIMemories } from '@/hooks/useAIPreferences';
+import { useSkillAssessment } from '@/hooks/useSkillAssessment';
 import { usePracticeConversations } from '@/hooks/usePracticeConversations';
 import { useUserAgents } from '@/hooks/useUserAgents';
 import { useUserWorkflows } from '@/hooks/useUserWorkflows';
@@ -35,7 +36,7 @@ export default function TrainingWorkspace() {
   const isMobile = useIsMobile();
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
-  const { user, profile, progress, loading, markSessionCompleted, updateProgress } = useAuth();
+  const { user, profile, progress, loading, markSessionCompleted, updateProgress, updateProfile } = useAuth();
   const { toast } = useToast();
   const contentScrollRef = useRef<HTMLDivElement>(null);
 
@@ -60,6 +61,7 @@ export default function TrainingWorkspace() {
 
   const { policies } = useBankPolicies();
   const { createMemory } = useAIMemories();
+  const { pendingRequest, respondToLevelChange } = useSkillAssessment();
   const { activeAgent, draftAgent } = useUserAgents();
   const { draftWorkflow } = useUserWorkflows();
 
@@ -686,6 +688,25 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
     }
   };
 
+  const LEVEL_TO_PROFICIENCY: Record<string, number> = {
+    beginner: 2,
+    intermediate: 4,
+    advanced: 6,
+    expert: 8,
+  };
+
+  const handleAcceptLevelChange = async (proposedLevel: string) => {
+    const newProficiency = LEVEL_TO_PROFICIENCY[proposedLevel];
+    const promises: Promise<any>[] = [];
+    if (newProficiency !== undefined) {
+      promises.push(updateProfile({ ai_proficiency_level: newProficiency }));
+    }
+    if (pendingRequest) {
+      promises.push(respondToLevelChange(pendingRequest.id, true));
+    }
+    await Promise.all(promises);
+  };
+
   const handleCompleteSession = async () => {
     const sessionNum = parseInt(sessionId || '1') as 1 | 2 | 3;
     const { error } = await markSessionCompleted(sessionNum);
@@ -930,6 +951,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
             onQuickAction={handleQuickAction}
             isLoading={isTrainerLoading}
             suggestedPrompts={suggestedPrompts}
+            onAcceptLevelChange={handleAcceptLevelChange}
             onSaveMemory={async (content, source) => {
               const result = await createMemory({
                 content,
