@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Building2, Key, Plus, Loader2, RefreshCw } from 'lucide-react';
+import { Building2, Key, Plus, Loader2, RefreshCw, Pencil, Check, X } from 'lucide-react';
 
 function generateCode(length = 8): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -50,7 +50,12 @@ export function OrganizationsManager() {
     createOrganization,
     createRegistrationCode,
     toggleCodeActive,
+    updateCodeUses,
   } = useOrganizations();
+
+  // Inline edit usage state
+  const [editingUsageId, setEditingUsageId] = useState<string | null>(null);
+  const [editUsageValue, setEditUsageValue] = useState('');
 
   // Create org form state
   const [orgName, setOrgName] = useState('');
@@ -116,6 +121,26 @@ export function OrganizationsManager() {
       toast({ title: isActive ? 'Code activated' : 'Code deactivated' });
     } else {
       toast({ title: 'Error', description: result.error || 'Failed to update code.', variant: 'destructive' });
+    }
+  };
+
+  const handleStartEditUsage = (codeId: string, currentUses: number) => {
+    setEditingUsageId(codeId);
+    setEditUsageValue(String(currentUses));
+  };
+
+  const handleSaveUsage = async (codeId: string) => {
+    const value = parseInt(editUsageValue, 10);
+    if (isNaN(value) || value < 0) {
+      toast({ title: 'Invalid value', description: 'Usage must be a non-negative number.', variant: 'destructive' });
+      return;
+    }
+    const result = await updateCodeUses(codeId, value);
+    if (result.success) {
+      toast({ title: 'Usage updated' });
+      setEditingUsageId(null);
+    } else {
+      toast({ title: 'Error', description: result.error || 'Failed to update usage.', variant: 'destructive' });
     }
   };
 
@@ -256,7 +281,33 @@ export function OrganizationsManager() {
                           : 'Never'}
                       </TableCell>
                       <TableCell className="text-center text-sm">
-                        {rc.current_uses}{rc.max_uses != null ? ` / ${rc.max_uses}` : ' / --'}
+                        {editingUsageId === rc.id ? (
+                          <div className="flex items-center justify-center gap-1">
+                            <Input
+                              type="number"
+                              min="0"
+                              value={editUsageValue}
+                              onChange={(e) => setEditUsageValue(e.target.value)}
+                              className="w-16 h-7 text-center text-sm"
+                            />
+                            <span className="text-muted-foreground">{rc.max_uses != null ? ` / ${rc.max_uses}` : ''}</span>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleSaveUsage(rc.id)}>
+                              <Check className="h-3.5 w-3.5 text-primary" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingUsageId(null)}>
+                              <X className="h-3.5 w-3.5 text-destructive" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <button
+                            className="inline-flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+                            onClick={() => handleStartEditUsage(rc.id, rc.current_uses)}
+                            title="Click to edit usage"
+                          >
+                            {rc.current_uses}{rc.max_uses != null ? ` / ${rc.max_uses}` : ' / --'}
+                            <Pencil className="h-3 w-3 opacity-50" />
+                          </button>
+                        )}
                       </TableCell>
                       <TableCell className="text-center">
                         <Switch
