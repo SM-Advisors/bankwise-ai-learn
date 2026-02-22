@@ -25,6 +25,7 @@ import Policies from "./pages/Policies";
 import PolicyDetail from "./pages/PolicyDetail";
 import Settings from "./pages/Settings";
 import AIMemories from "./pages/AIMemories";
+import Community from "./pages/Community";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
@@ -93,6 +94,11 @@ const App = () => (
                   <Route path="/memories" element={
                     <ProtectedRoute requireOnboarding>
                       <AIMemories />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/community" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Community />
                     </ProtectedRoute>
                   } />
 

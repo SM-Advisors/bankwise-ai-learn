@@ -4,9 +4,11 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
-import { X, Send, Loader2, MessageCircle } from 'lucide-react';
+import { X, Send, Loader2, Clock, Plus } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
 import andreaCoach2 from '@/assets/andrea-coach2.png';
+import { useDashboardConversations } from '@/hooks/useDashboardConversations';
+import type { DashboardMessage } from '@/hooks/useDashboardConversations';
 
 interface DashboardChatProps {
   profile: {
@@ -23,11 +25,6 @@ interface DashboardChatProps {
   } | null;
 }
 
-interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
 const DEFAULT_SUGGESTIONS = [
   'Where should I start?',
   'What module covers compliance?',
@@ -37,19 +34,29 @@ const DEFAULT_SUGGESTIONS = [
 export function DashboardChat({ profile, progress }: DashboardChatProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasBeenOpened, setHasBeenOpened] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>(DEFAULT_SUGGESTIONS);
+  const [view, setView] = useState<'chat' | 'history'>('chat');
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    conversations,
+    activeConversationId,
+    activeMessages,
+    createConversation,
+    appendMessage,
+    startNewChat,
+    selectConversation,
+  } = useDashboardConversations();
 
   // Scroll to bottom when messages change
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isLoading]);
+  }, [activeMessages, isLoading]);
 
   // Focus input when opened
   useEffect(() => {
@@ -58,9 +65,30 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
     }
   }, [isOpen]);
 
+  // Reset suggested prompts when active conversation changes
+  useEffect(() => {
+    if (activeMessages.length === 0) {
+      setSuggestedPrompts(DEFAULT_SUGGESTIONS);
+    }
+  }, [activeConversationId, activeMessages.length]);
+
   const handleOpen = () => {
     setIsOpen(true);
     setHasBeenOpened(true);
+  };
+
+  const formatRelativeTime = (dateStr: string) => {
+    const now = new Date();
+    const date = new Date(dateStr);
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
   };
 
   const buildLearnerState = () => {
@@ -88,29 +116,41 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
   const sendMessage = async (content: string) => {
     if (!content.trim() || isLoading) return;
 
-    const userMessage: ChatMessage = { role: 'user', content: content.trim() };
-    const updatedMessages = [...messages, userMessage];
-    setMessages(updatedMessages);
+    const userMessage: DashboardMessage = { role: 'user', content: content.trim() };
+    const messagesForApi = [...activeMessages, userMessage];
     setInput('');
     setSuggestedPrompts([]);
     setIsLoading(true);
 
     try {
+      let convId = activeConversationId;
+
+      if (!convId) {
+        // No active conversation - create one with the first message
+        convId = await createConversation(userMessage);
+        if (!convId) throw new Error('Failed to create conversation');
+      } else {
+        // Existing conversation - append user message
+        await appendMessage(userMessage);
+      }
+
+      // Call trainer_chat
       const { data, error } = await supabase.functions.invoke('trainer_chat', {
         body: {
           lessonId: 'dashboard',
-          messages: updatedMessages,
+          messages: messagesForApi,
           learnerState: buildLearnerState(),
         },
       });
 
       if (error) throw error;
 
-      const assistantMessage: ChatMessage = {
+      const assistantMessage: DashboardMessage = {
         role: 'assistant',
         content: data.reply || "I'm here to help! What would you like to know about your training?",
       };
-      setMessages((prev) => [...prev, assistantMessage]);
+
+      await appendMessage(assistantMessage, convId);
 
       if (data.suggestedPrompts && Array.isArray(data.suggestedPrompts) && data.suggestedPrompts.length > 0) {
         setSuggestedPrompts(data.suggestedPrompts);
@@ -119,11 +159,13 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
       }
     } catch (err) {
       console.error('Dashboard chat error:', err);
-      const errorMessage: ChatMessage = {
+      const errorMessage: DashboardMessage = {
         role: 'assistant',
         content: "Sorry, I'm having trouble connecting right now. Please try again in a moment.",
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      if (activeConversationId) {
+        await appendMessage(errorMessage);
+      }
       setSuggestedPrompts(DEFAULT_SUGGESTIONS);
     } finally {
       setIsLoading(false);
@@ -137,6 +179,17 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
 
   const handleSuggestionClick = (suggestion: string) => {
     sendMessage(suggestion);
+  };
+
+  const handleNewChat = () => {
+    startNewChat();
+    setView('chat');
+    setSuggestedPrompts(DEFAULT_SUGGESTIONS);
+  };
+
+  const handleSelectConversation = (conversationId: string) => {
+    selectConversation(conversationId);
+    setView('chat');
   };
 
   // Collapsed state - floating bubble
@@ -167,95 +220,147 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
               <p className="text-xs opacity-80 mt-0.5">Your AI Training Coach</p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
-            onClick={() => setIsOpen(false)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Messages */}
-        <ScrollArea className="flex-1 px-4 py-3" ref={scrollRef}>
-          <div className="space-y-3">
-            {messages.length === 0 && !isLoading && (
-              <div className="text-center py-6">
-                <div className="mx-auto h-16 w-16 rounded-full overflow-hidden border-2 border-primary/20 mb-3">
-                  <img src={andreaCoach2} alt="Andrea" className="h-full w-full object-cover" />
-                </div>
-                <p className="text-sm font-medium mb-1">Hi{profile.display_name ? `, ${profile.display_name}` : ''}!</p>
-                <p className="text-xs text-muted-foreground mb-4">
-                  I can help you navigate your training. Ask me anything!
-                </p>
-              </div>
-            )}
-
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
-                    msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-foreground'
-                  }`}
-                >
-                  {msg.content}
-                </div>
-              </div>
-            ))}
-
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-muted rounded-lg px-3 py-2 text-sm flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-muted-foreground">Andrea is thinking...</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-
-        {/* Suggested Prompts */}
-        {suggestedPrompts.length > 0 && !isLoading && (
-          <div className="px-4 pb-2 flex flex-wrap gap-1.5">
-            {suggestedPrompts.map((prompt, i) => (
-              <button
-                key={i}
-                onClick={() => handleSuggestionClick(prompt)}
-                className="text-xs px-2.5 py-1.5 rounded-full border border-primary/30 text-primary hover:bg-primary/10 transition-colors"
-              >
-                {prompt}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Input */}
-        <form onSubmit={handleSubmit} className="px-4 pb-4 pt-2 border-t">
-          <div className="flex items-center gap-2">
-            <Input
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask Andrea anything..."
-              className="text-sm"
-              disabled={isLoading}
-            />
+          <div className="flex items-center gap-1">
             <Button
-              type="submit"
+              variant="ghost"
               size="icon"
-              className="h-9 w-9 shrink-0"
-              disabled={!input.trim() || isLoading}
+              className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+              onClick={() => setView(view === 'history' ? 'chat' : 'history')}
+              aria-label="Chat history"
             >
-              <Send className="h-4 w-4" />
+              <Clock className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+              onClick={handleNewChat}
+              aria-label="New chat"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+              onClick={() => setIsOpen(false)}
+            >
+              <X className="h-4 w-4" />
             </Button>
           </div>
-        </form>
+        </div>
+
+        {view === 'history' ? (
+          /* History View */
+          <ScrollArea className="flex-1 px-4 py-3">
+            <p className="text-sm font-medium mb-3">Chat History</p>
+            {conversations.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">No conversations yet</p>
+            ) : (
+              <div className="space-y-1">
+                {conversations.map((conv) => (
+                  <div
+                    key={conv.id}
+                    onClick={() => handleSelectConversation(conv.id)}
+                    className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-muted cursor-pointer transition-colors"
+                  >
+                    <div className="flex-1 min-w-0 mr-2">
+                      <p className="text-sm truncate">{conv.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {conv.messages.length} message{conv.messages.length !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {formatRelativeTime(conv.updated_at)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        ) : (
+          <>
+            {/* Messages */}
+            <ScrollArea className="flex-1 px-4 py-3" ref={scrollRef}>
+              <div className="space-y-3">
+                {activeMessages.length === 0 && !isLoading && (
+                  <div className="text-center py-6">
+                    <div className="mx-auto h-16 w-16 rounded-full overflow-hidden border-2 border-primary/20 mb-3">
+                      <img src={andreaCoach2} alt="Andrea" className="h-full w-full object-cover" />
+                    </div>
+                    <p className="text-sm font-medium mb-1">Hi{profile.display_name ? `, ${profile.display_name}` : ''}!</p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      I can help you navigate your training. Ask me anything!
+                    </p>
+                  </div>
+                )}
+
+                {activeMessages.map((msg, i) => (
+                  <div
+                    key={i}
+                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                        msg.role === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-foreground'
+                      }`}
+                    >
+                      {msg.content}
+                    </div>
+                  </div>
+                ))}
+
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-muted rounded-lg px-3 py-2 text-sm flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-muted-foreground">Andrea is thinking...</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+
+            {/* Suggested Prompts */}
+            {suggestedPrompts.length > 0 && !isLoading && (
+              <div className="px-4 pb-2 flex flex-wrap gap-1.5">
+                {suggestedPrompts.map((prompt, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSuggestionClick(prompt)}
+                    className="text-xs px-2.5 py-1.5 rounded-full border border-primary/30 text-primary hover:bg-primary/10 transition-colors"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Input */}
+            <form onSubmit={handleSubmit} className="px-4 pb-4 pt-2 border-t">
+              <div className="flex items-center gap-2">
+                <Input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ask Andrea anything..."
+                  className="text-sm"
+                  disabled={isLoading}
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  className="h-9 w-9 shrink-0"
+                  disabled={!input.trim() || isLoading}
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </form>
+          </>
+        )}
       </Card>
     </div>
   );
