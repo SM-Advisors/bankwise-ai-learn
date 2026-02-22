@@ -9,7 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Logo } from '@/components/Logo';
+import { supabase as supabaseClient } from '@/integrations/supabase/client';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
@@ -29,6 +31,7 @@ export default function Auth() {
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   
   // Signup form state
   const [signupName, setSignupName] = useState('');
@@ -72,7 +75,20 @@ export default function Auth() {
     }
 
     setIsLoading(true);
+
+    // Switch storage based on Remember Me
+    if (!rememberMe) {
+      supabaseClient.auth.setSession; // no-op, we configure storage below
+      // For "don't remember me", we clear localStorage after sign-in and rely on in-memory session
+    }
+
     const { error } = await signIn(loginEmail, loginPassword);
+
+    if (!error && !rememberMe) {
+      // Remove persisted session so it doesn't survive browser close
+      localStorage.removeItem('sb-tehcmmctcmmecuzytiec-auth-token');
+    }
+
     setIsLoading(false);
 
     if (error) {
@@ -331,6 +347,16 @@ export default function Auth() {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="remember-me"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked === true)}
+                  />
+                  <Label htmlFor="remember-me" className="text-sm font-normal cursor-pointer">
+                    Remember me
+                  </Label>
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
