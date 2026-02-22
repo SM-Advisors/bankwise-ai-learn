@@ -247,13 +247,13 @@ function getTechLearningStyleInstructions(techStyle: string | null): string {
   const normalized = normalizeLearningStyle(techStyle);
   const instructions: Record<string, string> = {
     example_based: `TECH LEARNING STYLE: Demo-First
-When explaining AI TOOL concepts (not banking concepts), show the tool in action first.`,
+When explaining AI TOOL concepts (not banking concepts), show the tool in action first with a concrete walkthrough before explaining the theory. Use screenshots-style descriptions ("You'll see a text box at the top — paste your prompt there and hit Enter") so the learner can visualize the interface. After the demo, connect the tool's behavior to banking tasks they already understand.`,
     explanation_based: `TECH LEARNING STYLE: Documentation-First
-When explaining AI TOOL concepts, start with how the feature/tool works before demonstrating.`,
+When explaining AI TOOL concepts, start with how the feature or tool works and why it was designed that way before demonstrating it. Walk through the key settings and options systematically — what each one does, when to use it, and what the defaults mean. Once the learner understands the "why," show a quick example so they can see the concept in practice.`,
     logic_based: `TECH LEARNING STYLE: Architecture-First
-When explaining AI TOOL concepts, explain the underlying system and how components connect.`,
+When explaining AI TOOL concepts, explain the underlying system architecture and how components connect to each other before jumping into usage. Use cause-and-effect reasoning: "When you change X, it affects Y because Z." Present decision trees or if-then logic for choosing between tool options so the learner can reason through tool selection independently.`,
     hands_on: `TECH LEARNING STYLE: Explore-First
-When explaining AI TOOL concepts, give the learner something to click/try immediately.`,
+When explaining AI TOOL concepts, give the learner something to click or try immediately — skip the preamble. Frame instructions as quick experiments: "Open the settings panel, toggle this option, and see what changes in the output." After they've explored, circle back with a 1-sentence explanation of what they just experienced and why it matters for their banking workflow.`,
   };
   return instructions[normalized] || "";
 }
@@ -995,7 +995,8 @@ This learner is engaging confidently with detailed, substantive messages.
 8. Never lecture — be a banking colleague who happens to be great at AI
 9. Use their name occasionally (not every message) if you know it
 10. If compliance coaching is required above, address it FIRST before anything else
-${effectiveSessionNumber >= 2 ? `11. VERIFY INTEGRATION: When reviewing any AI-generated output the learner shows you in Sessions 2-4, check whether they applied VERIFY. If they present output without verification commentary, ask: "Before we move on — did you run VERIFY on this? What would you check first?" Reinforce the habit across all sessions.` : ""}`;
+${effectiveSessionNumber >= 2 ? `11. VERIFY INTEGRATION: When reviewing any AI-generated output the learner shows you in Sessions 2-4, check whether they applied VERIFY. If they present output without verification commentary, ask: "Before we move on — did you run VERIFY on this? What would you check first?" Reinforce the habit across all sessions.` : ""}
+12. PROMPT LIBRARY: When the learner crafts a prompt that is well-structured, reusable, and banking-relevant — especially prompts that use CLEAR framework elements, include guard rails, or demonstrate advanced techniques — suggest they save it to their Prompt Library. Frame it naturally: "That prompt is solid and reusable — you might want to save it to your Prompt Library so you can pull it up next time you need a [task type]." Do NOT suggest this for every prompt — only genuinely reusable, high-quality ones (roughly 1 in 5-10 messages).`;
 
     // Convert messages to Claude format
     const claudeMessages = messages.map((m) => ({

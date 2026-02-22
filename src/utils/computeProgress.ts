@@ -50,7 +50,8 @@ export function computeSessionProgress(
   return Math.round((totalWeight / moduleCount) * 100);
 }
 
-// Compute overall progress across all 3 sessions, weighted by module count
+// Compute overall progress across all sessions, weighted by module count.
+// Gracefully handles Session 4 even before DB columns exist.
 export function computeOverallProgress(
   progress: {
     session_1_completed: boolean;
@@ -63,25 +64,26 @@ export function computeOverallProgress(
 ): number {
   if (!progress) return 0;
 
-  const sessions = [
-    { id: 1, data: progress.session_1_progress as SessionProgressData, completed: progress.session_1_completed },
-    { id: 2, data: progress.session_2_progress as SessionProgressData, completed: progress.session_2_completed },
-    { id: 3, data: progress.session_3_progress as SessionProgressData, completed: progress.session_3_completed },
-  ];
+  // Build session list dynamically — Session 4 columns may not exist in DB yet
+  const prog = progress as Record<string, unknown>;
+  const sessionIds = Object.keys(ALL_SESSION_CONTENT).map(Number).filter(id => id > 0);
 
   let totalModules = 0;
   let totalWeightedProgress = 0;
 
-  for (const s of sessions) {
-    const session = ALL_SESSION_CONTENT[s.id];
+  for (const id of sessionIds) {
+    const session = ALL_SESSION_CONTENT[id];
     if (!session) continue;
     const moduleCount = session.modules.length;
     totalModules += moduleCount;
 
-    if (s.completed) {
+    const completed = !!prog[`session_${id}_completed`];
+    const data = (prog[`session_${id}_progress`] as SessionProgressData) || null;
+
+    if (completed) {
       totalWeightedProgress += moduleCount; // 100% for completed sessions
     } else {
-      const sessionPct = computeSessionProgress(s.id, s.data) / 100;
+      const sessionPct = computeSessionProgress(id, data) / 100;
       totalWeightedProgress += moduleCount * sessionPct;
     }
   }

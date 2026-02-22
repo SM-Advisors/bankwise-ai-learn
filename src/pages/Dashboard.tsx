@@ -34,24 +34,31 @@ import { CommunityFeed } from '@/components/CommunityFeed';
 const SESSIONS = [
   {
     id: 1,
-    title: 'AI Prompting & Personalization',
-    description: 'Master the fundamentals of effective AI prompting and customize your AI interactions.',
+    title: 'AI Foundations & Prompting',
+    description: 'Master the fundamentals of effective AI prompting with the CLEAR framework and VERIFY checklist.',
     icon: Sparkles,
-    modules: ['Prompt Engineering Basics', 'Context Setting', 'Output Formatting', 'Personalization Techniques'],
+    modules: ['What AI Can Do', 'CLEAR Framework', 'Context & Security', 'Iteration', 'Verifying Output', 'Capstone'],
   },
   {
     id: 2,
     title: 'Building Your AI Agent',
     description: 'Create a custom AI agent tailored to your line of business and daily tasks.',
     icon: Bot,
-    modules: ['Agent Architecture', 'Custom Instructions', 'Tool Integration', 'Testing & Refinement'],
+    modules: ['Prompts to Agents', 'Architecture', 'Template Builder', 'Tool Integration', 'Living Agent', 'Capstone'],
   },
   {
     id: 3,
     title: 'Role-Specific Training',
     description: 'Deep dive into AI applications specific to your department and role.',
     icon: Building2,
-    modules: ['Department Workflows', 'Compliance Integration', 'Advanced Use Cases', 'Practical Projects'],
+    modules: ['Department Use Cases', 'Compliance & AI', 'Workflows', 'Advanced Techniques', 'Capstone'],
+  },
+  {
+    id: 4,
+    title: 'AI-Native Integration',
+    description: 'Move from AI-capable to AI-native — integrate AI as a default part of your workflow.',
+    icon: Zap,
+    modules: ['AI Audit', 'Team Conventions', 'Measuring ROI', 'Tool Landscape', 'Integration Plan'],
   },
 ];
 
@@ -111,28 +118,29 @@ export default function Dashboard() {
     progress?.session_1_completed || false,
     progress?.session_2_completed || false,
     progress?.session_3_completed || false,
+    (progress as any)?.session_4_completed || false,
   ];
 
   const overallProgress = computeOverallProgress(progress);
 
   // Total completed modules across all sessions
-  const totalCompletedModules = [1, 2, 3].reduce(
+  const totalCompletedModules = [1, 2, 3, 4].reduce(
     (sum, sid) => sum + getCompletedModuleCount(sid, getSessionProgressData(sid)),
     0
   );
-  const totalModules = [1, 2, 3].reduce(
+  const totalModules = [1, 2, 3, 4].reduce(
     (sum, sid) => sum + getSessionModuleTotal(sid),
     0
   );
 
   function getSessionProgressData(sessionId: number): SessionProgressData | null {
     if (!progress) return null;
-    const key = `session_${sessionId}_progress` as keyof typeof progress;
-    return (progress[key] as SessionProgressData) || null;
+    const key = `session_${sessionId}_progress`;
+    return ((progress as any)[key] as SessionProgressData) || null;
   }
 
   // Aggregate skill signals from all sessions
-  const allSkillSignals: SkillSignal[] = [1, 2, 3].flatMap((sid) => {
+  const allSkillSignals: SkillSignal[] = [1, 2, 3, 4].flatMap((sid) => {
     const data = getSessionProgressData(sid);
     return data?.skillSignals || [];
   });
@@ -321,19 +329,19 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Completion Summary — shown when Session 3 is completed */}
-        {sessionProgress[2] && (
+        {/* Completion Summary — shown when Session 4 (final) is completed */}
+        {sessionProgress[3] && (
           <div className="mb-8">
             <CompletionSummary
               userName={profile.display_name || 'Learner'}
               completedAt={(() => {
-                const s3 = getSessionProgressData(3);
-                return s3?.capstoneData?.completedAt;
+                const s4 = getSessionProgressData(4);
+                return s4?.capstoneData?.completedAt;
               })()}
               skillSignals={allSkillSignals}
               totalModulesCompleted={totalCompletedModules}
               totalModules={totalModules}
-              onViewCertificate={() => navigate('/training/3')}
+              onViewCertificate={() => navigate('/training/4')}
             />
           </div>
         )}
@@ -348,7 +356,7 @@ export default function Dashboard() {
         </div>
 
         {/* Sessions Grid */}
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {SESSIONS.map((session) => {
             const status = getSessionStatus(session.id);
             const IconComponent = session.icon;

@@ -1487,8 +1487,12 @@ Option C — Retail / Branch / Operations: Draft a complete customer communicati
 
 Option D — Compliance / Risk: Draft an internal training memo on a regulatory update using self-review prompting. Produce both a technical version and a plain-language summary for front-line staff.
 
+Option E — Wealth Management / Trust: Build a client meeting prep package using chain-of-thought prompting. Include a portfolio review summary, talking points for market conditions, and a list of action items — all using anonymized client data.
+
+Option F — Executive / Strategy: Draft a board-ready memo or strategic briefing on an AI initiative using decomposition prompting. Break the task into research, analysis, and recommendation sections. Include an executive summary and a risk/benefit matrix.
+
 For whichever option you choose, include in your submission:
-1. The option you selected (A, B, C, or D) and the specific task
+1. The option you selected (A, B, C, D, E, or F) and the specific task
 2. The prompts you used (show at least 3 separate prompts demonstrating iteration)
 3. The final output produced by AI
 4. A 3-sentence reflection: what worked well, what the AI got wrong or missed, and what you would do differently next time`,
