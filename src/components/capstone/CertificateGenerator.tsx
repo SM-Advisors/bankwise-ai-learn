@@ -73,7 +73,7 @@ export function CertificateGenerator({
         <div class="cert">
           <div class="header">
             <h1>Certificate of Completion</h1>
-            <div class="sub">BankWise AI Training Program</div>
+            <div class="sub">SMILE AI Training Program</div>
           </div>
           <div class="icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
@@ -96,7 +96,7 @@ export function CertificateGenerator({
             <div class="date">Completed: ${formattedDate}</div>
             <div class="sig">
               <div class="line"></div>
-              <div class="label">BankWise AI Program Director</div>
+              <div class="label">SMILE Program Director</div>
             </div>
           </div>
         </div>
@@ -119,7 +119,7 @@ export function CertificateGenerator({
         </div>
         <h3 className="font-semibold text-foreground">Your Certificate</h3>
         <p className="text-sm text-muted-foreground mt-1 mb-4">
-          Download your completion certificate for the BankWise AI Training Program.
+          Download your completion certificate for the SMILE AI Training Program.
         </p>
 
         <div className="flex gap-2 justify-center">
@@ -137,7 +137,7 @@ export function CertificateGenerator({
       {showPreview && (
         <div ref={certRef} className="rounded-xl border-2 border-amber-600 bg-white p-8 space-y-4 text-center" style={{ fontFamily: 'Georgia, serif' }}>
           <h2 className="text-2xl font-bold text-gray-900 tracking-widest uppercase">Certificate of Completion</h2>
-          <p className="text-sm text-gray-500 tracking-wider">BankWise AI Training Program</p>
+          <p className="text-sm text-gray-500 tracking-wider">SMILE AI Training Program</p>
           <Award className="h-10 w-10 text-amber-600 mx-auto" />
           <div>
             <p className="text-sm text-gray-500">This certificate is proudly presented to</p>

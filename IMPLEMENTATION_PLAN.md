@@ -1,5 +1,5 @@
 # 9-Feature Implementation Plan
-## Prototype: BankWise AI Training Platform
+## Prototype: SMILE AI Training Platform
 
 **Context:** This is a prototype to demonstrate the business vision. Priority is functionality over production-grade security/compliance.
 

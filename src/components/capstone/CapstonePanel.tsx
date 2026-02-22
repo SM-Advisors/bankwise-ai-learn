@@ -515,7 +515,7 @@ export function CapstonePanel({
               </div>
               <h2 className="text-xl font-bold">Program Complete!</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                You've completed the BankWise AI Training Program. Here's your summary.
+                You've completed the SMILE AI Training Program. Here's your summary.
               </p>
             </div>
 
