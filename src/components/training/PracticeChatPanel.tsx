@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import {
   Loader2, Send, Lightbulb, AlertCircle, Target, CheckCircle,
-  ChevronRight, ChevronDown, Bot, User,
+  ChevronRight, ChevronDown, Bot, User, Mic, AudioLines, Plus, SlidersHorizontal,
   MessageSquarePlus, History, Clock,
 } from 'lucide-react';
 import { type ModuleContent } from '@/data/trainingContent';
@@ -55,6 +55,7 @@ export function PracticeChatPanel({
   const [scenarioOpen, setScenarioOpen] = useState(false);
   const [criteriaOpen, setCriteriaOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'work' | 'web'>('work');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -103,8 +104,8 @@ export function PracticeChatPanel({
 
   return (
     <div className="flex flex-col flex-1 min-h-0 items-center bg-background text-foreground">
-      {/* Top bar: New Chat + Practice AI label + History */}
-      <div className="w-full flex items-center justify-between px-4 pt-3 pb-2">
+      {/* Top bar: New Chat + Work/Web toggle + History */}
+      <div className="w-full flex items-center justify-between px-4 pt-4 pb-2">
         {/* Left: New Chat button */}
         <div className="flex items-center gap-1">
           <Button
@@ -118,10 +119,28 @@ export function PracticeChatPanel({
           </Button>
         </div>
 
-        {/* Center: Practice AI label */}
-        <div className="flex items-center gap-2">
-          <Bot className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium text-muted-foreground">Practice AI</span>
+        {/* Center: Work / Web Toggle */}
+        <div className="inline-flex items-center rounded-full border border-border bg-card p-0.5 shadow-sm">
+          <button
+            onClick={() => setActiveTab('work')}
+            className={`px-5 py-1.5 text-sm font-medium rounded-full transition-colors ${
+              activeTab === 'work'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Work
+          </button>
+          <button
+            onClick={() => setActiveTab('web')}
+            className={`px-5 py-1.5 text-sm font-medium rounded-full transition-colors ${
+              activeTab === 'web'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Web
+          </button>
         </div>
 
         {/* Right: History dropdown */}
@@ -364,7 +383,7 @@ export function PracticeChatPanel({
         </div>
       )}
 
-      {/* Composer Bar */}
+      {/* Copilot-Style Composer Bar */}
       <div className="w-full max-w-2xl mx-auto px-4 pb-3 pt-2">
         <div className="rounded-2xl border border-border bg-card shadow-sm">
           <Textarea
@@ -375,21 +394,41 @@ export function PracticeChatPanel({
             placeholder={hasConversation ? "Continue the conversation..." : `Message ${module.content.practiceTask.title}...`}
             className="min-h-[56px] max-h-[180px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-foreground placeholder:text-muted-foreground/60 rounded-t-2xl px-4 pt-3.5 pb-0"
           />
+          {/* Toolbar row */}
           <div className="flex items-center justify-between px-3 py-2">
-            <span className="text-[10px] text-muted-foreground/50">Enter to send · Shift+Enter for new line</span>
-            <Button
-              size="icon"
-              onClick={handleSend}
-              disabled={isLoading || !input.trim()}
-              className="h-8 w-8 rounded-full"
-              aria-label="Send message"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
+                <Plus className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-full text-sm px-3 text-muted-foreground hover:text-foreground hover:bg-muted">
+                <SlidersHorizontal className="h-4 w-4" />
+                Tools
+              </Button>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
+                <Mic className="h-5 w-5" />
+              </Button>
+              {input.trim() ? (
+                <Button
+                  size="icon"
+                  onClick={handleSend}
+                  disabled={isLoading}
+                  className="h-8 w-8 rounded-full"
+                  aria-label="Send message"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
               ) : (
-                <Send className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
+                  <AudioLines className="h-5 w-5" />
+                </Button>
               )}
-            </Button>
+            </div>
           </div>
         </div>
       </div>
