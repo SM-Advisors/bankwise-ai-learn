@@ -29,6 +29,7 @@ import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';
 import type { SessionProgressData, SkillSignal } from '@/types/progress';
 import { CompletionSummary } from '@/components/capstone/CompletionSummary';
 import { DashboardChat } from '@/components/DashboardChat';
+import { CommunityFeed } from '@/components/CommunityFeed';
 
 const SESSIONS = [
   {
@@ -508,9 +509,9 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Community Hub Section */}
+          {/* Community Hub Section — Inline Feed */}
           <Card className="overflow-hidden">
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-2">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/20">
                   <Users className="h-5 w-5 text-primary" />
@@ -524,13 +525,7 @@ export default function Dashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Share ideas, ask questions, and learn from fellow banking professionals in your cohort.
-              </p>
-              <Button className="gap-2 w-full" onClick={() => navigate('/community')}>
-                <MessageCircle className="h-4 w-4" />
-                Open Community Hub
-              </Button>
+              <CommunityFeed />
             </CardContent>
           </Card>
         </div>
