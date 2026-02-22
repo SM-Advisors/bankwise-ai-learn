@@ -25,13 +25,14 @@ import { CSuiteReports } from '@/components/admin/CSuiteReports';
 import { learningStyles } from '@/data/learningStyles';
 import { departments } from '@/data/topics';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
-import { 
-  BookOpen, 
-  Brain, 
-  Calculator, 
-  FileText, 
-  TrendingUp, 
-  Users, 
+import { seedAllLessonChunks } from '@/utils/seedLessonChunks';
+import {
+  BookOpen,
+  Brain,
+  Calculator,
+  FileText,
+  TrendingUp,
+  Users,
   Lightbulb,
   CheckCircle,
   Target,
@@ -57,7 +58,9 @@ import {
   Link,
   CalendarDays,
   BarChart3,
-  PieChart as PieChartIcon
+  PieChart as PieChartIcon,
+  Database,
+  RefreshCw
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -192,6 +195,16 @@ export default function AdminDashboard() {
   // App settings state
   const [communityUrl, setCommunityUrl] = useState('');
   const [savingCommunityUrl, setSavingCommunityUrl] = useState(false);
+
+  // RAG content management state
+  const [seedingChunks, setSeedingChunks] = useState(false);
+  const [seedResult, setSeedResult] = useState<{
+    success: boolean;
+    totalChunks: number;
+    totalModules: number;
+    embeddings?: { embedded: number; errors?: string[] } | null;
+    error?: string;
+  } | null>(null);
 
   // Load community URL when settings load
   useEffect(() => {
@@ -415,6 +428,34 @@ export default function AdminDashboard() {
       toast({ title: 'Error', description: result.error, variant: 'destructive' });
     }
     setSavingCommunityUrl(false);
+  };
+
+  const handleSeedAndEmbed = async () => {
+    setSeedingChunks(true);
+    setSeedResult(null);
+    try {
+      const result = await seedAllLessonChunks();
+      setSeedResult(result);
+      if (result.success) {
+        toast({
+          title: 'Content seeded successfully',
+          description: `${result.totalChunks} chunks created across ${result.totalModules} modules.${
+            result.embeddings ? ` ${result.embeddings.embedded} embeddings generated.` : ''
+          }`,
+        });
+      } else {
+        toast({
+          title: 'Seed failed',
+          description: result.error || 'Unknown error',
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      setSeedResult({ success: false, totalChunks: 0, totalModules: 0, error: msg });
+      toast({ title: 'Error', description: msg, variant: 'destructive' });
+    }
+    setSeedingChunks(false);
   };
 
   return (
@@ -1703,6 +1744,71 @@ export default function AdminDashboard() {
                   )}
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* RAG Content Management */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="h-5 w-5 text-primary" />
+                AI Knowledge Base
+              </CardTitle>
+              <CardDescription>
+                Seed lesson content chunks and generate vector embeddings for Andrea's RAG retrieval
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-2">
+                <RefreshCw className="h-5 w-5 text-muted-foreground" />
+                <h3 className="font-semibold">Seed &amp; Embed Content</h3>
+              </div>
+              <p className="text-sm text-muted-foreground pl-7">
+                This will extract all lesson content into searchable chunks and generate AI embeddings for semantic search.
+                Run this whenever curriculum content is updated.
+              </p>
+              <div className="pl-7 flex items-center gap-3">
+                <Button
+                  onClick={handleSeedAndEmbed}
+                  disabled={seedingChunks}
+                  className="gap-2"
+                >
+                  {seedingChunks ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Database className="h-4 w-4" />
+                  )}
+                  {seedingChunks ? 'Seeding & Embedding...' : 'Seed All Content'}
+                </Button>
+                {seedResult && (
+                  <Badge variant={seedResult.success ? 'default' : 'destructive'}>
+                    {seedResult.success
+                      ? `${seedResult.totalChunks} chunks${seedResult.embeddings ? ` · ${seedResult.embeddings.embedded} embedded` : ''}`
+                      : 'Failed'}
+                  </Badge>
+                )}
+              </div>
+              {seedResult?.success && (
+                <div className="pl-7 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                  <p className="text-sm text-green-700 dark:text-green-400 font-medium">
+                    ✓ Knowledge base updated
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {seedResult.totalModules} modules → {seedResult.totalChunks} chunks.
+                    {seedResult.embeddings
+                      ? ` ${seedResult.embeddings.embedded} vector embeddings generated for semantic search.`
+                      : ' Embeddings will be generated when OPENAI_API_KEY is configured.'}
+                    {seedResult.embeddings?.errors && seedResult.embeddings.errors.length > 0 && (
+                      <span className="text-amber-600"> ({seedResult.embeddings.errors.length} embedding errors)</span>
+                    )}
+                  </p>
+                </div>
+              )}
+              {seedResult?.error && (
+                <div className="pl-7 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                  <p className="text-sm text-red-600 dark:text-red-400">{seedResult.error}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

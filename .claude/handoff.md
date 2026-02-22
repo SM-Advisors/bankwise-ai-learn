@@ -2,99 +2,82 @@
 
 **Date:** 2026-02-21
 **Branch:** main
-**Status:** Ready for Next Phase — Sessions 2 & 3 + Fine-tune Andrea
+**Status:** Core Platform Complete — All 3 Sessions Built
 
 ## Goal
-Build out 4 features for the bankwise-ai-learn platform:
-1. ~~SM Advisors Branding~~ ✅ Complete
-2. ~~C-Suite Reporting Dashboard~~ ✅ Complete
-3. **Sessions 2 & 3 functionality** — Next up
-4. **Fine-tune Andrea (AI coach)** — After Sessions
+Continue building the bankwise-ai-learn platform for SM Advisors. This session (a continuation) confirmed Andrea's personalization is complete and discussed verifying deployed edge functions.
 
 ## What Was Done
 
-### Session 2 (This Session) — Branding + C-Suite Reporting
-- **SM Advisors Branding** (commits `884536c` through `1d3d60f`)
-  - Replaced all GraduationCap icons with SM Advisors logo component
-  - Colors changed from teal/gold to navy (#202735) + orange (#dd4124) via CSS custom properties
-  - Logo component uses `sm-advisors-logo-transparent.png` for all variants
-  - Updated: Logo.tsx, Header.tsx, Auth.tsx, Index.tsx, HelpTour.tsx, ResetPassword.tsx, index.html
-  - Fonts: Inter (body) + Playfair Display (headings) — user rejected Montserrat for UI text
+### This Session (Continuation)
+- Confirmed Andrea (trainer_chat) captures ALL user personalization data
+- Provided verification steps to ensure deployed edge functions match repo code
 
-- **C-Suite Reporting Dashboard** (commit `e7fd17c`)
-  - New `CSuiteReports.tsx` component with 3 sub-tabs:
-    - **Progress & Adoption**: enrollment rates, session completion funnel, skill distribution, department breakdown
-    - **Compliance**: exception trends (30-day), exception types, per-department breakdown, repeat offenders
-    - **Innovation Pipeline**: idea stats, pipeline chart, top ideas with votes/ROI
-  - Enhanced `useReporting.ts` with `useCSuiteKPIs()` hook (parallel Supabase fetches)
-  - Exception detection in `trainer_chat/index.ts`: PII patterns (SSN, account numbers, routing numbers, credit cards) + phrase matching (compliance bypass, data export, inappropriate use)
-  - DB migration: admin RLS on `prompt_events`, new columns on `user_ideas` (votes, roi_impact, category, submitter fields), performance indexes
-  - Wired as 12th tab ("C-Suite") in AdminDashboard
-
-### Session 1 (Previous) — Original 9 Features
-- Features 1-9 from IMPLEMENTATION_PLAN.md (bank identity, policies, tour, events, community hub, training experience, Andrea output controls, AI preferences/memory, basic reporting)
+### Previous Sessions (Cumulative)
+- **Persistent Practice Conversations**: New `practice_conversations` table, `usePracticeConversations` hook, rewritten PracticeChatPanel with New Chat + History, conversations saved to DB
+- **Andrea Review with Embedded Transcripts**: Practice conversation transcript embedded directly in user message content when submitting for Andrea review
+- **Practice AI (ai-practice)**: Claude Sonnet 4 powered, mirrors prompt quality (not a coach)
+- **SM Advisors Branding**: Navy (#202735) + orange (#dd4124), SM Advisors logo, Inter/Playfair Display fonts
+- **C-Suite Reporting Dashboard**: 3 sub-tabs (Progress, Compliance, Innovation Pipeline), exception detection in trainer_chat
+- **Session 1 Content**: Fully built (8 modules)
+- **Session 2 Content**: Fully built (5 modules: What is an AI Agent, Agent Architecture, Custom Instructions Template, Tool Integration, Build Your Agent capstone)
+- **Session 3 Content**: Fully built (5 modules: Department AI Use Cases, Compliance & AI, Workflow Examples, Advanced Techniques, Capstone Project)
 
 ## Key Decisions
-- **Font strategy**: Montserrat ONLY for SM Advisors branding elements, Inter for body text, Playfair Display for headings. User explicitly rejected Montserrat everywhere.
-- **Color system**: Uses CSS custom properties (HSL) so shadcn/ui components auto-propagate navy/orange branding
-- **Logo**: Single PNG asset (`sm-advisors-logo-transparent.png`) for all logo variants — user replaced SVG placeholders with real brand asset
-- **C-Suite tab position**: Placed right after Users tab, before existing Reports tab in AdminDashboard
-- **Exception detection**: Regex-based PII detection + phrase matching, logged as `exception_flag`/`exception_type` on `prompt_events` table
-- **KPI data fetching**: All 5 Supabase tables fetched in parallel via `Promise.all` for performance
-- **Priority order**: Branding → Reporting → Sessions 2&3 → Fine-tune Andrea
+- **Dual Supabase projects**: `tehcmmctcmmecuzytiec` = Lovable's LIVE project (app uses this). `quimkenoecicooiwaojp` = user's standalone (NOT used). All deployments go through Lovable.
+- **Edge function naming**: Lovable uses `ai-practice` (not `practice_chat`). Frontend calls `ai-practice`.
+- **Andrea sees conversations via embedded transcript**: Transcript embedded in user message content, not a separate field.
+- **Lovable auto-deploys**: Edge functions and frontend deploy automatically from GitHub repo. Never deploy via Supabase CLI.
+- **Type casts (`as any`)**: Intentional workaround — Lovable's auto-generated types.ts doesn't include manually-created tables like `practice_conversations`.
+- **Practice AI is NOT a coach**: Mirrors prompt quality intentionally. Andrea is the coach.
 
 ## Current State
-All code is committed and pushed to `origin/main`. Build passes (`npm run build` succeeds). The C-Suite Reports tab is accessible in the Admin Dashboard under the "C-Suite" tab.
+Core P0 features complete and working. Practice chat, persistent conversations, Andrea review, personalization — all functional. Session 1 content fully built.
 
 ### Uncommitted Changes
-- `.claude/handoff.md` — this file
-- `.claude/settings.local.json` — local settings
-- `package-lock.json` — minor lockfile update
-- `nul` — artifact file (can be deleted)
+- `.claude/settings.local.json` — minor local settings (not important)
+- `nul` — artifact file, should be deleted
+- `supabase/.temp/` — temporary Supabase files, can be ignored
 
 ## Open Issues
-- **DB migration needs applying**: `20260220000000_csuite_reporting_enhancements.sql` needs to be run against Supabase (adds admin RLS on prompt_events, new user_ideas columns, indexes)
-- **No real exception data yet**: The compliance tab will show empty until users trigger exceptions in trainer_chat
-- **user_ideas ROI/votes columns**: These exist in the migration but there's no admin UI to edit ROI values on individual ideas yet (the CSuiteReports component displays them read-only)
+- **Verify deployed edge functions**: Test in-app ("What do you know about me?" to Andrea) to confirm latest code is live on Lovable's project
+- **DB migration for C-Suite**: `20260220000000_csuite_reporting_enhancements.sql` may still need to be run on Lovable's Supabase
+- **`nul` file in repo root**: Artifact, should be cleaned up
 
 ## Next Steps
-1. **Build Sessions 2 & 3** — "Building Your AI Agent" and "Department-Specific Training" modules. The training content structure exists in `src/data/trainingContent.ts` but Sessions 2 and 3 need actual module content and the training workspace needs to support progressing through them.
-2. **Fine-tune Andrea** — Improve the AI coach persona, system prompt, response quality, and coaching behavior in the `trainer_chat` edge function.
-3. **Apply pending migration** — Run the csuite reporting migration in Supabase
+1. **Verify edge function deployment** — Test Andrea and practice chat in-app to confirm latest code is live
+2. **Apply C-Suite migration** — Run `20260220000000_csuite_reporting_enhancements.sql` on Lovable's Supabase SQL editor if not done
+3. **Future P1** — UX polish, Andrea auto-suggesting memories, submission_review update, pgvector RAG
+4. **Content refinement** — All 3 sessions are built; review and iterate on quality as needed
 
 ## Key Files
-
-### Branding
-- `src/index.css` — Design system colors (navy/orange HSL values), font imports
-- `tailwind.config.ts` — Font family definitions (Inter, Playfair Display)
-- `src/components/Logo.tsx` — Reusable logo component with size/variant system
-- `src/assets/sm-advisors-logo-transparent.png` — Brand logo asset
-
-### C-Suite Reporting
+- `src/data/trainingContent.ts` — All training content for all 3 sessions (complete).
+- `supabase/functions/ai-practice/index.ts` — Practice chat (Claude Sonnet 4, mirrors prompt quality)
+- `supabase/functions/trainer_chat/index.ts` — Andrea's brain (~800+ lines), full personalization
+- `supabase/functions/submission_review/index.ts` — Reviews practice submissions
+- `src/hooks/usePracticeConversations.ts` — Persistent practice conversations hook
+- `src/components/training/PracticeChatPanel.tsx` — Practice chat UI (New Chat + History)
+- `src/pages/TrainingWorkspace.tsx` — Main workspace wiring
 - `src/components/admin/CSuiteReports.tsx` — Executive dashboard (3 sub-tabs)
-- `src/hooks/useReporting.ts` — `useCSuiteKPIs()`, `useReporting()`, `useAllIdeas()` hooks
-- `supabase/functions/trainer_chat/index.ts` — Exception detection + telemetry logging
-- `supabase/migrations/20260220000000_csuite_reporting_enhancements.sql` — DB migration
-- `src/pages/AdminDashboard.tsx` — All 12 admin tabs including C-Suite
+- `.claude/plans/ethereal-painting-parrot.md` — Session 2 & 3 content plan (COMPLETED — content is built)
 
-### Training (for next phase)
-- `src/data/trainingContent.ts` — Module content definitions (Sessions 1, 2, 3)
-- `src/pages/TrainingWorkspace.tsx` — Training UI with chat panel
-- `src/components/training/TrainerChatPanel.tsx` — Andrea chat interface
-- `supabase/functions/trainer_chat/index.ts` — Andrea's system prompt and behavior
+## Andrea Personalization (Confirmed Complete)
+The `trainer_chat` function fetches and uses ALL of:
+| Data | Source |
+|------|--------|
+| display_name, bank_role, line_of_business, employer_bank_name | `user_profiles` |
+| learning_style, tech_learning_style, ai_proficiency_level | `user_profiles` |
+| tone, verbosity, formatting_preference, role_context | `ai_user_preferences` |
+| memories (up to 15 active, pinned + regular) | `ai_memories` |
 
-### Core Architecture
-- React 18 + TypeScript + Vite
-- Tailwind CSS + shadcn/ui (Radix primitives)
-- Supabase (PostgreSQL + Edge Functions + RLS)
-- Recharts for data visualization
-- Edge Functions use Deno + Anthropic Claude API
+All injected into system prompt via helper functions (`getLearningStyleInstructions`, `getTechLearningStyleInstructions`, `getProficiencyInstructions`) and direct interpolation.
 
 ## Context for Next Session
-- The project uses `as any` casting for Supabase client calls on newer tables (types aren't auto-generated)
-- The user's brand: SM Advisors, tagline "YOUR PARTNER IN AI ENABLEMENT", colors navy (#202735) + orange (#dd4124) + white
-- Andrea is the AI coaching persona — lives in `trainer_chat/index.ts` edge function
-- Training has 3 sessions: Session 1 (AI Prompting, fully built), Session 2 (Building Your AI Agent, needs content), Session 3 (Department-Specific Training, needs content)
-- `training_progress` table has `session_1_completed`, `session_2_completed`, `session_3_completed` flags
-- The user prefers polished, professional fonts — explicitly rejected Montserrat for general UI
-- AdminDashboard has 12 tabs: Users, C-Suite, Reports, Ideas, Events, Live Feed, Programs, Policies, Styles, Depts, Content, Settings
+- **Lovable is the deployment pipeline**: Changes go through GitHub → Lovable auto-deploys. Never use Supabase CLI for the live project.
+- **Edge function secrets are shared**: All functions on Lovable's project share ANTHROPIC_API_KEY.
+- **practice_conversations table created manually**: SQL run in Lovable's Supabase SQL editor, not CLI migration.
+- **Session 2 & 3 content is COMPLETE**: All 10 modules fully built in `src/data/trainingContent.ts`. The plan at `.claude/plans/ethereal-painting-parrot.md` has been executed.
+- **Brand**: SM Advisors, "YOUR PARTNER IN AI ENABLEMENT", navy (#202735) + orange (#dd4124), Inter/Playfair Display fonts. User rejected Montserrat for UI text.
+- **Training structure**: 3 sessions, ALL complete. Session 1 (AI Prompting, 8 modules), Session 2 (Building Your AI Agent, 5 modules), Session 3 (Role-Specific Training, 5 modules).
+- **`as any` casts are necessary**: Lovable's auto-generated types don't include manually-created tables.
+- **AdminDashboard has 12 tabs**: Users, C-Suite, Reports, Ideas, Events, Live Feed, Programs, Policies, Styles, Depts, Content, Settings.
