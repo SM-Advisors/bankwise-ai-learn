@@ -1,30 +1,24 @@
 
 
-## Deploy seed_lesson_chunks and Fix Build Error
+## Enable pg_cron Extension
 
-### Step 1 -- Deploy the edge function
-The `supabase/functions/seed_lesson_chunks/index.ts` file is already written. It just needs to be deployed using the deploy tool. No code changes needed for the function itself.
-
-### Step 2 -- Fix the build error in AdminDashboard.tsx
-The `seedLessonChunks` return type doesn't include `embeddings`, but the edge function does return it. The fix is to add `embeddings` to the return type in `seedLessonChunks.ts`:
-
-**File:** `src/utils/seedLessonChunks.ts` (line 18-24)
-- Add `embeddings?: { embedded: number; errors?: string[] } | null;` to the return type.
-
-This aligns the TypeScript type with what the edge function actually returns.
+### What we'll do
+Run a single SQL migration to enable the `pg_cron` (and `pg_net`) extensions in your database. This is a prerequisite for setting up scheduled jobs like data retention crons.
 
 ### Technical Details
 
-**Return type change in `seedLessonChunks.ts`:**
-```typescript
-export async function seedLessonChunks(sessionIds?: number[]): Promise<{
-  success: boolean;
-  totalModules: number;
-  totalChunks: number;
-  sessions: Record<string, { modules: number; chunks: number }>;
-  embeddings?: { embedded: number; errors?: string[] } | null;
-  error?: string;
-}>
+**Migration SQL:**
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA pg_catalog;
+CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
 ```
 
-No other files need changes.
+This enables:
+- **pg_cron** -- allows scheduling recurring SQL jobs (like a cron job inside your database)
+- **pg_net** -- allows making HTTP requests from within the database (needed if your cron jobs call edge functions)
+
+### Steps
+1. Run the migration above to enable both extensions
+2. Once confirmed, you can then run your Data Retention Cron migration
+
+No code file changes are needed -- this is purely a database-level change.
