@@ -26,6 +26,10 @@ import PolicyDetail from "./pages/PolicyDetail";
 import Settings from "./pages/Settings";
 import AIMemories from "./pages/AIMemories";
 import ResetPassword from "./pages/ResetPassword";
+import PromptLibrary from "./pages/PromptLibrary";
+import Electives from "./pages/Electives";
+import Certificates from "./pages/Certificates";
+import AIJourney from "./pages/AIJourney";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -93,6 +97,26 @@ const App = () => (
                   <Route path="/memories" element={
                     <ProtectedRoute requireOnboarding>
                       <AIMemories />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/prompts" element={
+                    <ProtectedRoute requireOnboarding>
+                      <PromptLibrary />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/electives" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Electives />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/certificates" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Certificates />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/journey" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AIJourney />
                     </ProtectedRoute>
                   } />
                   {/* Legacy routes with header */}

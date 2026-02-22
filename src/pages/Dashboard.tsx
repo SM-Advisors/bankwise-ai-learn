@@ -21,7 +21,8 @@ import {
   Loader2, Play, CheckCircle, Sparkles, Bot,
   Building2, HelpCircle, BookOpen, Shield, Lightbulb,
   Radio, Calendar, Users, MessageCircle,
-  CalendarDays, Video, Settings, Brain, Cpu, Zap, Menu
+  CalendarDays, Video, Settings, Brain, Cpu, Zap, Menu,
+  TrendingUp, Award, GraduationCap
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { computeOverallProgress, computeSessionProgress, getModuleStates, getCompletedModuleCount, getSessionModuleTotal } from '@/utils/computeProgress';
@@ -239,6 +240,20 @@ export default function Dashboard() {
                     <div className="text-xs text-muted-foreground">AI use cases to explore</div>
                   </div>
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/prompts')} className="cursor-pointer">
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  <div>
+                    <div className="font-medium">Prompt Library</div>
+                    <div className="text-xs text-muted-foreground">Saved reusable prompts</div>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/journey')} className="cursor-pointer">
+                  <TrendingUp className="mr-2 h-4 w-4" />
+                  <div>
+                    <div className="font-medium">My AI Journey</div>
+                    <div className="text-xs text-muted-foreground">Skills & progress timeline</div>
+                  </div>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button variant="ghost" size="sm" className="gap-2" onClick={() => setHelpOpen(true)}>
@@ -275,6 +290,18 @@ export default function Dashboard() {
                     </button>
                     <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/ideas')}>
                       <Lightbulb className="h-4 w-4 text-muted-foreground" /> My Ideas
+                    </button>
+                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/prompts')}>
+                      <BookOpen className="h-4 w-4 text-muted-foreground" /> Prompt Library
+                    </button>
+                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/journey')}>
+                      <TrendingUp className="h-4 w-4 text-muted-foreground" /> My AI Journey
+                    </button>
+                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/certificates')}>
+                      <Award className="h-4 w-4 text-muted-foreground" /> Certificates
+                    </button>
+                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/electives')}>
+                      <GraduationCap className="h-4 w-4 text-muted-foreground" /> Elective Paths
                     </button>
                     <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => setHelpOpen(true)}>
                       <HelpCircle className="h-4 w-4 text-muted-foreground" /> Help
