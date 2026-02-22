@@ -196,6 +196,80 @@ export type Database = {
         }
         Relationships: []
       }
+      community_replies: {
+        Row: {
+          author_name: string
+          author_role: string | null
+          body: string
+          created_at: string
+          id: string
+          topic_id: string
+          user_id: string
+        }
+        Insert: {
+          author_name: string
+          author_role?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          topic_id: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          author_role?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          topic_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_replies_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "community_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_topics: {
+        Row: {
+          author_name: string
+          author_role: string | null
+          body: string
+          created_at: string
+          id: string
+          reply_count: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author_name: string
+          author_role?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          reply_count?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          author_role?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          reply_count?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string | null
