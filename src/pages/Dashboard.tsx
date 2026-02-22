@@ -327,9 +327,9 @@ export default function Dashboard() {
             return (
               <Card
                 key={session.id}
-                className="transition-all hover:shadow-lg"
+                className="transition-all hover:shadow-lg flex flex-col"
               >
-                <CardHeader>
+                <CardHeader className="flex-1">
                   <div className="flex items-start justify-between">
                     <div className={`p-3 rounded-lg ${
                       status === 'completed' ? 'bg-green-100 text-green-600' :
@@ -357,7 +357,7 @@ export default function Dashboard() {
                   </CardTitle>
                   <CardDescription>{session.description}</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="mt-auto">
                   {/* Module progress breakdown */}
                   <div className="mb-4">
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
