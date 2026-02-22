@@ -31,18 +31,14 @@ import {
 } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { useDepartments } from '@/hooks/useDepartments';
 import { Users, Edit, Loader2, CheckCircle, Clock, Shield, Building2 } from 'lucide-react';
-
-const LOB_LABELS: Record<string, string> = {
-  accounting_finance: 'Accounting & Finance',
-  credit_administration: 'Credit Administration',
-  executive_leadership: 'Executive & Leadership',
-};
 
 export function UsersManagement() {
   const { toast } = useToast();
   const { users, loading, updateUserProfile, updateUserRole } = useAllUsersWithRoles();
   const { organizations, loading: orgsLoading } = useOrganizations();
+  const { departments: deptOptions, getDepartmentName } = useDepartments();
   const [editingUser, setEditingUser] = useState<any>(null);
   const [editForm, setEditForm] = useState({
     display_name: '',
@@ -188,7 +184,7 @@ export function UsersManagement() {
                         </TableCell>
                         <TableCell>
                           <span className="text-sm">
-                            {LOB_LABELS[user.line_of_business] || '-'}
+                            {user.line_of_business ? getDepartmentName(user.line_of_business) : '-'}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -266,7 +262,7 @@ export function UsersManagement() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="user-lob">Line of Business</Label>
+              <Label htmlFor="user-lob">Department</Label>
               <Select
                 value={editForm.line_of_business}
                 onValueChange={(value) => setEditForm({ ...editForm, line_of_business: value })}
@@ -274,10 +270,12 @@ export function UsersManagement() {
                 <SelectTrigger id="user-lob">
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
-                <SelectContent className="bg-card">
-                  <SelectItem value="accounting_finance">Accounting & Finance</SelectItem>
-                  <SelectItem value="credit_administration">Credit Administration</SelectItem>
-                  <SelectItem value="executive_leadership">Executive & Leadership</SelectItem>
+                <SelectContent className="bg-card max-h-60">
+                  {deptOptions.map((dept) => (
+                    <SelectItem key={dept.slug} value={dept.slug}>
+                      {dept.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

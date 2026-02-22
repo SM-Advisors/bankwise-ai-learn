@@ -1,36 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth, LineOfBusiness, LearningStyleType } from '@/contexts/AuthContext';
+import { useAuth, LearningStyleType } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { ProficiencyAssessment } from '@/components/ProficiencyAssessment';
 import { useToast } from '@/hooks/use-toast';
+import { useDepartments } from '@/hooks/useDepartments';
 import {
   ArrowRight, ArrowLeft, Brain,
   Lightbulb, CheckCircle, User, Loader2
 } from 'lucide-react';
-
-const LOB_OPTIONS: { value: LineOfBusiness; label: string; description: string }[] = [
-  {
-    value: 'accounting_finance',
-    label: 'Accounting & Finance',
-    description: 'Financial reporting, reconciliation, and analysis'
-  },
-  {
-    value: 'credit_administration',
-    label: 'Credit Administration',
-    description: 'Loan processing, credit analysis, and documentation'
-  },
-  {
-    value: 'executive_leadership',
-    label: 'Executive & Leadership',
-    description: 'Strategic planning and organizational management'
-  },
-];
 
 const LEARNING_STYLE_QUESTIONS = [
   {
@@ -59,13 +43,14 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const { user, profile, updateProfile, loading } = useAuth();
   const { toast } = useToast();
+  const { departments: deptOptions, loading: deptsLoading } = useDepartments();
 
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Profile form state
   const [bankRole, setBankRole] = useState(profile?.bank_role || '');
-  const [lineOfBusiness, setLineOfBusiness] = useState<LineOfBusiness | null>(profile?.line_of_business || null);
+  const [lineOfBusiness, setLineOfBusiness] = useState<string | null>(profile?.line_of_business || null);
   const [aiProficiency, setAiProficiency] = useState(profile?.ai_proficiency_level ?? 0);
   const [proficiencyCompleted, setProficiencyCompleted] = useState(false);
   const [learningStyle, setLearningStyle] = useState<LearningStyleType | null>(profile?.learning_style || null);
@@ -209,31 +194,41 @@ export default function Onboarding() {
                 </div>
 
                 <div className="space-y-3">
-                  <Label>Line of Business</Label>
-                  <RadioGroup
-                    value={lineOfBusiness || ''}
-                    onValueChange={(v) => setLineOfBusiness(v as LineOfBusiness)}
-                  >
-                    {LOB_OPTIONS.map((option) => (
-                      <div
-                        key={option.value}
-                        className={`relative flex items-start p-4 rounded-lg border cursor-pointer transition-all ${
-                          lineOfBusiness === option.value
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:border-muted-foreground/50'
-                        }`}
-                        onClick={() => setLineOfBusiness(option.value)}
+                  <Label>Department</Label>
+                  {deptsLoading ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+                      <Loader2 className="h-4 w-4 animate-spin" /> Loading departments...
+                    </div>
+                  ) : (
+                    <ScrollArea className="h-[320px] pr-3">
+                      <RadioGroup
+                        value={lineOfBusiness || ''}
+                        onValueChange={(v) => setLineOfBusiness(v)}
                       >
-                        <RadioGroupItem value={option.value} id={option.value} className="mt-1" />
-                        <div className="ml-3">
-                          <Label htmlFor={option.value} className="font-medium cursor-pointer">
-                            {option.label}
-                          </Label>
-                          <p className="text-sm text-muted-foreground">{option.description}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </RadioGroup>
+                        {deptOptions.map((dept) => (
+                          <div
+                            key={dept.slug}
+                            className={`relative flex items-start p-3 rounded-lg border cursor-pointer transition-all mb-2 ${
+                              lineOfBusiness === dept.slug
+                                ? 'border-primary bg-primary/5'
+                                : 'border-border hover:border-muted-foreground/50'
+                            }`}
+                            onClick={() => setLineOfBusiness(dept.slug)}
+                          >
+                            <RadioGroupItem value={dept.slug} id={dept.slug} className="mt-1" />
+                            <div className="ml-3">
+                              <Label htmlFor={dept.slug} className="font-medium cursor-pointer">
+                                {dept.name}
+                              </Label>
+                              {dept.description && (
+                                <p className="text-sm text-muted-foreground">{dept.description}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    </ScrollArea>
+                  )}
                 </div>
               </CardContent>
             </>

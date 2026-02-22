@@ -19,11 +19,13 @@ import {
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
-const LOB_LABELS: Record<string, string> = {
-  accounting_finance: 'Accounting & Finance',
-  credit_administration: 'Credit Administration',
-  executive_leadership: 'Executive & Leadership',
-};
+// Dynamic department label helper — converts slugs to title case
+const LOB_LABELS: Record<string, string> = new Proxy({} as Record<string, string>, {
+  get: (_target, prop: string) => {
+    if (!prop || typeof prop !== 'string') return 'Unknown';
+    return prop.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  },
+});
 
 export function ProgressDashboard() {
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);

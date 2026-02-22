@@ -65,12 +65,11 @@ export function PracticeChatPanel({
 
   // Department-specific scenario and hints (Session 3)
   const deptScenarios = module.content.practiceTask.departmentScenarios;
-  const lobKey = lineOfBusiness as 'accounting_finance' | 'credit_administration' | 'executive_leadership' | undefined;
-  const activeScenario = (deptScenarios && lobKey && deptScenarios[lobKey]?.scenario)
-    ? deptScenarios[lobKey].scenario
+  const activeScenario = (deptScenarios && lineOfBusiness && deptScenarios[lineOfBusiness]?.scenario)
+    ? deptScenarios[lineOfBusiness].scenario
     : module.content.practiceTask.scenario;
-  const activeHints = (deptScenarios && lobKey && deptScenarios[lobKey]?.hints)
-    ? deptScenarios[lobKey].hints
+  const activeHints = (deptScenarios && lineOfBusiness && deptScenarios[lineOfBusiness]?.hints)
+    ? deptScenarios[lineOfBusiness].hints
     : module.content.practiceTask.hints;
 
   // Scroll to bottom when messages change

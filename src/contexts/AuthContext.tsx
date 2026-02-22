@@ -3,7 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import type { SessionProgressData } from '@/types/progress';
 
-export type LineOfBusiness = 'accounting_finance' | 'credit_administration' | 'executive_leadership';
+export type LineOfBusiness = string;
 export type LearningStyleType = 'example-based' | 'explanation-based' | 'hands-on' | 'logic-based';
 
 export interface UserProfile {
@@ -13,6 +13,7 @@ export interface UserProfile {
   employer_bank_name: string | null;
   organization_id: string | null;
   line_of_business: LineOfBusiness | null;
+  department_id: string | null;
   bank_role: string | null;
   learning_style: LearningStyleType | null;
   tech_learning_style: LearningStyleType | null;

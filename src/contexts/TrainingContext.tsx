@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 // Updated learning styles based on the Interaction Preference Intake document
 export type LearningStyle = 'example-based' | 'explanation-based' | 'hands-on' | 'logic-based';
 
-export type Department = 'accounting' | 'credit' | 'executive';
+export type Department = string;
 
 export interface QuestionnaireAnswer {
   questionId: string;

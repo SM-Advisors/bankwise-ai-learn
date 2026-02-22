@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth, LineOfBusiness } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useDepartments } from '@/hooks/useDepartments';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -30,12 +31,6 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { User, Settings, LogOut, ChevronDown, RefreshCw, Play } from 'lucide-react';
 
-const LOB_OPTIONS: { value: LineOfBusiness; label: string }[] = [
-  { value: 'accounting_finance', label: 'Accounting & Finance' },
-  { value: 'credit_administration', label: 'Credit Administration' },
-  { value: 'executive_leadership', label: 'Executive & Leadership' },
-];
-
 interface ProfileDropdownProps {
   onReplayTour?: () => void;
 }
@@ -45,12 +40,13 @@ export function ProfileDropdown({ onReplayTour }: ProfileDropdownProps = {}) {
   const { toast } = useToast();
   const { profile, signOut, updateProfile } = useAuth();
   const { isAdmin } = useUserRole();
+  const { departments: deptOptions } = useDepartments();
   const [profileOpen, setProfileOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     display_name: '',
     bank_role: '',
-    line_of_business: '' as LineOfBusiness | '',
+    line_of_business: '',
   });
 
   const handleOpenProfile = () => {
@@ -180,18 +176,18 @@ export function ProfileDropdown({ onReplayTour }: ProfileDropdownProps = {}) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="profile-lob">Line of Business</Label>
+              <Label htmlFor="profile-lob">Department</Label>
               <Select
                 value={formData.line_of_business}
-                onValueChange={(value) => setFormData({ ...formData, line_of_business: value as LineOfBusiness })}
+                onValueChange={(value) => setFormData({ ...formData, line_of_business: value })}
               >
                 <SelectTrigger id="profile-lob">
                   <SelectValue placeholder="Select your department" />
                 </SelectTrigger>
-                <SelectContent className="bg-card">
-                  {LOB_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                <SelectContent className="bg-card max-h-60">
+                  {deptOptions.map((dept) => (
+                    <SelectItem key={dept.slug} value={dept.slug}>
+                      {dept.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

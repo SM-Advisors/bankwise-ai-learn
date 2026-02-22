@@ -23,6 +23,7 @@ import { ProgressDashboard } from '@/components/admin/ProgressDashboard';
 import { IdeasInbox } from '@/components/admin/IdeasInbox';
 import { CSuiteReports } from '@/components/admin/CSuiteReports';
 import { OrganizationsManager } from '@/components/admin/OrganizationsManager';
+import { DepartmentsManager } from '@/components/admin/DepartmentsManager';
 import { learningStyles } from '@/data/learningStyles';
 import { departments } from '@/data/topics';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
@@ -1570,59 +1571,9 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
 
-        {/* Department Tracks Tab */}
+        {/* Department Management Tab */}
         <TabsContent value="departments" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" />
-                Department-Specific Training Tracks
-              </CardTitle>
-              <CardDescription>
-                Specialized AI training topics for each line of business (Stage 3 content)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {departments.map((dept) => {
-                  const IconComponent = iconMap[dept.icon] || FileText;
-                  return (
-                    <Card key={dept.id} className="overflow-hidden">
-                      <CardHeader className="bg-muted/50">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-primary/10 rounded-lg">
-                            <IconComponent className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-xl">{dept.name}</CardTitle>
-                            <CardDescription>{dept.description}</CardDescription>
-                          </div>
-                          <Badge className="ml-auto">{dept.topics.length} Topics</Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-4">
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                          {dept.topics.map((topic) => (
-                            <Card key={topic.id} className="bg-muted/30">
-                              <CardHeader className="pb-2">
-                                <CardTitle className="text-base leading-tight">{topic.title}</CardTitle>
-                              </CardHeader>
-                              <CardContent>
-                                <p className="text-sm text-muted-foreground">{topic.description}</p>
-                                <Badge variant="outline" className="mt-3 text-xs">
-                                  {topic.id}
-                                </Badge>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+          <DepartmentsManager />
         </TabsContent>
 
         {/* Content Documentation Tab */}

@@ -74,12 +74,8 @@ export default function TrainingWorkspace() {
 
   // Department info for Session 3
   const getDepartmentLabel = (lob: string | null) => {
-    switch (lob) {
-      case 'accounting_finance': return 'Accounting & Finance';
-      case 'credit_administration': return 'Credit Administration';
-      case 'executive_leadership': return 'Executive & Leadership';
-      default: return null;
-    }
+    if (!lob) return null;
+    return lob.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   };
   const departmentLabel = isSession3 ? getDepartmentLabel(profile?.line_of_business ?? null) : null;
 

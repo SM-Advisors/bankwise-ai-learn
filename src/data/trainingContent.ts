@@ -24,11 +24,7 @@ export interface ModuleContent {
       scenario: string;
       hints: string[];
       successCriteria: string[];
-      departmentScenarios?: {
-        accounting_finance: { scenario: string; hints: string[] };
-        credit_administration: { scenario: string; hints: string[] };
-        executive_leadership: { scenario: string; hints: string[] };
-      };
+      departmentScenarios?: Record<string, { scenario: string; hints: string[] }>;
     };
   };
 }
@@ -917,6 +913,50 @@ export const SESSION_3_CONTENT: SessionContent = {
               scenario: 'As an executive/leadership professional, build 3 AI use cases specific to your role. Consider board presentations, strategic summaries, decision support memos, market analysis, and stakeholder communications. For each use case: name the task, identify the audience (board, shareholders, regulators, etc.), note the key compliance consideration (public disclosure rules, material information, etc.), and write the first line of the prompt.',
               hints: ['What strategic documents do you prepare for the board?', 'Which communications go external vs. internal?', 'What sensitivity considerations apply to executive communications?', 'Where would consistent formatting save the most time?'],
             },
+            commercial_lending: {
+              scenario: 'As a commercial lending professional, build 3 AI use cases specific to your department. Consider CRE loan presentations, C&I credit analysis, term sheet drafting, borrower financial spreading, and portfolio review summaries. For each use case: name the task, identify the audience (credit committee, relationship manager, borrower, etc.), note the key compliance consideration (fair lending, CRA documentation, concentration limits, etc.), and write the first line of the prompt.',
+              hints: ['What loan presentations or credit packages do you prepare most often?', 'Who is the primary reviewer — credit committee, chief credit officer, or examiner?', 'What fair lending or CRA documentation must accompany your analysis?', 'Which deal stages involve the most repetitive writing?'],
+            },
+            retail_banking: {
+              scenario: 'As a retail banking professional, build 3 AI use cases specific to your department. Consider customer inquiry responses, product comparison guides, branch communications, account opening workflows, and service recovery letters. For each use case: name the task, identify the audience (customer, branch staff, regional manager, etc.), note the key compliance consideration (Reg E disclosures, UDAAP, privacy notices, etc.), and write the first line of the prompt.',
+              hints: ['What customer-facing communications do you draft most often?', 'Who receives the final output — the customer, branch team, or management?', 'What disclosure or UDAAP requirements apply to customer communications?', 'Which routine responses could benefit from a consistent template?'],
+            },
+            mortgage_consumer_lending: {
+              scenario: 'As a mortgage and consumer lending professional, build 3 AI use cases specific to your department. Consider loan estimate explanations, underwriting condition summaries, denial reason documentation, home equity marketing materials, and borrower status updates. For each use case: name the task, identify the audience (borrower, underwriter, secondary market, etc.), note the key compliance consideration (TRID, ECOA, HMDA data integrity, etc.), and write the first line of the prompt.',
+              hints: ['What borrower-facing documents do you prepare most frequently?', 'Who reviews the output — underwriting, compliance, or the borrower?', 'What TRID or fair lending rules govern your documentation?', 'Which loan stage generates the most repetitive communication?'],
+            },
+            treasury_cash_management: {
+              scenario: 'As a treasury and cash management professional, build 3 AI use cases specific to your department. Consider ALM committee reports, liquidity forecasting summaries, investment portfolio commentary, interest rate risk analysis, and cash management client proposals. For each use case: name the task, identify the audience (ALCO, board, regulators, commercial clients, etc.), note the key compliance consideration (investment policy limits, liquidity coverage ratios, rate risk thresholds, etc.), and write the first line of the prompt.',
+              hints: ['What recurring reports do you prepare for ALCO or the board?', 'Who is the primary audience — internal committee, regulators, or clients?', 'What policy limits or regulatory thresholds must be referenced accurately?', 'Which forecasting or commentary tasks follow a repeatable structure?'],
+            },
+            operations: {
+              scenario: 'As an operations professional, build 3 AI use cases specific to your department. Consider wire transfer procedure documentation, exception item processing guides, deposit operations checklists, vendor workflow summaries, and end-of-day reconciliation reports. For each use case: name the task, identify the audience (operations staff, auditors, management, etc.), note the key compliance consideration (BSA reporting, Reg CC holds, dual control procedures, etc.), and write the first line of the prompt.',
+              hints: ['What procedures or job aids do you document most often?', 'Who relies on your output — frontline staff, auditors, or management?', 'What regulatory requirements govern your daily processing workflows?', 'Which back-office tasks follow a consistent, repeatable format?'],
+            },
+            compliance_bsa_aml: {
+              scenario: 'As a compliance and BSA/AML professional, build 3 AI use cases specific to your department. Consider SAR narrative drafting, compliance monitoring summaries, regulatory change analysis, CRA documentation, and policy update communications. For each use case: name the task, identify the audience (BSA officer, board, examiners, staff, etc.), note the key compliance consideration (SAR confidentiality, FinCEN requirements, safe harbor protections, etc.), and write the first line of the prompt.',
+              hints: ['What compliance reports or narratives do you draft most often?', 'Who reviews the final output — BSA officer, examiners, or the board?', 'What confidentiality or safe harbor rules constrain how you use AI for this task?', 'Which regulatory monitoring tasks involve the most repetitive analysis?'],
+            },
+            risk_management: {
+              scenario: 'As a risk management professional, build 3 AI use cases specific to your department. Consider enterprise risk assessment summaries, credit risk review findings, interest rate risk reports, audit response drafting, and risk appetite statement updates. For each use case: name the task, identify the audience (risk committee, board, examiners, internal audit, etc.), note the key compliance consideration (model risk management, data validation, independence requirements, etc.), and write the first line of the prompt.',
+              hints: ['What risk reports or findings do you prepare on a recurring cycle?', 'Who is the primary audience — risk committee, board, or examiners?', 'What model risk or data validation requirements apply to your analysis?', 'Which risk assessment tasks follow a structured, repeatable format?'],
+            },
+            it_information_security: {
+              scenario: 'As an IT and information security professional, build 3 AI use cases specific to your department. Consider incident response documentation, vendor risk assessment summaries, security awareness training materials, change management communications, and digital banking feature announcements. For each use case: name the task, identify the audience (CISO, board, staff, examiners, etc.), note the key compliance consideration (GLBA safeguards, vendor due diligence, data classification, etc.), and write the first line of the prompt.',
+              hints: ['What security documentation or reports do you prepare most often?', 'Who receives the output — technical staff, executive leadership, or examiners?', 'What GLBA or data classification rules govern the information you handle?', 'Which IT communications or reports follow a repeatable template?'],
+            },
+            human_resources: {
+              scenario: 'As a human resources professional, build 3 AI use cases specific to your department. Consider job description drafting, onboarding program outlines, benefits communication summaries, performance review templates, and policy update announcements. For each use case: name the task, identify the audience (candidates, employees, managers, leadership, etc.), note the key compliance consideration (EEO language, ADA accommodations, FLSA classification, etc.), and write the first line of the prompt.',
+              hints: ['What HR documents or communications do you draft most frequently?', 'Who is the intended audience — candidates, current employees, or managers?', 'What EEO, ADA, or labor law requirements must be reflected in your content?', 'Which recurring HR tasks would benefit from a consistent starting template?'],
+            },
+            marketing_business_development: {
+              scenario: 'As a marketing and business development professional, build 3 AI use cases specific to your department. Consider campaign copy drafting, product launch announcements, CRA community event summaries, social media content calendars, and competitive market analysis. For each use case: name the task, identify the audience (prospects, existing customers, community partners, leadership, etc.), note the key compliance consideration (UDAAP in advertising, fair lending in targeting, Reg DD disclosures, etc.), and write the first line of the prompt.',
+              hints: ['What marketing content do you create on a recurring basis?', 'Who is the target audience — prospects, existing customers, or internal stakeholders?', 'What UDAAP or disclosure requirements apply to your marketing materials?', 'Which campaigns or content types follow a repeatable structure?'],
+            },
+            wealth_management_trust: {
+              scenario: 'As a wealth management and trust professional, build 3 AI use cases specific to your department. Consider trust account review summaries, investment performance commentary, financial planning proposal outlines, fiduciary meeting minutes, and client portfolio update letters. For each use case: name the task, identify the audience (trust committee, beneficiaries, clients, regulators, etc.), note the key compliance consideration (fiduciary duty, Reg 9 requirements, suitability documentation, etc.), and write the first line of the prompt.',
+              hints: ['What client-facing or committee reports do you prepare most often?', 'Who reviews the output — trust committee, beneficiaries, or regulators?', 'What fiduciary or suitability documentation standards apply to your work?', 'Which trust or investment review tasks follow a repeatable cycle?'],
+            },
           },
         },
       },
@@ -1006,6 +1046,50 @@ The Line: If the output directly commits the bank to an action, creates a custom
             executive_leadership: {
               scenario: 'As an executive leader, customize the 5-step Pre-Task Compliance Check for your role. Think about: material non-public information handling, board communication sensitivity, strategic data protection, and public disclosure rules. Your checklist should cover board presentations, strategic memos, and stakeholder communications.',
               hints: ['What information is material and non-public?', 'How should board-level data be handled with AI?', 'What public disclosure rules apply to your communications?', 'Who reviews AI-assisted executive communications?'],
+            },
+            commercial_lending: {
+              scenario: 'As a commercial lending professional, customize the 5-step Pre-Task Compliance Check for your department. Think about: borrower financial statement confidentiality (tax returns, P&L, balance sheets), CRE appraisal and environmental report sensitivity, credit approval authority limits, and regulatory expectations for C&I and CRE underwriting documentation. Your checklist should cover credit memos, loan presentations, and portfolio review summaries.',
+              hints: ['What borrower financial data must be protected when using AI for analysis?', 'How should CRE appraisal and environmental data be handled?', 'Which credit decisions exceed your individual authority and require committee sign-off?', 'What documentation would a loan examiner expect to see regarding AI-assisted underwriting?'],
+            },
+            retail_banking: {
+              scenario: 'As a retail banking professional, customize the 5-step Pre-Task Compliance Check for your department. Think about: consumer PII protection (SSNs, account numbers, balances), Regulation E and deposit agreement requirements, customer complaint handling sensitivity, and branch-level documentation standards. Your checklist should cover customer communications, account research, and service resolution workflows.',
+              hints: ['What customer data types must never be entered into an AI tool?', 'How do Reg E dispute timelines affect AI-assisted research?', 'Which customer-facing responses require supervisor review before sending?', 'How should you document AI assistance in customer interaction records?'],
+            },
+            mortgage_consumer_lending: {
+              scenario: 'As a mortgage and consumer lending professional, customize the 5-step Pre-Task Compliance Check for your department. Think about: TRID/RESPA disclosure requirements, HMDA data sensitivity, borrower income and asset documentation protection, and fair lending compliance across all consumer loan types. Your checklist should cover loan estimates, underwriting summaries, home equity documents, and adverse action notices.',
+              hints: ['What borrower income and asset data requires special protection?', 'How do TRID and RESPA rules constrain AI-assisted disclosure preparation?', 'Which lending decisions must always have human sign-off for fair lending reasons?', 'What HMDA-related documentation must record whether AI was used in the process?'],
+            },
+            treasury_cash_management: {
+              scenario: 'As a treasury and cash management professional, customize the 5-step Pre-Task Compliance Check for your department. Think about: interest rate risk model sensitivity, investment portfolio data protection, liquidity position confidentiality, and ALM committee reporting requirements. Your checklist should cover investment analyses, liquidity reports, funds transfer pricing, and board-level ALM presentations.',
+              hints: ['What investment and liquidity data is too sensitive for AI input?', 'How should interest rate risk model assumptions be verified when AI-assisted?', 'Which ALM and investment decisions require committee or board approval?', 'What documentation standards apply to AI-assisted treasury analyses and forecasts?'],
+            },
+            operations: {
+              scenario: 'As an operations professional, customize the 5-step Pre-Task Compliance Check for your department. Think about: payment and wire transfer data sensitivity (routing numbers, account numbers, beneficiary details), deposit operations accuracy requirements, Reg CC and UCC compliance, and back-office processing audit trails. Your checklist should cover wire transfer procedures, exception item handling, ACH processing, and reconciliation workflows.',
+              hints: ['What payment and account data must be excluded from AI prompts?', 'How do wire transfer and ACH accuracy requirements affect AI-assisted processing?', 'Which operations decisions or overrides require dual control or supervisor sign-off?', 'How should AI assistance be logged in your transaction processing audit trail?'],
+            },
+            compliance_bsa_aml: {
+              scenario: 'As a compliance and BSA/AML professional, customize the 5-step Pre-Task Compliance Check for your department. Think about: SAR and CTR filing confidentiality (tipping-off prohibitions), FinCEN data handling restrictions, customer due diligence and beneficial ownership sensitivity, and examination preparation documentation. Your checklist should cover SAR narratives, CDD reviews, risk assessments, and regulatory change analysis.',
+              hints: ['What BSA/AML data is legally prohibited from disclosure and must never enter an AI tool?', 'How do SAR tipping-off rules apply to AI-assisted suspicious activity analysis?', 'Which compliance determinations must always have human sign-off before filing?', 'What would a FinCEN or examiner review expect in your AI usage documentation?'],
+            },
+            risk_management: {
+              scenario: 'As a risk management professional, customize the 5-step Pre-Task Compliance Check for your department. Think about: enterprise risk assessment confidentiality, credit risk review independence requirements, internal audit workpaper sensitivity, and board risk committee reporting standards. Your checklist should cover risk assessments, loan review findings, IRR model validation, and audit reports.',
+              hints: ['What risk assessment and audit data requires protection from AI tools?', 'How do independence requirements affect AI-assisted credit risk reviews?', 'Which risk ratings, findings, or model validations require committee sign-off?', 'How should AI assistance be documented in audit workpapers and risk reports?'],
+            },
+            it_information_security: {
+              scenario: 'As an IT and information security professional, customize the 5-step Pre-Task Compliance Check for your department. Think about: vulnerability and penetration test data sensitivity, vendor risk assessment confidentiality, network architecture and access credential protection, and GLBA Safeguards Rule requirements. Your checklist should cover incident response documentation, vendor due diligence, system configuration reviews, and security assessment reports.',
+              hints: ['What security data (vulnerabilities, credentials, network diagrams) must never enter an AI prompt?', 'How do GLBA Safeguards Rule requirements apply to AI-assisted security work?', 'Which IT security decisions or vendor approvals require CISO or committee sign-off?', 'How should AI assistance be documented in incident reports and security assessments?'],
+            },
+            human_resources: {
+              scenario: 'As a human resources professional, customize the 5-step Pre-Task Compliance Check for your department. Think about: employee PII and compensation data protection, EEO and ADA compliance considerations, performance review and disciplinary documentation sensitivity, and FMLA/benefits record confidentiality. Your checklist should cover job descriptions, policy communications, performance summaries, and benefits correspondence.',
+              hints: ['What employee data types (SSNs, salaries, medical info) must never enter an AI prompt?', 'How do EEO and ADA requirements affect AI-assisted HR decisions and communications?', 'Which HR actions — terminations, accommodations, investigations — require legal or leadership sign-off?', 'How should AI assistance be recorded in employee files and HR documentation?'],
+            },
+            marketing_business_development: {
+              scenario: 'As a marketing and business development professional, customize the 5-step Pre-Task Compliance Check for your department. Think about: UDAAP and Reg Z/Reg DD advertising compliance, customer demographic data sensitivity, CRA-related community engagement documentation, and brand/reputational risk in public-facing content. Your checklist should cover marketing materials, social media content, rate advertisements, and community development reports.',
+              hints: ['What customer data must be protected when using AI for marketing analytics?', 'How do UDAAP and truth-in-advertising rules apply to AI-generated marketing content?', 'Which public-facing communications require compliance or legal sign-off before publication?', 'How should AI assistance be documented in marketing review and approval workflows?'],
+            },
+            wealth_management_trust: {
+              scenario: 'As a wealth management and trust professional, customize the 5-step Pre-Task Compliance Check for your department. Think about: fiduciary duty and trust beneficiary data sensitivity, investment suitability documentation (Reg BI), estate and tax planning confidentiality, and SEC/state regulatory requirements. Your checklist should cover trust administration documents, investment recommendations, financial plans, and client portfolio reviews.',
+              hints: ['What client financial and estate data must be protected from AI tools?', 'How do fiduciary duty and Reg BI suitability rules constrain AI-assisted recommendations?', 'Which investment decisions and trust distributions require trustee committee or officer sign-off?', 'How should AI assistance be documented in client files and fiduciary records?'],
             },
           },
         },
@@ -1113,6 +1197,50 @@ Final Output: Reviewed, compliant response letter ready to send.`,
               scenario: 'As an executive leader, document a complete AI workflow for a strategic task you do regularly. Good candidates: board meeting preparation, strategic initiative summary, or competitive analysis brief. Include the trigger (e.g., "quarterly board meeting T-2 weeks"), 3-5 AI steps with human review at each checkpoint, and the final deliverable format.',
               hints: ['What triggers your board or strategic preparation?', 'Where does AI draft and where do you add strategic judgment?', 'What sensitivity review happens before distribution?', 'What format does the board or C-suite expect?'],
             },
+            commercial_lending: {
+              scenario: 'As a commercial lending professional, document a complete AI workflow for a lending task you do regularly. Good candidates: new CRE loan request analysis, C&I credit memo preparation, or annual business loan portfolio review. Include the trigger (e.g., "new loan request received from relationship manager"), 3-5 AI steps with human review at each checkpoint, and the final deliverable format.',
+              hints: ['What triggers your loan underwriting or portfolio review process?', 'Where does AI summarize financials and where do you validate assumptions?', 'What risk and compliance checks happen before credit committee?', 'What format does the credit approval package require?'],
+            },
+            retail_banking: {
+              scenario: 'As a retail banking professional, document a complete AI workflow for a branch or customer service task you do regularly. Good candidates: customer complaint resolution correspondence, deposit product comparison for a customer inquiry, or weekly branch performance summary. Include the trigger (e.g., "customer complaint logged in CRM"), 3-5 AI steps with human review at each checkpoint, and the final deliverable format.',
+              hints: ['What triggers your customer response or branch reporting process?', 'Where does AI draft and where do you personalize for the customer?', 'What tone and compliance checks happen before sending to a customer?', 'What does the final customer-facing or management-ready deliverable look like?'],
+            },
+            mortgage_consumer_lending: {
+              scenario: 'As a mortgage/consumer lending professional, document a complete AI workflow for a lending task you do regularly. Good candidates: mortgage application disclosure package preparation, home equity line review, or consumer loan decision documentation. Include the trigger (e.g., "mortgage application submitted through LOS"), 3-5 AI steps with human review at each checkpoint, and the final deliverable format.',
+              hints: ['What triggers your loan origination or review process?', 'Where does AI organize borrower data and where do you verify regulatory disclosures?', 'What TRID, HMDA, or fair lending checks are required before proceeding?', 'What does the final loan package or decision letter look like?'],
+            },
+            treasury_cash_management: {
+              scenario: 'As a treasury/cash management professional, document a complete AI workflow for a treasury task you do regularly. Good candidates: daily liquidity position summary, ALM report commentary, or investment portfolio performance review. Include the trigger (e.g., "market open / daily cash position file received"), 3-5 AI steps with human review at each checkpoint, and the final deliverable format.',
+              hints: ['What triggers your daily or monthly treasury analysis process?', 'Where does AI compile data and where do you validate positions or assumptions?', 'What interest rate risk or policy limit checks are required before distribution?', 'What format does ALCO or senior management expect?'],
+            },
+            operations: {
+              scenario: 'As an operations professional, document a complete AI workflow for a back-office task you do regularly. Good candidates: wire transfer exception review, deposit operations discrepancy resolution, or payment processing error summary for management. Include the trigger (e.g., "daily exception report generated by core system"), 3-5 AI steps with human review at each checkpoint, and the final deliverable format.',
+              hints: ['What triggers your daily exception or discrepancy review process?', 'Where does AI categorize issues and where do you verify against source records?', 'What dual-control or authorization checks are required before resolution?', 'What does the final exception log or management report look like?'],
+            },
+            compliance_bsa_aml: {
+              scenario: 'As a compliance/BSA/AML professional, document a complete AI workflow for a compliance task you do regularly. Good candidates: suspicious activity report narrative drafting, regulatory change impact assessment, or BSA risk assessment update. Include the trigger (e.g., "alert escalated from transaction monitoring system"), 3-5 AI steps with human review at each checkpoint, and the final deliverable format.',
+              hints: ['What triggers your SAR review or regulatory assessment process?', 'Where does AI summarize activity patterns and where do you apply investigative judgment?', 'What BSA officer or legal review checkpoints are required before filing?', 'What format does FinCEN or your regulatory examiner expect?'],
+            },
+            risk_management: {
+              scenario: 'As a risk management professional, document a complete AI workflow for a risk task you do regularly. Good candidates: enterprise risk dashboard commentary, credit risk review preparation, or audit finding response drafting. Include the trigger (e.g., "quarterly risk committee meeting T-2 weeks"), 3-5 AI steps with human review at each checkpoint, and the final deliverable format.',
+              hints: ['What triggers your risk assessment or audit response process?', 'Where does AI aggregate risk data and where do you validate risk ratings?', 'What peer review or committee approval checkpoints are required?', 'What format does the risk committee or board expect?'],
+            },
+            it_information_security: {
+              scenario: 'As an IT/information security professional, document a complete AI workflow for a technology task you do regularly. Good candidates: vendor risk assessment preparation, cybersecurity incident summary report, or digital banking change request documentation. Include the trigger (e.g., "new vendor onboarding request submitted"), 3-5 AI steps with human review at each checkpoint, and the final deliverable format.',
+              hints: ['What triggers your vendor assessment or incident review process?', 'Where does AI compile findings and where do you validate technical accuracy?', 'What security review or change management approvals are required?', 'What format does the IT steering committee or examiners expect?'],
+            },
+            human_resources: {
+              scenario: 'As an HR professional, document a complete AI workflow for an HR task you do regularly. Good candidates: job description drafting for a new position, employee policy update communication, or benefits open enrollment FAQ preparation. Include the trigger (e.g., "hiring manager submits new position request"), 3-5 AI steps with human review at each checkpoint, and the final deliverable format.',
+              hints: ['What triggers your job posting or policy communication process?', 'Where does AI draft and where do you ensure compliance with employment law?', 'What legal or leadership review happens before employee distribution?', 'What does the final employee-facing deliverable look like?'],
+            },
+            marketing_business_development: {
+              scenario: 'As a marketing/business development professional, document a complete AI workflow for a marketing task you do regularly. Good candidates: product launch campaign brief, community reinvestment program summary, or quarterly business development performance report. Include the trigger (e.g., "new product approved for launch by product committee"), 3-5 AI steps with human review at each checkpoint, and the final deliverable format.',
+              hints: ['What triggers your campaign or reporting process?', 'Where does AI draft content and where do you ensure brand voice and accuracy?', 'What compliance or legal review happens before public release?', 'What format does the final customer-facing or leadership deliverable take?'],
+            },
+            wealth_management_trust: {
+              scenario: 'As a wealth management/trust professional, document a complete AI workflow for a wealth or trust task you do regularly. Good candidates: quarterly client portfolio review summary, trust account administration review, or financial planning recommendation letter. Include the trigger (e.g., "quarterly review cycle begins per client service calendar"), 3-5 AI steps with human review at each checkpoint, and the final deliverable format.',
+              hints: ['What triggers your client review or trust administration process?', 'Where does AI summarize performance and where do you validate suitability?', 'What fiduciary or compliance review checkpoints are required before client delivery?', 'What format does the client or trust beneficiary expect?'],
+            },
           },
         },
       },
@@ -1207,6 +1335,50 @@ For each item, note whether it is Fully Met, Partially Met, or Missing. Then pro
             executive_leadership: {
               scenario: 'Apply an advanced technique to this executive scenario: You need to prepare a strategic briefing for the board on a proposed fintech partnership. The briefing must cover opportunity, risks, competitive landscape, and resource requirements. Choose chain-of-thought (to show reasoning behind recommendations), multi-shot (to match board briefing format), or self-review (to ensure balanced risk/opportunity framing). Label your technique choice and explain why.',
               hints: ['Which technique shows clear reasoning for strategic decisions?', 'Does matching prior board briefing format matter?', 'Would a self-check ensure balanced risk/opportunity presentation?', 'What framing does your board expect for strategic proposals?'],
+            },
+            commercial_lending: {
+              scenario: 'Apply an advanced technique to this commercial lending scenario: You need to draft a credit memo for a $2.4M C&I revolving line of credit for a regional logistics company with seasonal cash flow fluctuations. The memo will go to the senior lender and then to the loan committee for approval. Choose chain-of-thought (to show reasoning through cash flow and collateral analysis), multi-shot (to match your bank\'s credit memo template), or self-review (to catch missing covenants or misstated ratios). Label your technique choice and explain why.',
+              hints: ['Which technique helps walk through complex cash flow and collateral analysis?', 'Does your loan committee expect a specific memo format?', 'Would a self-check catch missing covenants or ratio errors?', 'What level of analytical rigor does the senior lender expect?'],
+            },
+            retail_banking: {
+              scenario: 'Apply an advanced technique to this retail banking scenario: You need to draft a response to a customer complaint about a $1,250 disputed debit card charge that has already been provisionally credited. The response will go to the branch manager for review and then to the customer via email. Choose chain-of-thought (to reason through Reg E timelines and dispute status), multi-shot (to match your bank\'s approved customer communication format), or self-review (to catch compliance language gaps before the customer sees it). Label your technique choice and explain why.',
+              hints: ['Which technique helps ensure Reg E timeline requirements are correctly addressed?', 'Does matching your bank\'s approved communication templates matter here?', 'Would a self-check catch missing disclosures or incorrect dispute timelines?', 'What tone and detail level does the branch manager expect for customer responses?'],
+            },
+            mortgage_consumer_lending: {
+              scenario: 'Apply an advanced technique to this mortgage scenario: You need to draft a loan-level exception justification for a $385,000 conventional mortgage where the borrower\'s DTI ratio is 47%, above the standard 43% threshold. The justification will go to the underwriting manager and secondary market review. Choose chain-of-thought (to reason through compensating factors step by step), multi-shot (to match prior approved exception justification format), or self-review (to catch missing compensating factors or guideline references). Label your technique choice and explain why.',
+              hints: ['Which technique helps build a logical case through compensating factors?', 'Does matching the format of prior approved exceptions matter for underwriting?', 'Would a self-check catch missing guideline citations or overlooked risk factors?', 'What does the underwriting manager need to see to approve an exception?'],
+            },
+            treasury_cash_management: {
+              scenario: 'Apply an advanced technique to this treasury scenario: You need to draft an ALCO briefing on a proposed bond portfolio rebalancing strategy involving the sale of $8M in held-to-maturity securities and reinvestment into shorter-duration instruments. The briefing will go to the CFO and the Asset-Liability Committee. Choose chain-of-thought (to reason through interest rate risk and duration impact), multi-shot (to match prior ALCO briefing format), or self-review (to catch errors in yield or duration assumptions before committee review). Label your technique choice and explain why.',
+              hints: ['Which technique helps walk through complex interest rate and duration calculations?', 'Does your ALCO expect a specific briefing format and structure?', 'Would a self-check catch yield assumption errors or mischaracterized risk impacts?', 'What level of quantitative detail does the CFO expect in an ALCO briefing?'],
+            },
+            operations: {
+              scenario: 'Apply an advanced technique to this operations scenario: You need to draft a root cause analysis for a wire transfer processing failure that caused a $620,000 outbound wire to be delayed by two business days. The analysis will go to the operations manager, the BSA officer, and the internal audit team. Choose chain-of-thought (to trace the failure through each processing step), multi-shot (to match your bank\'s incident report template), or self-review (to catch gaps in the timeline or missing corrective actions). Label your technique choice and explain why.',
+              hints: ['Which technique helps trace a multi-step processing failure to its root cause?', 'Does your bank have a standard incident report format that must be followed?', 'Would a self-check catch missing steps in the timeline or incomplete corrective actions?', 'What do internal audit and the BSA officer need to see in a wire failure analysis?'],
+            },
+            compliance_bsa_aml: {
+              scenario: 'Apply an advanced technique to this compliance scenario: You need to draft a suspicious activity narrative for a SAR filing involving a commercial customer who made 14 cash deposits totaling $189,000 over a 30-day period, each just under the $10,000 CTR threshold. The narrative will go to the BSA officer for review and then to FinCEN. Choose chain-of-thought (to reason through structuring indicators and the five pillars of a SAR narrative), multi-shot (to match your bank\'s SAR narrative format), or self-review (to catch missing transaction details or unsupported conclusions). Label your technique choice and explain why.',
+              hints: ['Which technique helps reason through structuring indicators and suspicious activity elements?', 'Does FinCEN expect a specific narrative format with required elements?', 'Would a self-check catch missing transaction details or gaps in the activity timeline?', 'What level of factual precision does the BSA officer require before filing?'],
+            },
+            risk_management: {
+              scenario: 'Apply an advanced technique to this risk management scenario: You need to draft a quarterly credit risk review summary for a $42M commercial real estate portfolio segment that has seen a 15% increase in criticized assets over the past two quarters. The summary will go to the Chief Risk Officer and the board risk committee. Choose chain-of-thought (to reason through migration trends and concentration risk drivers), multi-shot (to match prior quarterly risk review format), or self-review (to catch unsupported risk ratings or missing trend data). Label your technique choice and explain why.',
+              hints: ['Which technique helps reason through portfolio migration trends and risk concentrations?', 'Does the board risk committee expect a specific review format and structure?', 'Would a self-check catch unsupported conclusions or missing trend analysis?', 'What level of analytical depth does the Chief Risk Officer expect in portfolio reviews?'],
+            },
+            it_information_security: {
+              scenario: 'Apply an advanced technique to this IT security scenario: You need to draft a vendor risk assessment for a cloud-based core banking middleware provider that will have access to customer PII and transaction data for 15,000 accounts. The assessment will go to the Information Security Officer and the vendor management committee. Choose chain-of-thought (to reason through each risk domain — data security, business continuity, regulatory compliance), multi-shot (to match your bank\'s vendor risk assessment template), or self-review (to catch missing control gaps or regulatory requirements). Label your technique choice and explain why.',
+              hints: ['Which technique helps systematically reason through multiple risk domains?', 'Does your vendor management committee expect a standard assessment format?', 'Would a self-check catch overlooked control gaps or missing GLBA requirements?', 'What does the Information Security Officer need to see for a vendor handling PII?'],
+            },
+            human_resources: {
+              scenario: 'Apply an advanced technique to this HR scenario: You need to draft a compensation benchmarking summary recommending salary band adjustments for 12 commercial lender positions after market data shows your bank is 8–14% below median for the region. The summary will go to the CHRO and the executive compensation committee. Choose chain-of-thought (to reason through market data, retention risk, and budget impact), multi-shot (to match prior compensation recommendation format), or self-review (to catch inconsistencies in data comparisons or missing cost projections). Label your technique choice and explain why.',
+              hints: ['Which technique helps reason through market data, retention risk, and budget tradeoffs?', 'Does the compensation committee expect a specific recommendation format?', 'Would a self-check catch inconsistent data comparisons or missing cost projections?', 'What level of supporting analysis does the CHRO expect for salary band adjustments?'],
+            },
+            marketing_business_development: {
+              scenario: 'Apply an advanced technique to this marketing scenario: You need to draft a campaign performance brief for a $45,000 digital marketing campaign that generated 320 new checking account leads but converted only 22% to funded accounts. The brief will go to the CMO and the retail banking division head. Choose chain-of-thought (to reason through funnel stage drop-offs and cost-per-acquisition), multi-shot (to match prior campaign performance brief format), or self-review (to catch misattributed metrics or unsupported ROI claims). Label your technique choice and explain why.',
+              hints: ['Which technique helps trace conversion drop-offs through each funnel stage?', 'Does the CMO expect a standard campaign performance format?', 'Would a self-check catch misattributed metrics or overstated ROI figures?', 'What does the retail banking division head need to see to evaluate campaign effectiveness?'],
+            },
+            wealth_management_trust: {
+              scenario: 'Apply an advanced technique to this wealth management scenario: You need to draft an investment policy statement review for a $3.2M irrevocable trust with a 60/40 equity-to-fixed-income allocation that has drifted to 72/28 due to market appreciation. The review will go to the senior trust officer and the trust investment committee. Choose chain-of-thought (to reason through fiduciary obligations, drift implications, and rebalancing options), multi-shot (to match prior IPS review format), or self-review (to catch fiduciary language gaps or mischaracterized risk tolerance). Label your technique choice and explain why.',
+              hints: ['Which technique helps reason through fiduciary obligations and rebalancing considerations?', 'Does the trust investment committee expect a specific IPS review format?', 'Would a self-check catch fiduciary language gaps or mischaracterized risk tolerance?', 'What level of fiduciary rigor does the senior trust officer expect in IPS reviews?'],
             },
           },
         },

@@ -115,11 +115,17 @@ export interface CSuiteKPIs {
 // Label helpers
 // ---------------------------------------------------------------------------
 
-export const LOB_LABELS: Record<string, string> = {
-  accounting_finance: 'Accounting & Finance',
-  credit_administration: 'Credit Administration',
-  executive_leadership: 'Executive & Leadership',
+// Dynamic department labels — this function converts slugs to display names
+// For a full department lookup, use useDepartments() hook instead
+export const getLobLabel = (slug: string): string => {
+  if (!slug) return 'Unknown';
+  return slug.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 };
+
+// Backwards-compatible export for existing consumers
+export const LOB_LABELS: Record<string, string> = new Proxy({} as Record<string, string>, {
+  get: (_target, prop: string) => getLobLabel(prop),
+});
 
 const EXCEPTION_TYPE_LABELS: Record<string, string> = {
   pii_sharing: 'PII Sharing',

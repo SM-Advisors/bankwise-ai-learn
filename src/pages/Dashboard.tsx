@@ -145,12 +145,9 @@ export default function Dashboard() {
   };
 
   const getLobLabel = (lob: string | null) => {
-    switch (lob) {
-      case 'accounting_finance': return 'Accounting & Finance';
-      case 'credit_administration': return 'Credit Administration';
-      case 'executive_leadership': return 'Executive & Leadership';
-      default: return 'Not Set';
-    }
+    if (!lob) return 'Not Set';
+    // Convert slug to display name: accounting_finance → Accounting Finance
+    return lob.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
   const handleStartSession = (sessionId: number) => {
