@@ -38,6 +38,18 @@ const getStateIcon = (state: ModuleState, moduleType: ModuleContent['type']) => 
   }
 };
 
+// State-based left border color for the card
+const getStateBorder = (state: ModuleState): string => {
+  switch (state) {
+    case 'completed': return 'border-l-emerald-500';
+    case 'submitted': return 'border-l-orange-500';
+    case 'practicing': return 'border-l-amber-500';
+    case 'content_viewed': return 'border-l-blue-400';
+    case 'not_started':
+    default: return 'border-l-transparent';
+  }
+};
+
 // State-based background colors for the icon container
 const getStateBackground = (state: ModuleState, isSelected: boolean): string => {
   switch (state) {
@@ -145,14 +157,15 @@ export function ModuleListSidebar({
               const IconComponent = getStateIcon(state, module.type);
               const iconBg = getStateBackground(state, isSelected);
               const stateLabel = getStateLabel(state, engagement);
+              const leftBorder = getStateBorder(state);
 
               return (
                 <button
                   key={module.id}
-                  className={`flex items-start gap-3 w-full p-3 text-sm rounded-xl border transition-all text-left ${
+                  className={`flex items-start gap-3 w-full p-3 text-sm rounded-xl border-y border-r border-l-[3px] transition-all text-left ${leftBorder} ${
                     isSelected
-                      ? 'bg-accent/10 border-accent shadow-sm text-foreground'
-                      : 'bg-card border-border hover:border-accent/40 hover:shadow-sm text-muted-foreground hover:text-foreground'
+                      ? 'bg-accent/10 border-y-accent border-r-accent shadow-sm text-foreground'
+                      : 'bg-card border-y-border border-r-border hover:border-y-accent/40 hover:border-r-accent/40 hover:shadow-sm text-muted-foreground hover:text-foreground'
                   }`}
                   onClick={() => onSelectModule(module)}
                   aria-pressed={isSelected}
