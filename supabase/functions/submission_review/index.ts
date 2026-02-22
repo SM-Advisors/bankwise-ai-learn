@@ -510,7 +510,72 @@ EVALUATION FOCUS:
 - Is all customer data properly anonymized?
 - Would the final output be usable in a real banking context?
 - Is the reflection honest about what AI did well and where it fell short?
-- Has the learner applied VERIFY to their output?` : `## RUBRIC
+- Has the learner applied VERIFY to their output?` : moduleId === "4-1" ? `## MODULE 4-1 RUBRIC: YOUR AI AUDIT
+This submission tests the learner's ability to audit their work week using the AI Eligibility Matrix.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Task Identification | Fewer than 5 tasks, mostly generic | 8+ specific tasks from actual work | 10+ tasks with frequency and time estimates |
+| Matrix Categorization | Tasks placed without justification | Each task categorized with brief rationale | Categories include frequency, suitability analysis, and compliance considerations |
+| AUTOMATE Plans | No agent/workflow described | Top 3 AUTOMATE tasks have agent descriptions | AUTOMATE tasks include detailed workflow with review checkpoints |
+| SKIP Recognition | No SKIP tasks identified | 1+ SKIP task with reasoning | SKIP tasks demonstrate nuanced understanding of AI limitations |
+
+EVALUATION FOCUS:
+- Are tasks from their actual work, not hypothetical banking activities?
+- Does the matrix categorization reflect genuine task analysis?
+- Do AUTOMATE plans reference skills from Sessions 2-3 (agents, workflows)?
+- Is the SKIP reasoning honest and specific?` : moduleId === "4-2" ? `## MODULE 4-2 RUBRIC: TEAM AI CONVENTIONS
+This submission tests the learner's ability to draft practical team AI standards.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Coverage | Fewer than 3 of 5 areas addressed | All 5 areas covered | All 5 with department-specific details |
+| Naming Convention | Vague ("name them clearly") | Specific pattern with example | Pattern with version control and ownership |
+| Compliance Review | Not addressed | Regular cadence defined | Regular + triggered reviews with responsible parties |
+| Documentation Standard | Generic | Specific AI-assisted marking language | Marking + audit trail + VERIFY documentation |
+| Implementability | Theoretical | Could be implemented this week | Manager-ready with approval path |
+
+EVALUATION FOCUS:
+- Is the naming convention specific enough to use immediately?
+- Does the compliance review include both regular and triggered cadences?
+- Is the documentation standard specific language, not a vague principle?
+- Could their manager approve this document as-is?` : moduleId === "4-3" ? `## MODULE 4-3 RUBRIC: MEASURING AI ROI
+This submission tests the learner's ability to quantify AI impact with honest measurement.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Task Selection | Hypothetical task | Real task they have used AI for | Task with multiple data points over time |
+| Time Measurement | No specific numbers | Before and after estimates | Timed measurements with methodology |
+| Quality Assessment | Not addressed | One quality improvement noted | Multiple quality dimensions with examples |
+| Honesty | Only positives | Acknowledges at least one limitation | Includes errors caught, limitations, and honest assessment |
+| Recommendation | Vague | Specific and actionable | Includes expansion plan with projected ROI |
+
+EVALUATION FOCUS:
+- Is this a real task they have actually used AI for?
+- Are time estimates reasonable and honest?
+- Does the quality assessment go beyond "it's faster"?
+- Is the manager recommendation specific enough to act on?` : moduleId === "4-5" ? `## MODULE 4-5 RUBRIC: AI INTEGRATION PLAN (SESSION 4 CAPSTONE)
+This is the Session 4 Capstone — the culmination of the entire SMILE curriculum. Evaluate as a real deliverable.
+
+3-LEVEL RUBRIC:
+| Criterion | Weight | Developing | Proficient | Advanced |
+|-----------|--------|-----------|-----------|---------|
+| Task Prioritization | 20% | Generic list | Mapped to AI Eligibility Matrix | Prioritized with time savings estimates |
+| Agent/Workflow Inventory | 20% | References exist | Describes capabilities and gaps | Includes iteration plans and sharing strategy |
+| ROI Baseline | 20% | No measurement | One task measured | Multiple tasks with quantified savings |
+| Team Conventions | 20% | Not addressed | Basic standards described | Complete, department-specific standards |
+| Implementation Plan | 20% | Vague timeline | 30-day plan with milestones | Weekly milestones with accountability measures |
+
+EVALUATION FOCUS:
+- Does the plan reference actual work from Sessions 2-3 (specific agents, workflows)?
+- Are ROI figures grounded in real measurement, not estimates?
+- Is the 30-day timeline specific (weekly milestones with concrete deliverables)?
+- Would a manager approve this plan and allocate resources?
+- Does the plan include what they chose NOT to automate (SKIP tasks)?
+- Is this a 1-page document, not a meandering essay?` : `## RUBRIC
 ${rubric ? (typeof rubric === "string" ? rubric : JSON.stringify(rubric, null, 2)) : "Evaluate based on clarity, specificity, context, and appropriateness for banking use cases."}`}
 
 ${departmentContext?.lineOfBusiness ? `## DEPARTMENT CONTEXT

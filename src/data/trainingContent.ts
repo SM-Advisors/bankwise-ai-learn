@@ -1513,8 +1513,356 @@ For whichever option you choose, include in your submission:
   ],
 };
 
+export const SESSION_4_CONTENT: SessionContent = {
+  id: 4,
+  title: 'AI-Native Integration',
+  description: 'Move from AI-capable to AI-native — integrate AI as a default part of your workflow',
+  modules: [
+    {
+      id: '4-1',
+      title: 'Your AI Audit',
+      type: 'document',
+      description: 'Audit your work week for AI opportunities using the AI Eligibility Matrix',
+      estimatedTime: '15 min',
+      learningObjectives: [
+        'Audit your current work week for the top 5 highest-impact AI tasks',
+        'Categorize tasks using the AI Eligibility Matrix (Automate, Assist, Augment, Skip)',
+        'Estimate time savings for your top automation candidates',
+      ],
+      content: {
+        overview: 'Being AI-capable means you can use AI when you think of it. Being AI-native means NOT using AI for an eligible task feels like a gap in your process. This module starts your transition by auditing your actual work week — not hypothetical tasks, but what you really do — and identifying where AI has the highest impact. The AI Eligibility Matrix helps you categorize every recurring task so you can prioritize effort where it matters most.',
+        keyPoints: [
+          'The AI Eligibility Matrix: High Frequency + High AI Suitability = AUTOMATE (build agent + workflow); High Frequency + Low AI Suitability = AUGMENT (AI for parts, not whole); Low Frequency + High AI Suitability = ASSIST (use one-off prompts); Low Frequency + Low AI Suitability = SKIP (do manually)',
+          'Focus on AUTOMATE tasks first — these are your highest-ROI opportunities because they repeat often and AI handles them well',
+          'AUGMENT tasks are where AI helps with components (drafting, formatting, research) but the core task requires human judgment',
+          'SKIP tasks are not failures — recognizing when AI is inappropriate is a sign of maturity, not limitation',
+          'Your audit should reflect your actual work, not what you think would impress — the best AI integrations come from honest task analysis',
+        ],
+        examples: [
+          {
+            title: 'AI Eligibility Matrix Applied',
+            good: `AUTOMATE (High Frequency + High AI Suitability):
+- Weekly variance commentary for board report → Agent + workflow, saves 45 min/week
+- Daily loan pipeline summary emails → Agent with template, saves 20 min/day
+- Monthly compliance training reminders → Agent drafts, human reviews and sends
+
+AUGMENT (High Frequency + Low AI Suitability):
+- Annual loan reviews → AI drafts ratio commentary, human writes recommendation
+- Customer complaint responses → AI structures framework, human adds resolution facts
+
+ASSIST (Low Frequency + High AI Suitability):
+- Quarterly board presentation talking points → One-off prompt with CLEAR
+- Annual strategic plan research → One-off prompts for market analysis
+
+SKIP (Low Frequency + Low AI Suitability):
+- Examiner exit meeting responses → Requires institutional knowledge AI does not have
+- Personnel decisions → Confidentiality and judgment requirements exceed AI capability`,
+            explanation: 'The matrix helps prioritize: AUTOMATE tasks get agents and workflows built first because they deliver the most time savings. SKIP tasks are explicitly identified so you do not waste time trying to force AI into inappropriate situations.',
+          },
+        ],
+        practiceTask: {
+          title: 'Audit Your Work Week',
+          instructions: 'List your top 10 recurring weekly tasks and place each in the AI Eligibility Matrix.',
+          scenario: 'Think about what you actually did last week — meetings, documents, emails, analyses, reviews. List your top 10 recurring tasks. For each, place it in the matrix (Automate, Assist, Augment, or Skip) with a one-sentence justification. For your top 3 AUTOMATE tasks, describe what agent or workflow you would build. For your top SKIP task, explain why AI is inappropriate.',
+          hints: [
+            'What did you spend the most time on last week?',
+            'Which tasks follow a pattern every time?',
+            'Which tasks require your unique institutional knowledge?',
+            'Where would consistency matter most?',
+          ],
+          successCriteria: [
+            'Lists at least 8 specific, named tasks from their actual work week',
+            'Each task is placed in the matrix with a brief justification',
+            'Top 3 AUTOMATE tasks include agent or workflow descriptions',
+            'At least 1 SKIP task is identified with honest reasoning about why AI is inappropriate',
+            'Tasks reflect real work, not hypothetical or generic banking activities',
+          ],
+        },
+      },
+    },
+    {
+      id: '4-2',
+      title: 'Team AI Conventions',
+      type: 'document',
+      description: 'Draft standards for how your team shares, names, and governs AI-assisted work',
+      estimatedTime: '15 min',
+      learningObjectives: [
+        'Draft team AI conventions covering shared templates, naming, and compliance review cadence',
+        'Establish documentation standards for AI-assisted work products',
+        'Design a practical sharing and governance framework for your department',
+      ],
+      content: {
+        overview: 'Individual AI proficiency is valuable. Team-level AI conventions are transformational. When a team shares agent templates, uses consistent naming, reviews compliance regularly, and documents when AI assisted a deliverable, the entire department levels up — not just the early adopters. This module helps you draft the conventions that turn personal AI skill into institutional capability.',
+        keyPoints: [
+          'Shared templates: Teams should maintain a shared library of agent templates, each with a designated owner responsible for updates. When one person improves a guard rail, everyone benefits.',
+          'Naming conventions: Agent templates should follow a standard naming pattern — [Department]-[Function]-[Version], e.g., "Credit-LoanReview-v3". This makes templates findable and versioning clear.',
+          'Compliance review cadence: Schedule monthly review of shared agent templates. Check that guard rails still match current policy, compliance anchors reference current regulations, and output rules meet current standards.',
+          'AI-assisted documentation: When a deliverable was AI-assisted, note it. Example: "Draft prepared with AI assistance. Reviewed and approved by [Name]." This creates audit trail and normalizes AI use.',
+          'Governance is not bureaucracy — it is the difference between one person using AI well and a whole team using AI consistently and safely',
+        ],
+        examples: [
+          {
+            title: 'Department AI Standards Document',
+            good: `CREDIT DEPARTMENT AI STANDARDS (v1.0)
+
+1. SHARED TEMPLATES
+- All agent templates stored in team Prompt Library with [Credit]-[Function]-[Version] naming
+- Template owner responsible for monthly guard rail review
+- Changes logged with date, author, and reason
+
+2. NAMING CONVENTIONS
+- Agents: Credit-[Function]-v[N] (e.g., Credit-LoanReview-v2)
+- Workflows: WF-Credit-[Task]-v[N] (e.g., WF-Credit-AnnualReview-v1)
+- Saved prompts: Tagged with module source and department
+
+3. COMPLIANCE REVIEW
+- Monthly: Review all shared templates for policy alignment
+- Quarterly: Full audit of compliance anchors against current regulations
+- Immediately: Update after any regulatory change notification
+
+4. DOCUMENTATION
+- All AI-assisted credit memos include: "AI-assisted draft. Reviewed by [analyst name]."
+- Prompt iterations saved for audit trail on credit decisions
+- VERIFY checklist completed and filed for all AI-assisted analyses
+
+5. SHARING RULES
+- Templates shared after testing with all 3 scenario types (standard, edge, out-of-scope)
+- No template shared without at least 2 guard rails and 1 compliance anchor
+- New team members complete Session 2 before accessing shared templates`,
+            explanation: 'This standards document is practical and specific enough to follow immediately. It covers the five key areas: what gets shared, how things are named, when compliance reviews happen, how AI use is documented, and what quality bar applies before sharing.',
+          },
+        ],
+        practiceTask: {
+          title: 'Draft Your Team AI Standards',
+          instructions: 'Create a 1-page "AI Standards" document for your department.',
+          scenario: 'Draft a standards document for your department covering these 5 areas:\n\n1. What gets shared (which templates, who maintains them)\n2. How agents and workflows are named (naming convention)\n3. When compliance reviews happen (monthly, quarterly, after regulatory changes)\n4. How AI-assisted documents are marked (documentation standard)\n5. What quality bar applies before a template is shared with the team\n\nWrite it as a document your manager could review and approve for the department.',
+          hints: [
+            'What templates would your team reuse most?',
+            'How would a new team member find the right template?',
+            'Who reviews templates when regulations change?',
+            'How would an auditor know AI was used?',
+          ],
+          successCriteria: [
+            'Covers all 5 areas: sharing, naming, compliance review, documentation, quality bar',
+            'Naming convention is specific and consistent (not "name them clearly")',
+            'Compliance review includes both regular cadence and triggered reviews',
+            'Documentation standard includes specific language for marking AI-assisted work',
+            'Written in a tone and format a manager could review and approve',
+          ],
+        },
+      },
+    },
+    {
+      id: '4-3',
+      title: 'Measuring AI ROI',
+      type: 'document',
+      description: 'Establish baseline measurements and quantify the impact of AI on your work',
+      estimatedTime: '15 min',
+      learningObjectives: [
+        'Establish a baseline measurement for one recurring task',
+        'Estimate time savings with quantified before/after comparison',
+        'Describe qualitative improvements beyond time savings',
+      ],
+      content: {
+        overview: 'If you cannot measure it, you cannot scale it. When your manager asks "Is AI actually helping?" you need a concrete answer, not "it feels faster." This module gives you a simple ROI framework: pick one task, measure time-before, measure time-after, note quality differences, and track errors caught by VERIFY. Two weeks of data is enough to build a compelling case for expanding AI use across your team.',
+        keyPoints: [
+          'Simple ROI framework: Pick one task → Measure time before AI (estimate from memory) → Measure time with AI (actual, timed) → Note quality differences → Track errors caught by VERIFY → Calculate hours saved per month',
+          'Time savings are the easiest metric but not the only one — quality improvements, consistency gains, and reduced rework also matter',
+          'Be honest about limitations: some tasks take the same time but produce better output. Some take longer at first but save time after the agent is refined.',
+          'Errors caught by VERIFY is an underrated metric — it demonstrates that AI use WITH verification is safer than manual work without it',
+          'Present results to your manager: "Task X took Y hours/month manually. With AI, it takes Z hours/month. Quality improved because [specific]. I recommend expanding to [next task]."',
+        ],
+        examples: [
+          {
+            title: 'ROI Measurement for Variance Commentary',
+            good: `TASK: Monthly variance commentary for board report (5 budget categories)
+
+BEFORE AI:
+- Time: ~2.5 hours per month
+- Process: Manually draft commentary for each category, format for board, get CFO review
+- Quality: Inconsistent formatting, sometimes missed prior year comparisons
+- Errors: Occasional miscalculation caught during CFO review
+
+WITH AI (after 2 months):
+- Time: ~45 minutes per month (70% reduction)
+- Process: Feed figures to agent, review output, run VERIFY, adjust tone, get CFO review
+- Quality: Consistent formatting every month, always includes prior year, follows board template
+- Errors caught by VERIFY: 2 instances where AI generated plausible but incorrect variance percentages — caught before CFO review
+
+ROI SUMMARY: 1.75 hours saved per month = 21 hours per year. Quality more consistent. VERIFY caught errors that might have reached the board under manual process.`,
+            explanation: 'This ROI measurement is credible because it includes honest numbers, acknowledges that AI made errors (caught by VERIFY), and presents both time savings and quality improvements. A manager can act on this.',
+          },
+        ],
+        practiceTask: {
+          title: 'Measure Your AI ROI',
+          instructions: 'Choose one task you are already using AI for and document your ROI measurement.',
+          scenario: 'Pick one task where you have used AI at least twice. Document:\n\n1. Task name and frequency\n2. Time before AI (your best estimate of manual time)\n3. Time with AI (actual measured time, including review)\n4. Quality change (what improved, what stayed the same)\n5. Errors caught by VERIFY (any AI errors you identified and corrected)\n6. Hours saved per month (calculate)\n7. One-sentence recommendation for your manager',
+          hints: [
+            'Be honest about time estimates — padding does not help',
+            'Include AI review time in the "with AI" measurement',
+            'Quality improvements count even if time savings are small',
+            'VERIFY catches count as a safety benefit, not an AI failure',
+          ],
+          successCriteria: [
+            'Names a specific task they have actually used AI for (not hypothetical)',
+            'Provides concrete time estimates with reasonable accuracy',
+            'Documents at least one quality improvement or consistency gain',
+            'Includes honest assessment — acknowledges limitations or errors',
+            'Calculates a specific monthly time savings figure',
+            'Manager recommendation is actionable and specific',
+          ],
+        },
+      },
+    },
+    {
+      id: '4-4',
+      title: 'AI Tool Landscape',
+      type: 'document',
+      description: 'Evaluate AI tools using a structured checklist — not a product comparison, but a decision framework',
+      estimatedTime: '10 min',
+      learningObjectives: [
+        'Describe key differences between major AI platform categories',
+        'Evaluate any new AI tool using a structured 6-point checklist',
+        'Identify which evaluation criteria matter most for banking use cases',
+      ],
+      content: {
+        overview: 'New AI tools launch every week. Your bank will be asked to evaluate them constantly. This module is not a product comparison — products change faster than any curriculum can track. Instead, it gives you a permanent framework for evaluating ANY AI tool against the criteria that matter for banking: data privacy, regulatory compliance, output quality, integration capability, cost, and approval status.',
+        keyPoints: [
+          'AI Tool Evaluation Checklist: (1) Where does my data go? — Privacy and retention policy, (2) Is it approved by my bank\'s IT/compliance team? — Vendor management status, (3) Does it meet vendor management requirements? — Due diligence and contract provisions, (4) How does output quality compare for my specific task? — Test with a real banking scenario, (5) What does it cost per user/month? — Total cost including training time, (6) Does it integrate with tools I already use? — Workflow compatibility',
+          'The most important question is #1: Where does my data go? If the tool retains your prompts or trains on your inputs, your confidential banking data may be exposed.',
+          'Approved vs unapproved tools: never use an unapproved AI tool for bank work. If you find a promising tool, submit it through your vendor management process.',
+          'Output quality varies by task type — a tool that excels at writing may underperform at analysis. Always test with YOUR specific banking scenarios, not generic demos.',
+          'Cost includes hidden factors: training time for the team, integration development, ongoing maintenance, and the opportunity cost of switching tools later',
+        ],
+        examples: [
+          {
+            title: 'AI Tool Evaluation Example',
+            good: `TOOL EVALUATION: [Example AI Platform]
+
+1. Data Privacy: Enterprise tier — data not used for training, retained for 30 days, deletable on request. SOC 2 Type II certified.
+
+2. Bank Approval Status: Currently in vendor review. IT submitted security questionnaire. Expected approval: Q2.
+
+3. Vendor Management: Meets FFIEC vendor due diligence requirements. BAA available for PII handling. Annual audit reports provided.
+
+4. Output Quality: Tested with 3 banking scenarios — variance commentary (excellent), credit memo drafting (good, needed formatting adjustment), regulatory summary (adequate, required fact-checking).
+
+5. Cost: $30/user/month enterprise tier. 15 seats = $5,400/year. Estimated 2 hours training per user. ROI positive after month 2 based on variance commentary alone.
+
+6. Integration: API available. Compatible with our document management system. No direct CRM integration — would require manual copy.
+
+RECOMMENDATION: Proceed with vendor approval process. Deploy to finance team first (highest ROI), expand to credit after approval.`,
+            explanation: 'This evaluation uses the 6-point checklist systematically. It identifies both strengths (data privacy, cost) and gaps (no CRM integration, regulatory summaries need fact-checking). The recommendation is specific and phased.',
+          },
+        ],
+        practiceTask: {
+          title: 'Evaluate an AI Tool',
+          instructions: 'Use the 6-point checklist to evaluate an AI tool you have used or heard about.',
+          scenario: 'Choose any AI tool (ChatGPT, Claude, Copilot, Gemini, or one your bank is evaluating). Apply the 6-point checklist. For each criterion, note what you know, what you would need to research, and whether it passes or fails for banking use. Conclude with a one-paragraph recommendation.',
+          hints: [
+            'Start with the data privacy question — it is the dealbreaker',
+            'Check your bank\'s approved tool list first',
+            'Test output quality with a real banking task, not a generic question',
+            'Consider total cost including training time',
+          ],
+          successCriteria: [
+            'Evaluates all 6 checklist criteria (even if some require further research)',
+            'Data privacy assessment is specific — not just "it seems secure"',
+            'Output quality tested or assessed against a specific banking task',
+            'Identifies at least one gap or concern that would need resolution',
+            'Recommendation is clear: approve, reject, or investigate further with specific next steps',
+          ],
+        },
+      },
+    },
+    {
+      id: '4-5',
+      title: 'AI Integration Plan',
+      type: 'exercise',
+      description: 'Session 4 Capstone — produce a complete AI Integration Plan you can present to your manager',
+      estimatedTime: '20 min',
+      learningObjectives: [
+        'Produce a complete AI Integration Plan with prioritized tasks, inventory, ROI, conventions, and timeline',
+        'Synthesize work from all 4 sessions into a presentable deliverable',
+        'Create a 30-day implementation timeline with weekly milestones',
+      ],
+      content: {
+        overview: 'This is the culmination of the entire SMILE curriculum. You will produce a 1-page AI Integration Plan that you can present to your manager — not a theoretical exercise, but a real work product. It synthesizes everything: your task audit (4-1), team conventions (4-2), ROI measurements (4-3), and tool evaluation (4-4) into a concrete plan for the next 30 days. The best Integration Plans are the ones that actually get implemented.',
+        keyPoints: [
+          'Required sections: (1) Top 5 tasks prioritized by AI Eligibility Matrix, (2) Current agent and workflow inventory (what you built in Sessions 2-3), (3) ROI measurement baseline from Module 4-3, (4) Proposed team conventions from Module 4-2, (5) 30-day implementation timeline with weekly milestones',
+          'The plan should be 1 page — concise enough for a manager to read in 5 minutes and make a decision',
+          'Your 30-day timeline should have specific weekly milestones, not vague goals. Week 1: deploy primary agent. Week 2: train 2 colleagues. Week 3: measure first ROI cycle. Week 4: present results and propose expansion.',
+          'Include what you are NOT doing — showing that you evaluated and intentionally skipped some tasks demonstrates mature judgment',
+          'This plan is yours to keep and use. The best outcome is walking out of this session with a document you present to your manager this week.',
+        ],
+        practiceTask: {
+          title: 'Your AI Integration Plan',
+          instructions: 'Create a complete 1-page AI Integration Plan using work from all Session 4 modules.',
+          scenario: `Create your AI Integration Plan with these 5 sections:
+
+1. PRIORITY TASKS (from Module 4-1)
+List your top 5 tasks from the AI Eligibility Matrix. For each: task name, matrix category (Automate/Assist/Augment), and estimated monthly time savings.
+
+2. AGENT & WORKFLOW INVENTORY (from Sessions 2-3)
+List the agents and workflows you built. For each: name, purpose, current status (deployed/testing/planned), and one improvement you would make.
+
+3. ROI BASELINE (from Module 4-3)
+Summarize your ROI measurement: task name, time-before, time-with-AI, quality change, projected annual savings.
+
+4. TEAM CONVENTIONS (from Module 4-2)
+Summarize your proposed standards: naming convention, sharing rules, compliance review cadence, documentation standard.
+
+5. 30-DAY TIMELINE
+Week 1: [specific milestone]
+Week 2: [specific milestone]
+Week 3: [specific milestone]
+Week 4: [specific milestone]
+
+Format this as a 1-page document you could present to your manager.`,
+          hints: [
+            'Pull from your work in Modules 4-1 through 4-4',
+            'Be specific in your timeline — "deploy agent" not "work on AI"',
+            'Include what you chose NOT to automate and why',
+            'Make it presentable — this is a real deliverable',
+          ],
+          successCriteria: [
+            'All 5 sections present with specific, actionable content',
+            'Tasks are prioritized using the AI Eligibility Matrix categories',
+            'Agent/workflow inventory references actual work from Sessions 2-3',
+            'ROI baseline includes quantified time savings (not just "it helps")',
+            'Team conventions are specific enough to implement immediately',
+            '30-day timeline has weekly milestones with concrete deliverables',
+            'Plan is concise (fits 1 page) and presentable to a manager',
+          ],
+        },
+      },
+    },
+  ],
+};
+
+// ─── KNOWLEDGE CHECKS (retrieval practice at session starts) ─────────────
+
+export const KNOWLEDGE_CHECKS: Record<number, string[]> = {
+  2: [
+    'Name the 5 letters of the CLEAR framework and what each stands for.',
+    'List 3 types of data you should NEVER include in a prompt.',
+    'Describe one step from the VERIFY checklist.',
+  ],
+  3: [
+    'What are the 5 sections of an agent template?',
+    'Name the 3 types of agent tests (from Module 2-6).',
+    'What is the difference between a guard rail and a compliance anchor?',
+  ],
+  4: [
+    'Name the 3 pillars of the compliance framework from Module 3-2.',
+    'Describe one workflow you built and its human review checkpoints.',
+    'What advanced prompting technique did you apply in your Session 3 capstone?',
+  ],
+};
+
 export const ALL_SESSION_CONTENT: Record<number, SessionContent> = {
   1: SESSION_1_CONTENT,
   2: SESSION_2_CONTENT,
   3: SESSION_3_CONTENT,
+  4: SESSION_4_CONTENT,
 };
