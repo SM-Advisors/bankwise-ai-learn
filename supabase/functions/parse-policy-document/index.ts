@@ -1,11 +1,60 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { JSZip } from "https://esm.sh/jszip@3.10.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+/** Strip XML tags and collapse whitespace */
+function stripXml(xml: string): string {
+  return xml
+    .replace(/<w:p[^>]*\/>/gi, "\n")          // self-closing paragraphs
+    .replace(/<\/w:p>/gi, "\n")                // paragraph ends
+    .replace(/<w:tab\/>/gi, "\t")              // tabs
+    .replace(/<w:br[^>]*\/>/gi, "\n")          // line breaks
+    .replace(/<[^>]+>/g, "")                   // all other tags
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/\r\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")               // collapse blank lines
+    .trim();
+}
+
+/** Extract raw text from a DOCX ArrayBuffer */
+async function extractDocxText(arrayBuffer: ArrayBuffer): Promise<string> {
+  const zip = new JSZip();
+  await zip.loadAsync(arrayBuffer);
+
+  const docXml = zip.file("word/document.xml");
+  if (!docXml) throw new Error("Invalid DOCX: missing word/document.xml");
+
+  const xml = await docXml.async("string");
+  return stripXml(xml);
+}
+
+async function verifyAdmin(authHeader: string, supabaseUrl: string, supabaseKey: string) {
+  const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const { data: { user }, error: authError } = await userClient.auth.getUser();
+  if (authError || !user) return null;
+
+  const adminClient = createClient(supabaseUrl, supabaseKey);
+  const { data: roleData } = await adminClient
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id)
+    .eq("role", "admin")
+    .single();
+
+  return roleData ? { user, adminClient } : null;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -32,33 +81,14 @@ serve(async (req) => {
       });
     }
 
-    // Verify the user is an admin
-    const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: { user }, error: authError } = await userClient.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Check admin role
-    const adminClient = createClient(supabaseUrl, supabaseKey);
-    const { data: roleData } = await adminClient
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .single();
-
-    if (!roleData) {
+    const adminResult = await verifyAdmin(authHeader, supabaseUrl, supabaseKey);
+    if (!adminResult) {
       return new Response(JSON.stringify({ error: "Admin access required" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const { adminClient } = adminResult;
 
     const { file_path, file_name } = await req.json();
     if (!file_path) {
@@ -81,20 +111,62 @@ serve(async (req) => {
       });
     }
 
-    // Convert file to base64
     const arrayBuffer = await fileData.arrayBuffer();
-    const base64 = btoa(
-      new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
-    );
-
-    // Determine MIME type
     const extension = (file_name || file_path).toLowerCase().split(".").pop();
-    let mimeType = "application/octet-stream";
-    if (extension === "pdf") mimeType = "application/pdf";
-    else if (extension === "docx") mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    else if (extension === "doc") mimeType = "application/msword";
 
-    // Use Gemini to extract text from the document
+    let aiMessages: any[];
+
+    if (extension === "pdf") {
+      // PDF: send as base64 to Gemini vision
+      const base64 = btoa(
+        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+      );
+      aiMessages = [
+        {
+          role: "system",
+          content: `You are a document extraction specialist. Extract ALL text content from the uploaded document and convert it to well-structured Markdown.\n\nRules:\n- Preserve ALL content — do not summarize or omit anything\n- Convert headings, lists, tables, and formatting to proper Markdown\n- Maintain the document's original structure and hierarchy\n- For tables, use Markdown table syntax\n- Remove page numbers, headers/footers, or watermarks\n- Output ONLY the extracted Markdown content`,
+        },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Extract ALL text content from this PDF and convert it to well-structured Markdown. Output ONLY the Markdown content." },
+            { type: "image_url", image_url: { url: `data:application/pdf;base64,${base64}` } },
+          ],
+        },
+      ];
+    } else {
+      // DOCX/DOC: extract text first, then ask AI to format as Markdown
+      let rawText: string;
+      try {
+        rawText = await extractDocxText(arrayBuffer);
+      } catch (e) {
+        console.error("DOCX extraction error:", e);
+        return new Response(JSON.stringify({ error: "Failed to extract text from document. Ensure it is a valid .docx file." }), {
+          status: 422,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (!rawText.trim()) {
+        return new Response(JSON.stringify({ error: "No text could be extracted from the document" }), {
+          status: 422,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      aiMessages = [
+        {
+          role: "system",
+          content: `You are a document formatting specialist. The user will provide raw text extracted from a Word document. Convert it to well-structured Markdown.\n\nRules:\n- Preserve ALL content — do not summarize or omit anything\n- Infer headings, lists, tables from the structure\n- Use proper Markdown formatting (##, -, |, etc.)\n- Output ONLY the formatted Markdown content`,
+        },
+        {
+          role: "user",
+          content: `Convert the following raw document text to well-structured Markdown. Output ONLY the Markdown:\n\n${rawText}`,
+        },
+      ];
+    }
+
+    // Call AI gateway
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -103,35 +175,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content: `You are a document extraction specialist. Your job is to extract ALL text content from the uploaded document and convert it to well-structured Markdown format.
-
-Rules:
-- Preserve ALL content — do not summarize or omit anything
-- Convert headings, lists, tables, and formatting to proper Markdown
-- Maintain the document's original structure and hierarchy
-- For tables, use Markdown table syntax
-- Remove any page numbers, headers/footers, or watermarks
-- Do NOT add any commentary or explanation — output ONLY the extracted Markdown content`,
-          },
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: `Extract ALL text content from this ${extension?.toUpperCase()} document and convert it to well-structured Markdown. Output ONLY the Markdown content, nothing else.`,
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: `data:${mimeType};base64,${base64}`,
-                },
-              },
-            ],
-          },
-        ],
+        messages: aiMessages,
         max_tokens: 16000,
       }),
     });
@@ -142,20 +186,16 @@ Rules:
 
       if (aiResponse.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (aiResponse.status === 402) {
         return new Response(JSON.stringify({ error: "AI credits exhausted. Please add funds." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-
       return new Response(JSON.stringify({ error: "Failed to process document with AI" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -164,12 +204,11 @@ Rules:
 
     if (!extractedContent.trim()) {
       return new Response(JSON.stringify({ error: "No text could be extracted from the document" }), {
-        status: 422,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Also generate a short summary
+    // Generate summary
     const summaryResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -179,14 +218,8 @@ Rules:
       body: JSON.stringify({
         model: "google/gemini-2.5-flash-lite",
         messages: [
-          {
-            role: "system",
-            content: "Write a concise 1-2 sentence summary of this policy document. Be factual and direct.",
-          },
-          {
-            role: "user",
-            content: extractedContent.substring(0, 4000),
-          },
+          { role: "system", content: "Write a concise 1-2 sentence summary of this policy document. Be factual and direct." },
+          { role: "user", content: extractedContent.substring(0, 4000) },
         ],
         max_tokens: 200,
       }),
@@ -198,32 +231,20 @@ Rules:
       summary = summaryResult.choices?.[0]?.message?.content || "";
     }
 
-    // Infer a title from the file name
     const inferredTitle = (file_name || file_path)
-      .replace(/\.[^.]+$/, "") // remove extension
-      .replace(/[-_]/g, " ") // replace dashes/underscores
-      .replace(/\b\w/g, (l: string) => l.toUpperCase()); // title case
+      .replace(/\.[^.]+$/, "")
+      .replace(/[-_]/g, " ")
+      .replace(/\b\w/g, (l: string) => l.toUpperCase());
 
     return new Response(
-      JSON.stringify({
-        content: extractedContent,
-        summary,
-        inferred_title: inferredTitle,
-        file_path,
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ content: extractedContent, summary, inferred_title: inferredTitle, file_path }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("parse-policy-document error:", err);
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
