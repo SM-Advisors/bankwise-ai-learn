@@ -20,6 +20,7 @@ export async function seedLessonChunks(sessionIds?: number[]): Promise<{
   totalModules: number;
   totalChunks: number;
   sessions: Record<string, { modules: number; chunks: number }>;
+  embeddings?: { embedded: number; errors?: string[] } | null;
   error?: string;
 }> {
   const sessionsToSeed = sessionIds || Object.keys(ALL_SESSION_CONTENT).map(Number);
