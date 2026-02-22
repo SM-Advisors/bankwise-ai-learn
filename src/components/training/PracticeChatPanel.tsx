@@ -252,28 +252,24 @@ export function PracticeChatPanel({
 
           {/* Completion Banner */}
           {isCompleted && (
-            <div className="w-full max-w-lg mt-4">
-              <div className="p-4 bg-accent/10 border border-accent/20 rounded-2xl text-center">
-                <div className="flex items-center justify-center gap-2 text-accent font-medium">
-                  <CheckCircle className="h-5 w-5" />
-                  Practice Complete!
+            <div className="w-full max-w-md mt-3">
+              <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-accent/5 border border-accent/15 rounded-full">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-accent" />
+                  <span className="text-accent font-medium">Complete</span>
+                  <span className="text-muted-foreground">— reviewed by Andrea</span>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Andrea has reviewed your conversation →
-                </p>
-                <div className="mt-3">
-                  {hasNextModule && onContinueToNext ? (
-                    <Button onClick={onContinueToNext} className="gap-2 rounded-full">
-                      Continue to Next Module
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  ) : onCompleteSession ? (
-                    <Button onClick={onCompleteSession} className="gap-2 rounded-full">
-                      Complete Session
-                      <CheckCircle className="h-4 w-4" />
-                    </Button>
-                  ) : null}
-                </div>
+                {hasNextModule && onContinueToNext ? (
+                  <Button size="sm" variant="ghost" onClick={onContinueToNext} className="gap-1 text-xs h-7 px-3 rounded-full hover:bg-accent/10">
+                    Next Module
+                    <ChevronRight className="h-3 w-3" />
+                  </Button>
+                ) : onCompleteSession ? (
+                  <Button size="sm" variant="ghost" onClick={onCompleteSession} className="gap-1 text-xs h-7 px-3 rounded-full hover:bg-accent/10">
+                    Complete Session
+                    <CheckCircle className="h-3 w-3" />
+                  </Button>
+                ) : null}
               </div>
             </div>
           )}

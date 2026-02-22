@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_test_conversations: {
+        Row: {
+          agent_id: string
+          created_at: string
+          evaluation_notes: string | null
+          id: string
+          messages: Json
+          result: string | null
+          test_type: string
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          evaluation_notes?: string | null
+          id?: string
+          messages?: Json
+          result?: string | null
+          test_type?: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          evaluation_notes?: string | null
+          id?: string
+          messages?: Json
+          result?: string | null
+          test_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_test_conversations_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "user_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_memories: {
         Row: {
           content: string
@@ -393,6 +434,71 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_agents: {
+        Row: {
+          created_at: string
+          deployed_at: string | null
+          description: string | null
+          id: string
+          is_deployed: boolean
+          is_shared: boolean
+          last_test_results: Json | null
+          name: string
+          parent_version_id: string | null
+          shared_at: string | null
+          status: string
+          system_prompt: string
+          template_data: Json
+          updated_at: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          deployed_at?: string | null
+          description?: string | null
+          id?: string
+          is_deployed?: boolean
+          is_shared?: boolean
+          last_test_results?: Json | null
+          name?: string
+          parent_version_id?: string | null
+          shared_at?: string | null
+          status?: string
+          system_prompt?: string
+          template_data?: Json
+          updated_at?: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          deployed_at?: string | null
+          description?: string | null
+          id?: string
+          is_deployed?: boolean
+          is_shared?: boolean
+          last_test_results?: Json | null
+          name?: string
+          parent_version_id?: string | null
+          shared_at?: string | null
+          status?: string
+          system_prompt?: string
+          template_data?: Json
+          updated_at?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_agents_parent_version_id_fkey"
+            columns: ["parent_version_id"]
+            isOneToOne: false
+            referencedRelation: "user_agents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_ideas: {
         Row: {
