@@ -1,6 +1,6 @@
 
--- Create organizations table
-CREATE TABLE public.organizations (
+-- Create organizations table (idempotent)
+CREATE TABLE IF NOT EXISTS public.organizations (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,
@@ -9,17 +9,22 @@ CREATE TABLE public.organizations (
 
 ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admins can manage organizations"
-  ON public.organizations FOR ALL
-  USING (has_role(auth.uid(), 'admin'::app_role))
-  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Admins can manage organizations' AND tablename = 'organizations') THEN
+    EXECUTE 'CREATE POLICY "Admins can manage organizations" ON public.organizations FOR ALL USING (has_role(auth.uid(), ''admin''::app_role)) WITH CHECK (has_role(auth.uid(), ''admin''::app_role))';
+  END IF;
+END $$;
 
-CREATE POLICY "Authenticated users can view organizations"
-  ON public.organizations FOR SELECT
-  USING (auth.uid() IS NOT NULL);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Authenticated users can view organizations' AND tablename = 'organizations') THEN
+    EXECUTE 'CREATE POLICY "Authenticated users can view organizations" ON public.organizations FOR SELECT USING (auth.uid() IS NOT NULL)';
+  END IF;
+END $$;
 
--- Create registration_codes table
-CREATE TABLE public.registration_codes (
+-- Create registration_codes table (idempotent)
+CREATE TABLE IF NOT EXISTS public.registration_codes (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   code TEXT NOT NULL UNIQUE,
   organization_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
@@ -33,11 +38,16 @@ CREATE TABLE public.registration_codes (
 
 ALTER TABLE public.registration_codes ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admins can manage registration codes"
-  ON public.registration_codes FOR ALL
-  USING (has_role(auth.uid(), 'admin'::app_role))
-  WITH CHECK (has_role(auth.uid(), 'admin'::app_role));
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Admins can manage registration codes' AND tablename = 'registration_codes') THEN
+    EXECUTE 'CREATE POLICY "Admins can manage registration codes" ON public.registration_codes FOR ALL USING (has_role(auth.uid(), ''admin''::app_role)) WITH CHECK (has_role(auth.uid(), ''admin''::app_role))';
+  END IF;
+END $$;
 
-CREATE POLICY "Authenticated users can view active codes"
-  ON public.registration_codes FOR SELECT
-  USING (auth.uid() IS NOT NULL AND is_active = true);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Authenticated users can view active codes' AND tablename = 'registration_codes') THEN
+    EXECUTE 'CREATE POLICY "Authenticated users can view active codes" ON public.registration_codes FOR SELECT USING (auth.uid() IS NOT NULL AND is_active = true)';
+  END IF;
+END $$;
