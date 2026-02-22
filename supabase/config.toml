@@ -1,1 +1,4 @@
 project_id = "tehcmmctcmmecuzytiec"
+
+[functions.parse-policy-document]
+verify_jwt = false

@@ -163,6 +163,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           policy_type: string
+          source_file_path: string | null
           summary: string | null
           title: string
           updated_at: string | null
@@ -175,6 +176,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           policy_type: string
+          source_file_path?: string | null
           summary?: string | null
           title: string
           updated_at?: string | null
@@ -187,6 +189,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           policy_type?: string
+          source_file_path?: string | null
           summary?: string | null
           title?: string
           updated_at?: string | null
