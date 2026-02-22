@@ -212,6 +212,7 @@ export type Database = {
         Row: {
           chunk_index: number
           created_at: string
+          embedding: string | null
           id: string
           lesson_id: string
           metadata: Json | null
@@ -223,6 +224,7 @@ export type Database = {
         Insert: {
           chunk_index?: number
           created_at?: string
+          embedding?: string | null
           id?: string
           lesson_id: string
           metadata?: Json | null
@@ -234,6 +236,7 @@ export type Database = {
         Update: {
           chunk_index?: number
           created_at?: string
+          embedding?: string | null
           id?: string
           lesson_id?: string
           metadata?: Json | null
@@ -541,6 +544,22 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      match_lesson_chunks: {
+        Args: {
+          filter_lesson_id?: string
+          filter_module_id?: string
+          match_count?: number
+          query_embedding: string
+          similarity_threshold?: number
+        }
+        Returns: {
+          id: string
+          metadata: Json
+          similarity: number
+          source: string
+          text: string
+        }[]
       }
     }
     Enums: {
