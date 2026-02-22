@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { HelpTour } from '@/components/HelpTour';
@@ -20,8 +21,9 @@ import {
   Loader2, Play, CheckCircle, Sparkles, Bot,
   Building2, HelpCircle, BookOpen, Shield, Lightbulb,
   Radio, Calendar, Users, MessageCircle,
-  CalendarDays, Video, Settings, Brain, Cpu, Zap
+  CalendarDays, Video, Settings, Brain, Cpu, Zap, Menu
 } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { computeOverallProgress, computeSessionProgress, getModuleStates, getCompletedModuleCount, getSessionModuleTotal } from '@/utils/computeProgress';
 import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';
 import type { SessionProgressData, SkillSignal } from '@/types/progress';
@@ -183,78 +185,98 @@ export default function Dashboard() {
 
       {/* Header */}
       <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
+        <div className="container mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
+          <div className="min-w-0">
             {(orgName || profile.employer_bank_name) && (
-              <p className="text-xs text-muted-foreground/70 font-medium tracking-wide uppercase">
+              <p className="text-xs text-muted-foreground/70 font-medium tracking-wide uppercase truncate">
                 {orgName || profile.employer_bank_name}
               </p>
             )}
-            <h1 className="text-xl font-display font-bold">AI Training Dashboard</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-lg md:text-xl font-display font-bold">AI Training Dashboard</h1>
+            <p className="text-sm text-muted-foreground hidden sm:block">
               Welcome back, {profile.display_name || 'Learner'}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2"
-              onClick={() => navigate('/policies')}
-            >
+
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-3">
+            <Button variant="ghost" size="sm" className="gap-2" onClick={() => navigate('/policies')}>
               <Shield className="h-4 w-4" />
               Bank Policies
             </Button>
-            <div className="relative group">
-              <Button variant="ghost" size="sm" className="gap-2">
-                <Sparkles className="h-4 w-4" />
-                My Personalization
-              </Button>
-              <div className="absolute right-0 top-full mt-1 w-56 bg-card border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                <div className="p-1.5 space-y-0.5">
-                  <button
-                    className="w-full text-left px-3 py-2.5 text-sm rounded-md hover:bg-muted transition-colors flex items-center gap-2.5"
-                    onClick={() => navigate('/settings')}
-                  >
-                    <Settings className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <div className="font-medium">AI Settings</div>
-                      <div className="text-xs text-muted-foreground">Customize Andrea's behavior</div>
-                    </div>
-                  </button>
-                  <button
-                    className="w-full text-left px-3 py-2.5 text-sm rounded-md hover:bg-muted transition-colors flex items-center gap-2.5"
-                    onClick={() => navigate('/memories')}
-                  >
-                    <Brain className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <div className="font-medium">Memories</div>
-                      <div className="text-xs text-muted-foreground">What Andrea remembers</div>
-                    </div>
-                  </button>
-                  <button
-                    className="w-full text-left px-3 py-2.5 text-sm rounded-md hover:bg-muted transition-colors flex items-center gap-2.5"
-                    onClick={() => navigate('/ideas')}
-                  >
-                    <Lightbulb className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <div className="font-medium">My Ideas</div>
-                      <div className="text-xs text-muted-foreground">AI use cases to explore</div>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2"
-              onClick={() => setHelpOpen(true)}
-            >
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  My Personalization
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-card">
+                <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <div>
+                    <div className="font-medium">AI Settings</div>
+                    <div className="text-xs text-muted-foreground">Customize Andrea's behavior</div>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/memories')} className="cursor-pointer">
+                  <Brain className="mr-2 h-4 w-4" />
+                  <div>
+                    <div className="font-medium">Memories</div>
+                    <div className="text-xs text-muted-foreground">What Andrea remembers</div>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/ideas')} className="cursor-pointer">
+                  <Lightbulb className="mr-2 h-4 w-4" />
+                  <div>
+                    <div className="font-medium">My Ideas</div>
+                    <div className="text-xs text-muted-foreground">AI use cases to explore</div>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="ghost" size="sm" className="gap-2" onClick={() => setHelpOpen(true)}>
               <HelpCircle className="h-4 w-4" />
               Help
             </Button>
             <ProfileDropdown onReplayTour={() => setHelpOpen(true)} />
+          </div>
+
+          {/* Mobile nav */}
+          <div className="flex md:hidden items-center gap-2">
+            <ProfileDropdown onReplayTour={() => setHelpOpen(true)} />
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-72 p-0">
+                <nav className="flex flex-col py-6">
+                  <div className="px-4 pb-4 border-b">
+                    <p className="font-semibold">{profile.display_name || 'Learner'}</p>
+                    <p className="text-xs text-muted-foreground">{profile.bank_role}</p>
+                  </div>
+                  <div className="flex flex-col py-2">
+                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/policies')}>
+                      <Shield className="h-4 w-4 text-muted-foreground" /> Bank Policies
+                    </button>
+                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/settings')}>
+                      <Settings className="h-4 w-4 text-muted-foreground" /> AI Settings
+                    </button>
+                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/memories')}>
+                      <Brain className="h-4 w-4 text-muted-foreground" /> Memories
+                    </button>
+                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/ideas')}>
+                      <Lightbulb className="h-4 w-4 text-muted-foreground" /> My Ideas
+                    </button>
+                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => setHelpOpen(true)}>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground" /> Help
+                    </button>
+                  </div>
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>
@@ -289,10 +311,10 @@ export default function Dashboard() {
                   )}
                 </div>
               </div>
-              <div className="md:text-right">
+              <div className="md:text-right mt-4 md:mt-0">
                 <div className="text-sm text-muted-foreground mb-1">Overall Progress</div>
                 <div className="text-2xl font-bold text-primary">{Math.round(overallProgress)}%</div>
-                <Progress value={overallProgress} className="w-48 h-2 mt-2" />
+                <Progress value={overallProgress} className="w-full md:w-48 h-2 mt-2" />
                 <p className="text-xs text-muted-foreground mt-1">
                   {totalCompletedModules} of {totalModules} modules completed
                 </p>

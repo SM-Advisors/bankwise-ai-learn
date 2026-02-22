@@ -27,9 +27,12 @@ import { WorkflowStudioPanel } from '@/components/workflow-studio/WorkflowStudio
 import { CapstonePanel } from '@/components/capstone/CapstonePanel';
 import type { CapstoneData } from '@/types/progress';
 import type { WorkflowData } from '@/types/workflow';
-import { Loader2, ArrowLeft, Shield, Bot, Building2 } from 'lucide-react';
+import { Loader2, ArrowLeft, Shield, Bot, Building2, BookOpen, MessageSquare, GraduationCap } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 
 export default function TrainingWorkspace() {
+  const isMobile = useIsMobile();
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const { user, profile, progress, loading, markSessionCompleted, updateProgress } = useAuth();
@@ -52,6 +55,8 @@ export default function TrainingWorkspace() {
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
   const [policyDropdownOpen, setPolicyDropdownOpen] = useState(false);
+  const [mobileTab, setMobileTab] = useState<'practice' | 'coach'>('practice');
+  const [mobileModulesOpen, setMobileModulesOpen] = useState(false);
 
   const { policies } = useBankPolicies();
   const { createMemory } = useAIMemories();
@@ -708,21 +713,49 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
       />
 
       {/* Top Bar */}
-      <header className="border-b bg-card px-4 py-3 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="gap-2">
+      <header className="border-b bg-card px-3 md:px-4 py-2 md:py-3 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2 md:gap-4 min-w-0">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="gap-1 md:gap-2 px-2 md:px-3 shrink-0">
             <ArrowLeft className="h-4 w-4" />
-            Dashboard
+            <span className="hidden sm:inline">Dashboard</span>
           </Button>
-          <div className="h-6 w-px bg-border" />
-          <div>
-            <h1 className="font-semibold">Session {sessionId}: {session.title}</h1>
-            <p className="text-xs text-muted-foreground">{session.description}</p>
+          <div className="h-6 w-px bg-border hidden sm:block" />
+          <div className="min-w-0">
+            <h1 className="font-semibold text-sm md:text-base truncate">
+              <span className="hidden sm:inline">Session {sessionId}: </span>{session.title}
+            </h1>
+            <p className="text-xs text-muted-foreground hidden md:block">{session.description}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3 shrink-0">
+          {/* Mobile: modules button */}
+          {isMobile && (
+            <Sheet open={mobileModulesOpen} onOpenChange={setMobileModulesOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <BookOpen className="h-4 w-4" />
+                  <span className="text-xs">Modules</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 p-0">
+                <SheetTitle className="sr-only">Training Modules</SheetTitle>
+                <ModuleListSidebar
+                  collapsed={false}
+                  onToggleCollapse={() => setMobileModulesOpen(false)}
+                  modules={session.modules}
+                  selectedModule={selectedModule}
+                  completedModules={completedModules}
+                  moduleEngagement={moduleEngagement}
+                  onSelectModule={(module) => {
+                    handleModuleSelect(module);
+                    setMobileModulesOpen(false);
+                  }}
+                />
+              </SheetContent>
+            </Sheet>
+          )}
           {policies.length > 0 && (
-            <div className="relative">
+            <div className="relative hidden md:block">
               <Button
                 variant="outline"
                 size="sm"
@@ -761,122 +794,153 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
               )}
             </div>
           )}
-          <Badge variant="secondary">{profile.learning_style}</Badge>
-          <Badge variant="outline">Level {profile.ai_proficiency_level}</Badge>
+          <Badge variant="secondary" className="hidden md:inline-flex">{profile.learning_style}</Badge>
+          <Badge variant="outline" className="hidden md:inline-flex">Level {profile.ai_proficiency_level}</Badge>
         </div>
       </header>
 
-      {/* Main Content - 3 Column Layout */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Column - Training Modules */}
-        <ModuleListSidebar
-          collapsed={leftCollapsed}
-          onToggleCollapse={() => setLeftCollapsed(!leftCollapsed)}
-          modules={session.modules}
-          selectedModule={selectedModule}
-          completedModules={completedModules}
-          moduleEngagement={moduleEngagement}
-          onSelectModule={handleModuleSelect}
-        />
-
-        {/* Middle Column - Practice Chat Area / Agent Studio / Workflow Studio / Capstone */}
-        <div className="flex-1 flex flex-col overflow-hidden" ref={contentScrollRef}>
-          {/* Session 3 deployed agent banner */}
-          {isSession3 && deployedAgent && selectedModule && !isWorkflowModule && !isCapstoneModule && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 border-b border-primary/10">
-              <Bot className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">
-                Practicing with: {deployedAgent.name}
-              </span>
-              <span className="text-xs text-muted-foreground ml-auto">
-                Custom agent active
-              </span>
-            </div>
-          )}
-
-          {/* Session 3 department banner */}
-          {isSession3 && departmentLabel && selectedModule && !isWorkflowModule && !isCapstoneModule && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/5 border-b border-blue-500/10">
-              <Building2 className="h-4 w-4 text-blue-500" />
-              <span className="text-sm font-medium text-blue-600">
-                {departmentLabel}
-              </span>
-            </div>
-          )}
-
-          {selectedModule && isAgentModule ? (
-            <AgentStudioPanel
-              module={selectedModule}
-            />
-          ) : selectedModule && isWorkflowModule ? (
-            <WorkflowStudioPanel
-              onSubmitForReview={(workflowData: WorkflowData, workflowName: string) => {
-                // Trigger a review submission via the trainer
-                handleSubmitForReview();
-              }}
-            />
-          ) : selectedModule && isCapstoneModule ? (
-            <CapstonePanel
-              capstoneData={getCapstoneData()}
-              onCapstoneUpdate={updateCapstoneData}
-              onSendPracticeMessage={handlePracticeSendMessage}
-              practiceMessages={activeMessages}
-              isPracticeLoading={isPracticeLoading}
-              onSubmitForReview={handleSubmitForReview}
-              isSubmitting={isTrainerLoading}
-              departmentLabel={departmentLabel || undefined}
-              userName={profile?.display_name || undefined}
-              bankName={profile?.employer_bank_name || undefined}
-            />
-          ) : selectedModule ? (
-            <PracticeChatPanel
-              module={selectedModule}
-              messages={activeMessages}
-              onSendMessage={handlePracticeSendMessage}
-              isLoading={isPracticeLoading}
-              isCompleted={moduleCompleted}
-              isSubmitted={isActiveConversationSubmitted}
-              onSubmitForReview={handleSubmitForReview}
-              onContinueToNext={nextModule ? () => setSelectedModule(nextModule) : undefined}
-              onCompleteSession={!nextModule ? handleCompleteSession : undefined}
-              hasNextModule={!!nextModule}
-              conversations={practiceConversations}
-              activeConversationId={activeConversationId}
-              onNewChat={startNewChat}
-              onSelectConversation={selectConversation}
-              departmentLabel={isSession3 ? (departmentLabel || undefined) : undefined}
-              lineOfBusiness={isSession3 ? (profile?.line_of_business || undefined) : undefined}
-            />
-          ) : null}
+      {/* Mobile tab bar */}
+      {isMobile && (
+        <div className="flex border-b bg-card shrink-0">
+          <button
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
+              mobileTab === 'practice'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-muted-foreground'
+            }`}
+            onClick={() => setMobileTab('practice')}
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            Practice
+          </button>
+          <button
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
+              mobileTab === 'coach'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-muted-foreground'
+            }`}
+            onClick={() => setMobileTab('coach')}
+          >
+            <GraduationCap className="h-3.5 w-3.5" />
+            Coach
+          </button>
         </div>
+      )}
 
-        {/* Right Column - Andrea AI Coach */}
-        <TrainerChatPanel
-          collapsed={rightCollapsed}
-          onToggleCollapse={() => setRightCollapsed(!rightCollapsed)}
-          messages={trainerMessages}
-          input={trainerInput}
-          onInputChange={setTrainerInput}
-          onSubmit={handleTrainerSubmit}
-          onQuickAction={handleQuickAction}
-          isLoading={isTrainerLoading}
-          suggestedPrompts={suggestedPrompts}
-          onSaveMemory={async (content, source) => {
-            const result = await createMemory({
-              content,
-              source: source || 'user_saved',
-              context: selectedModule ? `Session ${sessionId} - ${selectedModule.title}` : undefined,
-            });
-            if (result.success) {
-              toast({
-                title: 'Memory saved',
-                description: source === 'andrea_suggested'
-                  ? 'Andrea\'s suggestion has been saved to your memories.'
-                  : 'Andrea will remember this insight.',
+      {/* Main Content */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Column - Training Modules (desktop only) */}
+        {!isMobile && (
+          <ModuleListSidebar
+            collapsed={leftCollapsed}
+            onToggleCollapse={() => setLeftCollapsed(!leftCollapsed)}
+            modules={session.modules}
+            selectedModule={selectedModule}
+            completedModules={completedModules}
+            moduleEngagement={moduleEngagement}
+            onSelectModule={handleModuleSelect}
+          />
+        )}
+
+        {/* Middle Column - Practice Chat Area (shown on desktop always, on mobile when practice tab active) */}
+        {(!isMobile || mobileTab === 'practice') && (
+          <div className="flex-1 flex flex-col overflow-hidden" ref={contentScrollRef}>
+            {/* Session 3 deployed agent banner */}
+            {isSession3 && deployedAgent && selectedModule && !isWorkflowModule && !isCapstoneModule && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 border-b border-primary/10">
+                <Bot className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-primary">
+                  Practicing with: {deployedAgent.name}
+                </span>
+                <span className="text-xs text-muted-foreground ml-auto">
+                  Custom agent active
+                </span>
+              </div>
+            )}
+
+            {/* Session 3 department banner */}
+            {isSession3 && departmentLabel && selectedModule && !isWorkflowModule && !isCapstoneModule && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/5 border-b border-blue-500/10">
+                <Building2 className="h-4 w-4 text-blue-500" />
+                <span className="text-sm font-medium text-blue-600">
+                  {departmentLabel}
+                </span>
+              </div>
+            )}
+
+            {selectedModule && isAgentModule ? (
+              <AgentStudioPanel module={selectedModule} />
+            ) : selectedModule && isWorkflowModule ? (
+              <WorkflowStudioPanel
+                onSubmitForReview={(workflowData: WorkflowData, workflowName: string) => {
+                  handleSubmitForReview();
+                }}
+              />
+            ) : selectedModule && isCapstoneModule ? (
+              <CapstonePanel
+                capstoneData={getCapstoneData()}
+                onCapstoneUpdate={updateCapstoneData}
+                onSendPracticeMessage={handlePracticeSendMessage}
+                practiceMessages={activeMessages}
+                isPracticeLoading={isPracticeLoading}
+                onSubmitForReview={handleSubmitForReview}
+                isSubmitting={isTrainerLoading}
+                departmentLabel={departmentLabel || undefined}
+                userName={profile?.display_name || undefined}
+                bankName={profile?.employer_bank_name || undefined}
+              />
+            ) : selectedModule ? (
+              <PracticeChatPanel
+                module={selectedModule}
+                messages={activeMessages}
+                onSendMessage={handlePracticeSendMessage}
+                isLoading={isPracticeLoading}
+                isCompleted={moduleCompleted}
+                isSubmitted={isActiveConversationSubmitted}
+                onSubmitForReview={handleSubmitForReview}
+                onContinueToNext={nextModule ? () => setSelectedModule(nextModule) : undefined}
+                onCompleteSession={!nextModule ? handleCompleteSession : undefined}
+                hasNextModule={!!nextModule}
+                conversations={practiceConversations}
+                activeConversationId={activeConversationId}
+                onNewChat={startNewChat}
+                onSelectConversation={selectConversation}
+                departmentLabel={isSession3 ? (departmentLabel || undefined) : undefined}
+                lineOfBusiness={isSession3 ? (profile?.line_of_business || undefined) : undefined}
+              />
+            ) : null}
+          </div>
+        )}
+
+        {/* Right Column - Andrea AI Coach (shown on desktop always, on mobile when coach tab active) */}
+        {(!isMobile || mobileTab === 'coach') && (
+          <TrainerChatPanel
+            collapsed={isMobile ? false : rightCollapsed}
+            onToggleCollapse={() => setRightCollapsed(!rightCollapsed)}
+            messages={trainerMessages}
+            input={trainerInput}
+            onInputChange={setTrainerInput}
+            onSubmit={handleTrainerSubmit}
+            onQuickAction={handleQuickAction}
+            isLoading={isTrainerLoading}
+            suggestedPrompts={suggestedPrompts}
+            onSaveMemory={async (content, source) => {
+              const result = await createMemory({
+                content,
+                source: source || 'user_saved',
+                context: selectedModule ? `Session ${sessionId} - ${selectedModule.title}` : undefined,
               });
-            }
-          }}
-        />
+              if (result.success) {
+                toast({
+                  title: 'Memory saved',
+                  description: source === 'andrea_suggested'
+                    ? 'Andrea\'s suggestion has been saved to your memories.'
+                    : 'Andrea will remember this insight.',
+                });
+              }
+            }}
+          />
+        )}
       </div>
 
       {/* Modals */}

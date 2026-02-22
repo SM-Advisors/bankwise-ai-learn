@@ -108,7 +108,7 @@ export default function Settings() {
               <CardDescription>How should Andrea talk to you?</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {TONE_OPTIONS.map((option) => (
                   <button
                     key={option.value}
@@ -134,7 +134,7 @@ export default function Settings() {
               <CardDescription>How detailed should responses be?</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {VERBOSITY_OPTIONS.map((option) => (
                   <button
                     key={option.value}
@@ -160,7 +160,7 @@ export default function Settings() {
               <CardDescription>How should Andrea format responses?</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {FORMAT_OPTIONS.map((option) => (
                   <button
                     key={option.value}

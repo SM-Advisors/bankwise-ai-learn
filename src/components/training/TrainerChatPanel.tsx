@@ -184,7 +184,7 @@ export function TrainerChatPanel({
 
   return (
     <aside
-      className={`border-l bg-card transition-all duration-300 flex flex-col ${collapsed ? 'w-12' : 'w-96'}`}
+      className={`border-l bg-card transition-all duration-300 flex flex-col ${collapsed ? 'w-12' : 'w-full md:w-96'}`}
       aria-label="AI Training Coach panel"
     >
       <div className="p-3 border-b flex items-center justify-between shrink-0">
