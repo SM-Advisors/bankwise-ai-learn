@@ -12,13 +12,14 @@ import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { useLiveTrainingSessions } from '@/hooks/useLiveTrainingSessions';
 import { useEvents } from '@/hooks/useEvents';
+import { useUserAgents } from '@/hooks/useUserAgents';
 import { EventModal, getEventTypeConfig } from '@/components/EventModal';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import {
   Loader2, Play, CheckCircle, Sparkles, Bot,
   Building2, HelpCircle, BookOpen, Shield, Lightbulb,
   Radio, Calendar, Users, Clock, MessageCircle, ExternalLink,
-  CalendarDays, Video, Settings, Brain
+  CalendarDays, Video, Settings, Brain, Cpu, Zap
 } from 'lucide-react';
 import { computeOverallProgress, computeSessionProgress, getModuleStates, getCompletedModuleCount, getSessionModuleTotal } from '@/utils/computeProgress';
 import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';
@@ -65,6 +66,7 @@ export default function Dashboard() {
   const { sessions: liveSessions, loading: liveSessionsLoading } = useLiveTrainingSessions();
   const { events, loading: eventsLoading } = useEvents();
   const { settings: appSettings } = useAppSettings();
+  const { agents, isLoading: agentsLoading } = useUserAgents();
 
   const communityUrl = appSettings.community_slack_url;
 
@@ -513,8 +515,9 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Upcoming Events with Calendar - Below Feed & Community */}
-        <div className="mt-6">
+        {/* Calendar & Agents - Side by Side like above */}
+        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+          {/* Upcoming Events / Calendar */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -533,67 +536,128 @@ export default function Dashboard() {
                 })()}
               </div>
               <CardDescription>
-                Training sessions, webinars, office hours, and community events
+                Training sessions, webinars, and community events
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-6 lg:grid-cols-[1fr_auto]">
-                {/* Calendar */}
-                <div className="order-2 lg:order-1">
-                  <DashboardCalendar
-                    events={events}
-                    onSelectEvent={setSelectedEvent}
-                    loading={eventsLoading}
-                  />
-                </div>
-                {/* Event List */}
-                <div className="order-1 lg:order-2 lg:w-80">
-                  {eventsLoading ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                    </div>
-                  ) : (() => {
-                    const upcomingEvents = events.filter(e => new Date(e.scheduled_date) >= new Date()).slice(0, 4);
-                    if (upcomingEvents.length === 0) {
+              <DashboardCalendar
+                events={events}
+                onSelectEvent={setSelectedEvent}
+                loading={eventsLoading}
+              />
+              {/* Upcoming event list below calendar */}
+              {!eventsLoading && (() => {
+                const upcomingEvents = events.filter(e => new Date(e.scheduled_date) >= new Date()).slice(0, 3);
+                if (upcomingEvents.length === 0) return null;
+                return (
+                  <div className="mt-4 space-y-2">
+                    {upcomingEvents.map((event) => {
+                      const config = getEventTypeConfig(event.event_type);
+                      const EventIcon = config.icon;
+                      const eventDate = new Date(event.scheduled_date);
                       return (
-                        <div className="text-center py-4">
-                          <p className="text-sm text-muted-foreground">
-                            No upcoming events scheduled.
-                          </p>
+                        <div
+                          key={event.id}
+                          className="flex items-center gap-3 p-2.5 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                          onClick={() => setSelectedEvent(event)}
+                        >
+                          <div className={`p-1.5 rounded ${config.color}`}>
+                            <EventIcon className="h-3.5 w-3.5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{event.title}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {eventDate.toLocaleDateString()} · {eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
                         </div>
                       );
-                    }
-                    return (
-                      <div className="space-y-3">
-                        {upcomingEvents.map((event) => {
-                          const config = getEventTypeConfig(event.event_type);
-                          const EventIcon = config.icon;
-                          const eventDate = new Date(event.scheduled_date);
-                          return (
-                            <div
-                              key={event.id}
-                              className="p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
-                              onClick={() => setSelectedEvent(event)}
-                            >
-                              <div className="flex items-center gap-2 mb-1.5">
-                                <div className={`p-1 rounded ${config.color}`}>
-                                  <EventIcon className="h-3 w-3" />
-                                </div>
-                                <span className="text-xs font-medium">{config.label}</span>
-                              </div>
-                              <h4 className="font-medium text-sm line-clamp-1">{event.title}</h4>
-                              <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                                <span>{eventDate.toLocaleDateString()}</span>
-                                <span>{eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
+                    })}
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
+
+          {/* My Agents & Workflows */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Bot className="h-5 w-5 text-primary" />
+                  <CardTitle>My Agents & Workflows</CardTitle>
                 </div>
+                <Badge variant="secondary" className="gap-1">
+                  <Cpu className="h-3 w-3" />
+                  {agents.length} Built
+                </Badge>
               </div>
+              <CardDescription>
+                AI agents you've created during training
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {agentsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : agents.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="mx-auto h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                    <Bot className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-medium mb-1">No agents yet</p>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    You'll build your first agent in Session 2
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => handleStartSession(2)}
+                  >
+                    <Play className="h-3.5 w-3.5" />
+                    Start Session 2
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {agents.slice(0, 5).map((agent) => (
+                    <div
+                      key={agent.id}
+                      className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className={`p-2 rounded-lg ${
+                        agent.is_deployed ? 'bg-green-500/10 text-green-600' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        <Bot className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{agent.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {agent.description || 'No description'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {agent.is_deployed && (
+                          <Badge variant="outline" className="text-[10px] gap-1 border-green-500/30 text-green-600">
+                            <Zap className="h-2.5 w-2.5" />
+                            Active
+                          </Badge>
+                        )}
+                        <Badge variant="secondary" className="text-[10px] capitalize">
+                          {agent.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                  {agents.length > 5 && (
+                    <p className="text-xs text-muted-foreground text-center pt-1">
+                      +{agents.length - 5} more agents
+                    </p>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
