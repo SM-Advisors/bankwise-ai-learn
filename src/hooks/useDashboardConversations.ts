@@ -109,39 +109,35 @@ export function useDashboardConversations() {
     const convId = targetConversationId || activeConversationId;
     if (!convId) return;
 
-    // Use functional state update to always read the latest conversations
-    let updatedMessages: DashboardMessage[] = [];
+    let messagesForDb: DashboardMessage[] = [];
+    let titleForDb: string | undefined;
 
     setConversations(prev => {
       const conv = prev.find(c => c.id === convId);
       if (!conv) return prev;
 
-      updatedMessages = [...conv.messages, message];
+      messagesForDb = [...conv.messages, message];
 
       // Update title if this is the first user message
       const isFirstUserMessage = conv.messages.length === 0 && message.role === 'user';
-      const titleUpdate = isFirstUserMessage
+      titleForDb = isFirstUserMessage
         ? message.content.slice(0, 50) + (message.content.length > 50 ? '...' : '')
-        : conv.title;
+        : undefined;
 
       return prev.map(c =>
         c.id === convId
-          ? { ...c, messages: updatedMessages, title: titleUpdate }
+          ? { ...c, messages: messagesForDb, title: titleForDb || c.title }
           : c
       );
     });
 
-    // Persist to DB
+    // Now messagesForDb is correctly set from the functional update
     try {
-      const convForDb = conversations.find(c => c.id === convId);
-      const messagesForDb = convForDb ? [...convForDb.messages, message] : [message];
-      const isFirstUserMessage = convForDb && convForDb.messages.length === 0 && message.role === 'user';
-
       const updates: Record<string, unknown> = {
         messages: messagesForDb as unknown as Record<string, unknown>[],
       };
-      if (isFirstUserMessage) {
-        updates.title = message.content.slice(0, 50) + (message.content.length > 50 ? '...' : '');
+      if (titleForDb) {
+        updates.title = titleForDb;
       }
 
       const { error } = await (supabase
@@ -153,7 +149,7 @@ export function useDashboardConversations() {
     } catch (err) {
       console.error('Error appending dashboard message:', err);
     }
-  }, [activeConversationId, conversations]);
+  }, [activeConversationId]);
 
   // Start a new chat (deselect current, will create on first message)
   const startNewChat = useCallback(() => {

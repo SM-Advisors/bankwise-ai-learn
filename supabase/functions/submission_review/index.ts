@@ -414,7 +414,7 @@ EVALUATION FOCUS:
 ${rubric ? (typeof rubric === "string" ? rubric : JSON.stringify(rubric, null, 2)) : "Evaluate based on clarity, specificity, context, and appropriateness for banking use cases."}`}
 
 ${departmentContext?.lineOfBusiness ? `## DEPARTMENT CONTEXT
-The learner works in: ${departmentContext.lineOfBusiness === "accounting_finance" ? "Accounting & Finance" : departmentContext.lineOfBusiness === "credit_administration" ? "Credit Administration" : "Executive & Leadership"}
+The learner works in: ${departmentContext.lineOfBusiness === "accounting_finance" ? "Accounting & Finance" : departmentContext.lineOfBusiness === "credit_administration" ? "Credit Administration" : departmentContext.lineOfBusiness === "executive_leadership" ? "Executive & Leadership" : departmentContext.lineOfBusiness}
 ${departmentContext.bankRole ? `Their role: ${departmentContext.bankRole}` : ""}
 Evaluate whether the submission is relevant to their department. Note if examples and terminology are appropriate for their line of business.` : ""}
 

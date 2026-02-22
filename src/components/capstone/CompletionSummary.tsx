@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Trophy, CheckCircle, Sparkles, Bot, Building2, Award,
+  Trophy, CheckCircle, Sparkles, Award,
 } from 'lucide-react';
 import type { SkillSignal } from '@/types/progress';
 import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';

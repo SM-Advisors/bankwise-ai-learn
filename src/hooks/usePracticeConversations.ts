@@ -118,41 +118,35 @@ export function usePracticeConversations(sessionId: string, moduleId: string | n
     const convId = targetConversationId || activeConversationId;
     if (!convId) return;
 
-    // Use functional state update to always read the latest conversations
-    let updatedMessages: PracticeMessage[] = [];
+    let messagesForDb: PracticeMessage[] = [];
+    let titleForDb: string | undefined;
 
     setConversations(prev => {
       const conv = prev.find(c => c.id === convId);
       if (!conv) return prev;
 
-      updatedMessages = [...conv.messages, message];
+      messagesForDb = [...conv.messages, message];
 
       // Update title if this is the first user message
       const isFirstUserMessage = conv.messages.length === 0 && message.role === 'user';
-      const titleUpdate = isFirstUserMessage
+      titleForDb = isFirstUserMessage
         ? message.content.slice(0, 50) + (message.content.length > 50 ? '...' : '')
-        : conv.title;
+        : undefined;
 
       return prev.map(c =>
         c.id === convId
-          ? { ...c, messages: updatedMessages, title: titleUpdate }
+          ? { ...c, messages: messagesForDb, title: titleForDb || c.title }
           : c
       );
     });
 
-    // Persist to DB (read updatedMessages from the closure set above)
-    // We need to read the latest state for the DB update
+    // Now messagesForDb is correctly set from the functional update
     try {
-      // Re-read from state to ensure we have the right messages
-      const convForDb = conversations.find(c => c.id === convId);
-      const messagesForDb = convForDb ? [...convForDb.messages, message] : [message];
-      const isFirstUserMessage = convForDb && convForDb.messages.length === 0 && message.role === 'user';
-
       const updates: Record<string, unknown> = {
         messages: messagesForDb as unknown as Record<string, unknown>[],
       };
-      if (isFirstUserMessage) {
-        updates.title = message.content.slice(0, 50) + (message.content.length > 50 ? '...' : '');
+      if (titleForDb) {
+        updates.title = titleForDb;
       }
 
       const { error } = await (supabase
@@ -164,7 +158,7 @@ export function usePracticeConversations(sessionId: string, moduleId: string | n
     } catch (err) {
       console.error('Error appending message:', err);
     }
-  }, [activeConversationId, conversations]);
+  }, [activeConversationId]);
 
   // Mark a conversation as submitted for review
   const markSubmitted = useCallback(async (conversationId?: string) => {

@@ -567,6 +567,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           messages: [...trainerMessages, apiMessage],
           practiceConversation: activeMessages.length > 0 ? activeMessages : undefined,
           agentContext: agentContextForAndrea,
+          workflowContext: workflowContextForAndrea,
           learnerState: {
             currentCardTitle: selectedModule?.title,
             progressSummary: activeMessages.length > 0
@@ -633,6 +634,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           messages: [...trainerMessages, apiMessage],
           practiceConversation: activeMessages.length > 0 ? activeMessages : undefined,
           agentContext: agentContextForAndrea,
+          workflowContext: workflowContextForAndrea,
           learnerState: {
             currentCardTitle: selectedModule?.title,
             progressSummary: activeMessages.length > 0

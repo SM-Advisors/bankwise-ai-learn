@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
   Loader2, Send, Bot, User, RotateCcw, ChevronRight,
-  CheckCircle, Circle, AlertTriangle, ShieldCheck,
+  CheckCircle, AlertTriangle, ShieldCheck,
 } from 'lucide-react';
 import { useWorkflowTestChat } from '@/hooks/useWorkflowTestChat';
 import type { WorkflowData } from '@/types/workflow';

@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Award, Download, Printer } from 'lucide-react';
+import { Award, Printer } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface CertificateGeneratorProps {
   userName: string;
@@ -17,6 +18,7 @@ export function CertificateGenerator({
 }: CertificateGeneratorProps) {
   const [showPreview, setShowPreview] = useState(false);
   const certRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const formattedDate = new Date(completedAt).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -28,7 +30,14 @@ export function CertificateGenerator({
     if (!certRef.current) return;
 
     const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
+    if (!printWindow) {
+      toast({
+        title: 'Unable to open print window',
+        description: 'Please allow popups for this site and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     printWindow.document.write(`
       <!DOCTYPE html>

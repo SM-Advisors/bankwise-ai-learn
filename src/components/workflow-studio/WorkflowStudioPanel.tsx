@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Hammer, FlaskConical, Save } from 'lucide-react';
 import { WorkflowBuilder } from './WorkflowBuilder';
 import { WorkflowTestChat } from './WorkflowTestChat';

@@ -1,41 +1,26 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Plus, Trash2, Save, Eye, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
 import type { AgentTemplateData } from '@/types/agent';
-import { assembleSystemPrompt, countWords } from '@/types/agent';
 
 interface AgentTemplateBuilderProps {
   templateData: AgentTemplateData;
   onTemplateChange: (data: AgentTemplateData) => void;
-  onSaveAndGenerate: (systemPrompt: string) => void;
-  systemPrompt: string;
-  agentName: string;
-  onNameChange: (name: string) => void;
 }
 
 export function AgentTemplateBuilder({
   templateData,
   onTemplateChange,
-  onSaveAndGenerate,
-  systemPrompt,
-  agentName,
-  onNameChange,
 }: AgentTemplateBuilderProps) {
-  const [showPreview, setShowPreview] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   // Debounced auto-save on change
   const handleChange = useCallback(
     (updater: (prev: AgentTemplateData) => AgentTemplateData) => {
@@ -45,17 +30,12 @@ export function AgentTemplateBuilder({
     [templateData, onTemplateChange]
   );
 
-  const wordCount = systemPrompt ? countWords(systemPrompt) : 0;
-  const livePreview = assembleSystemPrompt(templateData);
-  const liveWordCount = countWords(livePreview);
-
   // Check section completeness
   const isIdentityDone = templateData.identity.trim().length > 0;
   const isTasksDone = templateData.taskList.filter((t) => t.name.trim()).length >= 2;
   const isRulesDone = templateData.outputRules.filter((r) => r.trim()).length >= 2;
   const isGuardRailsDone = templateData.guardRails.filter((g) => g.rule.trim()).length >= 2;
   const isAnchorsDone = templateData.complianceAnchors.filter((a) => a.trim()).length >= 1;
-  const allSectionsDone = isIdentityDone && isTasksDone && isRulesDone && isGuardRailsDone && isAnchorsDone;
 
   const sectionStatus = (done: boolean) =>
     done ? (
@@ -65,24 +45,8 @@ export function AgentTemplateBuilder({
     );
 
   return (
-    <ScrollArea className="flex-1">
-      <div className="p-4 space-y-4">
-        {/* Agent Name */}
-        <div>
-          <Label htmlFor="agent-name" className="text-sm font-medium">
-            Agent Name
-          </Label>
-          <Input
-            id="agent-name"
-            value={agentName}
-            onChange={(e) => onNameChange(e.target.value)}
-            placeholder="e.g., Collections Communication Agent"
-            className="mt-1"
-          />
-        </div>
-
-        {/* Template Sections */}
-        <Accordion type="multiple" defaultValue={['identity', 'tasks', 'rules', 'guardrails', 'anchors']} className="space-y-2">
+    <div className="space-y-2">
+      <Accordion type="multiple" defaultValue={['identity', 'tasks', 'rules', 'guardrails', 'anchors']} className="space-y-2">
           {/* IDENTITY */}
           <AccordionItem value="identity" className="border rounded-lg px-4">
             <AccordionTrigger className="py-3 hover:no-underline">
@@ -404,70 +368,6 @@ export function AgentTemplateBuilder({
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-
-        {/* Actions */}
-        <div className="flex items-center gap-3 pt-2">
-          <Button
-            onClick={() => onSaveAndGenerate(livePreview)}
-            disabled={!isIdentityDone}
-            className="gap-2"
-          >
-            <Save className="h-4 w-4" />
-            Save & Generate Prompt
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setShowPreview(!showPreview)}
-            className="gap-2"
-          >
-            <Eye className="h-4 w-4" />
-            {showPreview ? 'Hide Preview' : 'Preview'}
-          </Button>
-          <div className="ml-auto flex items-center gap-2">
-            <Badge
-              variant={
-                liveWordCount === 0
-                  ? 'outline'
-                  : liveWordCount >= 150 && liveWordCount <= 400
-                  ? 'default'
-                  : 'secondary'
-              }
-              className={
-                liveWordCount >= 150 && liveWordCount <= 400
-                  ? 'bg-green-500/15 text-green-600 border-green-500/30'
-                  : liveWordCount > 400
-                  ? 'bg-amber-500/15 text-amber-600 border-amber-500/30'
-                  : ''
-              }
-            >
-              {liveWordCount} words
-            </Badge>
-            {allSectionsDone && (
-              <Badge variant="outline" className="gap-1 text-green-600 border-green-500/30">
-                <CheckCircle className="h-3 w-3" />
-                Complete
-              </Badge>
-            )}
-          </div>
-        </div>
-
-        {/* System Prompt Preview */}
-        {showPreview && (
-          <Card className="border-dashed">
-            <CardHeader className="py-3 px-4">
-              <CardTitle className="text-sm flex items-center justify-between">
-                <span>System Prompt Preview</span>
-                <Badge variant="outline" className="text-xs">{liveWordCount} words</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <pre className="text-xs leading-relaxed whitespace-pre-wrap font-mono bg-muted/50 p-3 rounded-lg max-h-64 overflow-y-auto">
-                {livePreview || 'Fill in the template sections above to generate a system prompt.'}
-              </pre>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    </ScrollArea>
+    </div>
   );
 }

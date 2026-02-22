@@ -88,7 +88,22 @@ export default function Onboarding() {
 
   // 4 steps: (1) Role + LOB, (2) AI Proficiency Assessment, (3) Learning Style, (4) Tech Learning Style
   const totalSteps = 4;
-  const progressPercent = (step / totalSteps) * 100;
+
+  // Progress is based on *completed* steps, not current step.
+  // A step counts as complete only when the user has filled it out AND moved past it.
+  const completedSteps = (() => {
+    let count = 0;
+    // Step 1 is complete if role + LOB filled AND user has moved past it
+    if (step > 1 && bankRole.trim() && lineOfBusiness) count++;
+    // Step 2 is complete if proficiency assessment finished AND user has moved past it
+    if (step > 2 && proficiencyCompleted) count++;
+    // Step 3 is complete if learning style selected AND user has moved past it
+    if (step > 3 && learningStyle) count++;
+    // Step 4 is complete if tech learning style selected (on final step, count when selected)
+    if (step === 4 && techLearningStyle) count++;
+    return count;
+  })();
+  const progressPercent = (completedSteps / totalSteps) * 100;
 
   const handleNext = () => {
     if (step === 1 && (!lineOfBusiness || !bankRole.trim())) {
@@ -235,7 +250,7 @@ export default function Onboarding() {
                   <CardTitle>AI Experience Assessment</CardTitle>
                 </div>
                 <CardDescription>
-                  Answer a few quick scenarios so Andrea can calibrate your training — there are no wrong answers.
+                  These questions help Andrea understand where you are today — pick whichever answer honestly matches your current habits. There are no right or wrong answers.
                 </CardDescription>
               </CardHeader>
               <CardContent>
