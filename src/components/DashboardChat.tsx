@@ -4,7 +4,8 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
-import { Sparkles, X, Send, Loader2, MessageCircle } from 'lucide-react';
+import { X, Send, Loader2, MessageCircle } from 'lucide-react';
+import andreaCoach from '@/assets/andrea-coach.png';
 
 interface DashboardChatProps {
   profile: {
@@ -142,12 +143,12 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
     return (
       <button
         onClick={handleOpen}
-        className={`fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center ${
+        className={`fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 overflow-hidden border-2 border-primary/30 ${
           !hasBeenOpened ? 'animate-pulse' : ''
         }`}
         aria-label="Chat with Andrea"
       >
-        <Sparkles className="h-6 w-6" />
+        <img src={andreaCoach} alt="Andrea" className="h-full w-full object-cover" />
       </button>
     );
   }
@@ -159,7 +160,7 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b bg-primary text-primary-foreground rounded-t-lg">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
+            <img src={andreaCoach} alt="Andrea" className="h-8 w-8 rounded-full object-cover border border-primary-foreground/30" />
             <div>
               <h3 className="font-semibold text-sm leading-none">Andrea</h3>
               <p className="text-xs opacity-80 mt-0.5">Your AI Training Coach</p>
@@ -180,8 +181,8 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
           <div className="space-y-3">
             {messages.length === 0 && !isLoading && (
               <div className="text-center py-6">
-                <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                  <MessageCircle className="h-6 w-6 text-primary" />
+                <div className="mx-auto h-12 w-12 rounded-full overflow-hidden border-2 border-primary/20 mb-3">
+                  <img src={andreaCoach} alt="Andrea" className="h-full w-full object-cover" />
                 </div>
                 <p className="text-sm font-medium mb-1">Hi{profile.display_name ? `, ${profile.display_name}` : ''}!</p>
                 <p className="text-xs text-muted-foreground mb-4">
