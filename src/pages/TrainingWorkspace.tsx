@@ -19,6 +19,7 @@ import type { SessionProgressData, ModuleEngagement } from '@/types/progress';
 import { DEFAULT_ENGAGEMENT } from '@/types/progress';
 import { deriveSkillSignals } from '@/utils/deriveSkillSignals';
 import { getQuestionsForCompletedModules } from '@/data/spacedRepetitionBank';
+import { getRoleScenario } from '@/data/roleScenarioBanks';
 import { selectRetrievalQuestions, formatRetrievalQuestionsForAndrea } from '@/utils/spacedRepetition';
 import { useAIMemories } from '@/hooks/useAIPreferences';
 import { useSkillAssessment } from '@/hooks/useSkillAssessment';
@@ -339,17 +340,25 @@ export default function TrainingWorkspace() {
     setIsPracticeLoading(true);
 
     try {
+      // Resolve role-specific scenario: inline departmentScenarios → role scenario bank → default
+      const lob = profile?.line_of_business;
+      const inlineDept = selectedModule.content.practiceTask.departmentScenarios;
+      const resolvedScenario = (inlineDept && lob && inlineDept[lob]?.scenario)
+        ? inlineDept[lob].scenario
+        : (lob && getRoleScenario(selectedModule.id, lob)?.scenario) || selectedModule.content.practiceTask.scenario;
+
       const response = await supabase.functions.invoke('ai-practice', {
         body: {
           messages: messagesForApi,
           moduleTitle: selectedModule.content.practiceTask.title,
-          scenario: selectedModule.content.practiceTask.scenario,
+          scenario: resolvedScenario,
           sessionNumber: parseInt(sessionId || '1'),
           model: preferredModel,
           // Session 3: use deployed agent's custom system prompt if available
           ...(isSession3 && deployedAgent?.system_prompt ? { customSystemPrompt: deployedAgent.system_prompt } : {}),
-          // Session 3: department context
-          ...(isSession3 ? { bankRole: profile?.bank_role, lineOfBusiness: profile?.line_of_business } : {}),
+          // Department context for all sessions
+          bankRole: profile?.bank_role,
+          lineOfBusiness: profile?.line_of_business,
         },
       });
 
@@ -1005,8 +1014,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                 activeConversationId={activeConversationId}
                 onNewChat={startNewChat}
                 onSelectConversation={selectConversation}
-                departmentLabel={isSession3 ? (departmentLabel || undefined) : undefined}
-                lineOfBusiness={isSession3 ? (profile?.line_of_business || undefined) : undefined}
+                departmentLabel={departmentLabel || undefined}
+                lineOfBusiness={profile?.line_of_business || undefined}
                 allowedModels={allowedModels}
                 selectedModel={preferredModel}
                 onModelChange={setPreferredModel}
