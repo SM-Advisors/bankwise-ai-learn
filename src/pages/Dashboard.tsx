@@ -217,7 +217,7 @@ export default function Dashboard() {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2">
+                <Button variant="ghost" size="sm" className="gap-2" data-tour="personalization-btn">
                   <Sparkles className="h-4 w-4" />
                   My Personalization
                 </Button>

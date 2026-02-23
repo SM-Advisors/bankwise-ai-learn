@@ -119,8 +119,33 @@ export default function Onboarding() {
     !!(profile?.intake_role_key || profile?.learning_style || profile?.ai_proficiency_level),
   );
 
-  const [orgType] = useState<string>(() => sessionStorage.getItem('signup_org_type') || 'bank');
+  // Org type: prefer sessionStorage (set during fresh signup) so there's no flicker.
+  // Fall back to a DB lookup so the retake flow (and any other path that skips
+  // sessionStorage) shows the correct form for F&F organisations.
+  const [orgType, setOrgType] = useState<string>(() => sessionStorage.getItem('signup_org_type') || '');
+  const [orgTypeResolved, setOrgTypeResolved] = useState<boolean>(!!sessionStorage.getItem('signup_org_type'));
   const isFriendsFamily = orgType === 'friends_family';
+
+  useEffect(() => {
+    if (orgTypeResolved) return;
+    if (loading) return; // wait for auth to finish loading before checking profile
+    if (!profile?.organization_id) {
+      // No org attached — default to bank flow
+      setOrgType('bank');
+      setOrgTypeResolved(true);
+      return;
+    }
+    // Fetch the org's type from the database
+    (supabase
+      .from('organizations' as any)
+      .select('org_type')
+      .eq('id', profile.organization_id)
+      .single() as any)
+      .then(({ data }: { data: { org_type: string } | null }) => {
+        setOrgType(data?.org_type || 'bank');
+        setOrgTypeResolved(true);
+      });
+  }, [profile?.organization_id, orgTypeResolved, loading]);
 
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -193,7 +218,7 @@ export default function Onboarding() {
     navigate('/dashboard');
   };
 
-  if (loading) {
+  if (loading || !orgTypeResolved) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
