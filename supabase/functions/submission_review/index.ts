@@ -731,53 +731,58 @@ This submission tests the learner's ability to design a cross-departmental AI ro
 EVALUATION FOCUS:
 - Is the department selection justified by readiness and strategic value?
 - Are 30-day phases specific enough to execute without additional planning?
-- Would the executive report satisfy a CEO or board committee?` : moduleId === "E4-1" ? `## MODULE E4-1 RUBRIC: AI & FAIR LENDING
-This submission tests the learner's ability to identify and mitigate fair lending risks in AI prompts.
+- Would the executive report satisfy a CEO or board committee?` : moduleId === "E4-1" ? `## MODULE E4-1 RUBRIC: AI & FAIR LENDING (SPECIALIST)
+This is a specialist-depth module. Evaluate for regulatory precision — learners should cite specific ECOA provisions and apply the Griggs disparate impact framework.
 
 3-LEVEL RUBRIC:
 | Criterion | Developing | Proficient | Advanced |
 |-----------|-----------|-----------|---------|
-| Proxy Variable Identification | Identifies 0-1 proxy variables | Identifies at least 3 proxy variable risks | Identifies proxy variables with specific correlation explanations |
-| Protected Characteristic Mapping | No mapping provided | Explains how each proxy could correlate with protected characteristics | Cites specific fair lending regulations (ECOA, FHA) and examiner expectations |
-| Prompt Rewrite | Minor or no changes | Rewritten prompt preserves analysis without proxy variables | Rewrite includes positive controls (what TO include instead) |
-| Documentation Awareness | Not addressed | Notes fair lending review should be documented | Specifies what to document, who reviews, and retention requirements |
-| Escalation Judgment | Not addressed | Identifies when to involve compliance | Escalation triggers are specific and tied to regulatory risk levels |
+| Proxy Variable Identification | Identifies 0-1 proxy variables | Identifies at least 3 proxy variable risks with ECOA protected class mapping | Maps each proxy to a specific ECOA category (15 U.S.C. §1691) with correlation mechanism |
+| Disparate Impact Analysis | Not applied | Applies Part 1 of Griggs test (disproportionate effect) | Applies all 3 parts (adverse effect → business necessity → less discriminatory alternative) |
+| Prompt Rewrite | Minor or no changes | Rewritten prompt preserves analysis without proxy variables | Rewrite replaces proxy variables with credit fundamentals (cash flow, collateral, capacity) and annotates each change |
+| CRA Awareness | No CRA connection | Recognizes geographic weighting creates redlining risk | Connects prompt design to CRA assessment area obligations with specific examples |
+| Documentation & Escalation | Not addressed | Notes fair lending review should be documented | Specifies escalation threshold, documentation format, retention, and responsible parties |
 
 EVALUATION FOCUS:
-- Does the learner understand WHY proxy variables are dangerous, not just WHICH ones?
-- Is the rewritten prompt still analytically useful after removing proxy variables?
-- Would a fair lending examiner be satisfied with the documentation approach?` : moduleId === "E4-2" ? `## MODULE E4-2 RUBRIC: AI AUDIT READINESS
-This submission tests the learner's ability to build an AI usage log and prepare for examiner questions.
+- Does the learner cite ECOA (15 U.S.C. §1691) or Reg B (12 CFR §1002) specifically — not just "fair lending laws"?
+- Is the Griggs disparate impact test applied correctly (not just mentioned)?
+- Is the rewritten prompt still analytically useful after removing proxy variables — using credit fundamentals, not sterile non-analysis?
+- Would a fair lending examiner accept the documentation and escalation approach?` : moduleId === "E4-2" ? `## MODULE E4-2 RUBRIC: AI AUDIT READINESS (SPECIALIST)
+This is a specialist-depth module. Evaluate for FFIEC alignment and the three lines of defense framework (OCC 2014-1).
 
 3-LEVEL RUBRIC:
 | Criterion | Developing | Proficient | Advanced |
 |-----------|-----------|-----------|---------|
-| Log Template Design | Missing columns or unclear | Clear column definitions with examples | Includes data types, validation rules, and retention guidance |
-| Example Row | Missing or generic | Realistic example with banking-relevant data | Example demonstrates edge cases (compliance-adjacent use, multiple reviewers) |
-| Prompt Summary Guidance | Full prompt text or nothing | 1-2 sentence summary guidance specified | Summary guidance includes what to include, exclude, and how to handle PII |
-| Disposition Categories | Vague or overlapping | Clear and mutually exclusive categories | Categories include workflow status (draft, reviewed, published, archived) |
-| Examiner Preparedness | Fewer than 3 questions | All 5 examiner questions answered | Responses are confident, specific, and reference actual bank practices |
+| Log Template Design | Missing columns or unclear | Clear column definitions with examples | Includes model risk flag (SR 11-7), retention guidance, and FFIEC IT governance alignment |
+| Example Row | Missing or generic | Realistic example with banking-relevant data | Includes both a standard use and a model-risk-flagged use case |
+| Prompt Summary Guidance | Full prompt text or nothing | 1-2 sentence summary guidance specified | Summary guidance includes what to include, exclude, PII handling, and auditor-readability test |
+| Disposition Categories | Vague or overlapping | Clear and mutually exclusive categories | Categories include workflow status with review chain (draft → reviewed → approved → published → archived) |
+| Three Lines of Defense | Not referenced | Examiner answers reference own documentation (Line 1) | All 5 answers map to the three lines: what Line 1 owns, what Line 2 provides, what Line 3 audits |
+| Examiner Preparedness | Fewer than 3 questions | All 5 examiner questions answered | Responses are confident, cite specific practices, and anticipate follow-up questions |
 
 EVALUATION FOCUS:
-- Would this log template survive an examiner's scrutiny?
-- Are the examiner question responses confident or defensive?
-- Is the disposition tracking clear enough for an auditor to follow?` : moduleId === "E4-3" ? `## MODULE E4-3 RUBRIC: VENDOR AI RISK ASSESSMENT
-This submission tests the learner's ability to evaluate a third-party AI vendor using banking risk frameworks.
+- Does the log template include a model risk flag for outputs that influence credit decisions (per SR 11-7 / OCC 2011-12)?
+- Are examiner answers framed with the three lines of defense — or just first-person responses?
+- Would this log template survive an FFIEC examiner's scrutiny without supplemental explanation?` : moduleId === "E4-3" ? `## MODULE E4-3 RUBRIC: VENDOR AI RISK ASSESSMENT (SPECIALIST)
+This is a specialist-depth module. Evaluate for OCC 2023-17 life cycle alignment and Interagency Guidance compliance.
 
 3-LEVEL RUBRIC:
 | Criterion | Developing | Proficient | Advanced |
 |-----------|-----------|-----------|---------|
-| Assessment Coverage | Fewer than 3 of 5 areas | All 5 assessment areas addressed | All 5 with specific, researched content (not hypothetical) |
-| Data Handling Questions | Generic privacy questions | Specific and answered honestly | Includes data residency, training data usage, and subprocessor disclosure |
-| Security Checklist | Vague ("seems secure") | Distinguishes between pass/fail/unknown | Includes SOC 2 status, encryption standards, and access controls |
-| Contract Provisions | No contract language | At least 3 specific provisions named | Provisions include reasoning and negotiation fallback positions |
-| Practical Evaluation | No testing described | Banking-specific test scenarios described | Test scenarios include compliance-critical edge cases with expected behavior |
-| Recommendation Quality | Vague or missing | Clear recommendation with supporting rationale | Phased recommendation with conditions, monitoring plan, and exit strategy |
+| Life Cycle Coverage | Fewer than 3 phases | All 5 OCC 2023-17 phases addressed | All 5 with risk-commensurate depth and regulatory citations |
+| Critical Activity Designation | Not addressed | Designates activity with basic justification | Justification cites specific criteria (customer data, credit decisions, examiner-facing output) |
+| Data Handling & Due Diligence | Generic privacy questions | Specific questions answered honestly | Includes data residency, training data policy, subprocessor chain, and encryption standards |
+| Contract Provisions | Generic terms | At least 3 provisions from Interagency Guidance cited | Provisions include regulatory examination access, breach notification, and termination data handling |
+| Ongoing Monitoring & Termination | Not addressed | Monitoring plan described | Monitoring includes performance metrics, financial condition review, and data exit strategy |
+| Practical Evaluation | No testing described | Banking-specific test scenarios described | Tests include compliance-critical edge cases with documented results as due diligence evidence |
+| Recommendation Quality | Vague or missing | Clear recommendation with supporting rationale | Phased recommendation with conditions, monitoring plan, and risk-commensurate rationale |
 
 EVALUATION FOCUS:
-- Does the assessment reflect actual vendor due diligence, not a generic checklist?
-- Are the contract provisions realistic and enforceable?
-- Would this assessment satisfy OCC Third-Party Risk Management guidance?` : `## RUBRIC
+- Does the assessment follow the OCC 2023-17 life cycle (planning → due diligence → contract → monitoring → termination)?
+- Is the critical activity designation justified — or just assumed?
+- Are contract provisions from the Interagency Guidance (June 2023), not generic terms?
+- Does the termination plan address data return/destruction specifically?
+- Would this assessment satisfy an OCC examiner reviewing the bank's third-party risk management program?` : `## RUBRIC
 ${rubric ? (typeof rubric === "string" ? rubric : JSON.stringify(rubric, null, 2)) : "Evaluate based on clarity, specificity, context, and appropriateness for banking use cases."}`}
 
 ${departmentContext?.lineOfBusiness ? `## DEPARTMENT CONTEXT
