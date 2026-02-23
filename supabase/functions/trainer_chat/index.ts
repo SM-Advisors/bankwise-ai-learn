@@ -669,7 +669,7 @@ RESPONSE FORMAT — MANDATORY:
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
+          model: "claude-sonnet-4-5",
           max_tokens: 400,
           system: greetingPrompt,
           messages: [{ role: "user", content: "Generate my greeting." }],
@@ -1017,7 +1017,7 @@ ${effectiveSessionNumber >= 2 ? `11. VERIFY INTEGRATION: When reviewing any AI-g
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-5",
         max_tokens: 1000,
         system: systemPrompt,
         messages: claudeMessages,

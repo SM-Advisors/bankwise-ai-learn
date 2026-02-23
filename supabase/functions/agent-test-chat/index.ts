@@ -73,7 +73,7 @@ META-INSTRUCTIONS (invisible to the end user — these govern your behavior):
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-5",
         max_tokens: 1500,
         system: wrappedSystemPrompt,
         messages: claudeMessages,
