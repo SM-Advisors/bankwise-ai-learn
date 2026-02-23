@@ -22,7 +22,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Building2, Key, Plus, Loader2, RefreshCw, Pencil, Check, X } from 'lucide-react';
+import { Building2, Key, Plus, Loader2, RefreshCw, Pencil, Check, X, Cpu } from 'lucide-react';
+import { AVAILABLE_MODELS, PROVIDER_COLORS } from '@/lib/models';
+import { supabase } from '@/integrations/supabase/client';
 
 function generateCode(length = 8): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -51,7 +53,10 @@ export function OrganizationsManager() {
     createRegistrationCode,
     toggleCodeActive,
     updateCodeUses,
+    updateOrgModels,
   } = useOrganizations();
+
+  const [savingModelsOrgId, setSavingModelsOrgId] = useState<string | null>(null);
 
   // Inline edit usage state
   const [editingUsageId, setEditingUsageId] = useState<string | null>(null);
@@ -141,6 +146,23 @@ export function OrganizationsManager() {
       setEditingUsageId(null);
     } else {
       toast({ title: 'Error', description: result.error || 'Failed to update usage.', variant: 'destructive' });
+    }
+  };
+
+  const handleToggleOrgModel = async (orgId: string, modelId: string, currentModels: string[], enabled: boolean) => {
+    const next = enabled
+      ? [...new Set([...currentModels, modelId])]
+      : currentModels.filter(m => m !== modelId);
+    // Always keep at least one model
+    if (next.length === 0) {
+      toast({ title: 'At least one model required', description: 'Cannot disable all models.', variant: 'destructive' });
+      return;
+    }
+    setSavingModelsOrgId(orgId);
+    const result = await updateOrgModels(orgId, next);
+    setSavingModelsOrgId(null);
+    if (!result.success) {
+      toast({ title: 'Error', description: result.error || 'Failed to save model settings.', variant: 'destructive' });
     }
   };
 
@@ -237,7 +259,73 @@ export function OrganizationsManager() {
       </Card>
 
       {/* ──────────────────────────────────────────────────────────────────── */}
-      {/* Section 2: Registration Codes                                       */}
+      {/* Section 2: AI Models per Organization                               */}
+      {/* ──────────────────────────────────────────────────────────────────── */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Cpu className="h-5 w-5 text-primary" />
+            AI Models
+          </CardTitle>
+          <CardDescription>
+            Control which AI models are available to each organization's users in the practice chat. Defaults to Claude Sonnet 4.6 only.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {organizations.length === 0 ? (
+            <p className="text-center text-muted-foreground py-4">No organizations yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {organizations.map((org) => (
+                <div key={org.id} className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <p className="font-medium text-sm">{org.name}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{org.slug}</p>
+                    </div>
+                    {savingModelsOrgId === org.id && (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {AVAILABLE_MODELS.map((model) => {
+                      const enabled = org.allowed_models.includes(model.id);
+                      return (
+                        <label
+                          key={model.id}
+                          className={`flex items-start gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors ${
+                            enabled ? 'border-primary/40 bg-primary/5' : 'border-border hover:bg-muted/50'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="mt-0.5 accent-primary"
+                            checked={enabled}
+                            onChange={(e) => handleToggleOrgModel(org.id, model.id, org.allowed_models, e.target.checked)}
+                            disabled={savingModelsOrgId === org.id}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium leading-none ${PROVIDER_COLORS[model.provider]}`}>
+                                {model.provider.toUpperCase().slice(0, 4)}
+                              </span>
+                              <span className="text-xs font-medium truncate">{model.label}</span>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground leading-snug">{model.description}</p>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ──────────────────────────────────────────────────────────────────── */}
+      {/* Section 3: Registration Codes                                       */}
       {/* ──────────────────────────────────────────────────────────────────── */}
       <Card>
         <CardHeader>

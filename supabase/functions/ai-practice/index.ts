@@ -1,6 +1,5 @@
-﻿import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
-
 
 
 interface Message {
@@ -16,6 +15,7 @@ interface PracticeChatRequest {
   customSystemPrompt?: string; // User's deployed agent system prompt (Session 3)
   bankRole?: string; // User's role (Session 3 department personalization)
   lineOfBusiness?: string; // User's department (Session 3 department personalization)
+  model?: string; // Selected model (defaults to claude-sonnet-4-6)
 }
 
 // ─── PII & COMPLIANCE PRE-PROCESSING ───────────────────────────────────────
@@ -96,6 +96,138 @@ function getDepartmentName(lob: string | undefined): string {
   return map[lob || ""] || "";
 }
 
+// ─── MULTI-PROVIDER MODEL ROUTING ──────────────────────────────────────────
+async function callModel(
+  model: string,
+  systemPrompt: string,
+  messages: Message[],
+  maxTokens = 1500,
+): Promise<string> {
+  // ── Anthropic (claude-*) ──────────────────────────────────────────────────
+  if (model.startsWith("claude-")) {
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+    if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not configured");
+
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: maxTokens,
+        system: systemPrompt,
+        messages,
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("Anthropic API error:", res.status, errText);
+      if (res.status === 429) throw new Error("rate_limit");
+      throw new Error(`Anthropic API error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.content?.[0]?.text ?? "";
+  }
+
+  // ── OpenAI (gpt-*) ────────────────────────────────────────────────────────
+  if (model.startsWith("gpt-")) {
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not configured");
+
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: maxTokens,
+        messages: [{ role: "system", content: systemPrompt }, ...messages],
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("OpenAI API error:", res.status, errText);
+      if (res.status === 429) throw new Error("rate_limit");
+      throw new Error(`OpenAI API error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content ?? "";
+  }
+
+  // ── Google Generative AI (gemini-*) ───────────────────────────────────────
+  if (model.startsWith("gemini-")) {
+    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
+    if (!GOOGLE_AI_API_KEY) throw new Error("GOOGLE_AI_API_KEY is not configured");
+
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
+          contents: messages.map(m => ({
+            role: m.role === "assistant" ? "model" : "user",
+            parts: [{ text: m.content }],
+          })),
+          generationConfig: { maxOutputTokens: maxTokens },
+        }),
+      },
+    );
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("Google AI API error:", res.status, errText);
+      if (res.status === 429) throw new Error("rate_limit");
+      throw new Error(`Google AI API error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  }
+
+  // ── xAI (grok-*) — OpenAI-compatible ─────────────────────────────────────
+  if (model.startsWith("grok-")) {
+    const XAI_API_KEY = Deno.env.get("XAI_API_KEY");
+    if (!XAI_API_KEY) throw new Error("XAI_API_KEY is not configured");
+
+    const res = await fetch("https://api.x.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${XAI_API_KEY}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: maxTokens,
+        messages: [{ role: "system", content: systemPrompt }, ...messages],
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("xAI API error:", res.status, errText);
+      if (res.status === 429) throw new Error("rate_limit");
+      throw new Error(`xAI API error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content ?? "";
+  }
+
+  throw new Error(`Unknown model: ${model}`);
+}
+
+// ─── MAIN HANDLER ───────────────────────────────────────────────────────────
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req.headers.get("origin"));
   if (req.method === "OPTIONS") {
@@ -103,12 +235,18 @@ serve(async (req) => {
   }
 
   try {
-    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!ANTHROPIC_API_KEY) {
-      throw new Error("ANTHROPIC_API_KEY is not configured");
-    }
+    const {
+      messages,
+      moduleTitle,
+      scenario,
+      sessionNumber,
+      customSystemPrompt,
+      bankRole,
+      lineOfBusiness,
+      model: requestedModel,
+    }: PracticeChatRequest = await req.json();
 
-    const { messages, moduleTitle, scenario, sessionNumber, customSystemPrompt, bankRole, lineOfBusiness }: PracticeChatRequest = await req.json();
+    const model = requestedModel || "claude-sonnet-4-6";
 
     // Build department context block for Session 3
     const departmentName = getDepartmentName(lineOfBusiness);
@@ -202,40 +340,24 @@ ${departmentContext}
       content: m.content,
     }));
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-5",
-        max_tokens: 1500,
-        system: systemPrompt,
-        messages: claudeMessages,
-      }),
-    });
+    console.log(`[ai-practice] Routing to model: ${model}`);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Claude API error:", response.status, errorText);
-
-      if (response.status === 429) {
+    let reply: string;
+    try {
+      reply = await callModel(model, systemPrompt, claudeMessages);
+    } catch (modelError) {
+      const errMsg = modelError instanceof Error ? modelError.message : String(modelError);
+      if (errMsg === "rate_limit") {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-
-      throw new Error(`Claude API error: ${response.status}`);
+      throw modelError;
     }
 
-    const claudeResponse = await response.json();
-    const reply = claudeResponse.content?.[0]?.text || "I'd be happy to help. Could you provide more details about what you need?";
-
     return new Response(
-      JSON.stringify({ reply }),
+      JSON.stringify({ reply: reply || "I'd be happy to help. Could you provide more details about what you need?" }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

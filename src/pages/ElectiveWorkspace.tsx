@@ -20,6 +20,8 @@ import { useAIMemories } from '@/hooks/useAIPreferences';
 import { usePracticeConversations } from '@/hooks/usePracticeConversations';
 import { useElectiveProgress } from '@/hooks/useElectiveProgress';
 import { useUserPrompts } from '@/hooks/useUserPrompts';
+import { useOrgModelSettings } from '@/hooks/useOrgModelSettings';
+import { usePreferredModel } from '@/hooks/usePreferredModel';
 import {
   Loader2, ArrowLeft, Shield, BookOpen, MessageSquare, GraduationCap, Sparkles,
 } from 'lucide-react';
@@ -78,6 +80,9 @@ export default function ElectiveWorkspace() {
     startNewChat,
     selectConversation,
   } = usePracticeConversations(syntheticSessionId, selectedModule?.id || null);
+
+  const { allowedModels } = useOrgModelSettings();
+  const { preferredModel, setPreferredModel } = usePreferredModel(allowedModels);
 
   // Load completed modules from elective progress
   useEffect(() => {
@@ -216,6 +221,7 @@ export default function ElectiveWorkspace() {
           moduleTitle: selectedModule.content.practiceTask.title,
           scenario: selectedModule.content.practiceTask.scenario,
           sessionNumber: 4, // Electives use Session 4 level
+          model: preferredModel,
         },
       });
 
@@ -674,6 +680,9 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                 activeConversationId={activeConversationId}
                 onNewChat={startNewChat}
                 onSelectConversation={selectConversation}
+                allowedModels={allowedModels}
+                selectedModel={preferredModel}
+                onModelChange={setPreferredModel}
               />
             ) : null}
           </div>

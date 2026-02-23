@@ -8,10 +8,11 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/component
 import {
   Loader2, Send, Lightbulb, AlertCircle, Target, CheckCircle,
   ChevronRight, ChevronDown, Bot, User, Mic, AudioLines, Plus, SlidersHorizontal,
-  MessageSquarePlus, History, Clock, Building2,
+  MessageSquarePlus, History, Clock, Building2, ChevronUp,
 } from 'lucide-react';
 import { type ModuleContent } from '@/data/trainingContent';
 import { type PracticeConversation } from '@/hooks/usePracticeConversations';
+import { AVAILABLE_MODELS, PROVIDER_COLORS, type ModelDefinition } from '@/lib/models';
 
 interface PracticeMessage {
   role: 'user' | 'assistant';
@@ -35,6 +36,9 @@ interface PracticeChatPanelProps {
   onSelectConversation: (id: string) => void;
   departmentLabel?: string;
   lineOfBusiness?: string;
+  allowedModels?: string[];
+  selectedModel?: string;
+  onModelChange?: (modelId: string) => void;
 }
 
 export function PracticeChatPanel({
@@ -54,12 +58,20 @@ export function PracticeChatPanel({
   onSelectConversation,
   departmentLabel,
   lineOfBusiness,
+  allowedModels = [],
+  selectedModel,
+  onModelChange,
 }: PracticeChatPanelProps) {
   const [input, setInput] = useState('');
   const [scenarioOpen, setScenarioOpen] = useState(false);
   const [criteriaOpen, setCriteriaOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'work' | 'web'>('work');
+  const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+
+  const showModelSelector = allowedModels.length > 1 && !!selectedModel && !!onModelChange;
+  const selectedModelDef: ModelDefinition | undefined = AVAILABLE_MODELS.find(m => m.id === selectedModel);
+  const allowedModelDefs = AVAILABLE_MODELS.filter(m => allowedModels.includes(m.id));
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -414,6 +426,42 @@ export function PracticeChatPanel({
                 <SlidersHorizontal className="h-4 w-4" />
                 Tools
               </Button>
+              {/* Model selector — only shown when org has 2+ models enabled */}
+              {showModelSelector && (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setModelDropdownOpen(o => !o)}
+                    className="flex items-center gap-1.5 h-8 rounded-full px-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors border border-border/60"
+                  >
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium leading-none ${selectedModelDef ? PROVIDER_COLORS[selectedModelDef.provider] : ''}`}>
+                      {selectedModelDef?.provider?.toUpperCase().slice(0, 4) ?? ''}
+                    </span>
+                    <span className="truncate max-w-[100px]">{selectedModelDef?.label ?? selectedModel}</span>
+                    {modelDropdownOpen ? <ChevronUp className="h-3 w-3 shrink-0" /> : <ChevronDown className="h-3 w-3 shrink-0" />}
+                  </button>
+                  {modelDropdownOpen && (
+                    <div className="absolute bottom-full left-0 mb-1 z-50 w-56 rounded-xl border border-border bg-popover shadow-lg py-1">
+                      {allowedModelDefs.map(model => (
+                        <button
+                          key={model.id}
+                          type="button"
+                          onClick={() => { onModelChange!(model.id); setModelDropdownOpen(false); }}
+                          className={`w-full flex items-start gap-2.5 px-3 py-2 text-left hover:bg-muted transition-colors ${model.id === selectedModel ? 'bg-muted/60' : ''}`}
+                        >
+                          <span className={`mt-0.5 shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium leading-none ${PROVIDER_COLORS[model.provider]}`}>
+                            {model.provider.toUpperCase().slice(0, 4)}
+                          </span>
+                          <div>
+                            <p className="text-xs font-medium text-foreground">{model.label}</p>
+                            <p className="text-[11px] text-muted-foreground">{model.description}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-1">
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">

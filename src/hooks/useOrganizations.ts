@@ -6,6 +6,7 @@ export interface Organization {
   name: string;
   slug: string;
   created_at: string;
+  allowed_models: string[];
 }
 
 export interface RegistrationCode {
@@ -33,13 +34,17 @@ export function useOrganizations() {
       // Fetch all organizations
       const { data: orgs, error: orgsError } = await (supabase
         .from('organizations' as any)
-        .select('id, name, slug, created_at')
+        .select('id, name, slug, created_at, allowed_models')
         .order('name', { ascending: true }) as any);
 
       if (orgsError) {
         console.error('Error fetching organizations:', orgsError);
       } else {
-        setOrganizations((orgs || []) as Organization[]);
+        const mapped: Organization[] = (orgs || []).map((o: any) => ({
+          ...o,
+          allowed_models: Array.isArray(o.allowed_models) ? o.allowed_models : ['claude-sonnet-4-6'],
+        }));
+        setOrganizations(mapped);
       }
 
       // Fetch registration codes with org names joined
@@ -171,6 +176,26 @@ export function useOrganizations() {
     }
   }, [fetchOrganizations]);
 
+  const updateOrgModels = useCallback(async (orgId: string, models: string[]) => {
+    try {
+      const { error } = await (supabase
+        .from('organizations' as any)
+        .update({ allowed_models: models })
+        .eq('id', orgId) as any);
+
+      if (error) {
+        console.error('Error updating org models:', error);
+        return { success: false, error: error.message };
+      }
+
+      await fetchOrganizations();
+      return { success: true };
+    } catch (err) {
+      console.error('Error updating org models:', err);
+      return { success: false, error: 'Failed to update AI models' };
+    }
+  }, [fetchOrganizations]);
+
   return {
     organizations,
     registrationCodes,
@@ -180,5 +205,6 @@ export function useOrganizations() {
     createRegistrationCode,
     toggleCodeActive,
     updateCodeUses,
+    updateOrgModels,
   };
 }

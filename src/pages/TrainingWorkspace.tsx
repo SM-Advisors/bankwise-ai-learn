@@ -24,6 +24,8 @@ import { usePracticeConversations } from '@/hooks/usePracticeConversations';
 import { useUserAgents } from '@/hooks/useUserAgents';
 import { useUserWorkflows } from '@/hooks/useUserWorkflows';
 import { useUserPrompts } from '@/hooks/useUserPrompts';
+import { useOrgModelSettings } from '@/hooks/useOrgModelSettings';
+import { usePreferredModel } from '@/hooks/usePreferredModel';
 import { AgentStudioPanel } from '@/components/agent-studio/AgentStudioPanel';
 import { WorkflowStudioPanel } from '@/components/workflow-studio/WorkflowStudioPanel';
 import { CapstonePanel } from '@/components/capstone/CapstonePanel';
@@ -120,6 +122,9 @@ export default function TrainingWorkspace() {
     startNewChat,
     selectConversation,
   } = usePracticeConversations(sessionId || '1', selectedModule?.id || null);
+
+  const { allowedModels } = useOrgModelSettings();
+  const { preferredModel, setPreferredModel } = usePreferredModel(allowedModels);
 
   // Initialize trainer with dynamic AI-generated greeting
   const hasGreetedRef = useRef(false);
@@ -319,6 +324,7 @@ export default function TrainingWorkspace() {
           moduleTitle: selectedModule.content.practiceTask.title,
           scenario: selectedModule.content.practiceTask.scenario,
           sessionNumber: parseInt(sessionId || '1'),
+          model: preferredModel,
           // Session 3: use deployed agent's custom system prompt if available
           ...(isSession3 && deployedAgent?.system_prompt ? { customSystemPrompt: deployedAgent.system_prompt } : {}),
           // Session 3: department context
@@ -953,6 +959,9 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                 onSelectConversation={selectConversation}
                 departmentLabel={isSession3 ? (departmentLabel || undefined) : undefined}
                 lineOfBusiness={isSession3 ? (profile?.line_of_business || undefined) : undefined}
+                allowedModels={allowedModels}
+                selectedModel={preferredModel}
+                onModelChange={setPreferredModel}
               />
             ) : null}
           </div>
