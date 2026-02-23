@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useAllUsersWithRoles, AppRole } from '@/hooks/useUserRole';
 import { useOrganizations } from '@/hooks/useOrganizations';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,7 +33,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useDepartments } from '@/hooks/useDepartments';
-import { Users, Edit, Loader2, CheckCircle, Clock, Shield, Building2, Trash2 } from 'lucide-react';
+import { Users, Edit, Loader2, CheckCircle, Clock, Shield, Building2, Trash2, Plus } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,7 +47,7 @@ import {
 
 export function UsersManagement() {
   const { toast } = useToast();
-  const { users, loading, updateUserProfile, updateUserRole, deleteUser } = useAllUsersWithRoles();
+  const { users, loading, updateUserProfile, updateUserRole, deleteUser, refetch } = useAllUsersWithRoles();
   const { organizations, loading: orgsLoading } = useOrganizations();
   const { departments: deptOptions, getDepartmentName } = useDepartments();
   const [editingUser, setEditingUser] = useState<any>(null);
@@ -60,6 +61,18 @@ export function UsersManagement() {
   const [deactivatingUser, setDeactivatingUser] = useState<string | null>(null);
   const [deletingUser, setDeletingUser] = useState<any>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [isAddingUser, setIsAddingUser] = useState(false);
+  const [addingUser, setAddingUser] = useState(false);
+  const [addForm, setAddForm] = useState({
+    email: '',
+    password: '',
+    display_name: '',
+    bank_role: '',
+    line_of_business: '',
+    role: 'user' as AppRole,
+  });
+
+  const resetAddForm = () => setAddForm({ email: '', password: '', display_name: '', bank_role: '', line_of_business: '', role: 'user' });
 
   // Build a map of org ID -> org name for display
   const orgNameMap = useMemo(() => {
@@ -138,6 +151,36 @@ export function UsersManagement() {
     return { completed, total: 3, percentage: (completed / 3) * 100 };
   };
 
+  const handleAddUser = async () => {
+    if (!addForm.email || !addForm.password || !addForm.display_name) {
+      toast({ title: 'Missing fields', description: 'Email, password, and name are required.', variant: 'destructive' });
+      return;
+    }
+    setAddingUser(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          email: addForm.email,
+          password: addForm.password,
+          display_name: addForm.display_name,
+          bank_role: addForm.bank_role || null,
+          line_of_business: addForm.line_of_business || null,
+          role: addForm.role,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: 'User created', description: `${addForm.display_name} has been added.` });
+      setIsAddingUser(false);
+      resetAddForm();
+      // Refresh users list
+      refetch();
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to create user.', variant: 'destructive' });
+    }
+    setAddingUser(false);
+  };
+
   if (loading) {
     return (
       <Card>
@@ -152,19 +195,27 @@ export function UsersManagement() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-primary" />
-            User Management
-          </CardTitle>
-          <CardDescription>
-            View and manage all users, their profiles, roles, and training progress
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                User Management
+              </CardTitle>
+              <CardDescription>
+                View and manage all users, their profiles, roles, and training progress
+              </CardDescription>
+            </div>
+            <Button onClick={() => setIsAddingUser(true)} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Add User
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {users.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">No users found.</p>
           ) : (
-            <ScrollArea className="w-full max-h-[60vh]">
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -292,7 +343,7 @@ export function UsersManagement() {
                   })}
                 </TableBody>
               </Table>
-            </ScrollArea>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -428,6 +479,64 @@ export function UsersManagement() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Add User Dialog */}
+      <Dialog open={isAddingUser} onOpenChange={(open) => { if (!open) { setIsAddingUser(false); resetAddForm(); } }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add New User</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="add-email">Email *</Label>
+                <Input id="add-email" type="email" value={addForm.email} onChange={(e) => setAddForm({ ...addForm, email: e.target.value })} placeholder="user@example.com" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="add-password">Password *</Label>
+                <Input id="add-password" type="password" value={addForm.password} onChange={(e) => setAddForm({ ...addForm, password: e.target.value })} placeholder="Min 6 characters" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-name">Display Name *</Label>
+              <Input id="add-name" value={addForm.display_name} onChange={(e) => setAddForm({ ...addForm, display_name: e.target.value })} placeholder="John Smith" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-role">Job Title / Role</Label>
+              <Input id="add-role" value={addForm.bank_role} onChange={(e) => setAddForm({ ...addForm, bank_role: e.target.value })} placeholder="e.g. Senior Analyst" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="add-lob">Department</Label>
+                <Select value={addForm.line_of_business} onValueChange={(value) => setAddForm({ ...addForm, line_of_business: value })}>
+                  <SelectTrigger id="add-lob"><SelectValue placeholder="Select department" /></SelectTrigger>
+                  <SelectContent className="bg-card max-h-60">
+                    {deptOptions.map((dept) => (
+                      <SelectItem key={dept.slug} value={dept.slug}>{dept.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="add-access">Access Level</Label>
+                <Select value={addForm.role} onValueChange={(value) => setAddForm({ ...addForm, role: value as AppRole })}>
+                  <SelectTrigger id="add-access"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-card">
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setIsAddingUser(false); resetAddForm(); }}>Cancel</Button>
+            <Button onClick={handleAddUser} disabled={addingUser}>
+              {addingUser ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Creating...</> : <><Plus className="h-4 w-4 mr-2" />Create User</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
