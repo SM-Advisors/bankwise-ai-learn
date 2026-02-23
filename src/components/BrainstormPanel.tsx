@@ -110,15 +110,15 @@ export function BrainstormPanel() {
       <button
         data-tour="brainstorm-btn"
         onClick={handleOpen}
-        className="group relative flex flex-col items-center justify-center gap-3 w-full h-full min-h-[200px] rounded-xl border-2 border-dashed border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/20 hover:border-primary/60 transition-all cursor-pointer p-6 text-center shadow-sm hover:shadow-md"
+        className="group relative flex flex-col items-center justify-center gap-2 w-full h-full min-h-[120px] rounded-xl border-2 border-dashed border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/20 hover:border-primary/60 transition-all cursor-pointer p-3 text-center shadow-sm hover:shadow-md"
       >
-        <div className="p-4 rounded-full bg-primary/15 group-hover:bg-primary/25 transition-colors">
-          <Lightbulb className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+        <div className="p-2 rounded-full bg-primary/15 group-hover:bg-primary/25 transition-colors">
+          <Lightbulb className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
         </div>
         <div>
-          <p className="font-semibold text-foreground">AI Brainstorm</p>
-          <p className="text-xs text-muted-foreground mt-1 leading-relaxed max-w-[160px] mx-auto">
-            Explore how AI can help with any task or process
+          <p className="font-semibold text-foreground text-xs">AI Brainstorm</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug max-w-[120px] mx-auto">
+            Explore how AI can help with any task
           </p>
         </div>
         <div className="absolute inset-0 rounded-xl ring-0 group-hover:ring-2 ring-primary/20 transition-all pointer-events-none" />
