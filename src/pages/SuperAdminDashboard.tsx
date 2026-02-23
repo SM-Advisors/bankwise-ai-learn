@@ -17,7 +17,8 @@ import {
 } from '@/components/ui/table';
 import {
   Building2, Users, TrendingUp, Award, ArrowLeft,
-  Shield, Heart, BarChart3, ExternalLink, Loader2, MessageSquare, Download, Paperclip
+  Shield, Heart, BarChart3, ExternalLink, Loader2, MessageSquare, Download, Paperclip,
+  Mail, MailOpen, CheckCheck
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import jsPDF from 'jspdf';
@@ -31,6 +32,7 @@ interface FeedbackItem {
   file_type: string | null;
   file_data: string | null;
   created_at: string;
+  is_read: boolean;
 }
 
 export default function SuperAdminDashboard() {
@@ -47,7 +49,7 @@ export default function SuperAdminDashboard() {
       try {
         const { data, error: fbError } = await (supabase
           .from('user_feedback' as any)
-          .select('id, user_name, message, file_name, file_type, file_data, created_at')
+          .select('id, user_name, message, file_name, file_type, file_data, created_at, is_read')
           .order('created_at', { ascending: false }) as any);
         if (!fbError && data) setFeedbackItems(data as FeedbackItem[]);
       } catch (_) {
@@ -58,6 +60,25 @@ export default function SuperAdminDashboard() {
     }
     if (profile?.is_super_admin) fetchFeedback();
   }, [profile?.is_super_admin]);
+
+  const unreadCount = feedbackItems.filter(f => !f.is_read).length;
+
+  const toggleFeedbackRead = async (id: string, currentlyRead: boolean) => {
+    // Optimistic update
+    setFeedbackItems(prev => prev.map(item => item.id === id ? { ...item, is_read: !currentlyRead } : item));
+    await (supabase
+      .from('user_feedback' as any)
+      .update({ is_read: !currentlyRead })
+      .eq('id', id) as any);
+  };
+
+  const markAllFeedbackRead = async () => {
+    setFeedbackItems(prev => prev.map(item => ({ ...item, is_read: true })));
+    await (supabase
+      .from('user_feedback' as any)
+      .update({ is_read: true })
+      .eq('is_read', false) as any);
+  };
 
   const downloadFeedbackPdf = () => {
     const doc = new jsPDF();
@@ -213,7 +234,12 @@ export default function SuperAdminDashboard() {
             </TabsTrigger>
             <TabsTrigger value="feedback" className="gap-2">
               <MessageSquare className="h-4 w-4" />
-              Feedback {feedbackItems.length > 0 && `(${feedbackItems.length})`}
+              Feedback
+              {unreadCount > 0 && (
+                <Badge className="h-4 px-1.5 text-[10px] bg-destructive text-destructive-foreground ml-1 rounded-full">
+                  {unreadCount}
+                </Badge>
+              )}
             </TabsTrigger>
           </TabsList>
 
@@ -372,14 +398,25 @@ export default function SuperAdminDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="text-base">User Feedback</CardTitle>
-                    <CardDescription>Feedback submitted during testing</CardDescription>
+                    <CardDescription>
+                      {feedbackItems.length} total
+                      {unreadCount > 0 && ` · ${unreadCount} unread`}
+                    </CardDescription>
                   </div>
-                  {feedbackItems.length > 0 && (
-                    <Button size="sm" variant="outline" className="gap-2" onClick={downloadFeedbackPdf}>
-                      <Download className="h-4 w-4" />
-                      Download PDF
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {unreadCount > 0 && (
+                      <Button size="sm" variant="outline" className="gap-2" onClick={markAllFeedbackRead}>
+                        <CheckCheck className="h-4 w-4" />
+                        Mark all read
+                      </Button>
+                    )}
+                    {feedbackItems.length > 0 && (
+                      <Button size="sm" variant="outline" className="gap-2" onClick={downloadFeedbackPdf}>
+                        <Download className="h-4 w-4" />
+                        Download PDF
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -391,6 +428,7 @@ export default function SuperAdminDashboard() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-8"></TableHead>
                         <TableHead>User</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Message</TableHead>
@@ -399,8 +437,25 @@ export default function SuperAdminDashboard() {
                     </TableHeader>
                     <TableBody>
                       {feedbackItems.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell className="font-medium whitespace-nowrap">{item.user_name || '—'}</TableCell>
+                        <TableRow
+                          key={item.id}
+                          className={!item.is_read ? 'bg-primary/5 hover:bg-primary/10' : ''}
+                        >
+                          <TableCell className="pr-0">
+                            <button
+                              onClick={() => toggleFeedbackRead(item.id, item.is_read)}
+                              title={item.is_read ? 'Mark as unread' : 'Mark as read'}
+                              className="text-muted-foreground hover:text-primary transition-colors"
+                            >
+                              {item.is_read
+                                ? <MailOpen className="h-4 w-4" />
+                                : <Mail className="h-4 w-4 text-primary" />
+                              }
+                            </button>
+                          </TableCell>
+                          <TableCell className={`whitespace-nowrap ${!item.is_read ? 'font-semibold' : 'font-medium'}`}>
+                            {item.user_name || '—'}
+                          </TableCell>
                           <TableCell className="whitespace-nowrap text-muted-foreground text-xs">
                             {new Date(item.created_at).toLocaleDateString()}{' '}
                             {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -426,7 +481,7 @@ export default function SuperAdminDashboard() {
                       ))}
                       {feedbackItems.length === 0 && (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                             No feedback submitted yet
                           </TableCell>
                         </TableRow>
