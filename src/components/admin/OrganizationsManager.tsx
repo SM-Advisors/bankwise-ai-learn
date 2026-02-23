@@ -52,6 +52,7 @@ export function OrganizationsManager() {
     createRegistrationCode,
     toggleCodeActive,
     updateCodeUses,
+    updateCodeMaxUses,
     updateOrgModels,
   } = useOrganizations();
 
@@ -60,6 +61,10 @@ export function OrganizationsManager() {
   // Inline edit usage state
   const [editingUsageId, setEditingUsageId] = useState<string | null>(null);
   const [editUsageValue, setEditUsageValue] = useState('');
+
+  // Inline edit max uses state
+  const [editingMaxUsesId, setEditingMaxUsesId] = useState<string | null>(null);
+  const [editMaxUsesValue, setEditMaxUsesValue] = useState('');
 
   // Create org form state
   const [orgName, setOrgName] = useState('');
@@ -145,6 +150,27 @@ export function OrganizationsManager() {
       setEditingUsageId(null);
     } else {
       toast({ title: 'Error', description: result.error || 'Failed to update usage.', variant: 'destructive' });
+    }
+  };
+
+  const handleStartEditMaxUses = (codeId: string, maxUses: number | null) => {
+    setEditingMaxUsesId(codeId);
+    setEditMaxUsesValue(maxUses != null ? String(maxUses) : '');
+  };
+
+  const handleSaveMaxUses = async (codeId: string) => {
+    const trimmed = editMaxUsesValue.trim();
+    const value = trimmed === '' ? null : parseInt(trimmed, 10);
+    if (value !== null && (isNaN(value) || value < 1)) {
+      toast({ title: 'Invalid value', description: 'Max uses must be a positive number or empty for unlimited.', variant: 'destructive' });
+      return;
+    }
+    const result = await updateCodeMaxUses(codeId, value);
+    if (result.success) {
+      toast({ title: 'Max uses updated' });
+      setEditingMaxUsesId(null);
+    } else {
+      toast({ title: 'Error', description: result.error || 'Failed to update max uses.', variant: 'destructive' });
     }
   };
 
@@ -391,33 +417,66 @@ export function OrganizationsManager() {
                           : 'Never'}
                       </TableCell>
                       <TableCell className="text-center text-sm">
-                        {editingUsageId === rc.id ? (
-                          <div className="flex items-center justify-center gap-1">
-                            <Input
-                              type="number"
-                              min="0"
-                              value={editUsageValue}
-                              onChange={(e) => setEditUsageValue(e.target.value)}
-                              className="w-16 h-7 text-center text-sm"
-                            />
-                            <span className="text-muted-foreground">{rc.max_uses != null ? ` / ${rc.max_uses}` : ''}</span>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleSaveUsage(rc.id)}>
-                              <Check className="h-3.5 w-3.5 text-primary" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingUsageId(null)}>
-                              <X className="h-3.5 w-3.5 text-destructive" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <button
-                            className="inline-flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
-                            onClick={() => handleStartEditUsage(rc.id, rc.current_uses)}
-                            title="Click to edit usage"
-                          >
-                            {rc.current_uses}{rc.max_uses != null ? ` / ${rc.max_uses}` : ' / --'}
-                            <Pencil className="h-3 w-3 opacity-50" />
-                          </button>
-                        )}
+                        <div className="flex items-center justify-center gap-1">
+                          {/* Current uses - inline editable */}
+                          {editingUsageId === rc.id ? (
+                            <>
+                              <Input
+                                type="number"
+                                min="0"
+                                value={editUsageValue}
+                                onChange={(e) => setEditUsageValue(e.target.value)}
+                                className="w-16 h-7 text-center text-sm"
+                              />
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleSaveUsage(rc.id)}>
+                                <Check className="h-3.5 w-3.5 text-primary" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingUsageId(null)}>
+                                <X className="h-3.5 w-3.5 text-destructive" />
+                              </Button>
+                            </>
+                          ) : (
+                            <button
+                              className="inline-flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+                              onClick={() => handleStartEditUsage(rc.id, rc.current_uses)}
+                              title="Click to edit current usage"
+                            >
+                              {rc.current_uses}
+                              <Pencil className="h-3 w-3 opacity-50" />
+                            </button>
+                          )}
+
+                          <span className="text-muted-foreground">/</span>
+
+                          {/* Max uses - inline editable */}
+                          {editingMaxUsesId === rc.id ? (
+                            <>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={editMaxUsesValue}
+                                onChange={(e) => setEditMaxUsesValue(e.target.value)}
+                                className="w-16 h-7 text-center text-sm"
+                                placeholder="∞"
+                              />
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleSaveMaxUses(rc.id)}>
+                                <Check className="h-3.5 w-3.5 text-primary" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingMaxUsesId(null)}>
+                                <X className="h-3.5 w-3.5 text-destructive" />
+                              </Button>
+                            </>
+                          ) : (
+                            <button
+                              className="inline-flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+                              onClick={() => handleStartEditMaxUses(rc.id, rc.max_uses)}
+                              title="Click to edit max uses"
+                            >
+                              {rc.max_uses != null ? rc.max_uses : '∞'}
+                              <Pencil className="h-3 w-3 opacity-50" />
+                            </button>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-center">
                         <Switch

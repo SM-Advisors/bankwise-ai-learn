@@ -176,6 +176,26 @@ export function useOrganizations() {
     }
   }, [fetchOrganizations]);
 
+  const updateCodeMaxUses = useCallback(async (codeId: string, maxUses: number | null) => {
+    try {
+      const { error } = await (supabase
+        .from('registration_codes' as any)
+        .update({ max_uses: maxUses })
+        .eq('id', codeId) as any);
+
+      if (error) {
+        console.error('Error updating code max uses:', error);
+        return { success: false, error: error.message };
+      }
+
+      await fetchOrganizations();
+      return { success: true };
+    } catch (err) {
+      console.error('Error updating code max uses:', err);
+      return { success: false, error: 'Failed to update max uses' };
+    }
+  }, [fetchOrganizations]);
+
   const updateOrgModels = useCallback(async (orgId: string, models: string[]) => {
     try {
       const { error } = await (supabase
@@ -205,6 +225,7 @@ export function useOrganizations() {
     createRegistrationCode,
     toggleCodeActive,
     updateCodeUses,
+    updateCodeMaxUses,
     updateOrgModels,
   };
 }
