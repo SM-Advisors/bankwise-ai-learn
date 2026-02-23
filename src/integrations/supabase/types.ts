@@ -714,6 +714,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          org_type: string | null
           slug: string
         }
         Insert: {
@@ -721,6 +722,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          org_type?: string | null
           slug: string
         }
         Update: {
@@ -728,6 +730,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          org_type?: string | null
           slug?: string
         }
         Relationships: []
@@ -1187,12 +1190,14 @@ export type Database = {
           employer_bank_name: string | null
           id: string
           is_active: boolean
+          is_super_admin: boolean
           last_login_at: string | null
           learning_style:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
           line_of_business: string | null
           onboarding_completed: boolean | null
+          organization_id: string | null
           preferred_model: string | null
           tech_learning_style:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -1211,12 +1216,14 @@ export type Database = {
           employer_bank_name?: string | null
           id?: string
           is_active?: boolean
+          is_super_admin?: boolean
           last_login_at?: string | null
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
           line_of_business?: string | null
           onboarding_completed?: boolean | null
+          organization_id?: string | null
           preferred_model?: string | null
           tech_learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -1235,12 +1242,14 @@ export type Database = {
           employer_bank_name?: string | null
           id?: string
           is_active?: boolean
+          is_super_admin?: boolean
           last_login_at?: string | null
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
           line_of_business?: string | null
           onboarding_completed?: boolean | null
+          organization_id?: string | null
           preferred_model?: string | null
           tech_learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -1255,6 +1264,13 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
