@@ -508,24 +508,30 @@ export default function Dashboard() {
                   <Radio className="h-5 w-5 text-destructive" />
                   <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-destructive rounded-full animate-pulse" />
                 </div>
-                <CardTitle>Live Training Feed</CardTitle>
+                <CardTitle>Live Enablement Feed</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              {/* Featured Intro Video - Thumbnail Only */}
-              <div
-                className="relative rounded-lg overflow-hidden cursor-pointer group"
-                onClick={() => setVideoModalOpen(true)}
-              >
-                <img
-                  src="https://img.youtube.com/vi/xZ1FAm7IoA4/maxresdefault.jpg"
-                  alt="Introduction to AI Prompting"
-                  className="w-full aspect-video object-cover rounded-lg"
-                />
-                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                  <div className="p-4 rounded-full bg-primary/90 text-primary-foreground shadow-lg group-hover:scale-110 transition-transform">
-                    <Play className="h-8 w-8" />
+              {/* Featured Intro Video - Thumbnail + Description */}
+              <div className="flex items-start gap-3">
+                <div
+                  className="relative rounded-lg overflow-hidden cursor-pointer group w-1/3 shrink-0"
+                  onClick={() => setVideoModalOpen(true)}
+                >
+                  <img
+                    src="https://img.youtube.com/vi/xZ1FAm7IoA4/maxresdefault.jpg"
+                    alt="Introduction to AI Prompting"
+                    className="w-full aspect-video object-cover rounded-lg"
+                  />
+                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                    <div className="p-2 rounded-full bg-primary/90 text-primary-foreground shadow-lg group-hover:scale-110 transition-transform">
+                      <Play className="h-5 w-5" />
+                    </div>
                   </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground leading-snug">Introduction to AI Prompting</p>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Effective LLM prompting, a custom GPT demo, and how to build your own setup.</p>
                 </div>
               </div>
 
