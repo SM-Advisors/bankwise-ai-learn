@@ -109,20 +109,34 @@ export function useDashboardConversations() {
     const convId = targetConversationId || activeConversationId;
     if (!convId) return;
 
-    let messagesForDb: DashboardMessage[] = [];
-    let titleForDb: string | undefined;
-
+    // Compute updated messages synchronously from current state snapshot
+    // BEFORE calling setConversations, so Supabase gets the correct array.
     setConversations(prev => {
       const conv = prev.find(c => c.id === convId);
       if (!conv) return prev;
 
-      messagesForDb = [...conv.messages, message];
+      const messagesForDb = [...conv.messages, message];
 
       // Update title if this is the first user message
       const isFirstUserMessage = conv.messages.length === 0 && message.role === 'user';
-      titleForDb = isFirstUserMessage
+      const titleForDb = isFirstUserMessage
         ? message.content.slice(0, 50) + (message.content.length > 50 ? '...' : '')
         : undefined;
+
+      // Fire-and-forget the Supabase write inside the updater so we have the
+      // correct messagesForDb value captured in this closure.
+      const updates: Record<string, unknown> = {
+        messages: messagesForDb as unknown as Record<string, unknown>[],
+      };
+      if (titleForDb) updates.title = titleForDb;
+
+      (supabase
+        .from('dashboard_conversations' as any)
+        .update(updates)
+        .eq('id', convId) as any)
+        .then(({ error }: { error: unknown }) => {
+          if (error) console.error('Error appending dashboard message:', error);
+        });
 
       return prev.map(c =>
         c.id === convId
@@ -130,25 +144,6 @@ export function useDashboardConversations() {
           : c
       );
     });
-
-    // Now messagesForDb is correctly set from the functional update
-    try {
-      const updates: Record<string, unknown> = {
-        messages: messagesForDb as unknown as Record<string, unknown>[],
-      };
-      if (titleForDb) {
-        updates.title = titleForDb;
-      }
-
-      const { error } = await (supabase
-        .from('dashboard_conversations' as any)
-        .update(updates)
-        .eq('id', convId) as any);
-
-      if (error) throw error;
-    } catch (err) {
-      console.error('Error appending dashboard message:', err);
-    }
   }, [activeConversationId]);
 
   // Start a new chat (deselect current, will create on first message)
