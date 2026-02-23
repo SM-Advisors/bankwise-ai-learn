@@ -351,18 +351,13 @@ export default function Dashboard() {
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-6 mt-4 md:mt-0">
-                <div className="w-28 shrink-0">
-                  <BrainstormPanel />
-                </div>
-                <div className="md:text-right">
-                  <div className="text-sm text-muted-foreground mb-1">Overall Progress</div>
-                  <div className="text-2xl font-bold text-primary">{Math.round(overallProgress)}%</div>
-                  <Progress value={overallProgress} className="w-full md:w-48 h-2 mt-2" />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {totalCompletedModules} of {totalModules} modules completed
-                  </p>
-                </div>
+              <div className="md:text-right mt-4 md:mt-0">
+                <div className="text-sm text-muted-foreground mb-1">Overall Progress</div>
+                <div className="text-2xl font-bold text-primary">{Math.round(overallProgress)}%</div>
+                <Progress value={overallProgress} className="w-full md:w-48 h-2 mt-2" />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {totalCompletedModules} of {totalModules} modules completed
+                </p>
               </div>
             </div>
           </CardContent>
@@ -392,6 +387,11 @@ export default function Dashboard() {
             Your training is customized based on your 
             {' '}<span className="text-primary font-medium">{profile.learning_style}</span> learning style.
           </p>
+        </div>
+
+        {/* AI Brainstorm — compact card below progress, above sessions */}
+        <div className="mb-4 w-40">
+          <BrainstormPanel />
         </div>
 
 
