@@ -18,7 +18,7 @@ import {
 import {
   Building2, Users, TrendingUp, Award, ArrowLeft,
   Shield, Heart, BarChart3, ExternalLink, Loader2, MessageSquare, Download, Paperclip,
-  Mail, MailOpen, CheckCheck
+  CircleDot, CheckCircle2
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import jsPDF from 'jspdf';
@@ -33,6 +33,7 @@ interface FeedbackItem {
   file_data: string | null;
   created_at: string;
   is_read: boolean;
+  status: 'new' | 'resolved';
 }
 
 export default function SuperAdminDashboard() {
@@ -42,6 +43,7 @@ export default function SuperAdminDashboard() {
   const [selectedOrg, setSelectedOrg] = useState<OrgSummary | null>(null); // reserved for future detail panel
   const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackFilter, setFeedbackFilter] = useState<'all' | 'new' | 'resolved'>('all');
 
   useEffect(() => {
     async function fetchFeedback() {
@@ -49,7 +51,7 @@ export default function SuperAdminDashboard() {
       try {
         const { data, error: fbError } = await (supabase
           .from('user_feedback' as any)
-          .select('id, user_name, message, file_name, file_type, file_data, created_at, is_read')
+          .select('id, user_name, message, file_name, file_type, file_data, created_at, is_read, status')
           .order('created_at', { ascending: false }) as any);
         if (!fbError && data) setFeedbackItems(data as FeedbackItem[]);
       } catch (_) {
@@ -61,24 +63,20 @@ export default function SuperAdminDashboard() {
     if (profile?.is_super_admin) fetchFeedback();
   }, [profile?.is_super_admin]);
 
-  const unreadCount = feedbackItems.filter(f => !f.is_read).length;
-
-  const toggleFeedbackRead = async (id: string, currentlyRead: boolean) => {
-    // Optimistic update
-    setFeedbackItems(prev => prev.map(item => item.id === id ? { ...item, is_read: !currentlyRead } : item));
+  const toggleFeedbackStatus = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'new' ? 'resolved' : 'new';
+    setFeedbackItems(prev => prev.map(item => item.id === id ? { ...item, status: newStatus as 'new' | 'resolved' } : item));
     await (supabase
       .from('user_feedback' as any)
-      .update({ is_read: !currentlyRead })
+      .update({ status: newStatus })
       .eq('id', id) as any);
   };
 
-  const markAllFeedbackRead = async () => {
-    setFeedbackItems(prev => prev.map(item => ({ ...item, is_read: true })));
-    await (supabase
-      .from('user_feedback' as any)
-      .update({ is_read: true })
-      .eq('is_read', false) as any);
-  };
+  const newCount = feedbackItems.filter(f => f.status === 'new').length;
+  const resolvedCount = feedbackItems.filter(f => f.status === 'resolved').length;
+  const filteredFeedback = feedbackFilter === 'all'
+    ? feedbackItems
+    : feedbackItems.filter(f => f.status === feedbackFilter);
 
   const downloadFeedbackPdf = () => {
     const doc = new jsPDF();
@@ -88,8 +86,9 @@ export default function SuperAdminDashboard() {
     doc.text(`Generated ${new Date().toLocaleDateString()}`, 14, 25);
     autoTable(doc, {
       startY: 30,
-      head: [['User', 'Date', 'Message', 'Attachment']],
-      body: feedbackItems.map((item) => [
+      head: [['Status', 'User', 'Date', 'Message', 'Attachment']],
+      body: filteredFeedback.map((item) => [
+        item.status === 'new' ? 'NEW' : 'RESOLVED',
         item.user_name || '—',
         new Date(item.created_at).toLocaleDateString(),
         (item.message || '').slice(0, 200) + ((item.message?.length || 0) > 200 ? '…' : ''),
@@ -235,9 +234,9 @@ export default function SuperAdminDashboard() {
             <TabsTrigger value="feedback" className="gap-2">
               <MessageSquare className="h-4 w-4" />
               Feedback
-              {unreadCount > 0 && (
+              {newCount > 0 && (
                 <Badge className="h-4 px-1.5 text-[10px] bg-destructive text-destructive-foreground ml-1 rounded-full">
-                  {unreadCount}
+                  {newCount}
                 </Badge>
               )}
             </TabsTrigger>
@@ -400,20 +399,30 @@ export default function SuperAdminDashboard() {
                     <CardTitle className="text-base">User Feedback</CardTitle>
                     <CardDescription>
                       {feedbackItems.length} total
-                      {unreadCount > 0 && ` · ${unreadCount} unread`}
+                      {newCount > 0 && ` · ${newCount} new`}
+                      {resolvedCount > 0 && ` · ${resolvedCount} resolved`}
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
-                    {unreadCount > 0 && (
-                      <Button size="sm" variant="outline" className="gap-2" onClick={markAllFeedbackRead}>
-                        <CheckCheck className="h-4 w-4" />
-                        Mark all read
-                      </Button>
-                    )}
+                    <div className="flex items-center border rounded-md overflow-hidden">
+                      {(['all', 'new', 'resolved'] as const).map((f) => (
+                        <button
+                          key={f}
+                          onClick={() => setFeedbackFilter(f)}
+                          className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                            feedbackFilter === f
+                              ? 'bg-primary text-primary-foreground'
+                              : 'hover:bg-muted text-muted-foreground'
+                          }`}
+                        >
+                          {f === 'all' ? 'All' : f === 'new' ? `New (${newCount})` : `Resolved (${resolvedCount})`}
+                        </button>
+                      ))}
+                    </div>
                     {feedbackItems.length > 0 && (
                       <Button size="sm" variant="outline" className="gap-2" onClick={downloadFeedbackPdf}>
                         <Download className="h-4 w-4" />
-                        Download PDF
+                        PDF
                       </Button>
                     )}
                   </div>
@@ -428,7 +437,7 @@ export default function SuperAdminDashboard() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-8"></TableHead>
+                        <TableHead>Status</TableHead>
                         <TableHead>User</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Message</TableHead>
@@ -436,24 +445,31 @@ export default function SuperAdminDashboard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {feedbackItems.map((item) => (
+                      {filteredFeedback.map((item) => (
                         <TableRow
                           key={item.id}
-                          className={!item.is_read ? 'bg-primary/5 hover:bg-primary/10' : ''}
+                          className={item.status === 'new' ? 'bg-primary/5 hover:bg-primary/10' : ''}
                         >
                           <TableCell className="pr-0">
                             <button
-                              onClick={() => toggleFeedbackRead(item.id, item.is_read)}
-                              title={item.is_read ? 'Mark as unread' : 'Mark as read'}
-                              className="text-muted-foreground hover:text-primary transition-colors"
+                              onClick={() => toggleFeedbackStatus(item.id, item.status)}
+                              title={item.status === 'new' ? 'Mark as resolved' : 'Reopen'}
+                              className="transition-colors"
                             >
-                              {item.is_read
-                                ? <MailOpen className="h-4 w-4" />
-                                : <Mail className="h-4 w-4 text-primary" />
-                              }
+                              {item.status === 'new' ? (
+                                <Badge variant="outline" className="gap-1 text-orange-600 border-orange-300 bg-orange-50 hover:bg-green-50 hover:text-green-600 hover:border-green-300 cursor-pointer">
+                                  <CircleDot className="h-3 w-3" />
+                                  New
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="gap-1 text-green-600 border-green-300 bg-green-50 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-300 cursor-pointer">
+                                  <CheckCircle2 className="h-3 w-3" />
+                                  Resolved
+                                </Badge>
+                              )}
                             </button>
                           </TableCell>
-                          <TableCell className={`whitespace-nowrap ${!item.is_read ? 'font-semibold' : 'font-medium'}`}>
+                          <TableCell className={`whitespace-nowrap ${item.status === 'new' ? 'font-semibold' : 'font-medium'}`}>
                             {item.user_name || '—'}
                           </TableCell>
                           <TableCell className="whitespace-nowrap text-muted-foreground text-xs">
@@ -479,10 +495,10 @@ export default function SuperAdminDashboard() {
                           </TableCell>
                         </TableRow>
                       ))}
-                      {feedbackItems.length === 0 && (
+                      {filteredFeedback.length === 0 && (
                         <TableRow>
                           <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                            No feedback submitted yet
+                            {feedbackFilter === 'all' ? 'No feedback submitted yet' : `No ${feedbackFilter} feedback`}
                           </TableCell>
                         </TableRow>
                       )}
