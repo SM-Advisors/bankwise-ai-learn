@@ -380,18 +380,18 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Learning Track */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-display font-bold mb-2">Your Learning Track</h2>
-          <p className="text-muted-foreground">
-            Your training is customized based on your 
-            {' '}<span className="text-primary font-medium">{profile.learning_style}</span> learning style.
-          </p>
-        </div>
-
-        {/* AI Brainstorm — compact card below progress, above sessions */}
-        <div className="mb-4 w-40">
-          <BrainstormPanel />
+        {/* Learning Track + Brainstorm */}
+        <div className="mb-6 flex items-start justify-between">
+          <div>
+            <h2 className="text-2xl font-display font-bold mb-2">Your Learning Track</h2>
+            <p className="text-muted-foreground">
+              Your training is customized based on your 
+              {' '}<span className="text-primary font-medium">{profile.learning_style}</span> learning style.
+            </p>
+          </div>
+          <div className="w-36 shrink-0 ml-6">
+            <BrainstormPanel />
+          </div>
         </div>
 
 
