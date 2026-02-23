@@ -250,6 +250,9 @@ serve(async (req) => {
 
     const model = requestedModel || "claude-sonnet-4-6";
 
+    // Determine if this is a Friends & Family (non-banker) user
+    const isFF = !lineOfBusiness && interests && interests.length > 0;
+
     // Build context block — department for bankers, interests for F&F users
     const departmentName = getDepartmentName(lineOfBusiness);
     const departmentContext = (bankRole || departmentName) ? `
@@ -258,10 +261,14 @@ ${departmentName ? `The user works in: ${departmentName}` : ""}
 ${bankRole ? `Their role: ${bankRole}` : ""}
 Tailor your responses to be relevant to their department. Use terminology, examples, and realistic scenarios appropriate for their line of business.` : "";
 
-    const interestsContext = (!lineOfBusiness && interests && interests.length > 0) ? `
-PERSONALIZATION CONTEXT:
-This learner is a Friends & Family tester (not a banker). Their personal interests are: ${interests.join(", ")}.
-Use these interests to create relatable analogies and examples when explaining AI concepts. Make the experience feel fun and personal rather than banking-focused.` : "";
+    const interestsContext = isFF ? `
+PERSONALIZATION CONTEXT — CRITICAL:
+This learner is NOT a banker. They are a general user whose personal interests are: ${interests!.join(", ")}.
+- IGNORE any banking framing in the scenario below — reframe it entirely around their interests
+- Replace banking tasks with equivalent tasks from their world (e.g. a "credit memo" becomes a "project summary", a "loan application" becomes a freelance proposal, etc.)
+- Do NOT use banking terminology, regulatory frameworks, or financial institution examples
+- Use examples, language, and contexts that feel natural and relevant to their stated interests
+- Make the exercise feel personal and fun, not like a banking simulation` : "";
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
@@ -311,12 +318,16 @@ ${departmentContext}${interestsContext}
    - Do NOT break the fourth wall or reference "the module" or "the exercise"
    - If they ask you something outside the scenario, respond naturally
 
-3. BANKING REALISM:
+${isFF ? `3. PERSONAL REALISM:
+   - This is NOT a banking user — never use banking terminology, regulatory frameworks, or financial examples
+   - Reframe all tasks and examples around the user's interests: ${interests?.join(", ") || "general topics"}
+   - Use realistic but clearly fake data appropriate to their context (fictional names, made-up companies, etc.)
+   - Make responses feel relevant and natural for someone with those interests` : `3. BANKING REALISM:
    - Use appropriate banking terminology in your responses
    - If they ask you to draft something, draft it properly
    - If they ask for analysis, provide realistic analysis
    - Reference realistic regulatory frameworks (OCC, FDIC, etc.) when relevant
-   - Use realistic but clearly fake data (Jane Doe, Acme Corp, etc.)
+   - Use realistic but clearly fake data (Jane Doe, Acme Corp, etc.)`}
 
 4. RESPONSE LENGTH:
    - Match response length to what a real AI tool would provide

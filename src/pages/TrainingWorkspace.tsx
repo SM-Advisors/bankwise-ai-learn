@@ -389,9 +389,10 @@ export default function TrainingWorkspace() {
           model: preferredModel,
           // Session 3: use deployed agent's custom system prompt if available
           ...(isSession3 && deployedAgent?.system_prompt ? { customSystemPrompt: deployedAgent.system_prompt } : {}),
-          // Department context for all sessions
+          // Department context for bankers; interests for F&F users
           bankRole: profile?.bank_role,
           lineOfBusiness: profile?.line_of_business,
+          interests: (profile as any)?.interests || undefined,
         },
       });
 
