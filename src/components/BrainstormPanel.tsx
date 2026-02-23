@@ -118,16 +118,31 @@ export function BrainstormPanel() {
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke('trainer_chat', {
+      // Determine initial task (first user message in the conversation)
+      const initialTask = history.find(m => m.role === 'user')?.content || content;
+
+      const brainstormPersona = `You are Andrea, a helpful AI coach running a brainstorm session. Your goal is to help the user discover practical, specific ways AI can assist their work or projects.
+
+BRAINSTORM COACHING RULES:
+- FIRST response only: ask 1-2 focused probing questions to better understand the task before suggesting anything. Do NOT jump straight to suggestions.
+- SUBSEQUENT responses: offer concrete AI applications scaled to the user's context — simple prompts, reusable templates, or multi-step workflows.
+- Frame ideas as possibilities: "What if you..." or "You could write a prompt that..." or "A quick template for this would be..."
+- Keep each idea to 1-2 sentences. No long bullet lists.
+- After suggesting, ask what resonates or what they want to explore further.
+- Do NOT reference any training curriculum, frameworks (CLEAR, VERIFY), or module content.
+- For users with personal interests (non-banking): ground all examples in those interests, not banking.`;
+
+      const isFF = !(profile?.line_of_business) && !!(profile as any)?.interests?.length;
+
+      const { data, error } = await supabase.functions.invoke('ai-practice', {
         body: {
-          lessonId: 'brainstorm',
+          customSystemPrompt: brainstormPersona,
+          moduleTitle: 'AI Brainstorm',
+          scenario: initialTask,
           messages: [...history, userMsg],
-          learnerState: {
-            displayName: profile?.display_name || undefined,
-            bankRole: profile?.bank_role || undefined,
-            lineOfBusiness: profile?.line_of_business || undefined,
-            interests: (profile as any)?.interests || undefined,
-          },
+          bankRole: profile?.bank_role || undefined,
+          lineOfBusiness: isFF ? undefined : (profile?.line_of_business || undefined),
+          interests: (profile as any)?.interests || undefined,
         },
       });
 
