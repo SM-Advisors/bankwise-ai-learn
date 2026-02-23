@@ -594,7 +594,190 @@ EVALUATION FOCUS:
 - Is the 30-day timeline specific (weekly milestones with concrete deliverables)?
 - Would a manager approve this plan and allocate resources?
 - Does the plan include what they chose NOT to automate (SKIP tasks)?
-- Is this a 1-page document, not a meandering essay?` : `## RUBRIC
+- Is this a 1-page document, not a meandering essay?` : moduleId === "E1-1" ? `## MODULE E1-1 RUBRIC: CHAIN-OF-THOUGHT MASTERY
+This submission tests the learner's ability to design multi-step reasoning prompts that produce auditable analysis.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Step Structure | Fewer than 3 steps, loosely connected | 5 structured steps with clear instructions for each | Steps build logically with explicit dependencies between them |
+| Cross-Referencing | Steps are independent silos | Later steps reference outputs from earlier steps | Each step cites specific upstream data it depends on |
+| Individual Evaluation | Ratios treated as a single block | Each ratio evaluated individually before cross-analysis | Individual evaluations include thresholds and contextual interpretation |
+| Confidence & Justification | No confidence indicator | Final assessment includes a confidence level | Confidence level includes justification tied to evidence quality |
+| Auditability | Could not trace reasoning | Major conclusions traceable to source steps | Examiner could trace each conclusion to its specific source |
+
+EVALUATION FOCUS:
+- Does the prompt force sequential reasoning rather than a single-pass summary?
+- Are step dependencies explicit (e.g., "Using the DSCR from Step 2, evaluate...")?
+- Would an examiner be able to audit the chain of reasoning?` : moduleId === "E1-2" ? `## MODULE E1-2 RUBRIC: MULTI-SHOT PROMPTING
+This submission tests the learner's ability to use examples to teach an AI consistent output patterns.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Example Count & Consistency | Fewer than 3 examples or inconsistent format | 3 examples with consistent structure across all | 3+ examples that demonstrate both invariants and meaningful variation |
+| Format Invariants | No identifiable pattern | Clear structural pattern repeats across examples | Pattern is explicit with annotation of what must stay constant |
+| Compliance Element | No compliance element | At least 1 compliance element appears in all examples | Compliance elements are varied but consistently present |
+| Annotations | No annotations | Annotations explain why each example was selected | Annotations highlight what the AI should learn from each example |
+| Request Specificity | Vague request for "more like this" | Request is specific and different from the examples | Request tests whether the AI learned the pattern, not just repeated it |
+
+EVALUATION FOCUS:
+- Do the examples teach a reusable pattern, not just provide templates?
+- Is there enough variation to prevent overfitting to one scenario?
+- Does the compliance element demonstrate how to embed regulatory language naturally?` : moduleId === "E1-3" ? `## MODULE E1-3 RUBRIC: SELF-REVIEW LOOPS
+This submission tests the learner's ability to build a two-prompt generate-then-critique workflow.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Two-Prompt Structure | Single prompt only | Clear generate + critique-revise sequence | Structured workflow with explicit handoff between generation and review |
+| Checklist Quality | Fewer than 3 criteria | 5+ specific criteria relevant to the deliverable | Criteria use measurable ratings (Fully Met / Partially Met / Missing) |
+| Criteria Specificity | Generic ("is it good?") | Criteria tied to the specific deliverable type | Criteria differentiate between formatting, accuracy, and compliance dimensions |
+| VERIFY Integration | No mention of VERIFY | Identifies items that require VERIFY beyond self-review | Maps self-review vs. VERIFY responsibilities clearly |
+| Combined Coverage | Only checks formatting | Covers formatting and some content | Self-review + VERIFY together cover formatting, factual accuracy, and compliance |
+
+EVALUATION FOCUS:
+- Does the self-review checklist catch what AI can check (format, completeness, tone)?
+- Does the VERIFY layer catch what only humans can check (factual accuracy, regulatory correctness)?
+- Is the combined approach more thorough than either technique alone?` : moduleId === "E2-1" ? `## MODULE E2-1 RUBRIC: DOCUMENT ANALYSIS WITH AI
+This submission tests the learner's ability to design structured prompts for extracting data from banking documents.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Sanitization First | No sanitization step | Sanitization instructions included as the first step | Specific PII types identified with redaction approach |
+| Field Extraction | Vague ("extract the data") | Specifies exact fields to extract with clear definitions | Fields include data types, expected ranges, and edge case handling |
+| Output Structure | Unstructured text output | Structured output (table or schema) specified | Output includes field names, types, and validation rules |
+| Validation Rules | No validation | At least 2 validation rules for unusual values | Validation rules include cross-field checks and range alerts |
+| VERIFY Application | Not mentioned | Notes that VERIFY must be applied to extracted numbers | Specific VERIFY steps for each critical field identified |
+
+EVALUATION FOCUS:
+- Is sanitization truly the FIRST step, not an afterthought?
+- Are extracted fields specific enough to populate a form or database without human interpretation?
+- Would the validation rules catch the most common extraction errors?` : moduleId === "E2-2" ? `## MODULE E2-2 RUBRIC: MEETING INTELLIGENCE
+This submission tests the learner's ability to design AI-assisted meeting summary templates for banking contexts.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Meeting-Type Specificity | Generic summary template | Structure matches the specific meeting type (credit committee, ALCO, board, etc.) | Template adapts to meeting dynamics (decision items, risk flags, regulatory items) |
+| Action Items | Vague action list | Action items include owner, deadline, and categorization | Action items include priority, dependencies, and follow-up cadence |
+| Compliance Flagging | No compliance awareness | Identifies sensitive content types for this meeting type | Flags specific regulatory triggers (e.g., fair lending discussion, SAR mention) |
+| Reusability | Single-use template | Template is parameterized for different instances | Template includes configuration options for different meeting sizes/formats |
+| Review Requirement | Not addressed | Notes that AI summary must be reviewed before distribution | Specifies who reviews, what they check, and distribution protocol |
+
+EVALUATION FOCUS:
+- Is this template designed for a specific banking meeting type, not a generic meeting?
+- Would action items be actionable without re-watching the meeting?
+- Does the compliance flag catch the content types that matter for this meeting type?` : moduleId === "E2-3" ? `## MODULE E2-3 RUBRIC: DATA VISUALIZATION WITH AI
+This submission tests the learner's ability to prepare data narratives for executive presentation using AI.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Data Completeness | Missing key metrics | All required metrics included with correct values | Metrics include context (period, comparison basis, trend direction) |
+| Audience Specification | No audience mentioned | Specifies the audience (executive committee, board, etc.) | Tailors language and detail level to the specific audience |
+| Output Structure | Unstructured narrative | Requests structured output (summary, metric commentary, questions) | Output sections map to presentation flow with transition logic |
+| Presentation Readiness | Requires significant editing | Output would be presentation-ready for executives | Includes speaking notes, anticipated questions, and backup data references |
+| VERIFY Application | Not mentioned | Notes that VERIFY should check calculations | Specific calculation verification steps identified for each metric |
+
+EVALUATION FOCUS:
+- Are all metrics included with accurate values and proper context?
+- Would the output slide into an executive presentation without reformatting?
+- Are the anticipated questions realistic for the audience?` : moduleId === "E3-1" ? `## MODULE E3-1 RUBRIC: AI CHAMPION PLAYBOOK
+This submission tests the learner's ability to build a compelling internal AI adoption pitch.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Problem Statement | Generic AI benefit claims | References real tasks from the learner's actual work | Quantifies the current pain (time, rework, inconsistency) |
+| Solution Description | Vague ("use AI for X") | Specific AI application with implementation approach | Solution maps to specific agents, workflows, or prompt strategies from training |
+| Evidence & ROI | No supporting evidence | Specific ROI measurements from their own experience | Multiple data points with conservative and optimistic projections |
+| The Ask | Vague or unreasonable | Specific and reasonable request | Phased ask with quick wins and measurable milestones |
+| Professional Tone | Casual or overly technical | Appropriate for a department head | Anticipates objections and addresses them proactively |
+
+EVALUATION FOCUS:
+- Does the problem statement reference the learner's actual work, not hypothetical scenarios?
+- Is the ROI measurement based on real data, not wishful estimates?
+- Would a department head actually approve this ask?` : moduleId === "E3-2" ? `## MODULE E3-2 RUBRIC: AI GOVERNANCE FOR BANKING
+This submission tests the learner's ability to draft a department-level AI governance framework.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Section Coverage | Fewer than 4 of 6 sections | All 6 sections addressed | All 6 with department-specific content and examples |
+| Approved Use Cases | Generic AI uses | Specific to the learner's department | Includes conditions, guardrails, and review requirements per use case |
+| Prohibited Use Cases | Not addressed or generic | Identifies real risks for the department | Explains WHY each is prohibited with regulatory or risk rationale |
+| Data Handling Rules | Generic data rules | References specific data types handled by the department | Includes classification levels, handling procedures, and escalation paths |
+| Audit Readiness | Not auditable | Documentation requirements specified | Requirements are practical, auditor-ready, and include retention periods |
+| Implementability | Theoretical framework | Could be implemented this quarter | Ready for compliance review with approval workflow included |
+
+EVALUATION FOCUS:
+- Are approved and prohibited use cases specific to the department (not generic)?
+- Would an examiner accept the documentation requirements?
+- Is the framework practical enough to implement this quarter?` : moduleId === "E3-3" ? `## MODULE E3-3 RUBRIC: SCALING AI ACROSS THE BANK
+This submission tests the learner's ability to design a cross-departmental AI rollout plan.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Department Selection | Random or unexplained | Two departments identified with rationale for selection | Selection based on readiness assessment and strategic alignment |
+| Phase Structure | Vague timeline | Each 30-day phase has specific activities | Phases include dependencies, decision gates, and fallback plans |
+| Measurement Plan | No metrics | Pilot phase includes measurement plan | Metrics include leading and lagging indicators with targets |
+| Template Sharing | Not addressed | Expansion includes template sharing | Sharing plan includes customization guide and onboarding workflow |
+| Executive Report | Not included or vague | Includes quantitative metrics | Executive report template with actual data from pilot phase |
+| Feasibility | Unrealistic scope | Realistic for the bank size and resources | Accounts for change management, training load, and competing priorities |
+
+EVALUATION FOCUS:
+- Is the department selection justified by readiness and strategic value?
+- Are 30-day phases specific enough to execute without additional planning?
+- Would the executive report satisfy a CEO or board committee?` : moduleId === "E4-1" ? `## MODULE E4-1 RUBRIC: AI & FAIR LENDING
+This submission tests the learner's ability to identify and mitigate fair lending risks in AI prompts.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Proxy Variable Identification | Identifies 0-1 proxy variables | Identifies at least 3 proxy variable risks | Identifies proxy variables with specific correlation explanations |
+| Protected Characteristic Mapping | No mapping provided | Explains how each proxy could correlate with protected characteristics | Cites specific fair lending regulations (ECOA, FHA) and examiner expectations |
+| Prompt Rewrite | Minor or no changes | Rewritten prompt preserves analysis without proxy variables | Rewrite includes positive controls (what TO include instead) |
+| Documentation Awareness | Not addressed | Notes fair lending review should be documented | Specifies what to document, who reviews, and retention requirements |
+| Escalation Judgment | Not addressed | Identifies when to involve compliance | Escalation triggers are specific and tied to regulatory risk levels |
+
+EVALUATION FOCUS:
+- Does the learner understand WHY proxy variables are dangerous, not just WHICH ones?
+- Is the rewritten prompt still analytically useful after removing proxy variables?
+- Would a fair lending examiner be satisfied with the documentation approach?` : moduleId === "E4-2" ? `## MODULE E4-2 RUBRIC: AI AUDIT READINESS
+This submission tests the learner's ability to build an AI usage log and prepare for examiner questions.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Log Template Design | Missing columns or unclear | Clear column definitions with examples | Includes data types, validation rules, and retention guidance |
+| Example Row | Missing or generic | Realistic example with banking-relevant data | Example demonstrates edge cases (compliance-adjacent use, multiple reviewers) |
+| Prompt Summary Guidance | Full prompt text or nothing | 1-2 sentence summary guidance specified | Summary guidance includes what to include, exclude, and how to handle PII |
+| Disposition Categories | Vague or overlapping | Clear and mutually exclusive categories | Categories include workflow status (draft, reviewed, published, archived) |
+| Examiner Preparedness | Fewer than 3 questions | All 5 examiner questions answered | Responses are confident, specific, and reference actual bank practices |
+
+EVALUATION FOCUS:
+- Would this log template survive an examiner's scrutiny?
+- Are the examiner question responses confident or defensive?
+- Is the disposition tracking clear enough for an auditor to follow?` : moduleId === "E4-3" ? `## MODULE E4-3 RUBRIC: VENDOR AI RISK ASSESSMENT
+This submission tests the learner's ability to evaluate a third-party AI vendor using banking risk frameworks.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Assessment Coverage | Fewer than 3 of 5 areas | All 5 assessment areas addressed | All 5 with specific, researched content (not hypothetical) |
+| Data Handling Questions | Generic privacy questions | Specific and answered honestly | Includes data residency, training data usage, and subprocessor disclosure |
+| Security Checklist | Vague ("seems secure") | Distinguishes between pass/fail/unknown | Includes SOC 2 status, encryption standards, and access controls |
+| Contract Provisions | No contract language | At least 3 specific provisions named | Provisions include reasoning and negotiation fallback positions |
+| Practical Evaluation | No testing described | Banking-specific test scenarios described | Test scenarios include compliance-critical edge cases with expected behavior |
+| Recommendation Quality | Vague or missing | Clear recommendation with supporting rationale | Phased recommendation with conditions, monitoring plan, and exit strategy |
+
+EVALUATION FOCUS:
+- Does the assessment reflect actual vendor due diligence, not a generic checklist?
+- Are the contract provisions realistic and enforceable?
+- Would this assessment satisfy OCC Third-Party Risk Management guidance?` : `## RUBRIC
 ${rubric ? (typeof rubric === "string" ? rubric : JSON.stringify(rubric, null, 2)) : "Evaluate based on clarity, specificity, context, and appropriateness for banking use cases."}`}
 
 ${departmentContext?.lineOfBusiness ? `## DEPARTMENT CONTEXT
