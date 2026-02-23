@@ -196,6 +196,36 @@ export type Database = {
         }
         Relationships: []
       }
+      certificates: {
+        Row: {
+          certificate_type: string
+          created_at: string
+          earned_at: string
+          id: string
+          metadata: Json | null
+          session_id: number
+          user_id: string
+        }
+        Insert: {
+          certificate_type?: string
+          created_at?: string
+          earned_at?: string
+          id?: string
+          metadata?: Json | null
+          session_id: number
+          user_id: string
+        }
+        Update: {
+          certificate_type?: string
+          created_at?: string
+          earned_at?: string
+          id?: string
+          metadata?: Json | null
+          session_id?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_replies: {
         Row: {
           author_name: string
@@ -370,6 +400,42 @@ export type Database = {
           },
         ]
       }
+      elective_progress: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          module_id: string
+          path_id: string
+          progress_data: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          module_id: string
+          path_id: string
+          progress_data?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          module_id?: string
+          path_id?: string
+          progress_data?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string | null
@@ -528,6 +594,7 @@ export type Database = {
           created_at: string
           embedding: string | null
           id: string
+          learning_style: string | null
           lesson_id: string
           metadata: Json | null
           module_id: string | null
@@ -540,6 +607,7 @@ export type Database = {
           created_at?: string
           embedding?: string | null
           id?: string
+          learning_style?: string | null
           lesson_id: string
           metadata?: Json | null
           module_id?: string | null
@@ -552,6 +620,7 @@ export type Database = {
           created_at?: string
           embedding?: string | null
           id?: string
+          learning_style?: string | null
           lesson_id?: string
           metadata?: Json | null
           module_id?: string | null
@@ -692,6 +761,39 @@ export type Database = {
           session_id?: string
           title?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      proficiency_responses: {
+        Row: {
+          assessment_version: string | null
+          computed_score: number
+          confidence_level: number
+          created_at: string
+          id: string
+          performance_scores: Json
+          self_report_answers: Json
+          user_id: string
+        }
+        Insert: {
+          assessment_version?: string | null
+          computed_score?: number
+          confidence_level?: number
+          created_at?: string
+          id?: string
+          performance_scores?: Json
+          self_report_answers?: Json
+          user_id: string
+        }
+        Update: {
+          assessment_version?: string | null
+          computed_score?: number
+          confidence_level?: number
+          created_at?: string
+          id?: string
+          performance_scores?: Json
+          self_report_answers?: Json
           user_id?: string
         }
         Relationships: []
@@ -906,6 +1008,8 @@ export type Database = {
           session_2_progress: Json | null
           session_3_completed: boolean | null
           session_3_progress: Json | null
+          session_4_completed: boolean | null
+          session_4_progress: Json | null
           updated_at: string | null
           user_id: string
         }
@@ -918,6 +1022,8 @@ export type Database = {
           session_2_progress?: Json | null
           session_3_completed?: boolean | null
           session_3_progress?: Json | null
+          session_4_completed?: boolean | null
+          session_4_progress?: Json | null
           updated_at?: string | null
           user_id: string
         }
@@ -930,6 +1036,8 @@ export type Database = {
           session_2_progress?: Json | null
           session_3_completed?: boolean | null
           session_3_progress?: Json | null
+          session_4_completed?: boolean | null
+          session_4_progress?: Json | null
           updated_at?: string | null
           user_id?: string
         }
@@ -1080,9 +1188,7 @@ export type Database = {
           learning_style:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
-          line_of_business:
-            | Database["public"]["Enums"]["line_of_business"]
-            | null
+          line_of_business: string | null
           onboarding_completed: boolean | null
           tech_learning_style:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -1105,9 +1211,7 @@ export type Database = {
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
-          line_of_business?:
-            | Database["public"]["Enums"]["line_of_business"]
-            | null
+          line_of_business?: string | null
           onboarding_completed?: boolean | null
           tech_learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -1130,9 +1234,7 @@ export type Database = {
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
-          line_of_business?:
-            | Database["public"]["Enums"]["line_of_business"]
-            | null
+          line_of_business?: string | null
           onboarding_completed?: boolean | null
           tech_learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -1150,6 +1252,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_prompts: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          id: string
+          is_favorite: boolean | null
+          metadata: Json | null
+          source: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          id?: string
+          is_favorite?: boolean | null
+          metadata?: Json | null
+          source?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_favorite?: boolean | null
+          metadata?: Json | null
+          source?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -1229,6 +1373,7 @@ export type Database = {
       }
       match_lesson_chunks: {
         Args: {
+          filter_learning_style?: string
           filter_lesson_id?: string
           filter_module_id?: string
           match_count?: number

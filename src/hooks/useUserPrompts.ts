@@ -33,7 +33,7 @@ export function useUserPrompts() {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      setPrompts((data as UserPrompt[]) || []);
+      setPrompts((data as unknown as UserPrompt[]) || []);
     } catch (err) {
       // Fallback to localStorage if table doesn't exist yet
       const stored = localStorage.getItem('bankwise_prompt_library');
