@@ -8,6 +8,7 @@ export function FeedbackButton() {
   return (
     <>
       <button
+        data-tour="feedback-btn"
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 left-6 z-[9998] flex items-center gap-2 px-4 py-2.5 rounded-full border-2 border-destructive text-destructive bg-white shadow-lg hover:shadow-xl hover:bg-destructive/10 transition-all text-sm font-medium"
         aria-label="Submit feedback"

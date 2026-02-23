@@ -208,6 +208,7 @@ export function TrainerChatPanel({
   return (
   <>
     <aside
+      data-tour="andrea-panel"
       className={`border-l bg-card transition-all duration-300 flex flex-col ${collapsed ? 'w-12' : 'w-full md:w-96'}`}
       aria-label="AI Training Coach panel"
     >
@@ -539,7 +540,7 @@ export function TrainerChatPanel({
           )}
 
           {/* Quick Actions */}
-          <div className="px-3 py-2 border-t bg-muted/30">
+          <div data-tour="quick-actions" className="px-3 py-2 border-t bg-muted/30">
             <div className="flex flex-wrap gap-1.5">
               <Button
                 variant="outline"

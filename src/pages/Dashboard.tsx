@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,6 +32,7 @@ import { CompletionSummary } from '@/components/capstone/CompletionSummary';
 import { DashboardChat } from '@/components/DashboardChat';
 import { CommunityFeed } from '@/components/CommunityFeed';
 import { FeedbackModal } from '@/components/FeedbackModal';
+import { BrainstormPanel } from '@/components/BrainstormPanel';
 
 const SESSIONS = [
   {
@@ -326,7 +327,7 @@ export default function Dashboard() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Profile Summary */}
-        <Card className="mb-8">
+        <Card className="mb-8" data-tour="profile-card">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -393,7 +394,7 @@ export default function Dashboard() {
         </div>
 
         {/* Sessions Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div data-tour="sessions-grid" className="grid gap-6 md:grid-cols-2">
           {SESSIONS.map((session) => {
             const status = getSessionStatus(session.id);
             const IconComponent = session.icon;
@@ -421,9 +422,10 @@ export default function Dashboard() {
             };
 
             return (
+              <Fragment key={session.id}>
+                {session.id === 4 && <BrainstormPanel />}
               <Card
-                key={session.id}
-                className="transition-all hover:shadow-lg flex flex-col"
+                className={`transition-all hover:shadow-lg flex flex-col${session.id === 4 ? ' md:col-span-2' : ''}`}
               >
                 <CardHeader className="flex-1">
                   <div className="flex items-start justify-between">
@@ -494,6 +496,7 @@ export default function Dashboard() {
                   </Button>
                 </CardContent>
               </Card>
+              </Fragment>
             );
           })}
         </div>
@@ -501,7 +504,7 @@ export default function Dashboard() {
         {/* Live Feed and Community Hub - Side by Side */}
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
           {/* Live Feed Section - Video Thumbnail Only */}
-          <Card>
+          <Card data-tour="live-feed">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <div className="relative">

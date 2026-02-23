@@ -713,8 +713,9 @@ RESPONSE FORMAT — MANDATORY:
       );
     }
 
-    // ─── DASHBOARD MODE ───────────────────────────────────────────────
+    // ─── DASHBOARD / BRAINSTORM MODE ──────────────────────────────────
     const isDashboardMode = lessonId === 'dashboard';
+    const isBrainstormMode = lessonId === 'brainstorm';
 
     // ─── COMPLIANCE PRE-PROCESSING ─────────────────────────────────────
     const latestUserMessage = messages.filter(m => m.role === "user").pop()?.content || "";
@@ -728,8 +729,10 @@ RESPONSE FORMAT — MANDATORY:
     let contextSection = "";
     let policiesSection = "";
 
-    if (isDashboardMode) {
-      // Dashboard mode: skip RAG and bank policies, inject module navigation map
+    if (isDashboardMode || isBrainstormMode) {
+      // Dashboard/Brainstorm mode: skip RAG and bank policies
+      if (isDashboardMode) {
+      // Dashboard mode: inject module navigation map
       contextSection = `## MODULE NAVIGATION MAP
 You can direct learners to specific modules. Here is the complete curriculum:
 
@@ -765,6 +768,8 @@ Session 4: AI-Native Integration (5 modules)
 
 When recommending a module, say: "Head to Session X — [title]" and briefly explain why it's relevant.
 To navigate there, they click the session card on the dashboard.`;
+      } // end isDashboardMode
+      // Brainstorm mode: no context needed (Andrea uses creativity)
       policiesSection = "";
     } else {
       // Normal mode: RAG retrieval + bank policies
@@ -821,11 +826,25 @@ You are in NAVIGATOR mode. The learner is on the dashboard, not in a training mo
 - Keep responses to 2-3 sentences max — they can go deeper in the actual module
 - Reference their completed modules to avoid repeating content`;
 
+    const brainstormCoachingDepth = `SESSION COACHING DEPTH: AI Possibilities Brainstorm
+You are in BRAINSTORM mode — a creative thinking partner helping the learner discover how AI can help their work.
+- Goal: help them identify specific AI use cases for their described task or process
+- First response ONLY: ask 1-2 focused probing questions to better understand the task before suggesting anything
+- Subsequent responses: suggest AI applications scaled to their proficiency level:
+  * Level 1-3: simple prompt-based wins (draft X, summarize Y, reformat Z, extract key points)
+  * Level 4-6: reusable agents, prompt templates, multi-step workflows
+  * Level 7-8: integrations, automation pipelines, custom GPT design, system-level thinking
+- Style: generative and exploratory — use "what if you..." or "you could..." framing
+- Concise: 1-2 sentences per idea, no long lists
+- Socratic: after suggesting, ask what resonates or what they want to dig deeper on
+- Do NOT teach CLEAR framework, VERIFY, or curriculum content in this mode
+- For non-bank users: use general professional or personal examples based on their interests`;
+
     const systemPrompt = `${buildAndreaPersona()}
 
 ${buildSocraticRules()}
 
-${isDashboardMode ? dashboardCoachingDepth : getSessionCoachingDepth(effectiveSessionNumber)}
+${isDashboardMode ? dashboardCoachingDepth : isBrainstormMode ? brainstormCoachingDepth : getSessionCoachingDepth(effectiveSessionNumber)}
 
 ## RESPONSE FORMAT — CRITICAL
 You MUST respond with valid JSON in this exact format:

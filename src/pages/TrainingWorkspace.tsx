@@ -29,6 +29,7 @@ import { useUserWorkflows } from '@/hooks/useUserWorkflows';
 import { useUserPrompts } from '@/hooks/useUserPrompts';
 import { useOrgModelSettings } from '@/hooks/useOrgModelSettings';
 import { usePreferredModel } from '@/hooks/usePreferredModel';
+import { useWorkspaceTour } from '@/hooks/useWorkspaceTour';
 import { AgentStudioPanel } from '@/components/agent-studio/AgentStudioPanel';
 import { WorkflowStudioPanel } from '@/components/workflow-studio/WorkflowStudioPanel';
 import { CapstonePanel } from '@/components/capstone/CapstonePanel';
@@ -128,6 +129,9 @@ export default function TrainingWorkspace() {
   const [moduleEngagement, setModuleEngagement] = useState<Record<string, ModuleEngagement>>({});
 
   const session = sessionId ? ALL_SESSION_CONTENT[parseInt(sessionId)] : null;
+
+  // Per-session tour — triggers once per session on first visit
+  useWorkspaceTour(sessionId, session?.title || '');
 
   // Practice conversations hook — persists to database
   const {
@@ -984,7 +988,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
         {/* Middle Column - Practice Chat Area (shown on desktop always, on mobile when practice tab active) */}
         {(!isMobile || mobileTab === 'practice') && (
-          <div className="flex-1 flex flex-col overflow-hidden" ref={contentScrollRef}>
+          <div data-tour="practice-area" className="flex-1 flex flex-col overflow-hidden" ref={contentScrollRef}>
             {/* Session 3 deployed agent banner */}
             {isSession3 && deployedAgent && selectedModule && !isWorkflowModule && !isCapstoneModule && (
               <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 border-b border-primary/10">

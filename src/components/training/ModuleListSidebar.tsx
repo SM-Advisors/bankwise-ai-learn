@@ -127,6 +127,7 @@ export function ModuleListSidebar({
 
   return (
     <aside
+      data-tour="lesson-content"
       className={`border-r border-border bg-card transition-all duration-300 flex flex-col ${collapsed ? 'w-12' : 'w-72'}`}
       aria-label="Training modules navigation"
     >
