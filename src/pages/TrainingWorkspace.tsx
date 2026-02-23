@@ -23,6 +23,7 @@ import { useSkillAssessment } from '@/hooks/useSkillAssessment';
 import { usePracticeConversations } from '@/hooks/usePracticeConversations';
 import { useUserAgents } from '@/hooks/useUserAgents';
 import { useUserWorkflows } from '@/hooks/useUserWorkflows';
+import { useUserPrompts } from '@/hooks/useUserPrompts';
 import { AgentStudioPanel } from '@/components/agent-studio/AgentStudioPanel';
 import { WorkflowStudioPanel } from '@/components/workflow-studio/WorkflowStudioPanel';
 import { CapstonePanel } from '@/components/capstone/CapstonePanel';
@@ -64,6 +65,7 @@ export default function TrainingWorkspace() {
   const { pendingRequest, respondToLevelChange } = useSkillAssessment();
   const { activeAgent, draftAgent } = useUserAgents();
   const { draftWorkflow } = useUserWorkflows();
+  const { createPrompt } = useUserPrompts();
 
   // Determine if current module is an Agent Studio module
   const isAgentModule = sessionId === '2' && (selectedModule?.id === '2-3' || selectedModule?.id === '2-6');
@@ -416,6 +418,7 @@ export default function TrainingWorkspace() {
       let hintAvailable: boolean | undefined;
       let memorySuggestion: { content: string; reason: string } | undefined;
       let shareSuggestion: Message['shareSuggestion'] | undefined;
+      let promptSaveSuggestion: Message['promptSaveSuggestion'] | undefined;
       let levelSuggestion: Message['levelSuggestion'] | undefined;
 
       if (trainerResponse.status === 'fulfilled' && !trainerResponse.value.error) {
@@ -426,6 +429,7 @@ export default function TrainingWorkspace() {
         hintAvailable = replyData?.hintAvailable;
         memorySuggestion = replyData?.memorySuggestion;
         shareSuggestion = replyData?.shareSuggestion;
+        promptSaveSuggestion = replyData?.promptSaveSuggestion;
         levelSuggestion = replyData?.levelSuggestion;
       } else {
         console.error('Trainer chat error during review:', trainerResponse);
@@ -452,6 +456,7 @@ export default function TrainingWorkspace() {
           hintAvailable,
           memorySuggestion,
           shareSuggestion,
+          promptSaveSuggestion,
           levelSuggestion,
           structuredFeedback,
         },
@@ -605,6 +610,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         complianceFlag: replyData?.complianceFlag,
         memorySuggestion: replyData?.memorySuggestion,
         shareSuggestion: replyData?.shareSuggestion,
+        promptSaveSuggestion: replyData?.promptSaveSuggestion,
         levelSuggestion: replyData?.levelSuggestion,
       };
       setTrainerMessages(prev => [...prev, assistantMessage]);
@@ -674,6 +680,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         complianceFlag: replyData?.complianceFlag,
         memorySuggestion: replyData?.memorySuggestion,
         shareSuggestion: replyData?.shareSuggestion,
+        promptSaveSuggestion: replyData?.promptSaveSuggestion,
         levelSuggestion: replyData?.levelSuggestion,
       };
       setTrainerMessages(prev => [...prev, assistantMessage]);
@@ -978,6 +985,19 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                     : 'Andrea will remember this insight.',
                 });
               }
+            }}
+            onSaveToPromptLibrary={async (promptText, title, category) => {
+              await createPrompt({
+                title,
+                content: promptText,
+                category,
+                tags: [],
+                source: selectedModule ? `${sessionId}-${selectedModule.id}` : undefined,
+              });
+              toast({
+                title: 'Saved to Prompt Library',
+                description: `"${title}" has been added to your library.`,
+              });
             }}
           />
         )}

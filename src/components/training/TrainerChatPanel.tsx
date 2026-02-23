@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark, Lightbulb, AlertTriangle, ArrowRight, CheckCircle2, ChevronDown, Target, Wrench, Zap, Share2, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark, BookOpen, Lightbulb, AlertTriangle, ArrowRight, CheckCircle2, ChevronDown, Target, Wrench, Zap, Share2, ThumbsUp, ThumbsDown } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { type Message } from '@/types/training';
 import { ShareDialog } from '@/components/ShareDialog';
@@ -24,6 +24,7 @@ interface TrainerChatPanelProps {
   suggestedPrompts?: string[];
   onSaveMemory?: (content: string, source?: string) => void;
   onAcceptLevelChange?: (proposedLevel: string) => Promise<void>;
+  onSaveToPromptLibrary?: (promptText: string, title: string, category: string) => Promise<void>;
 }
 
 type QuickActionType = 'review' | 'example' | 'hint' | null;
@@ -135,6 +136,7 @@ export function TrainerChatPanel({
   suggestedPrompts,
   onSaveMemory,
   onAcceptLevelChange,
+  onSaveToPromptLibrary,
 }: TrainerChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -147,6 +149,8 @@ export function TrainerChatPanel({
   const [savedSuggestions, setSavedSuggestions] = useState<Set<number>>(new Set());
   const [dismissedShareSuggestions, setDismissedShareSuggestions] = useState<Set<number>>(new Set());
   const [dismissedLevelSuggestions, setDismissedLevelSuggestions] = useState<Set<number>>(new Set());
+  const [savedPromptSuggestions, setSavedPromptSuggestions] = useState<Set<number>>(new Set());
+  const [dismissedPromptSuggestions, setDismissedPromptSuggestions] = useState<Set<number>>(new Set());
   const [shareDialogState, setShareDialogState] = useState<{
     open: boolean;
     suggestion: NonNullable<Message['shareSuggestion']> | null;
@@ -359,6 +363,44 @@ export function TrainerChatPanel({
                           </button>
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Prompt Library save suggestion card */}
+                  {message.promptSaveSuggestion && onSaveToPromptLibrary && !dismissedPromptSuggestions.has(idx) && !savedPromptSuggestions.has(idx) && (
+                    <div className="ml-2 p-2.5 rounded-lg border border-purple-500/30 bg-purple-500/5 flex items-start gap-2">
+                      <BookOpen className="h-3.5 w-3.5 text-purple-500 shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-foreground leading-snug">Save to Prompt Library?</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">
+                          "{message.promptSaveSuggestion.suggestedTitle}"
+                        </p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <button
+                            onClick={async () => {
+                              const s = message.promptSaveSuggestion!;
+                              await onSaveToPromptLibrary(s.promptText, s.suggestedTitle, s.suggestedCategory);
+                              setSavedPromptSuggestions(prev => new Set(prev).add(idx));
+                            }}
+                            className="text-[10px] font-medium text-purple-600 dark:text-purple-400 hover:opacity-80 transition-opacity"
+                          >
+                            Save prompt
+                          </button>
+                          <span className="text-muted-foreground/30">|</span>
+                          <button
+                            onClick={() => setDismissedPromptSuggestions(prev => new Set(prev).add(idx))}
+                            className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            Dismiss
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {savedPromptSuggestions.has(idx) && (
+                    <div className="ml-2 p-2 rounded-lg border border-purple-500/20 bg-purple-500/5 flex items-center gap-2">
+                      <Check className="h-3.5 w-3.5 text-purple-500 shrink-0" />
+                      <p className="text-[10px] text-purple-700 dark:text-purple-400 font-medium">Saved to Prompt Library</p>
                     </div>
                   )}
 

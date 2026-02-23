@@ -370,9 +370,9 @@ async function generateQueryEmbedding(text: string): Promise<number[] | null> {
 
 async function retrieveLessonContext(
   supabase: any,
-  params: { lessonId: string; moduleId?: string; query: string; topK?: number }
+  params: { lessonId: string; moduleId?: string; query: string; topK?: number; learningStyle?: string }
 ): Promise<LessonChunk[]> {
-  const { lessonId, moduleId, query: ragQuery, topK = 6 } = params;
+  const { lessonId, moduleId, query: ragQuery, topK = 6, learningStyle = 'universal' } = params;
 
   // Try vector similarity search first
   const queryEmbedding = await generateQueryEmbedding(ragQuery);
@@ -385,6 +385,7 @@ async function retrieveLessonContext(
         filter_lesson_id: lessonId,
         filter_module_id: moduleId || null,
         similarity_threshold: 0.3,
+        filter_learning_style: learningStyle,
       });
 
       if (!error && data && data.length > 0) {
@@ -760,6 +761,7 @@ To navigate there, they click the session card on the dashboard.`;
         moduleId,
         query: ragQuery,
         topK: 6,
+        learningStyle,
       });
 
       const policies = await retrieveBankPolicies(supabaseUrl);
@@ -820,6 +822,7 @@ You MUST respond with valid JSON in this exact format:
   "hintAvailable": true/false,
   "memorySuggestion": { "content": "Concise insight to remember", "reason": "Why this is worth saving" },
   "shareSuggestion": { "type": "idea|friction_point|agent|workflow", "summary": "1-sentence description of what to share", "destinations": ["community", "my_ideas", "executive"] },
+  "promptSaveSuggestion": { "promptText": "The full prompt text to save", "suggestedTitle": "Short descriptive title", "suggestedCategory": "Category name" },
   "skillObservation": { "skill": "context_setting|specificity|data_security|formatting|compliance|clear_framework|iteration|audience_awareness", "level": "emerging|developing|proficient|advanced", "evidence": "1 sentence describing the behavior you observed" },
   "levelSuggestion": { "currentLevel": "beginner|intermediate|advanced|expert", "proposedLevel": "beginner|intermediate|advanced|expert", "rationale": "2-3 sentences explaining why this level change is warranted", "evidenceSummary": "Brief list of behaviors observed that support this change" }
 }
@@ -848,6 +851,7 @@ FIELD DEFINITIONS:
   - The learner has deployed a working agent or workflow that could help others
   - DO NOT suggest sharing for routine practice tasks, generic insights, or minor observations
   Fields: "type" (idea|friction_point|agent|workflow), "summary" (1 sentence describing what would be shared, written as a title-like description), "destinations" (array of applicable destinations from: "community", "my_ideas", "executive" — include "executive" only for high-impact ideas or when user requests it). Omit this field entirely when there is nothing genuinely worth sharing.
+- "promptSaveSuggestion" (OPTIONAL — include when the learner crafts a genuinely well-structured, reusable prompt): Include when the learner's prompt uses CLEAR framework elements, includes guard rails, or demonstrates advanced techniques that would be useful to reuse. Roughly 1 in 5-10 messages when reviewing practice. Fields: "promptText" (the exact prompt text to save), "suggestedTitle" (short descriptive name, e.g. "Credit Memo Draft Prompt"), "suggestedCategory" (one of: Credit / Lending, Compliance / Risk, Finance / Accounting, Operations, Customer Service, General, Agent Template, Workflow). The UI will show a one-click "Save to Prompt Library" button. Omit this field for generic or low-quality prompts.
 - "skillObservation" (OPTIONAL — include when you clearly observe the learner demonstrating a specific skill at a specific level): Use this to silently record what you see. Only one skill per message. Include when:
   - The learner writes a prompt and you can clearly assess one skill (e.g., "context_setting" at "proficient" because they included role + scenario + output format)
   - Do NOT include for vague or ambiguous interactions where skill level is unclear
@@ -1123,6 +1127,7 @@ function parseAndreaResponse(rawText: string): {
   complianceFlag?: ComplianceFlag;
   memorySuggestion?: { content: string; reason: string };
   shareSuggestion?: { type: string; summary: string; destinations: string[] };
+  promptSaveSuggestion?: { promptText: string; suggestedTitle: string; suggestedCategory: string };
   skillObservation?: { skill: string; level: string; evidence: string };
   levelSuggestion?: { currentLevel: string; proposedLevel: string; rationale: string; evidenceSummary: string };
 } {
@@ -1147,6 +1152,13 @@ function parseAndreaResponse(rawText: string): {
     return { skillObservation: { skill: o.skill as string, level: o.level as string, evidence: o.evidence as string } };
   };
 
+  const extractPromptSaveSuggestion = (parsed: Record<string, unknown>) => {
+    const p = parsed.promptSaveSuggestion as Record<string, unknown> | undefined;
+    if (!p || typeof p !== "object") return {};
+    if (!p.promptText || !p.suggestedTitle || !p.suggestedCategory) return {};
+    return { promptSaveSuggestion: { promptText: p.promptText as string, suggestedTitle: p.suggestedTitle as string, suggestedCategory: p.suggestedCategory as string } };
+  };
+
   const extractLevelSuggestion = (parsed: Record<string, unknown>) => {
     const l = parsed.levelSuggestion as Record<string, unknown> | undefined;
     if (!l || typeof l !== "object") return {};
@@ -1164,6 +1176,7 @@ function parseAndreaResponse(rawText: string): {
       ...(parsed.confidenceNote ? { confidenceNote: parsed.confidenceNote } : {}),
       ...(parsed.memorySuggestion ? { memorySuggestion: parsed.memorySuggestion } : {}),
       ...extractShareSuggestion(parsed),
+      ...extractPromptSaveSuggestion(parsed),
       ...extractSkillObservation(parsed),
       ...extractLevelSuggestion(parsed),
     };
@@ -1181,6 +1194,7 @@ function parseAndreaResponse(rawText: string): {
           ...(parsed.confidenceNote ? { confidenceNote: parsed.confidenceNote } : {}),
           ...(parsed.memorySuggestion ? { memorySuggestion: parsed.memorySuggestion } : {}),
           ...extractShareSuggestion(parsed),
+          ...extractPromptSaveSuggestion(parsed),
           ...extractSkillObservation(parsed),
           ...extractLevelSuggestion(parsed),
         };

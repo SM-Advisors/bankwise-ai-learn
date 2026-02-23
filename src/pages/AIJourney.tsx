@@ -1,12 +1,14 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
   ArrowLeft, TrendingUp, CheckCircle, Circle, Loader2,
-  Sparkles, Bot, Building2, Zap, BookOpen, Award, Target,
+  Sparkles, Bot, Building2, Zap, BookOpen, Award, Target, ArrowRight,
 } from 'lucide-react';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
 import { computeOverallProgress, computeSessionProgress, getCompletedModuleCount, getSessionModuleTotal } from '@/utils/computeProgress';
@@ -45,9 +47,80 @@ const LEVEL_COLORS: Record<string, string> = {
   advanced: 'bg-amber-500',
 };
 
+interface PromptSnapshot {
+  content: string;
+  moduleId: string;
+  sessionId: string;
+  date: string;
+}
+
 export default function AIJourney() {
   const navigate = useNavigate();
-  const { profile, progress, loading } = useAuth();
+  const { user, profile, progress, loading } = useAuth();
+  const [earliestPrompt, setEarliestPrompt] = useState<PromptSnapshot | null>(null);
+  const [latestPrompt, setLatestPrompt] = useState<PromptSnapshot | null>(null);
+  const [promptsLoading, setPromptsLoading] = useState(true);
+
+  // Fetch the user's earliest and latest practice prompts for before/after comparison
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchPromptEvolution = async () => {
+      try {
+        // Earliest submitted conversation
+        const { data: earliest } = await supabase
+          .from('practice_conversations')
+          .select('messages, module_id, session_id, created_at')
+          .eq('user_id', user.id)
+          .eq('is_submitted', true)
+          .order('created_at', { ascending: true })
+          .limit(1);
+
+        // Latest submitted conversation
+        const { data: latest } = await supabase
+          .from('practice_conversations')
+          .select('messages, module_id, session_id, updated_at')
+          .eq('user_id', user.id)
+          .eq('is_submitted', true)
+          .order('updated_at', { ascending: false })
+          .limit(1);
+
+        if (earliest?.[0]) {
+          const msgs = earliest[0].messages as Array<{ role: string; content: string }>;
+          const firstUserMsg = msgs?.find((m) => m.role === 'user');
+          if (firstUserMsg) {
+            setEarliestPrompt({
+              content: firstUserMsg.content,
+              moduleId: earliest[0].module_id,
+              sessionId: earliest[0].session_id,
+              date: earliest[0].created_at,
+            });
+          }
+        }
+
+        if (latest?.[0] && latest[0].updated_at !== earliest?.[0]?.created_at) {
+          const msgs = latest[0].messages as Array<{ role: string; content: string }>;
+          // Get the last user message (their most refined prompt)
+          const userMsgs = msgs?.filter((m) => m.role === 'user') || [];
+          const lastUserMsg = userMsgs[userMsgs.length - 1];
+          if (lastUserMsg) {
+            setLatestPrompt({
+              content: lastUserMsg.content,
+              moduleId: latest[0].module_id,
+              sessionId: latest[0].session_id,
+              date: latest[0].updated_at,
+            });
+          }
+        }
+      } catch {
+        // Silently handle — this is a nice-to-have feature
+      } finally {
+        setPromptsLoading(false);
+      }
+    };
+
+    fetchPromptEvolution();
+  }, [user?.id]);
 
   if (loading || !profile) {
     return (
@@ -292,6 +365,72 @@ export default function AIJourney() {
             )}
           </CardContent>
         </Card>
+
+        {/* Prompt Evolution — Before / After */}
+        {!promptsLoading && earliestPrompt && latestPrompt && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Prompt Evolution
+              </CardTitle>
+              <CardDescription>
+                See how your prompting skills have grown from your first attempt to your latest work
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2">
+                {/* First Prompt */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-[10px] text-muted-foreground">First Prompt</Badge>
+                    <span className="text-[10px] text-muted-foreground">
+                      Module {earliestPrompt.moduleId} &middot; {new Date(earliestPrompt.date).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-lg border bg-muted/30 min-h-[80px]">
+                    <p className="text-sm font-mono whitespace-pre-wrap line-clamp-6 text-muted-foreground">
+                      {earliestPrompt.content}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Latest Prompt */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Badge className="text-[10px] bg-green-500/10 text-green-600 border-green-500/30">Latest Prompt</Badge>
+                    <span className="text-[10px] text-muted-foreground">
+                      Module {latestPrompt.moduleId} &middot; {new Date(latestPrompt.date).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-lg border border-green-500/20 bg-green-500/5 min-h-[80px]">
+                    <p className="text-sm font-mono whitespace-pre-wrap line-clamp-6">
+                      {latestPrompt.content}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Growth indicator */}
+              <div className="flex items-center justify-center gap-3 mt-4 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">First prompt</p>
+                  <p className="text-sm font-medium">{earliestPrompt.content.length} chars</p>
+                </div>
+                <ArrowRight className="h-4 w-4 text-primary" />
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Latest prompt</p>
+                  <p className="text-sm font-medium">{latestPrompt.content.length} chars</p>
+                </div>
+                {latestPrompt.content.length > earliestPrompt.content.length && (
+                  <Badge className="bg-green-500/10 text-green-600 border-green-500/30 text-[10px] ml-2">
+                    +{Math.round(((latestPrompt.content.length - earliestPrompt.content.length) / earliestPrompt.content.length) * 100)}% more detailed
+                  </Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quick Links */}
         <div className="grid gap-4 md:grid-cols-3">

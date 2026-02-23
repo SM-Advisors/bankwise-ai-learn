@@ -23,6 +23,11 @@ export interface Message {
     summary: string;
     destinations: ('community' | 'my_ideas' | 'executive')[];
   };
+  promptSaveSuggestion?: {
+    promptText: string;
+    suggestedTitle: string;
+    suggestedCategory: string;
+  };
   skillObservation?: {
     skill: string;
     level: 'emerging' | 'developing' | 'proficient' | 'advanced';

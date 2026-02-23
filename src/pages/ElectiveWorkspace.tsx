@@ -19,6 +19,7 @@ import { deriveSkillSignals } from '@/utils/deriveSkillSignals';
 import { useAIMemories } from '@/hooks/useAIPreferences';
 import { usePracticeConversations } from '@/hooks/usePracticeConversations';
 import { useElectiveProgress } from '@/hooks/useElectiveProgress';
+import { useUserPrompts } from '@/hooks/useUserPrompts';
 import {
   Loader2, ArrowLeft, Shield, BookOpen, MessageSquare, GraduationCap, Sparkles,
 } from 'lucide-react';
@@ -57,6 +58,7 @@ export default function ElectiveWorkspace() {
   const { policies } = useBankPolicies();
   const { createMemory } = useAIMemories();
   const { getPathProgress, markModuleComplete, updateModuleProgress } = useElectiveProgress();
+  const { createPrompt } = useUserPrompts();
 
   // Find the elective path and module
   const electivePath = ELECTIVE_PATHS.find((p) => p.id === pathId);
@@ -703,6 +705,19 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                     : 'Andrea will remember this insight.',
                 });
               }
+            }}
+            onSaveToPromptLibrary={async (promptText, title, category) => {
+              await createPrompt({
+                title,
+                content: promptText,
+                category,
+                tags: [],
+                source: selectedModule ? `elective-${pathId}-${selectedModule.id}` : undefined,
+              });
+              toast({
+                title: 'Saved to Prompt Library',
+                description: `"${title}" has been added to your library.`,
+              });
             }}
           />
         )}
