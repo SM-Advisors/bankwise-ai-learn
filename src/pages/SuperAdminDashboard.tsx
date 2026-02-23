@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSuperAdminKPIs, OrgSummary } from '@/hooks/useSuperAdminKPIs';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,15 +17,68 @@ import {
 } from '@/components/ui/table';
 import {
   Building2, Users, TrendingUp, Award, ArrowLeft,
-  Shield, Heart, BarChart3, ExternalLink, Loader2
+  Shield, Heart, BarChart3, ExternalLink, Loader2, MessageSquare, Download, Paperclip
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+interface FeedbackItem {
+  id: string;
+  user_name: string | null;
+  message: string | null;
+  file_name: string | null;
+  file_type: string | null;
+  file_data: string | null;
+  created_at: string;
+}
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { orgs, platform, loading, error } = useSuperAdminKPIs();
   const [selectedOrg, setSelectedOrg] = useState<OrgSummary | null>(null); // reserved for future detail panel
+  const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+
+  useEffect(() => {
+    async function fetchFeedback() {
+      setFeedbackLoading(true);
+      try {
+        const { data, error: fbError } = await (supabase
+          .from('user_feedback' as any)
+          .select('id, user_name, message, file_name, file_type, file_data, created_at')
+          .order('created_at', { ascending: false }) as any);
+        if (!fbError && data) setFeedbackItems(data as FeedbackItem[]);
+      } catch (_) {
+        // silently ignore — table may not exist yet
+      } finally {
+        setFeedbackLoading(false);
+      }
+    }
+    if (profile?.is_super_admin) fetchFeedback();
+  }, [profile?.is_super_admin]);
+
+  const downloadFeedbackPdf = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(14);
+    doc.text('Feedback Log', 14, 18);
+    doc.setFontSize(9);
+    doc.text(`Generated ${new Date().toLocaleDateString()}`, 14, 25);
+    autoTable(doc, {
+      startY: 30,
+      head: [['User', 'Date', 'Message', 'Attachment']],
+      body: feedbackItems.map((item) => [
+        item.user_name || '—',
+        new Date(item.created_at).toLocaleDateString(),
+        (item.message || '').slice(0, 200) + ((item.message?.length || 0) > 200 ? '…' : ''),
+        item.file_name ? item.file_name : '—',
+      ]),
+      styles: { fontSize: 8, cellPadding: 3 },
+      columnStyles: { 2: { cellWidth: 80 } },
+    });
+    doc.save(`feedback-log-${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
 
   // Guard — only super admins should reach this page
   if (!profile?.is_super_admin) {
@@ -156,6 +210,10 @@ export default function SuperAdminDashboard() {
             <TabsTrigger value="funnel" className="gap-2">
               <BarChart3 className="h-4 w-4" />
               Completion Funnel
+            </TabsTrigger>
+            <TabsTrigger value="feedback" className="gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Feedback {feedbackItems.length > 0 && `(${feedbackItems.length})`}
             </TabsTrigger>
           </TabsList>
 
@@ -305,6 +363,77 @@ export default function SuperAdminDashboard() {
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="feedback" className="mt-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">User Feedback</CardTitle>
+                    <CardDescription>Feedback submitted during testing</CardDescription>
+                  </div>
+                  {feedbackItems.length > 0 && (
+                    <Button size="sm" variant="outline" className="gap-2" onClick={downloadFeedbackPdf}>
+                      <Download className="h-4 w-4" />
+                      Download PDF
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {feedbackLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>User</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Message</TableHead>
+                        <TableHead>Attachment</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {feedbackItems.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium whitespace-nowrap">{item.user_name || '—'}</TableCell>
+                          <TableCell className="whitespace-nowrap text-muted-foreground text-xs">
+                            {new Date(item.created_at).toLocaleDateString()}{' '}
+                            {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </TableCell>
+                          <TableCell className="max-w-xs">
+                            <p className="text-sm whitespace-pre-wrap break-words">{item.message || '—'}</p>
+                          </TableCell>
+                          <TableCell>
+                            {item.file_data && item.file_name ? (
+                              <a
+                                href={`data:${item.file_type || 'application/octet-stream'};base64,${item.file_data}`}
+                                download={item.file_name}
+                                className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+                              >
+                                <Paperclip className="h-3 w-3" />
+                                {item.file_name}
+                              </a>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {feedbackItems.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                            No feedback submitted yet
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
