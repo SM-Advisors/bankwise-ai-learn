@@ -1189,6 +1189,11 @@ export type Database = {
           display_name: string | null
           employer_bank_name: string | null
           id: string
+          intake_motivation: string[] | null
+          intake_orientation: string | null
+          intake_responses: Json | null
+          intake_role_key: string | null
+          interests: string[] | null
           is_active: boolean
           is_super_admin: boolean
           last_login_at: string | null
@@ -1199,6 +1204,7 @@ export type Database = {
           onboarding_completed: boolean | null
           organization_id: string | null
           preferred_model: string | null
+          safe_use_flag: boolean | null
           tech_learning_style:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
@@ -1215,6 +1221,11 @@ export type Database = {
           display_name?: string | null
           employer_bank_name?: string | null
           id?: string
+          intake_motivation?: string[] | null
+          intake_orientation?: string | null
+          intake_responses?: Json | null
+          intake_role_key?: string | null
+          interests?: string[] | null
           is_active?: boolean
           is_super_admin?: boolean
           last_login_at?: string | null
@@ -1225,6 +1236,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           organization_id?: string | null
           preferred_model?: string | null
+          safe_use_flag?: boolean | null
           tech_learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
@@ -1241,6 +1253,11 @@ export type Database = {
           display_name?: string | null
           employer_bank_name?: string | null
           id?: string
+          intake_motivation?: string[] | null
+          intake_orientation?: string | null
+          intake_responses?: Json | null
+          intake_role_key?: string | null
+          interests?: string[] | null
           is_active?: boolean
           is_super_admin?: boolean
           last_login_at?: string | null
@@ -1251,6 +1268,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           organization_id?: string | null
           preferred_model?: string | null
+          safe_use_flag?: boolean | null
           tech_learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
@@ -1409,6 +1427,10 @@ export type Database = {
           source: string
           text: string
         }[]
+      }
+      validate_registration_code: {
+        Args: { input_code: string }
+        Returns: Json
       }
     }
     Enums: {
