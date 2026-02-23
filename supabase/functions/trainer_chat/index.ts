@@ -593,6 +593,10 @@ serve(async (req) => {
     if (!lineOfBusiness && learnerState?.lineOfBusiness) lineOfBusiness = learnerState.lineOfBusiness;
     if (!userInterests && learnerState?.interests?.length) userInterests = learnerState.interests;
 
+    // Determine if this is a bank employee or a non-bank (F&F / individual) user
+    // Bank users have a real employer bank name set; F&F / personal users do not
+    const isBankUser = !!(employerBankName && employerBankName.trim());
+
     // Fetch AI preferences and memories (pinned + recent unpinned)
     let aiPreferences: AIPreferences | null = null;
     let aiMemories: AIMemory[] = [];
@@ -628,14 +632,15 @@ serve(async (req) => {
 
 LEARNER CONTEXT:
 - Name: ${displayName || "there"}
-- Role: ${bankRole || "banking professional"}
-- Bank: ${employerBankName || "their bank"}
-- Line of Business: ${lineOfBusiness || "general banking"}
+${isBankUser ? `- Role: ${bankRole || "banking professional"}
+- Bank: ${employerBankName}
+- Line of Business: ${lineOfBusiness || "general banking"}` : `- Context: Personal learner / non-bank user${userInterests?.length ? `\n- Interests: ${userInterests.join(", ")}` : ""}`}
 - AI Proficiency: Level ${aiProficiencyLevel ?? 3}/8
 - Current Session: ${effectiveSessionNumber}
-- Modules Completed: ${completedCount}${userInterests && !lineOfBusiness ? `
-- Personal Interests: ${userInterests.join(", ")} (Friends & Family tester — use these interests to create relatable analogies and examples instead of banking-specific scenarios)` : ""}
+- Modules Completed: ${completedCount}
 ${learnerState?.currentCardTitle ? `- Starting Module: ${learnerState.currentCardTitle}` : ""}
+${!isBankUser ? `
+IMPORTANT — NON-BANK USER: This learner is NOT a banking professional. Do NOT reference bank policies, BSA/AML, credit committees, underwriting, or ask "Has your bank issued AI guidance?". Use general professional or personal contexts. Reference their interests above for examples and analogies.` : ""}
 
 ${aiMemories.length > 0 ? `THINGS YOU REMEMBER ABOUT THIS LEARNER:\n${aiMemories.slice(0, 5).map(m => `- ${m.content}`).join("\n")}` : ""}
 
@@ -1001,15 +1006,26 @@ This learner is engaging confidently with detailed, substantive messages.
       return "";
     })()}
 
+${!isBankUser ? `## NON-BANK USER — PERSONA OVERRIDE (highest priority)
+This learner is NOT a banking professional. They are a personal learner, F&F tester, or general professional.
+Completely override the BANKING-SAVVY persona anchor for this learner:
+- NEVER use: BSA/AML, credit committees, underwriting memos, board reports, loan documentation, regulatory examinations, "your bank"
+- NEVER ask: "Has your bank issued guidance on AI?" or any bank-policy question
+- REPLACE "your bank" → "your workplace or personal projects"
+- REPLACE "banking use cases" → "everyday tasks or projects"
+${userInterests?.length ? `- USE these interests for all examples and analogies: ${userInterests.join(", ")}` : "- Use general professional or everyday contexts for examples"}
+- When the curriculum references banking examples, tell the learner they can apply the same concepts to their own context
+- You are still a supportive, direct AI coach — just for a general audience, not a banking one` : ""}
+
 ## CRITICAL RULES
 1. ALWAYS respond with valid JSON containing ALL required fields
 2. Keep replies concise (2-3 sentences) unless reviewing practice work or showing examples
 3. Give ONE actionable suggestion at a time, not a list
 4. Follow the SOCRATIC COACHING RULE for conceptual questions
 5. Match the SESSION COACHING DEPTH for this session
-6. Reference bank policies ONLY when directly relevant
+6. Reference bank policies ONLY when directly relevant AND only for bank users
 7. If their practice looks good, say so specifically and encourage them to submit
-8. Never lecture — be a banking colleague who happens to be great at AI
+8. Never lecture — be a ${isBankUser ? "banking colleague" : "knowledgeable colleague"} who happens to be great at AI
 9. Use their name occasionally (not every message) if you know it
 10. If compliance coaching is required above, address it FIRST before anything else
 ${effectiveSessionNumber >= 2 ? `11. VERIFY INTEGRATION: When reviewing any AI-generated output the learner shows you in Sessions 2-4, check whether they applied VERIFY. If they present output without verification commentary, ask: "Before we move on — did you run VERIFY on this? What would you check first?" Reinforce the habit across all sessions.` : ""}
