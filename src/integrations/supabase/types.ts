@@ -710,18 +710,21 @@ export type Database = {
       }
       organizations: {
         Row: {
+          allowed_models: Json | null
           created_at: string
           id: string
           name: string
           slug: string
         }
         Insert: {
+          allowed_models?: Json | null
           created_at?: string
           id?: string
           name: string
           slug: string
         }
         Update: {
+          allowed_models?: Json | null
           created_at?: string
           id?: string
           name?: string
@@ -1190,6 +1193,7 @@ export type Database = {
             | null
           line_of_business: string | null
           onboarding_completed: boolean | null
+          preferred_model: string | null
           tech_learning_style:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
@@ -1213,6 +1217,7 @@ export type Database = {
             | null
           line_of_business?: string | null
           onboarding_completed?: boolean | null
+          preferred_model?: string | null
           tech_learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
@@ -1236,6 +1241,7 @@ export type Database = {
             | null
           line_of_business?: string | null
           onboarding_completed?: boolean | null
+          preferred_model?: string | null
           tech_learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
