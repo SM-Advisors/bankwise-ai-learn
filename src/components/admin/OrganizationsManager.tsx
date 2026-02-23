@@ -282,9 +282,32 @@ export function OrganizationsManager() {
                       <p className="font-medium text-sm">{org.name}</p>
                       <p className="text-xs text-muted-foreground font-mono">{org.slug}</p>
                     </div>
-                    {savingModelsOrgId === org.id && (
-                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    )}
+                    <div className="flex items-center gap-2">
+                      {savingModelsOrgId === org.id && (
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      )}
+                      {org.allowed_models.length === AVAILABLE_MODELS.length ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs px-2"
+                          disabled={savingModelsOrgId === org.id}
+                          onClick={() => updateOrgModels(org.id, ['claude-sonnet-4-6']).then(r => { if (!r.success) toast({ title: 'Error', description: r.error, variant: 'destructive' }); })}
+                        >
+                          Deselect All
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs px-2"
+                          disabled={savingModelsOrgId === org.id}
+                          onClick={() => updateOrgModels(org.id, AVAILABLE_MODELS.map(m => m.id)).then(r => { if (!r.success) toast({ title: 'Error', description: r.error, variant: 'destructive' }); })}
+                        >
+                          Select All
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     {AVAILABLE_MODELS.map((model) => {
