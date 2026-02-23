@@ -31,6 +31,7 @@ import type { SessionProgressData, SkillSignal } from '@/types/progress';
 import { CompletionSummary } from '@/components/capstone/CompletionSummary';
 import { DashboardChat } from '@/components/DashboardChat';
 import { CommunityFeed } from '@/components/CommunityFeed';
+import { FeedbackModal } from '@/components/FeedbackModal';
 
 const SESSIONS = [
   {
@@ -73,6 +74,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user, profile, progress, loading, signOut, updateProfile } = useAuth();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
@@ -167,6 +169,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       {/* Help Tour Dialog */}
       <HelpTour open={helpOpen} onOpenChange={setHelpOpen} onComplete={handleTourComplete} />
+      <FeedbackModal open={feedbackOpen} onOpenChange={setFeedbackOpen} />
       
       {/* Bank Policy Modal */}
       <BankPolicyModal
@@ -207,6 +210,10 @@ export default function Dashboard() {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-3">
+            <Button variant="ghost" size="sm" className="gap-2 text-destructive hover:text-destructive" onClick={() => setFeedbackOpen(true)}>
+              <MessageCircle className="h-4 w-4" />
+              Feedback
+            </Button>
             <Button variant="ghost" size="sm" className="gap-2" onClick={() => navigate('/policies')}>
               <Shield className="h-4 w-4" />
               Bank Policies
@@ -279,6 +286,9 @@ export default function Dashboard() {
                     <p className="text-xs text-muted-foreground">{profile.bank_role}</p>
                   </div>
                   <div className="flex flex-col py-2">
+                    <button className="flex items-center gap-3 px-4 py-3 text-sm text-destructive hover:bg-muted transition-colors" onClick={() => setFeedbackOpen(true)}>
+                      <MessageCircle className="h-4 w-4" /> Feedback
+                    </button>
                     <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/policies')}>
                       <Shield className="h-4 w-4 text-muted-foreground" /> Bank Policies
                     </button>

@@ -35,6 +35,25 @@ export function FeedbackModal({ open, onOpenChange }: FeedbackModalProps) {
     setFile(selected);
   };
 
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const blob = item.getAsFile();
+        if (!blob) return;
+        if (blob.size > MAX_FILE_SIZE) {
+          setFileError('Pasted image exceeds the 5 MB limit.');
+          return;
+        }
+        setFileError('');
+        setFile(new File([blob], `screenshot-${Date.now()}.png`, { type: blob.type }));
+        return;
+      }
+    }
+  };
+
   const removeFile = () => {
     setFile(null);
     setFileError('');
@@ -108,9 +127,10 @@ export function FeedbackModal({ open, onOpenChange }: FeedbackModalProps) {
         </DialogHeader>
         <div className="space-y-4">
           <Textarea
-            placeholder="Describe what you found, what worked, or what didn't..."
+            placeholder="Describe what you found, what worked, or what didn't... You can also paste a screenshot (Ctrl+V / ⌘V)"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            onPaste={handlePaste}
             rows={5}
             className="resize-none"
           />

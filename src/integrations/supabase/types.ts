@@ -1114,6 +1114,39 @@ export type Database = {
           },
         ]
       }
+      user_feedback: {
+        Row: {
+          created_at: string
+          file_data: string | null
+          file_name: string | null
+          file_type: string | null
+          id: string
+          message: string | null
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_data?: string | null
+          file_name?: string | null
+          file_type?: string | null
+          id?: string
+          message?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_data?: string | null
+          file_name?: string | null
+          file_type?: string | null
+          id?: string
+          message?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: []
+      }
       user_ideas: {
         Row: {
           category: string | null
