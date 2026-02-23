@@ -29,7 +29,7 @@ import { CommunityReviewQueue } from '@/components/admin/CommunityReviewQueue';
 import { learningStyles } from '@/data/learningStyles';
 import { departments } from '@/data/topics';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
-import { seedAllLessonChunks } from '@/utils/seedLessonChunks';
+import { seedAllContent } from '@/utils/seedLessonChunks';
 import {
   BookOpen,
   Brain,
@@ -497,19 +497,34 @@ export default function AdminDashboard() {
     setSeedingChunks(true);
     setSeedResult(null);
     try {
-      const result = await seedAllLessonChunks();
-      setSeedResult(result);
-      if (result.success) {
+      const allResults = await seedAllContent();
+      const sessionsResult = allResults.sessions;
+      const electivesResult = allResults.electives;
+
+      // Combine totals for display
+      const totalChunks = (sessionsResult.totalChunks || 0) + (electivesResult.totalChunks || 0);
+      const totalModules = (sessionsResult.totalModules || 0) + (electivesResult.totalModules || 0);
+      const combinedResult = {
+        success: sessionsResult.success && electivesResult.success,
+        totalChunks,
+        totalModules,
+        sessions: { ...sessionsResult.sessions, ...electivesResult.sessions },
+        embeddings: sessionsResult.embeddings || null,
+        error: sessionsResult.error || electivesResult.error || undefined,
+      };
+
+      setSeedResult(combinedResult);
+      if (combinedResult.success) {
         toast({
-          title: 'Content seeded successfully',
-          description: `${result.totalChunks} chunks created across ${result.totalModules} modules.${
-            result.embeddings ? ` ${result.embeddings.embedded} embeddings generated.` : ''
+          title: 'All content seeded successfully',
+          description: `${totalChunks} chunks created across ${totalModules} modules (4 sessions + 4 elective paths).${
+            combinedResult.embeddings ? ` ${combinedResult.embeddings.embedded} embeddings generated.` : ''
           }`,
         });
       } else {
         toast({
-          title: 'Seed failed',
-          description: result.error || 'Unknown error',
+          title: 'Seed partially failed',
+          description: combinedResult.error || 'Unknown error',
           variant: 'destructive',
         });
       }
@@ -1864,7 +1879,7 @@ export default function AdminDashboard() {
                 <h3 className="font-semibold">Seed &amp; Embed Content</h3>
               </div>
               <p className="text-sm text-muted-foreground pl-7">
-                This will extract all lesson content into searchable chunks and generate AI embeddings for semantic search.
+                This will extract all lesson content (4 core sessions + 4 elective paths) into searchable chunks and generate AI embeddings for semantic search.
                 Run this whenever curriculum content is updated.
               </p>
               <div className="pl-7 flex items-center gap-3">

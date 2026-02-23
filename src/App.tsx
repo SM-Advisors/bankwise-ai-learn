@@ -28,6 +28,7 @@ import AIMemories from "./pages/AIMemories";
 import ResetPassword from "./pages/ResetPassword";
 import PromptLibrary from "./pages/PromptLibrary";
 import Electives from "./pages/Electives";
+import ElectiveWorkspace from "./pages/ElectiveWorkspace";
 import Certificates from "./pages/Certificates";
 import AIJourney from "./pages/AIJourney";
 import NotFound from "./pages/NotFound";
@@ -107,6 +108,11 @@ const App = () => (
                   <Route path="/electives" element={
                     <ProtectedRoute requireOnboarding>
                       <Electives />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/training/elective" element={
+                    <ProtectedRoute requireOnboarding>
+                      <ElectiveWorkspace />
                     </ProtectedRoute>
                   } />
                   <Route path="/certificates" element={
