@@ -151,6 +151,7 @@ export function TrainerChatPanel({
   const [dismissedLevelSuggestions, setDismissedLevelSuggestions] = useState<Set<number>>(new Set());
   const [savedPromptSuggestions, setSavedPromptSuggestions] = useState<Set<number>>(new Set());
   const [dismissedPromptSuggestions, setDismissedPromptSuggestions] = useState<Set<number>>(new Set());
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [shareDialogState, setShareDialogState] = useState<{
     open: boolean;
     suggestion: NonNullable<Message['shareSuggestion']> | null;
@@ -167,6 +168,11 @@ export function TrainerChatPanel({
       setActiveQuickAction(null);
     }
   }, [isLoading]);
+
+  // Collapse suggestions whenever a new set arrives
+  useEffect(() => {
+    setSuggestionsOpen(false);
+  }, [suggestedPrompts]);
 
   const handleQuickActionClick = (prompt: string, actionType: QuickActionType) => {
     setActiveQuickAction(actionType);
@@ -504,22 +510,31 @@ export function TrainerChatPanel({
             </div>
           </ScrollArea>
 
-          {/* Suggested Prompts (from Andrea's response) */}
+          {/* Suggested Prompts (from Andrea's response) — collapsed by default */}
           {suggestedPrompts && suggestedPrompts.length > 0 && !isLoading && (
-            <div className="px-3 py-2 border-t bg-primary/5">
-              <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Suggested next</p>
-              <div className="flex flex-col gap-1">
-                {suggestedPrompts.map((prompt, idx) => (
-                  <button
-                    key={idx}
-                    className="text-left text-xs px-2.5 py-1.5 rounded-md border bg-background hover:bg-muted transition-colors text-foreground/80 hover:text-foreground line-clamp-2"
-                    onClick={() => onQuickAction(prompt)}
-                    disabled={isLoading}
-                  >
-                    {prompt}
-                  </button>
-                ))}
-              </div>
+            <div className="px-3 py-1.5 border-t">
+              <button
+                onClick={() => setSuggestionsOpen(o => !o)}
+                className="flex items-center gap-1.5 w-full text-[10px] font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <span>Suggested next</span>
+                <span className="text-muted-foreground/60 normal-case tracking-normal font-normal">({suggestedPrompts.length})</span>
+                <ChevronDown className={`h-3 w-3 ml-auto transition-transform duration-150 ${suggestionsOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {suggestionsOpen && (
+                <div className="flex flex-col gap-1 mt-1.5">
+                  {suggestedPrompts.map((prompt, idx) => (
+                    <button
+                      key={idx}
+                      className="text-left text-xs px-2.5 py-1.5 rounded-md border bg-background hover:bg-muted transition-colors text-foreground/80 hover:text-foreground line-clamp-2"
+                      onClick={() => { onQuickAction(prompt); setSuggestionsOpen(false); }}
+                      disabled={isLoading}
+                    >
+                      {prompt}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
