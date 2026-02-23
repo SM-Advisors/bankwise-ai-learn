@@ -74,10 +74,8 @@ const Index = () => {
               <Logo variant="full" size="lg" />
             </div>
 
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent text-sm font-medium mb-6">
-              <Sparkles className="h-4 w-4" />
-              Your Partner in AI Enablement
-            </div>
+
+
 
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
               Transform Your Team with{' '}
