@@ -154,5 +154,18 @@ export function useAllUsersWithRoles() {
     return { success: true };
   };
 
-  return { users, loading, refetch: fetchUsers, updateUserProfile, updateUserRole };
+  const deleteUser = async (userId: string) => {
+    // Delete related data first, then profile
+    await supabase.from('user_roles').delete().eq('user_id', userId);
+    await supabase.from('training_progress').delete().eq('user_id', userId);
+    const { error } = await supabase.from('user_profiles').delete().eq('user_id', userId);
+    if (error) {
+      console.error('Error deleting user:', error);
+      return { success: false, error: error.message };
+    }
+    await fetchUsers();
+    return { success: true };
+  };
+
+  return { users, loading, refetch: fetchUsers, updateUserProfile, updateUserRole, deleteUser };
 }
