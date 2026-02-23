@@ -158,6 +158,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             
             const progressData = await fetchProgress(session.user.id);
             setProgress(progressData);
+
+            // Update last_login_at on every sign-in event (including session restore)
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+              await supabase
+                .from('user_profiles')
+                .update({ last_login_at: new Date().toISOString() })
+                .eq('user_id', session.user.id);
+            }
             
             setLoading(false);
           }, 0);
@@ -232,13 +240,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Update last_login_at
-      if (data.user) {
-        await supabase
-          .from('user_profiles')
-          .update({ last_login_at: new Date().toISOString() })
-          .eq('user_id', data.user.id);
-      }
+      // last_login_at is now updated centrally via onAuthStateChange
 
       return { error: null };
     } catch (error) {
