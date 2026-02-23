@@ -18,6 +18,8 @@ import { type Message, type BankPolicy } from '@/types/training';
 import type { SessionProgressData, ModuleEngagement } from '@/types/progress';
 import { DEFAULT_ENGAGEMENT } from '@/types/progress';
 import { deriveSkillSignals } from '@/utils/deriveSkillSignals';
+import { getQuestionsForCompletedModules } from '@/data/spacedRepetitionBank';
+import { selectRetrievalQuestions, formatRetrievalQuestionsForAndrea } from '@/utils/spacedRepetition';
 import { useAIMemories } from '@/hooks/useAIPreferences';
 import { useSkillAssessment } from '@/hooks/useSkillAssessment';
 import { usePracticeConversations } from '@/hooks/usePracticeConversations';
@@ -68,6 +70,22 @@ export default function TrainingWorkspace() {
   const { activeAgent, draftAgent } = useUserAgents();
   const { draftWorkflow } = useUserWorkflows();
   const { createPrompt } = useUserPrompts();
+
+  // ── Spaced repetition: compute retrieval questions for current session ──
+  // Selects 1-2 questions from completed modules to inject mid-session via Andrea.
+  // No DB round-trip needed — quality weighting uses in-memory defaults (all unseen).
+  const retrievalContext = (() => {
+    const completedList = Array.from(completedModules);
+    if (completedList.length === 0) return '';
+    const eligible = getQuestionsForCompletedModules(completedList, selectedModule?.id);
+    const selected = selectRetrievalQuestions(eligible, {
+      completedModuleIds: completedList,
+      seenResponses: [],
+      currentModuleId: selectedModule?.id,
+      maxQuestions: 2,
+    });
+    return formatRetrievalQuestionsForAndrea(selected);
+  })();
 
   // Determine if current module is an Agent Studio module
   const isAgentModule = sessionId === '2' && (selectedModule?.id === '2-3' || selectedModule?.id === '2-6');
@@ -150,6 +168,7 @@ export default function TrainingWorkspace() {
                 displayName: profile.display_name || undefined,
                 bankRole: profile.bank_role || undefined,
                 lineOfBusiness: profile.line_of_business || undefined,
+                retrievalContext: retrievalContext || undefined,
               },
             },
           });
@@ -605,6 +624,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
             displayName: profile?.display_name || undefined,
             bankRole: profile?.bank_role || undefined,
             lineOfBusiness: profile?.line_of_business || undefined,
+            retrievalContext: retrievalContext || undefined,
           },
         },
       });
@@ -677,6 +697,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
             displayName: profile?.display_name || undefined,
             bankRole: profile?.bank_role || undefined,
             lineOfBusiness: profile?.line_of_business || undefined,
+            retrievalContext: retrievalContext || undefined,
           },
         },
       });

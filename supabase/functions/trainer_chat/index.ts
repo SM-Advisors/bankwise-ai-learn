@@ -52,6 +52,7 @@ interface TrainerChatRequest {
     displayName?: string;
     bankRole?: string;
     lineOfBusiness?: string;
+    retrievalContext?: string; // Formatted spaced repetition questions block
   };
   userId?: string;
 }
@@ -965,6 +966,7 @@ ${bankRole ? `- Learner Role: ${bankRole}` : ""}
 ${lineOfBusiness ? `- Department: ${lineOfBusiness}` : ""}
 ${employerBankName ? `- Bank: ${employerBankName}` : ""}
 
+${learnerState?.retrievalContext ? learnerState.retrievalContext : ""}
 ${(() => {
       // ─── MICRO-ADAPTATION: analyze conversation patterns ───
       const userMessages = messages.filter((m: { role: string; content: string }) => m.role === "user");
