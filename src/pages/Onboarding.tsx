@@ -50,6 +50,12 @@ export default function Onboarding() {
   const { toast } = useToast();
   const { departments: deptOptions, loading: deptsLoading } = useDepartments();
 
+  // Track whether this is a retake (user already had onboarding completed before it was reset)
+  const [isRetake] = useState<boolean>(() => {
+    // If profile existed with learning_style set, they've done this before
+    return !!(profile?.learning_style || profile?.tech_learning_style || profile?.ai_proficiency_level);
+  });
+
   // Detect org type from sessionStorage (set during signup) or fall back to 'bank'
   const [orgType] = useState<string>(() => {
     return sessionStorage.getItem('signup_org_type') || 'bank';
@@ -73,12 +79,18 @@ export default function Onboarding() {
   const [learningStyle, setLearningStyle] = useState<LearningStyleType | null>(profile?.learning_style || null);
   const [techLearningStyle, setTechLearningStyle] = useState<LearningStyleType | null>(profile?.tech_learning_style || null);
 
-  // Skip onboarding if already completed
+  // Skip onboarding if already completed (but not during retake)
   useEffect(() => {
     if (!loading && profile?.onboarding_completed) {
       navigate('/dashboard');
     }
   }, [profile, loading, navigate]);
+
+  const handleCancel = async () => {
+    // Restore onboarding_completed and go back to dashboard
+    await updateProfile({ onboarding_completed: true });
+    navigate('/dashboard');
+  };
 
   if (loading) {
     return (
@@ -454,15 +466,26 @@ export default function Onboarding() {
           {/* Navigation — hidden on the proficiency step (it has its own nav) */}
           {step !== proficiencyStep && (
             <div className="flex items-center justify-between p-6 pt-0">
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                disabled={step === 1}
-                className="gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </Button>
+              <div className="flex items-center gap-2">
+                {isRetake && (
+                  <Button
+                    variant="ghost"
+                    onClick={handleCancel}
+                    className="gap-2 text-muted-foreground"
+                  >
+                    Cancel
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={step === 1}
+                  className="gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back
+                </Button>
+              </div>
 
               <Button onClick={handleNext} disabled={isSubmitting} className="gap-2">
                 {isSubmitting ? (

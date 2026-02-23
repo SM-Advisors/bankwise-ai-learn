@@ -101,7 +101,7 @@ export default function Auth() {
       });
     } else {
       toast({ title: 'Welcome back!', description: 'You have successfully logged in.' });
-      navigate('/onboarding');
+      // useEffect will handle redirect based on onboarding_completed
     }
   };
 
