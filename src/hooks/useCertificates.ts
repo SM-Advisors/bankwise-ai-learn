@@ -27,7 +27,7 @@ export function useCertificates() {
         .order('earned_at', { ascending: true });
 
       if (error) throw error;
-      setCertificates((data as Certificate[]) || []);
+      setCertificates((data as unknown as Certificate[]) || []);
     } catch {
       // Table may not exist yet — no fallback needed
       setCertificates([]);

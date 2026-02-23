@@ -29,7 +29,7 @@ export function useElectiveProgress() {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      setRecords((data as ElectiveProgressRecord[]) || []);
+      setRecords((data as unknown as ElectiveProgressRecord[]) || []);
     } catch {
       // Fallback: read from localStorage
       const allRecords: ElectiveProgressRecord[] = [];

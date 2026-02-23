@@ -38,7 +38,7 @@ export default function Certificates() {
     );
   }
 
-  const prog = progress as Record<string, unknown>;
+  const prog = progress as unknown as Record<string, unknown>;
 
   const sessionIds = Object.keys(ALL_SESSION_CONTENT).map(Number).filter((id) => id > 0);
 

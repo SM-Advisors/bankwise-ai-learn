@@ -130,7 +130,7 @@ export default function AIJourney() {
     );
   }
 
-  const prog = progress as Record<string, unknown>;
+  const prog = progress as unknown as Record<string, unknown>;
   const sessionIds = Object.keys(ALL_SESSION_CONTENT).map(Number).filter((id) => id > 0);
   const overallProgress = computeOverallProgress(progress);
 
@@ -202,7 +202,7 @@ export default function AIJourney() {
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-3xl font-bold text-primary">
-                {aggregatedSkills.filter((s) => s.level === 'proficient' || s.level === 'advanced').length}
+                {aggregatedSkills.filter((s) => (s.level as string) === 'proficient' || (s.level as string) === 'advanced').length}
               </div>
               <div className="text-xs text-muted-foreground mt-1">Skills Mastered</div>
             </CardContent>
@@ -339,7 +339,7 @@ export default function AIJourney() {
                         <Badge
                           variant="outline"
                           className={`text-[10px] capitalize ${
-                            skill.level === 'proficient' || skill.level === 'advanced'
+                            (skill.level as string) === 'proficient' || (skill.level as string) === 'advanced'
                               ? 'border-green-500/30 text-green-600'
                               : ''
                           }`}
