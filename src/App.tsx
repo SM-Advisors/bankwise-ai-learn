@@ -9,7 +9,7 @@ import { SessionProvider } from "@/contexts/SessionContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Header } from "@/components/Header";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-
+import { FeedbackButton } from "@/components/FeedbackButton";
 
 // Pages
 import Index from "./pages/Index";
@@ -55,7 +55,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <SessionProvider>
-                
+                <FeedbackButton />
                 <Routes>
                   {/* Public routes */}
                   <Route path="/" element={<Index />} />
