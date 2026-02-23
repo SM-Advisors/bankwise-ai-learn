@@ -211,10 +211,13 @@ export default function Dashboard() {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="gap-2 text-destructive hover:text-destructive" onClick={() => setFeedbackOpen(true)}>
+            <button
+              onClick={() => setFeedbackOpen(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-full border-2 border-destructive text-destructive bg-white shadow-lg hover:shadow-xl hover:bg-destructive/10 transition-all text-sm font-medium"
+            >
               <MessageCircle className="h-4 w-4" />
               Feedback
-            </Button>
+            </button>
             <Button variant="ghost" size="sm" className="gap-2" onClick={() => navigate('/policies')}>
               <Shield className="h-4 w-4" />
               Bank Policies
