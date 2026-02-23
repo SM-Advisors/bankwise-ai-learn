@@ -24,6 +24,8 @@ export interface UserProfile {
   last_login_at: string | null;
   created_at: string;
   updated_at: string;
+  is_super_admin?: boolean;
+  interests?: string[];
 }
 
 export interface TrainingProgress {

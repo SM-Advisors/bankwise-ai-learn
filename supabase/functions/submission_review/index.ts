@@ -26,6 +26,7 @@ interface SubmissionReviewRequest {
   departmentContext?: {
     bankRole?: string;
     lineOfBusiness?: string;
+    interests?: string[]; // F&F users: personal interests instead of department
   };
   learnerState?: {
     currentCardTitle?: string;
@@ -788,7 +789,9 @@ ${rubric ? (typeof rubric === "string" ? rubric : JSON.stringify(rubric, null, 2
 ${departmentContext?.lineOfBusiness ? `## DEPARTMENT CONTEXT
 The learner works in: ${departmentContext.lineOfBusiness === "accounting_finance" ? "Accounting & Finance" : departmentContext.lineOfBusiness === "credit_administration" ? "Credit Administration" : departmentContext.lineOfBusiness === "executive_leadership" ? "Executive & Leadership" : departmentContext.lineOfBusiness}
 ${departmentContext.bankRole ? `Their role: ${departmentContext.bankRole}` : ""}
-Evaluate whether the submission is relevant to their department. Note if examples and terminology are appropriate for their line of business.` : ""}
+Evaluate whether the submission is relevant to their department. Note if examples and terminology are appropriate for their line of business.` : departmentContext?.interests?.length ? `## LEARNER CONTEXT (FRIENDS & FAMILY TESTER)
+This learner is a non-banker pilot tester. Their interests are: ${departmentContext.interests.join(", ")}.
+Do NOT penalize them for lacking banking-specific terminology or banking examples. Instead, evaluate whether they demonstrate understanding of the core AI concepts in the module. Credit creative use of non-banking analogies drawn from their interests.` : ""}
 
 ## SUBMISSION CONTEXT
 - Lesson ID: ${lessonId}

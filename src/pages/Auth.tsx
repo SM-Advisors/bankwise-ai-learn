@@ -174,6 +174,10 @@ export default function Auth() {
         toast({ title: 'Signup Failed', description: error.message, variant: 'destructive' });
       }
     } else {
+      // Store org_type so Onboarding can tailor the flow without an extra DB query
+      if (codeData.org_type) {
+        sessionStorage.setItem('signup_org_type', codeData.org_type);
+      }
       toast({
         title: 'Account Created!',
         description: `Welcome to ${codeData.organization_name}. Let's set up your profile.`

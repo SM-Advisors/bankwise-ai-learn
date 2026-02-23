@@ -1,0 +1,315 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSuperAdminKPIs, OrgSummary } from '@/hooks/useSuperAdminKPIs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Building2, Users, TrendingUp, Award, ArrowLeft,
+  Shield, Heart, BarChart3, ExternalLink, Loader2
+} from 'lucide-react';
+import { Logo } from '@/components/Logo';
+
+export default function SuperAdminDashboard() {
+  const navigate = useNavigate();
+  const { profile } = useAuth();
+  const { orgs, platform, loading, error } = useSuperAdminKPIs();
+  const [selectedOrg, setSelectedOrg] = useState<OrgSummary | null>(null);
+
+  // Guard — only super admins should reach this page
+  if (!profile?.is_super_admin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="max-w-md text-center p-6">
+          <Shield className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <h2 className="text-lg font-semibold mb-2">Access Restricted</h2>
+          <p className="text-muted-foreground mb-4">This page is only accessible to super administrators.</p>
+          <Button onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
+        </Card>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="max-w-md text-center p-6">
+          <p className="text-destructive">Error loading data: {error}</p>
+          <Button variant="outline" className="mt-4" onClick={() => navigate('/dashboard')}>Back</Button>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="border-b bg-card">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Logo variant="full" size="sm" />
+            <div className="h-6 w-px bg-border" />
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              <h1 className="text-lg font-semibold">Super Admin</h1>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
+              My Org Admin
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        {/* Platform-wide KPI cards */}
+        {platform && (
+          <div>
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-4">
+              Platform Overview
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Building2 className="h-4 w-4 text-primary" />
+                    <span className="text-xs text-muted-foreground">Organizations</span>
+                  </div>
+                  <div className="text-2xl font-bold">{platform.total_orgs}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {orgs.filter(o => o.org_type === 'friends_family').length} F&F
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Users className="h-4 w-4 text-accent" />
+                    <span className="text-xs text-muted-foreground">Total Users</span>
+                  </div>
+                  <div className="text-2xl font-bold">{platform.total_users}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {platform.bank_user_count} bankers · {platform.ff_user_count} F&F
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <TrendingUp className="h-4 w-4 text-green-500" />
+                    <span className="text-xs text-muted-foreground">Session Completion</span>
+                  </div>
+                  <div className="text-2xl font-bold">{platform.s1_completion_rate}%</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    S2: {platform.s2_completion_rate}% · S3: {platform.s3_completion_rate}%
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Award className="h-4 w-4 text-yellow-500" />
+                    <span className="text-xs text-muted-foreground">Avg AI Proficiency</span>
+                  </div>
+                  <div className="text-2xl font-bold">
+                    {platform.avg_proficiency != null ? `${platform.avg_proficiency}%` : '—'}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {platform.total_active_users} active users
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Organizations tab */}
+        <Tabs defaultValue="orgs">
+          <TabsList>
+            <TabsTrigger value="orgs" className="gap-2">
+              <Building2 className="h-4 w-4" />
+              Organizations ({orgs.length})
+            </TabsTrigger>
+            <TabsTrigger value="funnel" className="gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Completion Funnel
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="orgs" className="mt-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">All Organizations</CardTitle>
+                <CardDescription>Click any row to drill into that org's admin view</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Organization</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead className="text-right">Users</TableHead>
+                      <TableHead className="text-right">S1</TableHead>
+                      <TableHead className="text-right">S2</TableHead>
+                      <TableHead className="text-right">S3</TableHead>
+                      <TableHead className="text-right">Avg Proficiency</TableHead>
+                      <TableHead />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {orgs.map((org) => (
+                      <TableRow
+                        key={org.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => setSelectedOrg(org)}
+                      >
+                        <TableCell className="font-medium">{org.name}</TableCell>
+                        <TableCell>
+                          {org.org_type === 'friends_family' ? (
+                            <Badge variant="secondary" className="gap-1">
+                              <Heart className="h-3 w-3" />
+                              F&F
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">Bank</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">{org.user_count}</TableCell>
+                        <TableCell className="text-right">
+                          {org.user_count > 0
+                            ? `${Math.round((org.s1_completed / org.user_count) * 100)}%`
+                            : '—'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {org.user_count > 0
+                            ? `${Math.round((org.s2_completed / org.user_count) * 100)}%`
+                            : '—'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {org.user_count > 0
+                            ? `${Math.round((org.s3_completed / org.user_count) * 100)}%`
+                            : '—'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {org.avg_proficiency != null ? `${org.avg_proficiency}%` : '—'}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate('/admin');
+                            }}
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {orgs.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                          No organizations found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="funnel" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Session Completion Funnel</CardTitle>
+                <CardDescription>How users progress through the three sessions across all orgs</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {platform && [
+                  { label: 'Session 1 — AI Foundations', rate: platform.s1_completion_rate },
+                  { label: 'Session 2 — AI Applications', rate: platform.s2_completion_rate },
+                  { label: 'Session 3 — AI Leadership', rate: platform.s3_completion_rate },
+                ].map((item) => (
+                  <div key={item.label}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="font-medium">{item.label}</span>
+                      <span className="text-muted-foreground">{item.rate}%</span>
+                    </div>
+                    <div className="h-3 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary rounded-full transition-all"
+                        style={{ width: `${item.rate}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                <div className="pt-4 border-t">
+                  <h3 className="text-sm font-medium mb-3">By Organization</h3>
+                  {orgs.filter(o => o.user_count > 0).map((org) => (
+                    <div key={org.id} className="mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-medium">{org.name}</span>
+                        {org.org_type === 'friends_family' && (
+                          <Badge variant="secondary" className="text-xs gap-1">
+                            <Heart className="h-2.5 w-2.5" />F&F
+                          </Badge>
+                        )}
+                        <span className="text-xs text-muted-foreground ml-auto">{org.user_count} users</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        {[
+                          { label: 'S1', completed: org.s1_completed },
+                          { label: 'S2', completed: org.s2_completed },
+                          { label: 'S3', completed: org.s3_completed },
+                        ].map((s) => (
+                          <div key={s.label} className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground w-6">{s.label}</span>
+                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-primary/70 rounded-full"
+                                style={{ width: `${org.user_count > 0 ? (s.completed / org.user_count) * 100 : 0}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-muted-foreground w-8 text-right">
+                              {s.completed}/{org.user_count}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}

@@ -20,6 +20,7 @@ import Questionnaire from "./pages/Questionnaire";
 import TopicSelection from "./pages/TopicSelection";
 import Lesson from "./pages/Lesson";
 import AdminDashboard from "./pages/AdminDashboard";
+import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import Ideas from "./pages/Ideas";
 import Policies from "./pages/Policies";
 import PolicyDetail from "./pages/PolicyDetail";
@@ -146,6 +147,13 @@ const App = () => (
                   <Route path="/admin" element={
                     <ProtectedRoute requireOnboarding>
                       <AdminDashboard />
+                    </ProtectedRoute>
+                  } />
+
+                  {/* Super Admin */}
+                  <Route path="/super-admin" element={
+                    <ProtectedRoute requireOnboarding>
+                      <SuperAdminDashboard />
                     </ProtectedRoute>
                   } />
 

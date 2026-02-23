@@ -15,6 +15,7 @@ interface PracticeChatRequest {
   customSystemPrompt?: string; // User's deployed agent system prompt (Session 3)
   bankRole?: string; // User's role (Session 3 department personalization)
   lineOfBusiness?: string; // User's department (Session 3 department personalization)
+  interests?: string[]; // F&F users: personal interest tags for personalization
   model?: string; // Selected model (defaults to claude-sonnet-4-6)
 }
 
@@ -243,18 +244,24 @@ serve(async (req) => {
       customSystemPrompt,
       bankRole,
       lineOfBusiness,
+      interests,
       model: requestedModel,
     }: PracticeChatRequest = await req.json();
 
     const model = requestedModel || "claude-sonnet-4-6";
 
-    // Build department context block for Session 3
+    // Build context block — department for bankers, interests for F&F users
     const departmentName = getDepartmentName(lineOfBusiness);
     const departmentContext = (bankRole || departmentName) ? `
 DEPARTMENT CONTEXT:
 ${departmentName ? `The user works in: ${departmentName}` : ""}
 ${bankRole ? `Their role: ${bankRole}` : ""}
 Tailor your responses to be relevant to their department. Use terminology, examples, and realistic scenarios appropriate for their line of business.` : "";
+
+    const interestsContext = (!lineOfBusiness && interests && interests.length > 0) ? `
+PERSONALIZATION CONTEXT:
+This learner is a Friends & Family tester (not a banker). Their personal interests are: ${interests.join(", ")}.
+Use these interests to create relatable analogies and examples when explaining AI concepts. Make the experience feel fun and personal rather than banking-focused.` : "";
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
@@ -271,7 +278,7 @@ Tailor your responses to be relevant to their department. Use terminology, examp
 SCENARIO CONTEXT:
 The user is working on: "${moduleTitle}"
 ${scenario ? `Situation: ${scenario}` : ""}
-${departmentContext}
+${departmentContext}${interestsContext}
 
 META-INSTRUCTIONS:
 - Stay in character as the agent described above
@@ -287,7 +294,7 @@ You are a general-purpose AI assistant (like ChatGPT or Claude) that a banker is
 ## SCENARIO CONTEXT
 The user is working on: "${moduleTitle}"
 ${scenario ? `\nSituation: ${scenario}` : ""}
-${departmentContext}
+${departmentContext}${interestsContext}
 
 ## CRITICAL BEHAVIOR RULES
 

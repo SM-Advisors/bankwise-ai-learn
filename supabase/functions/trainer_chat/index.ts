@@ -52,6 +52,7 @@ interface TrainerChatRequest {
     displayName?: string;
     bankRole?: string;
     lineOfBusiness?: string;
+    interests?: string[]; // F&F users: personal interest tags instead of department
     retrievalContext?: string; // Formatted spaced repetition questions block
   };
   userId?: string;
@@ -564,11 +565,12 @@ serve(async (req) => {
     let bankRole: string | null = null;
     let lineOfBusiness: string | null = null;
     let employerBankName: string | null = null;
+    let userInterests: string[] | null = null;
 
     if (userId) {
       const { data: profile } = await supabase
         .from("user_profiles")
-        .select("learning_style, tech_learning_style, ai_proficiency_level, display_name, bank_role, line_of_business, employer_bank_name")
+        .select("learning_style, tech_learning_style, ai_proficiency_level, display_name, bank_role, line_of_business, employer_bank_name, interests")
         .eq("user_id", userId)
         .single();
 
@@ -580,6 +582,9 @@ serve(async (req) => {
         bankRole = profile.bank_role;
         lineOfBusiness = profile.line_of_business;
         employerBankName = profile.employer_bank_name;
+        if (profile.interests && Array.isArray(profile.interests) && profile.interests.length > 0) {
+          userInterests = profile.interests;
+        }
       }
     }
 
@@ -587,6 +592,7 @@ serve(async (req) => {
     if (!displayName && learnerState?.displayName) displayName = learnerState.displayName;
     if (!bankRole && learnerState?.bankRole) bankRole = learnerState.bankRole;
     if (!lineOfBusiness && learnerState?.lineOfBusiness) lineOfBusiness = learnerState.lineOfBusiness;
+    if (!userInterests && learnerState?.interests?.length) userInterests = learnerState.interests;
 
     // Fetch AI preferences and memories (pinned + recent unpinned)
     let aiPreferences: AIPreferences | null = null;
@@ -628,7 +634,8 @@ LEARNER CONTEXT:
 - Line of Business: ${lineOfBusiness || "general banking"}
 - AI Proficiency: Level ${aiProficiencyLevel ?? 3}/8
 - Current Session: ${effectiveSessionNumber}
-- Modules Completed: ${completedCount}
+- Modules Completed: ${completedCount}${userInterests && !lineOfBusiness ? `
+- Personal Interests: ${userInterests.join(", ")} (Friends & Family tester — use these interests to create relatable analogies and examples instead of banking-specific scenarios)` : ""}
 ${learnerState?.currentCardTitle ? `- Starting Module: ${learnerState.currentCardTitle}` : ""}
 
 ${aiMemories.length > 0 ? `THINGS YOU REMEMBER ABOUT THIS LEARNER:\n${aiMemories.slice(0, 5).map(m => `- ${m.content}`).join("\n")}` : ""}
@@ -965,6 +972,7 @@ ${displayName ? `- Learner Name: ${displayName}` : ""}
 ${bankRole ? `- Learner Role: ${bankRole}` : ""}
 ${lineOfBusiness ? `- Department: ${lineOfBusiness}` : ""}
 ${employerBankName ? `- Bank: ${employerBankName}` : ""}
+${userInterests && !lineOfBusiness ? `- Interests (use for analogies): ${userInterests.join(", ")}` : ""}
 
 ${learnerState?.retrievalContext ? learnerState.retrievalContext : ""}
 ${(() => {

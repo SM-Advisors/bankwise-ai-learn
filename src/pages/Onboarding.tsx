@@ -9,11 +9,13 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ProficiencyAssessment } from '@/components/ProficiencyAssessment';
+import { InterestPicker } from '@/components/onboarding/InterestPicker';
 import { useToast } from '@/hooks/use-toast';
 import { useDepartments } from '@/hooks/useDepartments';
+import { MAX_INTERESTS } from '@/data/interests';
 import {
   ArrowRight, ArrowLeft, Brain,
-  Lightbulb, CheckCircle, User, Loader2
+  Lightbulb, CheckCircle, User, Loader2, Heart
 } from 'lucide-react';
 
 const LEARNING_STYLE_QUESTIONS = [
@@ -39,18 +41,33 @@ const LEARNING_STYLE_QUESTIONS = [
   },
 ];
 
+// Quick-select job status chips for F&F users
+const FF_JOB_CHIPS = ['Retired', 'Student', 'Between Jobs', 'Other'];
+
 export default function Onboarding() {
   const navigate = useNavigate();
   const { user, profile, updateProfile, loading } = useAuth();
   const { toast } = useToast();
   const { departments: deptOptions, loading: deptsLoading } = useDepartments();
 
+  // Detect org type from sessionStorage (set during signup) or fall back to 'bank'
+  const [orgType] = useState<string>(() => {
+    return sessionStorage.getItem('signup_org_type') || 'bank';
+  });
+  const isFriendsFamily = orgType === 'friends_family';
+
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Profile form state
+  // Banker profile state
   const [bankRole, setBankRole] = useState(profile?.bank_role || '');
   const [lineOfBusiness, setLineOfBusiness] = useState<string | null>(profile?.line_of_business || null);
+
+  // F&F profile state
+  const [jobTitle, setJobTitle] = useState(profile?.bank_role || '');
+  const [interests, setInterests] = useState<string[]>(profile?.interests || []);
+
+  // Shared state
   const [aiProficiency, setAiProficiency] = useState(profile?.ai_proficiency_level ?? 0);
   const [proficiencyCompleted, setProficiencyCompleted] = useState(false);
   const [learningStyle, setLearningStyle] = useState<LearningStyleType | null>(profile?.learning_style || null);
@@ -71,40 +88,61 @@ export default function Onboarding() {
     );
   }
 
-  // 4 steps: (1) Role + LOB, (2) AI Proficiency Assessment, (3) Learning Style, (4) Tech Learning Style
-  const totalSteps = 4;
+  // ── Step counts ───────────────────────────────────────────────────────────
+  // Banker: 4 steps (Role+LOB, Proficiency, Learning Style, Tech Style)
+  // F&F:    5 steps (Job Title, Interests, Proficiency, Learning Style, Tech Style)
+  const totalSteps = isFriendsFamily ? 5 : 4;
 
-  // Progress is based on *completed* steps, not current step.
-  // A step counts as complete only when the user has filled it out AND moved past it.
+  // Map logical step to labels for progress bar
   const completedSteps = (() => {
     let count = 0;
-    // Step 1 is complete if role + LOB filled AND user has moved past it
-    if (step > 1 && bankRole.trim() && lineOfBusiness) count++;
-    // Step 2 is complete if proficiency assessment finished AND user has moved past it
-    if (step > 2 && proficiencyCompleted) count++;
-    // Step 3 is complete if learning style selected AND user has moved past it
-    if (step > 3 && learningStyle) count++;
-    // Step 4 is complete if tech learning style selected (on final step, count when selected)
-    if (step === 4 && techLearningStyle) count++;
+    if (isFriendsFamily) {
+      if (step > 1 && jobTitle.trim()) count++;
+      if (step > 2 && interests.length === MAX_INTERESTS) count++;
+      if (step > 3 && proficiencyCompleted) count++;
+      if (step > 4 && learningStyle) count++;
+      if (step === 5 && techLearningStyle) count++;
+    } else {
+      if (step > 1 && bankRole.trim() && lineOfBusiness) count++;
+      if (step > 2 && proficiencyCompleted) count++;
+      if (step > 3 && learningStyle) count++;
+      if (step === 4 && techLearningStyle) count++;
+    }
     return count;
   })();
   const progressPercent = (completedSteps / totalSteps) * 100;
 
+  // Map logical step number to shared step purpose
+  // Banker:  1=Role+LOB, 2=Proficiency, 3=LearnStyle, 4=TechStyle
+  // F&F:     1=JobTitle, 2=Interests, 3=Proficiency, 4=LearnStyle, 5=TechStyle
+  const proficiencyStep = isFriendsFamily ? 3 : 2;
+  const learnStyleStep = isFriendsFamily ? 4 : 3;
+  const techStyleStep = isFriendsFamily ? 5 : 4;
+
   const handleNext = () => {
-    if (step === 1 && (!lineOfBusiness || !bankRole.trim())) {
-      toast({ title: 'Required', description: 'Please complete all fields', variant: 'destructive' });
+    if (step === 1) {
+      if (isFriendsFamily && !jobTitle.trim()) {
+        toast({ title: 'Required', description: 'Please enter your job title or status', variant: 'destructive' });
+        return;
+      }
+      if (!isFriendsFamily && (!lineOfBusiness || !bankRole.trim())) {
+        toast({ title: 'Required', description: 'Please complete all fields', variant: 'destructive' });
+        return;
+      }
+    }
+    if (step === 2 && isFriendsFamily && interests.length < MAX_INTERESTS) {
+      toast({ title: 'Required', description: `Please select ${MAX_INTERESTS} interests`, variant: 'destructive' });
       return;
     }
-    // Step 2 (proficiency) is handled by the ProficiencyAssessment component's onComplete
-    if (step === 2 && !proficiencyCompleted) {
+    if (step === proficiencyStep && !proficiencyCompleted) {
       toast({ title: 'Required', description: 'Please complete the AI proficiency assessment', variant: 'destructive' });
       return;
     }
-    if (step === 3 && !learningStyle) {
+    if (step === learnStyleStep && !learningStyle) {
       toast({ title: 'Required', description: 'Please select a learning style', variant: 'destructive' });
       return;
     }
-    if (step === 4 && !techLearningStyle) {
+    if (step === techStyleStep && !techLearningStyle) {
       toast({ title: 'Required', description: 'Please select a tech learning style', variant: 'destructive' });
       return;
     }
@@ -117,40 +155,47 @@ export default function Onboarding() {
   };
 
   const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1);
-    }
+    if (step > 1) setStep(step - 1);
   };
 
   const handleProficiencyComplete = (score: number) => {
     setAiProficiency(score);
     setProficiencyCompleted(true);
-    // Auto-advance to next step
-    setStep(3);
+    setStep(learnStyleStep);
   };
 
   const handleComplete = async () => {
     setIsSubmitting(true);
 
-    const { error } = await updateProfile({
-      line_of_business: lineOfBusiness,
-      bank_role: bankRole,
+    const updates: any = {
       ai_proficiency_level: aiProficiency,
       learning_style: learningStyle,
       tech_learning_style: techLearningStyle,
       onboarding_completed: true,
-    });
+    };
 
+    if (isFriendsFamily) {
+      updates.bank_role = jobTitle;  // reuse bank_role column for job title/status
+      updates.interests = interests;
+    } else {
+      updates.line_of_business = lineOfBusiness;
+      updates.bank_role = bankRole;
+    }
+
+    const { error } = await updateProfile(updates);
     setIsSubmitting(false);
 
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
+      // Clear org_type from session storage
+      sessionStorage.removeItem('signup_org_type');
       toast({ title: 'Profile Complete!', description: 'Let\'s start your training journey.' });
       navigate('/dashboard');
     }
   };
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-2xl mx-auto">
@@ -168,8 +213,72 @@ export default function Onboarding() {
         </div>
 
         <Card className="shadow-lg">
-          {/* Step 1: Profile & LOB */}
-          {step === 1 && (
+          {/* ── F&F Step 1: Job Title ──────────────────────────────────────── */}
+          {isFriendsFamily && step === 1 && (
+            <>
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Heart className="h-5 w-5 text-primary" />
+                  </div>
+                  <CardTitle>Welcome, Friend!</CardTitle>
+                </div>
+                <CardDescription>
+                  You're joining as a Friends & Family tester. Just tell us a little about yourself.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="job-title">What do you do?</Label>
+                  <Input
+                    id="job-title"
+                    placeholder="e.g., Software Engineer, Teacher, Marketing Manager"
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {FF_JOB_CHIPS.map((chip) => (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => setJobTitle(chip)}
+                      className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
+                        jobTitle === chip
+                          ? 'border-primary bg-primary/10 text-primary font-medium'
+                          : 'border-border hover:border-primary/50 text-muted-foreground'
+                      }`}
+                    >
+                      {chip}
+                    </button>
+                  ))}
+                </div>
+              </CardContent>
+            </>
+          )}
+
+          {/* ── F&F Step 2: Interest Picker ───────────────────────────────── */}
+          {isFriendsFamily && step === 2 && (
+            <>
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Heart className="h-5 w-5 text-primary" />
+                  </div>
+                  <CardTitle>What do you enjoy?</CardTitle>
+                </div>
+                <CardDescription>
+                  Pick 3 things you love — Andrea will use them to make your learning experience feel personal and relevant.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <InterestPicker selected={interests} onChange={setInterests} />
+              </CardContent>
+            </>
+          )}
+
+          {/* ── Banker Step 1: Role + LOB ─────────────────────────────────── */}
+          {!isFriendsFamily && step === 1 && (
             <>
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
@@ -234,8 +343,8 @@ export default function Onboarding() {
             </>
           )}
 
-          {/* Step 2: AI Proficiency Assessment (self-contained component) */}
-          {step === 2 && (
+          {/* ── Shared: AI Proficiency Assessment ────────────────────────── */}
+          {step === proficiencyStep && (
             <>
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
@@ -254,8 +363,8 @@ export default function Onboarding() {
             </>
           )}
 
-          {/* Step 3: General Learning Style */}
-          {step === 3 && (
+          {/* ── Shared: General Learning Style ───────────────────────────── */}
+          {step === learnStyleStep && (
             <>
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
@@ -298,8 +407,8 @@ export default function Onboarding() {
             </>
           )}
 
-          {/* Step 4: Tech Learning Style */}
-          {step === 4 && (
+          {/* ── Shared: Tech Learning Style ───────────────────────────────── */}
+          {step === techStyleStep && (
             <>
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
@@ -342,8 +451,8 @@ export default function Onboarding() {
             </>
           )}
 
-          {/* Navigation — hidden on Step 2 (proficiency assessment has its own nav) */}
-          {step !== 2 && (
+          {/* Navigation — hidden on the proficiency step (it has its own nav) */}
+          {step !== proficiencyStep && (
             <div className="flex items-center justify-between p-6 pt-0">
               <Button
                 variant="outline"

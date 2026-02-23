@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { User, Settings, LogOut, ChevronDown, RefreshCw, Play } from 'lucide-react';
+import { User, Settings, LogOut, ChevronDown, RefreshCw, Play, Shield } from 'lucide-react';
 
 interface ProfileDropdownProps {
   onReplayTour?: () => void;
@@ -140,6 +140,12 @@ export function ProfileDropdown({ onReplayTour }: ProfileDropdownProps = {}) {
             <DropdownMenuItem onClick={() => navigate('/admin')} className="cursor-pointer">
               <Settings className="mr-2 h-4 w-4" />
               Admin Settings
+            </DropdownMenuItem>
+          )}
+          {profile?.is_super_admin && (
+            <DropdownMenuItem onClick={() => navigate('/super-admin')} className="cursor-pointer">
+              <Shield className="mr-2 h-4 w-4 text-primary" />
+              Super Admin
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
