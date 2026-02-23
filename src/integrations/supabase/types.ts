@@ -1149,6 +1149,7 @@ export type Database = {
           file_type: string | null
           id: string
           message: string | null
+          status: string
           user_id: string | null
           user_name: string | null
         }
@@ -1159,6 +1160,7 @@ export type Database = {
           file_type?: string | null
           id?: string
           message?: string | null
+          status?: string
           user_id?: string | null
           user_name?: string | null
         }
@@ -1169,6 +1171,7 @@ export type Database = {
           file_type?: string | null
           id?: string
           message?: string | null
+          status?: string
           user_id?: string | null
           user_name?: string | null
         }
