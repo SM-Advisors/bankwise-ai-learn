@@ -24,7 +24,6 @@ import {
 } from '@/components/ui/table';
 import { Building2, Key, Plus, Loader2, RefreshCw, Pencil, Check, X, Cpu } from 'lucide-react';
 import { AVAILABLE_MODELS, PROVIDER_COLORS } from '@/lib/models';
-import { supabase } from '@/integrations/supabase/client';
 
 function generateCode(length = 8): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
