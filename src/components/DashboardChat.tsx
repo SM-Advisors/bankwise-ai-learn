@@ -122,9 +122,10 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
     setSuggestedPrompts([]);
     setIsLoading(true);
 
-    try {
-      let convId = activeConversationId;
+    // Declare outside try so catch can show an error message even on the first message
+    let convId: string | null = activeConversationId;
 
+    try {
       if (!convId) {
         // No active conversation - create one with the first message
         convId = await createConversation(userMessage);
@@ -147,12 +148,12 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
 
       const assistantMessage: DashboardMessage = {
         role: 'assistant',
-        content: data.reply || "I'm here to help! What would you like to know about your training?",
+        content: data?.reply || "I'm here to help! What would you like to know about your training?",
       };
 
       await appendMessage(assistantMessage, convId);
 
-      if (data.suggestedPrompts && Array.isArray(data.suggestedPrompts) && data.suggestedPrompts.length > 0) {
+      if (data?.suggestedPrompts && Array.isArray(data.suggestedPrompts) && data.suggestedPrompts.length > 0) {
         setSuggestedPrompts(data.suggestedPrompts);
       } else {
         setSuggestedPrompts([]);
@@ -163,8 +164,9 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
         role: 'assistant',
         content: "Sorry, I'm having trouble connecting right now. Please try again in a moment.",
       };
-      if (activeConversationId) {
-        await appendMessage(errorMessage);
+      // Use local convId (not stale state) so errors are visible even on the first message
+      if (convId) {
+        await appendMessage(errorMessage, convId);
       }
       setSuggestedPrompts(DEFAULT_SUGGESTIONS);
     } finally {
