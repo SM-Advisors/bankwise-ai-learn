@@ -32,7 +32,6 @@ interface FeedbackItem {
   file_type: string | null;
   file_data: string | null;
   created_at: string;
-  is_read: boolean;
   status: 'new' | 'resolved';
 }
 
@@ -51,7 +50,7 @@ export default function SuperAdminDashboard() {
       try {
         const { data, error: fbError } = await (supabase
           .from('user_feedback' as any)
-          .select('id, user_name, message, file_name, file_type, file_data, created_at, is_read, status')
+          .select('id, user_name, message, file_name, file_type, file_data, created_at, status')
           .order('created_at', { ascending: false }) as any);
         if (!fbError && data) setFeedbackItems(data as FeedbackItem[]);
       } catch (_) {
