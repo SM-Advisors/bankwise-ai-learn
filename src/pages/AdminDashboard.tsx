@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -151,7 +151,9 @@ const CORE_PROGRAMS = [
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const [searchParams] = useSearchParams();
+  const viewingOrgId = searchParams.get('org_id');
+  const { user, profile, loading: authLoading } = useAuth();
   const { isAdmin, loading: roleLoading } = useUserRole();
   const { toast } = useToast();
   const { policies, loading: policiesLoading, updatePolicy, createPolicy } = useAllBankPolicies();
@@ -214,6 +216,24 @@ export default function AdminDashboard() {
     embeddings?: { embedded: number; errors?: string[] } | null;
     error?: string;
   } | null>(null);
+
+  // Viewing org context (for super admin drill-down)
+  const [viewingOrgName, setViewingOrgName] = useState<string | null>(null);
+  const isSuperAdmin = !!profile?.is_super_admin;
+
+  // Fetch org name when viewing another org
+  useEffect(() => {
+    if (!viewingOrgId) {
+      setViewingOrgName(null);
+      return;
+    }
+    supabase
+      .from('organizations')
+      .select('name')
+      .eq('id', viewingOrgId)
+      .single()
+      .then(({ data }) => setViewingOrgName(data?.name || 'Unknown Org'));
+  }, [viewingOrgId]);
 
   // Load community URL when settings load
   useEffect(() => {
@@ -538,24 +558,64 @@ export default function AdminDashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
+      {/* Org context banner for super admin drill-down */}
+      {viewingOrgId && viewingOrgName && (
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium">
+              Viewing: <span className="text-primary">{viewingOrgName}</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {isSuperAdmin && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/admin')}
+                  className="gap-2"
+                >
+                  <ArrowLeft className="h-3 w-3" />
+                  My Org Admin
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/super-admin')}
+                  className="gap-2"
+                >
+                  <Shield className="h-3 w-3" />
+                  Super Admin
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="mb-8">
         <Button 
           variant="ghost" 
           size="sm" 
-          onClick={() => navigate('/dashboard')}
+          onClick={() => viewingOrgId && isSuperAdmin ? navigate('/super-admin') : navigate('/dashboard')}
           className="mb-4 gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
+          {viewingOrgId && isSuperAdmin ? 'Back to Super Admin' : 'Back to Dashboard'}
         </Button>
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-primary/10 rounded-lg">
             <Shield className="h-6 w-6 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold">Training Administration</h1>
+          <h1 className="text-3xl font-bold">
+            {viewingOrgName ? `${viewingOrgName} — Administration` : 'Training Administration'}
+          </h1>
         </div>
         <p className="text-muted-foreground">
-          Manage users, view reports, review ideas, and administer training content
+          {viewingOrgName
+            ? `Managing users and content for ${viewingOrgName}`
+            : 'Manage users, view reports, review ideas, and administer training content'}
         </p>
       </div>
 

@@ -24,7 +24,7 @@ export default function SuperAdminDashboard() {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { orgs, platform, loading, error } = useSuperAdminKPIs();
-  const [selectedOrg, setSelectedOrg] = useState<OrgSummary | null>(null);
+  const [selectedOrg, setSelectedOrg] = useState<OrgSummary | null>(null); // reserved for future detail panel
 
   // Guard — only super admins should reach this page
   if (!profile?.is_super_admin) {
@@ -184,7 +184,7 @@ export default function SuperAdminDashboard() {
                       <TableRow
                         key={org.id}
                         className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => setSelectedOrg(org)}
+                        onClick={() => navigate(`/admin?org_id=${org.id}`)}
                       >
                         <TableCell className="font-medium">{org.name}</TableCell>
                         <TableCell>
@@ -222,7 +222,7 @@ export default function SuperAdminDashboard() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate('/admin');
+                              navigate(`/admin?org_id=${org.id}`);
                             }}
                           >
                             <ExternalLink className="h-3 w-3" />
