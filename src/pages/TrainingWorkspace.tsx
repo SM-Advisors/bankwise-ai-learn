@@ -392,6 +392,7 @@ export default function TrainingWorkspace() {
     };
 
     let structuredFeedback: Message['structuredFeedback'] | undefined;
+    let gateResult: import('@/types/progress').GateResult | null = null;
     try {
       // Call both trainer_chat (Andrea) and submission_review (structured) in parallel
       const [trainerResponse, reviewResponse] = await Promise.allSettled([
@@ -468,7 +469,6 @@ export default function TrainingWorkspace() {
       }
 
       // Extract structured feedback and gate result from submission_review
-      let gateResult: import('@/types/progress').GateResult | null = null;
       if (reviewResponse.status === 'fulfilled' && !reviewResponse.value.error) {
         const feedbackData = reviewResponse.value.data;
         if (feedbackData?.feedback) {

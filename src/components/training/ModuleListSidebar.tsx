@@ -238,7 +238,7 @@ export function ModuleListSidebar({
 
               if (locked) {
                 // Find which gate is blocking this module
-                const blockingGate = modules.slice(0, idx).findLast(m => m.isGateModule && !moduleEngagement[m.id]?.gatePassed && !completedModules.has(m.id));
+                const blockingGate = [...modules.slice(0, idx)].reverse().find(m => m.isGateModule && !moduleEngagement[m.id]?.gatePassed && !completedModules.has(m.id));
                 return (
                   <Tooltip key={module.id}>
                     <TooltipTrigger asChild>{button}</TooltipTrigger>
