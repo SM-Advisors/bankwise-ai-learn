@@ -155,16 +155,18 @@ export function useAllUsersWithRoles() {
   };
 
   const deleteUser = async (userId: string) => {
-    // Delete related data first, then profile
-    await supabase.from('user_roles').delete().eq('user_id', userId);
-    await supabase.from('training_progress').delete().eq('user_id', userId);
-    const { error } = await supabase.from('user_profiles').delete().eq('user_id', userId);
-    if (error) {
-      console.error('Error deleting user:', error);
-      return { success: false, error: error.message };
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+        body: { user_id: userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      await fetchUsers();
+      return { success: true };
+    } catch (err: any) {
+      console.error('Error deleting user:', err);
+      return { success: false, error: err.message };
     }
-    await fetchUsers();
-    return { success: true };
   };
 
   return { users, loading, refetch: fetchUsers, updateUserProfile, updateUserRole, deleteUser };
