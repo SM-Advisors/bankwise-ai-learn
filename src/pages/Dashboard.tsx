@@ -1,4 +1,4 @@
-import { useEffect, useState, Fragment } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -394,7 +394,7 @@ export default function Dashboard() {
         </div>
 
         {/* Sessions Grid */}
-        <div data-tour="sessions-grid" className="grid gap-6 md:grid-cols-2">
+        <div data-tour="sessions-grid" className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {SESSIONS.map((session) => {
             const status = getSessionStatus(session.id);
             const IconComponent = session.icon;
@@ -422,10 +422,9 @@ export default function Dashboard() {
             };
 
             return (
-              <Fragment key={session.id}>
-                {session.id === 4 && <BrainstormPanel />}
               <Card
-                className={`transition-all hover:shadow-lg flex flex-col${session.id === 4 ? ' md:col-span-2' : ''}`}
+                key={session.id}
+                className="transition-all hover:shadow-lg flex flex-col"
               >
                 <CardHeader className="flex-1">
                   <div className="flex items-start justify-between">
@@ -496,9 +495,15 @@ export default function Dashboard() {
                   </Button>
                 </CardContent>
               </Card>
-              </Fragment>
             );
           })}
+        </div>
+
+        {/* AI Brainstorm — centered strip below sessions */}
+        <div className="mt-4 flex justify-center">
+          <div className="w-56">
+            <BrainstormPanel />
+          </div>
         </div>
 
         {/* Live Feed and Community Hub - Side by Side */}
