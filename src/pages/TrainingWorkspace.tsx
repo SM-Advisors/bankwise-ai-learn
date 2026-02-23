@@ -262,6 +262,35 @@ export default function TrainingWorkspace() {
     } as any);
   };
 
+  // Manually bypass a gate module (user dismisses the gate requirement)
+  const handleGateBypass = async (moduleId: string) => {
+    if (!sessionId) return;
+
+    const newCompletedModules = new Set(completedModules);
+    newCompletedModules.add(moduleId);
+    setCompletedModules(newCompletedModules);
+
+    const progressKey = `session_${sessionId}_progress` as keyof typeof progress;
+    const currentProgress = (progress?.[progressKey] as SessionProgressData) || { completedModules: [] };
+    const engagement = { ...(currentProgress.moduleEngagement || {}), ...moduleEngagement };
+    const existing = engagement[moduleId] || { ...DEFAULT_ENGAGEMENT };
+    engagement[moduleId] = {
+      ...existing,
+      gatePassed: true,
+      completed: true,
+      completedAt: new Date().toISOString(),
+    };
+    setModuleEngagement(engagement);
+
+    await updateProgress({
+      [progressKey]: {
+        ...currentProgress,
+        completedModules: Array.from(newCompletedModules),
+        moduleEngagement: engagement,
+      },
+    } as any);
+  };
+
   if (loading || !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -859,6 +888,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                     handleModuleSelect(module);
                     setMobileModulesOpen(false);
                   }}
+                  onGateBypass={handleGateBypass}
                 />
               </SheetContent>
             </Sheet>
@@ -948,6 +978,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
             completedModules={completedModules}
             moduleEngagement={moduleEngagement}
             onSelectModule={handleModuleSelect}
+            onGateBypass={handleGateBypass}
           />
         )}
 

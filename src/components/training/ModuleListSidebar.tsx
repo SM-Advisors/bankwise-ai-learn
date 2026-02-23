@@ -15,6 +15,7 @@ interface ModuleListSidebarProps {
   completedModules: Set<string>;
   moduleEngagement: Record<string, ModuleEngagement>;
   onSelectModule: (module: ModuleContent) => void;
+  onGateBypass?: (moduleId: string) => void;
 }
 
 const getModuleTypeIcon = (type: ModuleContent['type']) => {
@@ -109,6 +110,7 @@ export function ModuleListSidebar({
   completedModules,
   moduleEngagement,
   onSelectModule,
+  onGateBypass,
 }: ModuleListSidebarProps) {
   // Compute active module count (any state beyond not_started)
   const activeCount = modules.filter((m) => {
@@ -213,14 +215,26 @@ export function ModuleListSidebar({
                       </span>
                       {/* Quality Gate badge */}
                       {isGate && (
-                        <span className={`shrink-0 inline-flex items-center gap-0.5 text-[9px] font-semibold px-1 py-0.5 rounded ${
-                          gatePassed
-                            ? 'bg-green-500/15 text-green-600'
-                            : 'bg-amber-500/15 text-amber-600'
-                        }`}>
-                          <ShieldCheck className="h-2.5 w-2.5" />
-                          Gate
-                        </span>
+                        !gatePassed && onGateBypass ? (
+                          <button
+                            type="button"
+                            title="Click to manually dismiss this gate"
+                            onClick={(e) => { e.stopPropagation(); onGateBypass(module.id); }}
+                            className="shrink-0 inline-flex items-center gap-0.5 text-[9px] font-semibold px-1 py-0.5 rounded bg-amber-500/15 text-amber-600 hover:bg-green-500/15 hover:text-green-600 transition-colors"
+                          >
+                            <ShieldCheck className="h-2.5 w-2.5" />
+                            Gate
+                          </button>
+                        ) : (
+                          <span className={`shrink-0 inline-flex items-center gap-0.5 text-[9px] font-semibold px-1 py-0.5 rounded ${
+                            gatePassed
+                              ? 'bg-green-500/15 text-green-600'
+                              : 'bg-amber-500/15 text-amber-600'
+                          }`}>
+                            <ShieldCheck className="h-2.5 w-2.5" />
+                            Gate
+                          </span>
+                        )
                       )}
                     </div>
                     <div className="flex items-center gap-1.5 mt-0.5">
