@@ -113,6 +113,11 @@ export default function Onboarding() {
   const { profile, updateProfile, loading } = useAuth();
   const { toast } = useToast();
 
+  // Retake detection: user already completed onboarding before it was reset via profile dropdown
+  const [isRetake] = useState<boolean>(() =>
+    !!(profile?.intake_role_key || profile?.learning_style || profile?.ai_proficiency_level),
+  );
+
   const [orgType] = useState<string>(() => sessionStorage.getItem('signup_org_type') || 'bank');
   const isFriendsFamily = orgType === 'friends_family';
 
@@ -176,6 +181,12 @@ export default function Onboarding() {
   useEffect(() => {
     if (!loading && profile?.onboarding_completed) navigate('/dashboard');
   }, [profile, loading, navigate]);
+
+  // Retake cancel — restore onboarding_completed and return to dashboard
+  const handleCancel = async () => {
+    await updateProfile({ onboarding_completed: true });
+    navigate('/dashboard');
+  };
 
   if (loading) {
     return (
@@ -798,15 +809,22 @@ export default function Onboarding() {
           {/* ── Navigation ───────────────────────────────────────────────── */}
           {!hideNav && (
             <div className="flex items-center justify-between p-6 pt-3 border-t">
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                disabled={step === 1}
-                className="gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </Button>
+              <div className="flex items-center gap-2">
+                {isRetake && (
+                  <Button variant="ghost" onClick={handleCancel} className="text-muted-foreground">
+                    Cancel
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={step === 1}
+                  className="gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back
+                </Button>
+              </div>
 
               <Button onClick={handleNext} disabled={isSubmitting} className="gap-2">
                 {isSubmitting ? (
