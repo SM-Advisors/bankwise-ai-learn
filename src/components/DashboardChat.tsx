@@ -197,7 +197,7 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
     return (
       <button
         onClick={handleOpen}
-        className="fixed bottom-6 right-6 z-50 h-24 w-24 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 overflow-hidden border-2 border-primary/30"
+        className="fixed bottom-6 right-6 z-[9999] h-24 w-24 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 overflow-hidden border-2 border-primary/30"
         aria-label="Chat with Andrea"
       >
         <img src={andreaCoach} alt="Andrea" className="h-full w-full object-cover" />
@@ -207,7 +207,7 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
 
   // Expanded state - chat panel
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-[400px] h-[500px] flex flex-col">
+    <div className="fixed bottom-6 right-6 z-[9999] w-[400px] h-[500px] flex flex-col">
       <Card className="flex flex-col h-full shadow-xl border">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b bg-primary text-primary-foreground rounded-t-lg">
