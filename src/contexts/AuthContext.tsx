@@ -26,6 +26,12 @@ export interface UserProfile {
   updated_at: string;
   is_super_admin?: boolean;
   interests?: string[];
+  // Intake v2 fields
+  intake_responses?: Record<string, unknown>;
+  safe_use_flag?: boolean;
+  intake_role_key?: string;
+  intake_orientation?: string;
+  intake_motivation?: string[];
 }
 
 export interface TrainingProgress {
