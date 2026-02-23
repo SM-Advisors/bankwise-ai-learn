@@ -41,7 +41,7 @@ export interface IntakePlacement {
 
 // ── Main scoring function ────────────────────────────────────────────────
 
-export function scoreIntake(answers: IntakeAnswers): IntakePlacement {
+export function scoreIntake(answers: IntakeAnswers, precomputedStep5Score?: number): IntakePlacement {
   const d: Record<string, number[]> = {
     d1: [], d2: [], d3: [], d4: [], d5: [], d6: [], d7: [],
   };
@@ -194,10 +194,10 @@ export function scoreIntake(answers: IntakeAnswers): IntakePlacement {
     }
   }
 
-  // ── Step 5: Micro-Demonstration Task (heuristic scoring) ──
-  // Note: Spec calls for Andrea/Claude scoring via backend rubric.
-  // Heuristic used here for pilot; upgrade to edge function later.
-  const step5Score = scoreStep5(answers.step5_prompt);
+  // ── Step 5: Micro-Demonstration Task ──
+  // Uses LLM score from intake-prompt-score edge function when available;
+  // falls back to heuristic if the edge function call failed or was skipped.
+  const step5Score = precomputedStep5Score ?? scoreStep5(answers.step5_prompt);
   const step5Level = step5Score <= 3 ? 1 : step5Score <= 5 ? 2 : step5Score <= 7 ? 3 : 4;
   d.d3.push(step5Level);
   d.d4.push(Math.max(1, step5Level - 0.5));

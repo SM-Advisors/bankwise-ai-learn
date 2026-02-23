@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, LearningStyleType } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ import {
   type AnswerOption,
 } from '@/data/intakeQuestions';
 import { scoreIntake, type IntakeAnswers } from '@/utils/intakeScoring';
+import { supabase } from '@/integrations/supabase/client';
 import {
   ArrowRight, ArrowLeft, Heart, Loader2,
   Briefcase, Brain, ShieldCheck, AlertTriangle, Pencil, Sparkles,
@@ -172,6 +173,10 @@ export default function Onboarding() {
   const [sjtAnswers, setSjtAnswers] = useState<Record<string, string>>({});
   // Step 5
   const [step5Prompt, setStep5Prompt] = useState('');
+  // Ref holds the LLM score for Step 5 once the edge function returns.
+  // Using a ref (not state) so completeBanker() reads the latest value without
+  // stale-closure issues and without triggering a re-render.
+  const step5LlmScoreRef = useRef<number | null>(null);
   // Step 6
   const [q10, setQ10] = useState('');
   const [q11, setQ11] = useState<string[]>([]);
@@ -277,9 +282,32 @@ export default function Onboarding() {
   };
 
   // ── Navigation ────────────────────────────────────────────────────────
+
+  // Fire LLM scoring for the Step 5 prompt in the background.
+  // Called when the banker advances from Step 5 → Step 6 so the score is
+  // ready (Haiku ~1s) long before they finish Q10–Q12 and hit Complete.
+  // On any failure the ref stays null and scoreIntake() uses the heuristic.
+  const fireStep5LlmScore = async (prompt: string) => {
+    step5LlmScoreRef.current = null; // reset before each attempt
+    try {
+      const { data, error } = await supabase.functions.invoke('intake-prompt-score', {
+        body: { prompt },
+      });
+      if (!error && data && typeof data.score === 'number') {
+        step5LlmScoreRef.current = data.score;
+      }
+    } catch {
+      // Silently ignore — heuristic fallback will be used
+    }
+  };
+
   const handleNext = () => {
     if (!validateStep()) return;
     if (step < totalSteps) {
+      // Prefetch LLM score as soon as the banker leaves Step 5
+      if (!isFriendsFamily && step === 5) {
+        fireStep5LlmScore(step5Prompt);
+      }
       setStep(step + 1);
     } else {
       handleComplete();
@@ -287,7 +315,13 @@ export default function Onboarding() {
   };
 
   const handleBack = () => {
-    if (step > 1) setStep(step - 1);
+    if (step > 1) {
+      // Invalidate cached LLM score if returning to Step 5 — user may edit their prompt
+      if (!isFriendsFamily && step === 6) {
+        step5LlmScoreRef.current = null;
+      }
+      setStep(step - 1);
+    }
   };
 
   // F&F proficiency assessment auto-advances
@@ -342,7 +376,8 @@ export default function Onboarding() {
       q10, q11, q12,
     };
 
-    const placement = scoreIntake(answers);
+    // Pass LLM score if it arrived; otherwise scoreIntake() falls back to heuristic
+    const placement = scoreIntake(answers, step5LlmScoreRef.current ?? undefined);
 
     // Map Q12 → learning style
     const Q12_STYLE_MAP: Record<string, LearningStyleType> = {
