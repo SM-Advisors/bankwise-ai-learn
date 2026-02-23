@@ -393,6 +393,11 @@ export default function Dashboard() {
           </p>
         </div>
 
+        {/* AI Brainstorm — compact card */}
+        <div className="mb-4 w-36">
+          <BrainstormPanel />
+        </div>
+
         {/* Sessions Grid */}
         <div data-tour="sessions-grid" className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {SESSIONS.map((session) => {
@@ -499,12 +504,6 @@ export default function Dashboard() {
           })}
         </div>
 
-        {/* AI Brainstorm — centered strip below sessions */}
-        <div className="mt-4 flex justify-center">
-          <div className="w-56">
-            <BrainstormPanel />
-          </div>
-        </div>
 
         {/* Live Feed and Community Hub - Side by Side */}
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
