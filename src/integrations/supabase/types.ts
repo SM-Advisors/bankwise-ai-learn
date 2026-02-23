@@ -714,6 +714,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          org_type: string | null
           slug: string
         }
         Insert: {
@@ -721,6 +722,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          org_type?: string | null
           slug: string
         }
         Update: {
@@ -728,6 +730,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          org_type?: string | null
           slug?: string
         }
         Relationships: []
@@ -1187,6 +1190,7 @@ export type Database = {
           employer_bank_name: string | null
           id: string
           is_active: boolean
+          is_super_admin: boolean
           last_login_at: string | null
           learning_style:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -1211,6 +1215,7 @@ export type Database = {
           employer_bank_name?: string | null
           id?: string
           is_active?: boolean
+          is_super_admin?: boolean
           last_login_at?: string | null
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -1235,6 +1240,7 @@ export type Database = {
           employer_bank_name?: string | null
           id?: string
           is_active?: boolean
+          is_super_admin?: boolean
           last_login_at?: string | null
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
