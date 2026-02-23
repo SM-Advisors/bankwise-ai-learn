@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChevronLeft, ChevronRight, BookOpen, CheckCircle, FileText, Lightbulb, Play, Eye, MessageCircle, Clock } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ChevronLeft, ChevronRight, BookOpen, CheckCircle, FileText, Lightbulb, Play, Eye, MessageCircle, Clock, Lock, ShieldCheck } from 'lucide-react';
 import { type ModuleContent } from '@/data/trainingContent';
 import type { ModuleEngagement, ModuleState } from '@/types/progress';
 import { getModuleState } from '@/utils/computeProgress';
@@ -78,6 +79,28 @@ const getStateLabel = (state: ModuleState, engagement?: ModuleEngagement): { tex
   }
 };
 
+/**
+ * Returns true if a module is gated (locked) because a prior gate module hasn't been passed.
+ * A gate module itself is never locked — it must remain accessible to attempt.
+ */
+function isModuleLocked(
+  module: ModuleContent,
+  allModules: ModuleContent[],
+  moduleEngagement: Record<string, ModuleEngagement>,
+  completedModules: Set<string>,
+): boolean {
+  const moduleIndex = allModules.findIndex(m => m.id === module.id);
+  for (let i = 0; i < moduleIndex; i++) {
+    const candidate = allModules[i];
+    if (!candidate.isGateModule) continue;
+    // Gate not cleared if not passed and not legacy-completed
+    const eng = moduleEngagement[candidate.id];
+    const passed = eng?.gatePassed === true || completedModules.has(candidate.id);
+    if (!passed) return true;
+  }
+  return false;
+}
+
 export function ModuleListSidebar({
   collapsed,
   onToggleCollapse,
@@ -139,10 +162,14 @@ export function ModuleListSidebar({
       {!collapsed && (
         <ScrollArea className="flex-1 px-2 pb-2">
           <nav className="space-y-2" aria-label="Module list">
+            <TooltipProvider>
             {modules.map((module, idx) => {
               const isSelected = selectedModule?.id === module.id;
               const engagement = moduleEngagement[module.id];
               const isLegacyCompleted = completedModules.has(module.id);
+              const locked = isModuleLocked(module, modules, moduleEngagement, completedModules);
+              const isGate = !!module.isGateModule;
+              const gatePassed = engagement?.gatePassed === true || isLegacyCompleted;
 
               // Determine state: use engagement if available, fall back to legacy
               let state: ModuleState;
@@ -154,30 +181,48 @@ export function ModuleListSidebar({
                 state = 'not_started';
               }
 
-              const IconComponent = getStateIcon(state, module.type);
-              const iconBg = getStateBackground(state, isSelected);
-              const stateLabel = getStateLabel(state, engagement);
-              const leftBorder = getStateBorder(state);
+              const IconComponent = locked ? Lock : getStateIcon(state, module.type);
+              const iconBg = locked
+                ? 'bg-muted text-muted-foreground/40'
+                : getStateBackground(state, isSelected);
+              const stateLabel = locked ? null : getStateLabel(state, engagement);
+              const leftBorder = locked ? 'border-l-muted' : getStateBorder(state);
 
-              return (
+              const button = (
                 <button
                   key={module.id}
+                  disabled={locked}
                   className={`flex items-start gap-3 w-full p-3 text-sm rounded-xl border-y border-r border-l-[3px] transition-all text-left ${leftBorder} ${
-                    isSelected
-                      ? 'bg-accent/10 border-y-accent border-r-accent shadow-sm text-foreground'
-                      : 'bg-card border-y-border border-r-border hover:border-y-accent/40 hover:border-r-accent/40 hover:shadow-sm text-muted-foreground hover:text-foreground'
+                    locked
+                      ? 'opacity-50 cursor-not-allowed bg-muted/30 border-y-border border-r-border'
+                      : isSelected
+                        ? 'bg-accent/10 border-y-accent border-r-accent shadow-sm text-foreground'
+                        : 'bg-card border-y-border border-r-border hover:border-y-accent/40 hover:border-r-accent/40 hover:shadow-sm text-muted-foreground hover:text-foreground'
                   }`}
-                  onClick={() => onSelectModule(module)}
+                  onClick={() => !locked && onSelectModule(module)}
                   aria-pressed={isSelected}
-                  aria-label={`${state === 'completed' ? 'Completed: ' : ''}${idx + 1}. ${module.title}`}
+                  aria-label={`${locked ? 'Locked: ' : state === 'completed' ? 'Completed: ' : ''}${idx + 1}. ${module.title}`}
                 >
                   <div className={`mt-0.5 flex items-center justify-center h-7 w-7 rounded-lg shrink-0 ${iconBg}`}>
                     <IconComponent className="h-4 w-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className={`block truncate font-medium ${isSelected ? 'text-foreground' : ''}`}>
-                      {module.title}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`block truncate font-medium ${isSelected ? 'text-foreground' : ''}`}>
+                        {module.title}
+                      </span>
+                      {/* Quality Gate badge */}
+                      {isGate && (
+                        <span className={`shrink-0 inline-flex items-center gap-0.5 text-[9px] font-semibold px-1 py-0.5 rounded ${
+                          gatePassed
+                            ? 'bg-green-500/15 text-green-600'
+                            : 'bg-amber-500/15 text-amber-600'
+                        }`}>
+                          <ShieldCheck className="h-2.5 w-2.5" />
+                          Gate
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span className="text-xs text-muted-foreground capitalize">{module.type}</span>
                       {stateLabel && (
@@ -190,7 +235,23 @@ export function ModuleListSidebar({
                   </div>
                 </button>
               );
+
+              if (locked) {
+                // Find which gate is blocking this module
+                const blockingGate = modules.slice(0, idx).findLast(m => m.isGateModule && !moduleEngagement[m.id]?.gatePassed && !completedModules.has(m.id));
+                return (
+                  <Tooltip key={module.id}>
+                    <TooltipTrigger asChild>{button}</TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-48">
+                      <p className="text-xs">Complete and pass the Quality Gate in <strong>{blockingGate?.title ?? 'a previous module'}</strong> to unlock this module.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+
+              return button;
             })}
+            </TooltipProvider>
           </nav>
         </ScrollArea>
       )}

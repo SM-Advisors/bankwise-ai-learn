@@ -1,6 +1,13 @@
 // Progress tracking types for the hybrid engagement system
 // Stored in training_progress.session_X_progress JSONB columns
 
+export interface GateResult {
+  passed: boolean;
+  criteriaMetCount: number;
+  criteriaTotalCount: number;
+  gateMessage: string;
+}
+
 export interface ModuleEngagement {
   contentViewed: boolean;
   contentViewedAt?: string;
@@ -16,6 +23,10 @@ export interface ModuleEngagement {
     issues: string[];
     summary: string;
   };
+  // Quality gate fields (only set for isGateModule modules)
+  gatePassed?: boolean;
+  gateAttempts?: number;
+  lastGateResult?: GateResult;
 }
 
 export interface SkillSignal {

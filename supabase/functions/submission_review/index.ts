@@ -8,6 +8,7 @@ import { checkRateLimit } from "../_shared/rateLimiter.ts";
 interface SubmissionReviewRequest {
   lessonId: string;
   moduleId?: string;
+  isGateModule?: boolean;
   submission: string;
   rubric?: string | Record<string, unknown>;
   agentTemplate?: {
@@ -249,7 +250,7 @@ serve(async (req) => {
     }
 
     const requestBody: SubmissionReviewRequest = await req.json();
-    const { lessonId, moduleId, submission, rubric, agentTemplate, workflowData, departmentContext, learnerState, userId: bodyUserId } = requestBody;
+    const { lessonId, moduleId, isGateModule, submission, rubric, agentTemplate, workflowData, departmentContext, learnerState, userId: bodyUserId } = requestBody;
 
     if (!lessonId || !submission) {
       return new Response(
@@ -620,7 +621,27 @@ ${learnerState?.attemptNumber ? `- Attempt #${learnerState.attemptNumber}` : ""}
 8. If the submission touches on data handling, AI usage, or security, verify alignment with bank guidelines
 
 ## REQUIRED OUTPUT FORMAT (strict JSON, no extra keys)
-{
+${isGateModule ? `{
+  "feedback": {
+    "summary": "2-3 sentence overall assessment",
+    "strengths": ["specific thing done well", "another strength"],
+    "issues": ["specific issue found", "another issue"],
+    "fixes": ["actionable fix for issue 1", "actionable fix for issue 2"],
+    "next_steps": ["what to try next", "suggested improvement"]
+  },
+  "gateResult": {
+    "passed": true or false,
+    "criteriaMetCount": number of learning objectives clearly demonstrated in the submission,
+    "criteriaTotalCount": total number of learning objectives for this module,
+    "gateMessage": "1-2 sentences explaining the gate decision — what was strong or what must be demonstrated to pass"
+  }
+}
+
+GATE EVALUATION RULES:
+- Evaluate each learning objective listed under "This Module's Objectives" above
+- passed = true if criteriaMetCount >= 60% of criteriaTotalCount (round up) AND no critical compliance issues are present
+- The submission must show actual performance of the skills, not just awareness of them
+- Be fair but rigorous — vague or surface-level submissions that don't demonstrate the specific skills should not pass` : `{
   "feedback": {
     "summary": "2-3 sentence overall assessment",
     "strengths": ["specific thing done well", "another strength"],
@@ -628,7 +649,7 @@ ${learnerState?.attemptNumber ? `- Attempt #${learnerState.attemptNumber}` : ""}
     "fixes": ["actionable fix for issue 1", "actionable fix for issue 2"],
     "next_steps": ["what to try next", "suggested improvement"]
   }
-}`;
+}`}`;
 
     // Call Claude API
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -711,7 +732,13 @@ ${learnerState?.attemptNumber ? `- Attempt #${learnerState.attemptNumber}` : ""}
     }
 
     return new Response(
-      JSON.stringify(feedbackData),
+      JSON.stringify({
+        ...feedbackData,
+        // Pass through gateResult if present (gate modules only)
+        ...(isGateModule && (feedbackData as any).gateResult
+          ? { gateResult: (feedbackData as any).gateResult }
+          : {}),
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

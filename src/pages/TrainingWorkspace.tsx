@@ -423,6 +423,7 @@ export default function TrainingWorkspace() {
           body: {
             lessonId: sessionId || '1',
             moduleId: selectedModule.id,
+            isGateModule: selectedModule.isGateModule === true,
             submission: conversationTranscript,
             rubric,
             // Pass agent template for modules 2-3 and 2-5 for agent-specific rubrics
@@ -435,7 +436,7 @@ export default function TrainingWorkspace() {
               currentCardTitle: selectedModule.title,
               learningObjectives: selectedModule.learningObjectives,
               learningOutcome: selectedModule.learningOutcome,
-              attemptNumber: 1,
+              attemptNumber: (moduleEngagement[selectedModule.id]?.gateAttempts ?? 0) + 1,
               progressSummary: `Submitted ${activeMessages.filter(m => m.role === 'user').length} prompts`,
             },
           },
@@ -466,12 +467,15 @@ export default function TrainingWorkspace() {
         console.error('Trainer chat error during review:', trainerResponse);
       }
 
-      // Extract structured feedback from submission_review
-      // Assign to outer-scoped structuredFeedback
+      // Extract structured feedback and gate result from submission_review
+      let gateResult: import('@/types/progress').GateResult | null = null;
       if (reviewResponse.status === 'fulfilled' && !reviewResponse.value.error) {
         const feedbackData = reviewResponse.value.data;
         if (feedbackData?.feedback) {
           structuredFeedback = feedbackData.feedback;
+        }
+        if (feedbackData?.gateResult) {
+          gateResult = feedbackData.gateResult;
         }
       } else {
         console.error('Submission review error:', reviewResponse);
@@ -513,24 +517,37 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
     // Mark conversation as submitted in database
     await markSubmitted();
 
-    // Mark module as completed
-    setModuleCompleted(true);
+    // Determine if gate passed (for gate modules) or always pass (non-gate)
+    const isGate = selectedModule.isGateModule === true;
+    const gatePassed = !isGate || (gateResult?.passed === true);
+
+    // Mark module as completed only if not gated or gate passed
     const newCompletedModules = new Set(completedModules);
-    newCompletedModules.add(selectedModule.id);
-    setCompletedModules(newCompletedModules);
+    if (gatePassed) {
+      setModuleCompleted(true);
+      newCompletedModules.add(selectedModule.id);
+      setCompletedModules(newCompletedModules);
+    }
 
     if (sessionId) {
       const progressKey = `session_${sessionId}_progress` as const;
       const currentProgress = (progress?.[progressKey] as SessionProgressData) || { completedModules: [] };
+      const prevEngagement = moduleEngagement[selectedModule.id] || { ...DEFAULT_ENGAGEMENT };
 
       // Build engagement update with feedback and skill signals
       const engagementUpdates: Partial<ModuleEngagement> = {
         submitted: true,
         submittedAt: new Date().toISOString(),
-        completed: true,
-        completedAt: new Date().toISOString(),
+        completed: gatePassed,
+        completedAt: gatePassed ? new Date().toISOString() : undefined,
         practiceMessageCount: activeMessages.filter(m => m.role === 'user').length,
       };
+
+      if (isGate) {
+        engagementUpdates.gateAttempts = (prevEngagement.gateAttempts ?? 0) + 1;
+        engagementUpdates.gatePassed = gatePassed;
+        if (gateResult) engagementUpdates.lastGateResult = gateResult;
+      }
 
       if (structuredFeedback) {
         engagementUpdates.lastFeedback = {

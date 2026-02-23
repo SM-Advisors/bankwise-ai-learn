@@ -9,6 +9,7 @@ export interface ModuleContent {
   videoUrl?: string; // Optional video URL for video-type modules
   learningObjectives: string[];
   learningOutcome: string; // Single behavioral statement: "After this module, you can..."
+  isGateModule?: boolean;  // If true, next modules are locked until this one is submitted and passes
   content: {
     overview: string;
     keyPoints: string[];
@@ -179,6 +180,7 @@ Requirements (→ Task + Constraints): Include debt service coverage ratio, curr
         'Evaluate a prompt for data security compliance before submitting it to any AI system',
       ],
       learningOutcome: 'After this module, you can remove all PII from any prompt and replace it with synthetic data while preserving the business need.',
+      isGateModule: true,
       content: {
         overview: 'Context is the foundation of effective prompting. In banking, setting proper context helps the AI understand regulatory requirements, audience expectations, and professional standards. There are 5 context types: Role context (who you are), Task context (what you need), Audience context (who will read it), Regulatory context (what rules apply), and Security context (what NOT to include). Data security is non-negotiable — never share real customer PII with AI.',
         keyPoints: [
@@ -304,6 +306,7 @@ Security: Use generic placeholders for any specific amounts or dates. Do not men
         'Justify why structured VERIFY catches errors that casual reading misses',
       ],
       learningOutcome: 'After this module, you can apply the VERIFY checklist to detect and categorize hallucinations in AI-generated banking output.',
+      isGateModule: true,
       content: {
         overview: 'AI does not "know" facts — it generates plausible-sounding text based on patterns. When it generates information that looks correct but is fabricated, that is a hallucination. In banking, hallucinations are dangerous because they look professional and authoritative. This module teaches you the 5 types of banking AI hallucinations and the VERIFY checklist for structured output verification.',
         keyPoints: [
@@ -491,6 +494,7 @@ USE A ONE-OFF PROMPT when:
         'Construct a prompt injection test message and explain which defense pattern should block it',
       ],
       learningOutcome: 'After this module, you can diagnose an agent\'s architectural gaps and write guard rails that enforce compliance boundaries.',
+      isGateModule: true,
       content: {
         overview: 'An AI agent is a configured assistant with persistent instructions that define its behavior before any user message arrives. Unlike one-off prompts, an agent maintains consistent behavior across hundreds of interactions without manual repetition. In Module 2-1, you mapped CLEAR to agent sections — now you learn the architectural pillars that make agents reliable. Effective agents are built on four pillars: the system prompt (behavior anchor), knowledge boundaries (what the agent knows and disclaims), output format specifications (so responses are predictable), and guard rails (explicit refusal patterns for out-of-scope or non-compliant requests). Think of it like a bank\'s operating procedures — each employee follows a manual that defines what they can do independently and what requires escalation. Your agent\'s architecture is its operating manual.',
         keyPoints: [
@@ -1025,6 +1029,7 @@ export const SESSION_3_CONTENT: SessionContent = {
         'Write a personalized compliance checklist tailored to the specific data types and decisions in your role',
       ],
       learningOutcome: 'After this module, you can run a compliance check on any AI task before executing it and know when to escalate to compliance.',
+      isGateModule: true,
       content: {
         overview: 'Banking operates under one of the highest regulatory densities of any industry, and AI introduces new surface areas for compliance risk. The three core compliance considerations for AI in banking are Data Handling (what you share with AI), Decision-Making (AI informs, humans decide), and Documentation (how AI use is recorded). This module does not replace your bank\'s official AI policy — it provides the foundational mental model for evaluating any AI task against compliance requirements. When in doubt, the rule is simple: if you would not put this data in an email to an external party, do not put it in an AI prompt.',
         keyPoints: [
