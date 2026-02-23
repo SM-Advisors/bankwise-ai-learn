@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useElectiveProgress } from '@/hooks/useElectiveProgress';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +30,7 @@ const PATH_COLORS: Record<string, string> = {
 export default function Electives() {
   const navigate = useNavigate();
   const { profile, progress } = useAuth();
+  const { getPathProgress, loading: electiveLoading } = useElectiveProgress();
   const [expandedPath, setExpandedPath] = useState<string | null>(null);
 
   // Check which sessions are completed
@@ -45,14 +47,13 @@ export default function Electives() {
     return completedSessions.has(parseInt(match[1]));
   };
 
-  // Elective progress from localStorage (will be DB-backed in Tier 3)
-  const getElectiveProgress = (pathId: string): Record<string, boolean> => {
-    const stored = localStorage.getItem(`bankwise_elective_${pathId}`);
-    return stored ? JSON.parse(stored) : {};
+  // Use Supabase-backed hook with localStorage fallback
+  const getElectiveProgressLocal = (pathId: string): Record<string, boolean> => {
+    return getPathProgress(pathId);
   };
 
   const getPathCompletion = (path: ElectivePath) => {
-    const prog = getElectiveProgress(path.id);
+    const prog = getElectiveProgressLocal(path.id);
     const completed = path.modules.filter((m) => prog[m.id]).length;
     return { completed, total: path.modules.length, percent: Math.round((completed / path.modules.length) * 100) };
   };
@@ -150,7 +151,7 @@ export default function Electives() {
                   {isExpanded && (
                     <div className="space-y-2 mb-4">
                       {path.modules.map((mod) => {
-                        const modProgress = getElectiveProgress(path.id);
+                        const modProgress = getElectiveProgressLocal(path.id);
                         const isCompleted = modProgress[mod.id];
 
                         return (
@@ -194,7 +195,7 @@ export default function Electives() {
                       className="w-full gap-2"
                       variant={completed > 0 ? 'default' : 'outline'}
                       onClick={() => {
-                        const prog = getElectiveProgress(path.id);
+                        const prog = getElectiveProgressLocal(path.id);
                         const nextModule = path.modules.find((m) => !prog[m.id]) || path.modules[0];
                         handleStartModule(path.id, nextModule.id);
                       }}

@@ -1,0 +1,153 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+export interface UserPrompt {
+  id: string;
+  user_id: string;
+  title: string;
+  content: string;
+  category: string;
+  tags: string[];
+  is_favorite: boolean;
+  source: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useUserPrompts() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [prompts, setPrompts] = useState<UserPrompt[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchPrompts = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const { data, error } = await supabase
+        .from('user_prompts' as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+      setPrompts((data as UserPrompt[]) || []);
+    } catch (err) {
+      // Fallback to localStorage if table doesn't exist yet
+      const stored = localStorage.getItem('bankwise_prompt_library');
+      if (stored) {
+        try {
+          const local = JSON.parse(stored) as UserPrompt[];
+          setPrompts(local.map((p) => ({ ...p, user_id: user.id, metadata: {}, updated_at: p.created_at })));
+        } catch { /* ignore parse errors */ }
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    fetchPrompts();
+  }, [fetchPrompts]);
+
+  const createPrompt = useCallback(async (data: {
+    title: string;
+    content: string;
+    category: string;
+    tags: string[];
+    source?: string;
+  }): Promise<string | null> => {
+    if (!user?.id) return null;
+    try {
+      const { data: result, error } = await supabase
+        .from('user_prompts' as any)
+        .insert({
+          user_id: user.id,
+          title: data.title,
+          content: data.content,
+          category: data.category,
+          tags: data.tags,
+          source: data.source || null,
+          is_favorite: false,
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+      await fetchPrompts();
+      return (result as any)?.id || null;
+    } catch {
+      // Fallback: save to localStorage
+      const newPrompt: UserPrompt = {
+        id: `prompt_${Date.now()}`,
+        user_id: user.id,
+        ...data,
+        source: data.source || null,
+        is_favorite: false,
+        metadata: {},
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      const updated = [newPrompt, ...prompts];
+      setPrompts(updated);
+      localStorage.setItem('bankwise_prompt_library', JSON.stringify(updated));
+      return newPrompt.id;
+    }
+  }, [user?.id, fetchPrompts, prompts]);
+
+  const updatePrompt = useCallback(async (id: string, updates: Partial<UserPrompt>) => {
+    if (!user?.id) return;
+    try {
+      const { error } = await supabase
+        .from('user_prompts' as any)
+        .update(updates)
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      await fetchPrompts();
+    } catch {
+      // Fallback: update localStorage
+      const updated = prompts.map((p) => (p.id === id ? { ...p, ...updates } : p));
+      setPrompts(updated);
+      localStorage.setItem('bankwise_prompt_library', JSON.stringify(updated));
+    }
+  }, [user?.id, fetchPrompts, prompts]);
+
+  const deletePrompt = useCallback(async (id: string) => {
+    if (!user?.id) return;
+    try {
+      const { error } = await supabase
+        .from('user_prompts' as any)
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      await fetchPrompts();
+    } catch {
+      // Fallback: remove from localStorage
+      const updated = prompts.filter((p) => p.id !== id);
+      setPrompts(updated);
+      localStorage.setItem('bankwise_prompt_library', JSON.stringify(updated));
+    }
+  }, [user?.id, fetchPrompts, prompts]);
+
+  const toggleFavorite = useCallback(async (id: string) => {
+    const prompt = prompts.find((p) => p.id === id);
+    if (!prompt) return;
+    await updatePrompt(id, { is_favorite: !prompt.is_favorite });
+  }, [prompts, updatePrompt]);
+
+  return {
+    prompts,
+    loading,
+    createPrompt,
+    updatePrompt,
+    deletePrompt,
+    toggleFavorite,
+    refetch: fetchPrompts,
+  };
+}
