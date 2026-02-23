@@ -1197,6 +1197,7 @@ export type Database = {
             | null
           line_of_business: string | null
           onboarding_completed: boolean | null
+          organization_id: string | null
           preferred_model: string | null
           tech_learning_style:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -1222,6 +1223,7 @@ export type Database = {
             | null
           line_of_business?: string | null
           onboarding_completed?: boolean | null
+          organization_id?: string | null
           preferred_model?: string | null
           tech_learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -1247,6 +1249,7 @@ export type Database = {
             | null
           line_of_business?: string | null
           onboarding_completed?: boolean | null
+          organization_id?: string | null
           preferred_model?: string | null
           tech_learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
@@ -1261,6 +1264,13 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
