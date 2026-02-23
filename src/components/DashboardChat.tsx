@@ -197,7 +197,7 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
     return (
       <button
         onClick={handleOpen}
-        className="fixed bottom-6 right-6 z-[9999] h-24 w-24 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 overflow-hidden border-2 border-primary/30"
+        className="fixed bottom-6 right-6 z-[9999] h-24 w-24 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 overflow-hidden border-2 border-primary/30 bg-white"
         aria-label="Chat with Andrea"
       >
         <img src={andreaCoach} alt="Andrea" className="h-full w-full object-cover" />
