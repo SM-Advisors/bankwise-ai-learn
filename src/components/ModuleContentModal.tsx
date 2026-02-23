@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Lightbulb, Play, CheckCircle, Clock } from 'lucide-react';
+import { FileText, Lightbulb, Play, CheckCircle, Clock, Target } from 'lucide-react';
 import type { ModuleContent } from '@/data/trainingContent';
 
 interface ModuleContentModalProps {
@@ -55,6 +55,16 @@ export function ModuleContentModal({ module, open, onOpenChange }: ModuleContent
 
         <ScrollArea className="flex-1 overflow-y-auto">
           <div className="px-6 py-4 space-y-6">
+            {/* Learning Outcome — prominent callout */}
+            {module.learningOutcome && (
+              <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+                <Target className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <p className="text-sm font-medium text-primary leading-snug">
+                  {module.learningOutcome}
+                </p>
+              </div>
+            )}
+
             {/* Document Content */}
             {module.type === 'document' && (
               <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-200 dark:border-blue-800">

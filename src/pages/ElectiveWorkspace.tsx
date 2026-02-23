@@ -122,6 +122,8 @@ export default function ElectiveWorkspace() {
               greeting: true,
               learnerState: {
                 currentCardTitle: selectedModule.title,
+                learningObjectives: selectedModule.learningObjectives,
+                learningOutcome: selectedModule.learningOutcome,
                 completedModules: Array.from(completedModules),
                 displayName: profile.display_name || undefined,
                 bankRole: profile.bank_role || undefined,
@@ -271,6 +273,8 @@ export default function ElectiveWorkspace() {
             practiceConversation: activeMessages,
             learnerState: {
               currentCardTitle: selectedModule.title,
+              learningObjectives: selectedModule.learningObjectives,
+              learningOutcome: selectedModule.learningOutcome,
               progressSummary: `Submitted practice conversation with ${activeMessages.filter((m) => m.role === 'user').length} prompts for review`,
               completedModules: Array.from(completedModules),
               displayName: profile?.display_name || undefined,
@@ -288,6 +292,8 @@ export default function ElectiveWorkspace() {
             rubric,
             learnerState: {
               currentCardTitle: selectedModule.title,
+              learningObjectives: selectedModule.learningObjectives,
+              learningOutcome: selectedModule.learningOutcome,
               attemptNumber: 1,
               progressSummary: `Submitted ${activeMessages.filter((m) => m.role === 'user').length} prompts`,
             },
@@ -406,6 +412,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           practiceConversation: activeMessages.length > 0 ? activeMessages : undefined,
           learnerState: {
             currentCardTitle: selectedModule?.title,
+            learningObjectives: selectedModule?.learningObjectives,
+            learningOutcome: selectedModule?.learningOutcome,
             progressSummary: activeMessages.length > 0
               ? `Has ${activeMessages.filter((m) => m.role === 'user').length} practice prompts in the conversation`
               : 'Working on module',
@@ -472,6 +480,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           practiceConversation: activeMessages.length > 0 ? activeMessages : undefined,
           learnerState: {
             currentCardTitle: selectedModule?.title,
+            learningObjectives: selectedModule?.learningObjectives,
+            learningOutcome: selectedModule?.learningOutcome,
             progressSummary: activeMessages.length > 0
               ? `Has ${activeMessages.filter((m) => m.role === 'user').length} practice prompts in the conversation`
               : 'Working on module',

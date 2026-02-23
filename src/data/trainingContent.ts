@@ -8,6 +8,7 @@ export interface ModuleContent {
   estimatedTime: string;
   videoUrl?: string; // Optional video URL for video-type modules
   learningObjectives: string[];
+  learningOutcome: string; // Single behavioral statement: "After this module, you can..."
   content: {
     overview: string;
     keyPoints: string[];
@@ -48,10 +49,11 @@ export const SESSION_1_CONTENT: SessionContent = {
       description: 'What AI prompting is, banking use cases, and the 5 elements of a well-structured prompt',
       estimatedTime: '8 min',
       learningObjectives: [
-        'Explain what AI prompting is and identify at least 3 banking use cases',
-        'Name the 5 elements of a well-structured prompt (Role, Task, Context, Format, Constraints)',
-        'Distinguish effective prompts from ineffective ones',
+        'Construct a banking prompt that includes all 5 elements (Role, Task, Context, Format, Constraints)',
+        'Map at least 3 banking use cases to the specific AI-assisted tasks that would address them',
+        'Distinguish an effective prompt from an ineffective one and explain the specific gaps',
       ],
+      learningOutcome: 'After this module, you can write a structured 5-element banking prompt from a real work scenario.',
       content: {
         overview: 'AI prompting is the skill of crafting clear, specific instructions to get useful responses from AI systems. AI is a tool that generates text, analyzes data, and assists with tasks when given clear instructions. It is not a decision-maker, a compliance officer, or a replacement for professional judgment. It does not have access to your bank\'s systems unless specifically integrated. Every effective prompt has five key elements: Role (who should the AI act as), Task (what specifically to do), Context (background information), Format (how output should look), and Constraints (what to avoid or include). These are the building blocks — CLEAR in Module 1-2 provides the assembly framework.',
         keyPoints: [
@@ -109,10 +111,11 @@ export const SESSION_1_CONTENT: SessionContent = {
       description: 'A structured approach: Context, Length, Examples, Audience, Requirements — with explicit mapping from the 5 Elements',
       estimatedTime: '8 min',
       learningObjectives: [
-        'Apply the CLEAR framework to construct a structured banking prompt',
-        'Explain how CLEAR maps to the 5 Elements from Module 1-1',
-        'Evaluate pre-written prompts to identify missing CLEAR elements',
+        'Build a CLEAR-structured prompt for a banking deliverable and annotate each section to its CLEAR letter',
+        'Map all 5 CLEAR elements to their corresponding 5-Element prompt components from Module 1-1',
+        'Evaluate a pre-written banking prompt and identify which CLEAR components are missing',
       ],
+      learningOutcome: 'After this module, you can build a CLEAR-structured prompt and annotate which part maps to which component.',
       content: {
         overview: 'In Module 1-1, you learned the 5 building blocks. CLEAR is how you assemble them. Think of the 5 Elements as ingredients and CLEAR as the recipe. CLEAR stands for: Context (maps to Role + Context), Length/Format (maps to Format), Examples (provides context through samples), Audience (maps to Role — who reads it), and Requirements (maps to Task + Constraints).',
         keyPoints: [
@@ -171,10 +174,11 @@ Requirements (→ Task + Constraints): Include debt service coverage ratio, curr
       description: 'Setting 5 types of context in banking prompts and sanitizing PII with synthetic data',
       estimatedTime: '8 min',
       learningObjectives: [
-        'Set 5 types of context in a banking prompt (Role, Task, Audience, Regulatory, Security)',
-        'Distinguish effective from ineffective prompts using side-by-side comparisons',
-        'Sanitize a prompt to remove all PII using synthetic data replacements',
+        'Set all 5 context types (Role, Task, Audience, Regulatory, Security) in a single banking prompt',
+        'Sanitize a prompt containing real PII by replacing every identifier with a synthetic data placeholder',
+        'Evaluate a prompt for data security compliance before submitting it to any AI system',
       ],
+      learningOutcome: 'After this module, you can remove all PII from any prompt and replace it with synthetic data while preserving the business need.',
       content: {
         overview: 'Context is the foundation of effective prompting. In banking, setting proper context helps the AI understand regulatory requirements, audience expectations, and professional standards. There are 5 context types: Role context (who you are), Task context (what you need), Audience context (who will read it), Regulatory context (what rules apply), and Security context (what NOT to include). Data security is non-negotiable — never share real customer PII with AI.',
         keyPoints: [
@@ -240,10 +244,11 @@ Security: Use generic placeholders for any specific amounts or dates. Do not men
       description: 'Iterating prompts for better results and using the Troubleshooting Ladder when stuck',
       estimatedTime: '8 min',
       learningObjectives: [
-        'Iterate a prompt at least 3 times with specific improvements each round',
-        'Apply the Troubleshooting Ladder when iteration is not converging',
-        'Describe what changed most between v1 and v3 of an iterated prompt',
+        'Iterate a banking prompt at least 3 times, making one specific, labeled improvement per round',
+        'Apply the Troubleshooting Ladder when 3 iterations fail to produce a useful output',
+        'Articulate the single most impactful change made between v1 and v3 of an iterated prompt',
       ],
+      learningOutcome: 'After this module, you can iteratively improve any prompt using the Troubleshooting Ladder when you get stuck.',
       content: {
         overview: 'Getting the best results from AI is often an iterative process. The Iteration Cycle: Prompt → Review output → Identify gap → Revise prompt → Repeat. Each iteration should change ONE thing. Track what you changed and why. When iteration is not working after 3 attempts, use the Troubleshooting Ladder.',
         keyPoints: [
@@ -294,10 +299,11 @@ Security: Use generic placeholders for any specific amounts or dates. Do not men
       description: 'Identifying AI hallucinations in banking and applying the VERIFY checklist',
       estimatedTime: '8 min',
       learningObjectives: [
-        'Identify at least 3 types of AI hallucination in banking contexts',
-        'Apply the VERIFY checklist to evaluate AI-generated output',
-        'Explain why "review the output" is insufficient without structured verification',
+        'Detect at least 2 hallucination types in a sample AI-generated banking output and categorize each correctly',
+        'Apply every step of the VERIFY checklist to a provided AI-generated credit analysis',
+        'Justify why structured VERIFY catches errors that casual reading misses',
       ],
+      learningOutcome: 'After this module, you can apply the VERIFY checklist to detect and categorize hallucinations in AI-generated banking output.',
       content: {
         overview: 'AI does not "know" facts — it generates plausible-sounding text based on patterns. When it generates information that looks correct but is fabricated, that is a hallucination. In banking, hallucinations are dangerous because they look professional and authoritative. This module teaches you the 5 types of banking AI hallucinations and the VERIFY checklist for structured output verification.',
         keyPoints: [
@@ -354,11 +360,11 @@ Security: Use generic placeholders for any specific amounts or dates. Do not men
       description: 'Apply CLEAR, iterate, verify output with VERIFY, and save your best prompt',
       estimatedTime: '7 min',
       learningObjectives: [
-        'Produce a comprehensive banking prompt using the CLEAR framework',
-        'Iterate the prompt for improvement',
-        'Verify AI output using the VERIFY checklist',
-        'Identify what you would verify before using AI output in real work',
+        'Produce a CLEAR-structured banking prompt for a credit committee deliverable with all 5 elements present',
+        'Improve the prompt through at least 2 iterations, each with an explicit rationale for the change made',
+        'Apply the VERIFY checklist to the AI output and identify at least 2 specific items requiring human validation before use',
       ],
+      learningOutcome: 'After this module, you can produce, iterate, and verify a production-quality banking prompt from a real scenario to a usable deliverable.',
       content: {
         overview: 'This capstone exercise brings together everything from Session 1: the 5 Elements, CLEAR framework, context-setting, data security, iteration, and VERIFY. You\'ll craft a comprehensive prompt, iterate it, review the output using VERIFY, and reflect on what verification steps you would take before using the output.',
         keyPoints: [
@@ -411,10 +417,11 @@ export const SESSION_2_CONTENT: SessionContent = {
       description: 'Bridge from Session 1 prompting to persistent agent architecture — map CLEAR to agent sections',
       estimatedTime: '10 min',
       learningObjectives: [
-        'Explain the difference between a one-off prompt and a persistent agent',
-        'Map CLEAR framework elements to agent architecture sections',
-        'Identify when a task warrants an agent versus a single prompt',
+        'Map each component of your best Session 1 prompt to one of the 5 agent architecture sections',
+        'Construct a decision rule for when to build an agent versus use a one-off prompt for a recurring task',
+        'Identify the specific consistency or compliance benefit an agent provides over a re-typed prompt',
       ],
+      learningOutcome: 'After this module, you can map a prompt to agent architecture and decide when a recurring task warrants building an agent.',
       content: {
         overview: 'In Session 1, you learned to craft effective prompts using CLEAR. Now we take those skills and make them persistent. A single prompt is like giving instructions once — an agent is like training a colleague who remembers your preferences, follows your rules every time, and handles variations without you re-explaining. You already know how to write the instructions (CLEAR). Now you make them permanent. This bridge module connects what you learned to what you will build.',
         keyPoints: [
@@ -479,11 +486,11 @@ USE A ONE-OFF PROMPT when:
       description: 'The four pillars of effective agent design, agent fundamentals, and prompt security awareness',
       estimatedTime: '15 min',
       learningObjectives: [
-        'Define what an AI agent is and how persistent instructions create consistency',
-        'Describe the 4 architectural pillars of an AI agent',
-        'Explain how guard rails protect against misuse and prompt injection',
-        'Identify basic prompt injection risks and 3 defense patterns',
+        'Diagnose which of the 4 architectural pillars are missing from an existing agent system prompt',
+        'Write at least 2 guard rails using direct "Do not..." language with a specified alternative response for each',
+        'Construct a prompt injection test message and explain which defense pattern should block it',
       ],
+      learningOutcome: 'After this module, you can diagnose an agent\'s architectural gaps and write guard rails that enforce compliance boundaries.',
       content: {
         overview: 'An AI agent is a configured assistant with persistent instructions that define its behavior before any user message arrives. Unlike one-off prompts, an agent maintains consistent behavior across hundreds of interactions without manual repetition. In Module 2-1, you mapped CLEAR to agent sections — now you learn the architectural pillars that make agents reliable. Effective agents are built on four pillars: the system prompt (behavior anchor), knowledge boundaries (what the agent knows and disclaims), output format specifications (so responses are predictable), and guard rails (explicit refusal patterns for out-of-scope or non-compliant requests). Think of it like a bank\'s operating procedures — each employee follows a manual that defines what they can do independently and what requires escalation. Your agent\'s architecture is its operating manual.',
         keyPoints: [
@@ -563,10 +570,11 @@ Compliance: Every letter must include the mini-Miranda FDCPA disclosure: "This c
       description: 'A five-section template for configuring your personal banking agent',
       estimatedTime: '10 min',
       learningObjectives: [
-        'Use a structured template to create complete agent instructions',
-        'Customize the template for your specific banking role',
-        'Ensure compliance is built into agent instructions by default',
+        'Complete all 5 sections of the agent template (Identity, Tasks, Output Rules, Guard Rails, Compliance Anchors) for your banking role',
+        'Write guard rails in "Do not..." language that include an explicit alternative response phrase',
+        'Draft compliance anchors as actual verbatim phrases that would appear in agent output — not descriptions of phrases',
       ],
+      learningOutcome: 'After this module, you can complete a deployable 5-section agent template for your banking role that could be used immediately without further work.',
       content: {
         overview: 'A template trades coverage for speed. Rather than writing a system prompt from scratch — where you always forget something — the template forces you to address every architectural component. The five sections are: Identity, Task List, Output Rules, Guard Rails, and Compliance Anchors. Once you fill in a template for your role, you have a deployable system prompt that produces consistent, compliant output from the first interaction.',
         keyPoints: [
@@ -679,10 +687,11 @@ COMPLIANCE ANCHORS:
       description: 'How to evaluate and request data source connections for your agent',
       estimatedTime: '15 min',
       learningObjectives: [
-        'Understand how tool integrations extend agent capabilities',
-        'Evaluate integrations on data sensitivity, reversibility, and audit requirements',
-        'Write an integration scope document for IT review',
+        'Evaluate a proposed tool integration across three axes: data sensitivity, reversibility, and oversight model',
+        'Write a one-paragraph integration scope document that specifies data access type, security controls, and human review checkpoint',
+        'Classify a given integration as read-only or write-back and articulate the compliance implications of each type',
       ],
+      learningOutcome: 'After this module, you can scope a tool integration request with the security controls and oversight model needed for banking approval.',
       content: {
         overview: 'Tool integration is the difference between an agent that drafts from your description versus one that can reference actual data. In banking, the highest-value integrations are document readers (loan files, financial statements), rate lookup tables, policy databases, and workflow system hooks. Each integration requires a security and compliance review before enabling. The goal of this module is not to build integrations yourself — it is to understand what is possible and how to evaluate whether an integration is worth requesting.',
         keyPoints: [
@@ -752,10 +761,11 @@ Review Checkpoint: Credit analyst reviews all agent-generated analysis before it
       description: 'Iterating on agents after real-world use, sharing templates, and measuring effectiveness',
       estimatedTime: '8 min',
       learningObjectives: [
-        'Describe how to iterate on an agent after real-world use',
-        'Explain how to share an agent template with colleagues',
-        'Identify one metric for measuring agent effectiveness',
+        'Design an iteration plan that specifies at least 2 behavioral triggers for adding guard rails or output rules',
+        'Adapt an agent template for a colleague by identifying which sections change and which stay constant',
+        'Select one measurable metric and establish a baseline for evaluating agent effectiveness over time',
       ],
+      learningOutcome: 'After this module, you can plan an agent iteration cycle based on real usage observations and share the template with a colleague.',
       content: {
         overview: 'Your agent is not finished when you deploy it — it is finished when it stops needing updates. A living agent improves over time as you discover gaps through real usage. Every bad response is a signal: add a guard rail, refine an output rule, or expand the task list. This module teaches you how to maintain, share, and measure your agent so it becomes a durable team asset, not a one-time exercise.',
         keyPoints: [
@@ -820,11 +830,11 @@ Why this works: The guard rails and compliance anchors are universal to the coll
       description: 'Assemble, test, and refine your personalized AI agent with a living agent plan',
       estimatedTime: '25 min',
       learningObjectives: [
-        'Assemble a complete, deployable agent system prompt',
-        'Test agent behavior with standard, edge-case, and out-of-scope scenarios',
-        'Identify gaps and refine instructions based on test results',
-        'Describe an iteration plan for the first week of agent use',
+        'Assemble a complete, deployable agent system prompt of 150-400 words covering all 5 architectural sections',
+        'Write 3 test scenarios (standard, edge case, out-of-scope) and predict how your agent should respond to each',
+        'Identify at least one gap in your agent\'s guard rails discovered through the test scenarios and specify the fix',
       ],
+      learningOutcome: 'After this module, you can deploy an agent, run boundary tests, and produce a living agent plan for ongoing improvement.',
       content: {
         overview: 'This capstone exercise brings together everything from modules 2-1 through 2-5. Building a deployable agent means merging your architecture design and completed template into a single, testable system prompt. A good agent system prompt is typically 150-400 words — comprehensive enough to constrain behavior, short enough that the AI processes it efficiently. The real test is not whether the AI gives a perfect answer to one question — it is whether the system prompt produces consistently appropriate behavior across three different scenario types. And the work does not end at deployment — your Living Agent Plan describes how you will iterate and improve.',
         keyPoints: [
@@ -884,10 +894,11 @@ export const SESSION_3_CONTENT: SessionContent = {
       description: 'AI applications mapped to specific banking roles and departments',
       estimatedTime: '15 min',
       learningObjectives: [
-        'Identify high-value AI use cases specific to your department',
-        'Understand how compliance requirements vary by role and audience',
-        'Prioritize use cases by frequency and impact',
+        'Identify 3 high-value AI use cases specific to your department with audience and compliance context for each',
+        'Write the first line of a usable prompt for each identified use case',
+        'Rank your use cases by frequency and articulate why the highest-frequency case delivers the best AI ROI',
       ],
+      learningOutcome: 'After this module, you can produce a prioritized AI use case map for your department with prompt starters ready to use.',
       content: {
         overview: 'Every banking department has unique opportunities for AI assistance, but the same task in different departments carries different compliance requirements, different audiences, and different acceptable output formats. A credit memo excerpt appropriate for an internal credit file would be inappropriate to share with a customer. Knowing your department\'s AI use case landscape helps you focus effort on the highest-value, lowest-risk applications first. Start with informational and drafting tasks — these carry lower risk than decision-making tasks because human review catches errors before they have consequences.',
         keyPoints: [
@@ -1009,11 +1020,11 @@ export const SESSION_3_CONTENT: SessionContent = {
       description: 'The three compliance pillars, when NOT to use AI, and the regulatory landscape',
       estimatedTime: '20 min',
       learningObjectives: [
-        'Understand the three compliance pillars: Data Handling, Decision-Making, and Documentation',
-        'Apply the 5-step Pre-Task Compliance Check before any AI-assisted task',
-        'Identify 4 categories of tasks where AI should NOT be used',
-        'Recognize key regulatory considerations for AI in banking',
+        'Apply the 5-step Pre-Task Compliance Check to evaluate a proposed AI task before executing it',
+        'Classify a given task as appropriate for AI analysis versus requiring human decision authority, with justification',
+        'Write a personalized compliance checklist tailored to the specific data types and decisions in your role',
       ],
+      learningOutcome: 'After this module, you can run a compliance check on any AI task before executing it and know when to escalate to compliance.',
       content: {
         overview: 'Banking operates under one of the highest regulatory densities of any industry, and AI introduces new surface areas for compliance risk. The three core compliance considerations for AI in banking are Data Handling (what you share with AI), Decision-Making (AI informs, humans decide), and Documentation (how AI use is recorded). This module does not replace your bank\'s official AI policy — it provides the foundational mental model for evaluating any AI task against compliance requirements. When in doubt, the rule is simple: if you would not put this data in an email to an external party, do not put it in an AI prompt.',
         keyPoints: [
@@ -1146,10 +1157,11 @@ The Line: If the output directly commits the bank to an action, creates a custom
       description: 'Complete multi-step AI workflows for banking scenarios',
       estimatedTime: '15 min',
       learningObjectives: [
-        'Understand how multi-step AI workflows differ from single prompts',
-        'See complete workflow examples with built-in review checkpoints',
-        'Adapt workflow patterns to your own department tasks',
+        'Document a complete AI workflow with a named trigger, 3-5 sequential steps, and at least 2 human review checkpoints',
+        'Alternate AI drafting steps with human verification steps so no AI output feeds the next step without review',
+        'Write the workflow clearly enough that a colleague in your role could follow it independently',
       ],
+      learningOutcome: 'After this module, you can document a multi-step AI workflow with compliance checkpoints that a colleague could execute without your help.',
       content: {
         overview: 'A workflow is different from a single prompt. It is a sequence of AI-assisted steps that together produce a complete output — each step builds on the previous, and human review is built into the sequence at defined checkpoints. Multi-step workflows produce better results than single mega-prompts because breaking the task into steps reduces AI error and makes each output independently verifiable. The examples in this module show complete workflows for three common banking scenarios.',
         keyPoints: [
@@ -1296,10 +1308,11 @@ Final Output: Reviewed, compliant response letter ready to send.`,
       description: 'Chain-of-thought, multi-shot, and self-review prompting techniques',
       estimatedTime: '15 min',
       learningObjectives: [
-        'Apply chain-of-thought prompting for auditable reasoning',
-        'Use multi-shot prompting for consistent output formatting',
-        'Implement self-review prompting as a pre-check before human review',
+        'Apply chain-of-thought prompting to produce step-by-step auditable reasoning in a credit analysis scenario',
+        'Design a multi-shot prompt using 2 examples that lock in a consistent output format for a recurring banking deliverable',
+        'Write a self-review prompt that asks the AI to score its own output against a 5-item checklist before human review',
       ],
+      learningOutcome: 'After this module, you can select and apply the right advanced technique (CoT, multi-shot, or self-review) for any given banking scenario.',
       content: {
         overview: 'Advanced techniques are not harder to use — they are more deliberate. Each technique solves a specific failure mode that simple prompting hits: vague reasoning (chain-of-thought), inconsistent formatting (multi-shot), and undetected errors (self-review). These techniques are particularly valuable in banking because the stakes of inconsistent or poorly-reasoned output are high — a risk summary with invisible reasoning or an inconsistently formatted board report erodes trust in AI-assisted work.',
         keyPoints: [
@@ -1462,10 +1475,11 @@ Prompt 5 — Memo Assembly (uses all reviewed outputs):
       description: 'Complete a real banking task using everything you\'ve learned',
       estimatedTime: '30 min',
       learningObjectives: [
-        'Apply skills from all three sessions to a real work task',
-        'Demonstrate compliance awareness and proper data handling',
-        'Reflect honestly on what AI does well and where it falls short',
+        'Complete a real banking task using CLEAR, an agent template or configuration, and a compliance check across at least 3 prompts',
+        'Demonstrate proper data handling by anonymizing all customer data with synthetic placeholders throughout the submission',
+        'Reflect honestly on what the AI produced well, what it missed, and how you would approach the task differently next time',
       ],
+      learningOutcome: 'After this module, you can complete a real work deliverable using AI and articulate specifically what worked, what failed, and what you\'d do differently.',
       content: {
         overview: 'This final capstone is intentionally open-ended. Unlike the structured modules before it, you choose the task, the technique, the workflow, and the agent configuration. The evaluation criteria focus on three things: relevance to real work, appropriate compliance handling, and demonstrable quality improvement over doing the task manually. The goal is to produce something you would actually use — and to walk away knowing exactly how AI fits into your professional workflow.',
         keyPoints: [
@@ -1529,10 +1543,11 @@ export const SESSION_4_CONTENT: SessionContent = {
       description: 'Audit your work week for AI opportunities using the AI Eligibility Matrix',
       estimatedTime: '15 min',
       learningObjectives: [
-        'Audit your current work week for the top 5 highest-impact AI tasks',
-        'Categorize tasks using the AI Eligibility Matrix (Automate, Assist, Augment, Skip)',
-        'Estimate time savings for your top automation candidates',
+        'Audit your actual work week and categorize at least 8 recurring tasks using the AI Eligibility Matrix',
+        'Specify the agent or workflow you would build for each of your top 3 AUTOMATE tasks',
+        'Identify at least one SKIP task and articulate why AI is inappropriate for it',
       ],
+      learningOutcome: 'After this module, you can produce a prioritized AI task inventory from your actual work and justify where AI should and shouldn\'t be applied.',
       content: {
         overview: 'Being AI-capable means you can use AI when you think of it. Being AI-native means NOT using AI for an eligible task feels like a gap in your process. This module starts your transition by auditing your actual work week — not hypothetical tasks, but what you really do — and identifying where AI has the highest impact. The AI Eligibility Matrix helps you categorize every recurring task so you can prioritize effort where it matters most.',
         keyPoints: [
@@ -1591,10 +1606,11 @@ SKIP (Low Frequency + Low AI Suitability):
       description: 'Draft standards for how your team shares, names, and governs AI-assisted work',
       estimatedTime: '15 min',
       learningObjectives: [
-        'Draft team AI conventions covering shared templates, naming, and compliance review cadence',
-        'Establish documentation standards for AI-assisted work products',
-        'Design a practical sharing and governance framework for your department',
+        'Draft a naming convention for agents and workflows specific to your department using the [Dept]-[Function]-v[N] format',
+        'Define a compliance review cadence covering monthly, quarterly, and event-triggered reviews',
+        'Write a documentation standard specifying the exact language for marking AI-assisted work products',
       ],
+      learningOutcome: 'After this module, you can produce a department AI standards document covering naming, review cadence, and documentation that a manager could approve and implement.',
       content: {
         overview: 'Individual AI proficiency is valuable. Team-level AI conventions are transformational. When a team shares agent templates, uses consistent naming, reviews compliance regularly, and documents when AI assisted a deliverable, the entire department levels up — not just the early adopters. This module helps you draft the conventions that turn personal AI skill into institutional capability.',
         keyPoints: [
@@ -1663,10 +1679,11 @@ SKIP (Low Frequency + Low AI Suitability):
       description: 'Establish baseline measurements and quantify the impact of AI on your work',
       estimatedTime: '15 min',
       learningObjectives: [
-        'Establish a baseline measurement for one recurring task',
-        'Estimate time savings with quantified before/after comparison',
-        'Describe qualitative improvements beyond time savings',
+        'Measure time-before and time-with-AI for one recurring task and calculate monthly hours saved',
+        'Document at least one quality improvement beyond time savings that supports the ROI case',
+        'Formulate a one-sentence manager recommendation based on quantified time and quality data',
       ],
+      learningOutcome: 'After this module, you can present a credible before/after ROI measurement for one AI-assisted task to your manager.',
       content: {
         overview: 'If you cannot measure it, you cannot scale it. When your manager asks "Is AI actually helping?" you need a concrete answer, not "it feels faster." This module gives you a simple ROI framework: pick one task, measure time-before, measure time-after, note quality differences, and track errors caught by VERIFY. Two weeks of data is enough to build a compelling case for expanding AI use across your team.',
         keyPoints: [
@@ -1725,10 +1742,11 @@ ROI SUMMARY: 1.75 hours saved per month = 21 hours per year. Quality more consis
       description: 'Evaluate AI tools using a structured checklist — not a product comparison, but a decision framework',
       estimatedTime: '10 min',
       learningObjectives: [
-        'Describe key differences between major AI platform categories',
-        'Evaluate any new AI tool using a structured 6-point checklist',
-        'Identify which evaluation criteria matter most for banking use cases',
+        'Evaluate any AI tool using the 6-point checklist and identify at least one gap requiring resolution before banking use',
+        'Assess a tool\'s data privacy policy and determine whether it meets banking confidentiality requirements',
+        'Write a one-paragraph approve/reject/investigate recommendation based on documented checklist results',
       ],
+      learningOutcome: 'After this module, you can apply the 6-point evaluation checklist to any AI tool and produce an approve/reject recommendation with supporting rationale.',
       content: {
         overview: 'New AI tools launch every week. Your bank will be asked to evaluate them constantly. This module is not a product comparison — products change faster than any curriculum can track. Instead, it gives you a permanent framework for evaluating ANY AI tool against the criteria that matter for banking: data privacy, regulatory compliance, output quality, integration capability, cost, and approval status.',
         keyPoints: [
@@ -1786,10 +1804,11 @@ RECOMMENDATION: Proceed with vendor approval process. Deploy to finance team fir
       description: 'Session 4 Capstone — produce a complete AI Integration Plan you can present to your manager',
       estimatedTime: '20 min',
       learningObjectives: [
-        'Produce a complete AI Integration Plan with prioritized tasks, inventory, ROI, conventions, and timeline',
-        'Synthesize work from all 4 sessions into a presentable deliverable',
-        'Create a 30-day implementation timeline with weekly milestones',
+        'Produce a complete 1-page AI Integration Plan covering task prioritization, agent inventory, ROI baseline, team conventions, and 30-day timeline',
+        'Assign specific weekly milestones to your 30-day timeline with named, concrete deliverables',
+        'Format the plan as a professional document your manager could review and act on within 5 minutes',
       ],
+      learningOutcome: 'After this module, you can present a complete, manager-ready AI Integration Plan that synthesizes your work from all 4 sessions.',
       content: {
         overview: 'This is the culmination of the entire SMILE curriculum. You will produce a 1-page AI Integration Plan that you can present to your manager — not a theoretical exercise, but a real work product. It synthesizes everything: your task audit (4-1), team conventions (4-2), ROI measurements (4-3), and tool evaluation (4-4) into a concrete plan for the next 30 days. The best Integration Plans are the ones that actually get implemented.',
         keyPoints: [
@@ -1888,10 +1907,11 @@ export const ELECTIVE_PATHS: ElectivePath[] = [
         description: 'Deep-dive CoT for complex financial analysis with documented reasoning chains',
         estimatedTime: '15 min',
         learningObjectives: [
-          'Build multi-step reasoning chains for credit decisions',
-          'Document auditable AI reasoning for regulatory review',
-          'Apply CoT to financial ratio analysis with step-by-step validation',
+          'Design a 5-step CoT prompt chain where each step explicitly references output from the previous step',
+          'Document the reasoning chain in a format an examiner can trace from premise to conclusion',
+          'Evaluate whether a CoT output has auditable reasoning at each step or jumps to unsupported conclusions',
         ],
+        learningOutcome: 'After this module, you can build a multi-step reasoning chain that produces auditable credit analysis conclusions traceable at every step.',
         content: {
           overview: 'Chain-of-thought prompting goes beyond simply asking the AI to "show its work." At an advanced level, you design the reasoning structure — specifying which steps to take, what to evaluate at each step, and how to connect conclusions across steps. This creates auditable reasoning chains that stand up to regulatory scrutiny. In credit analysis, this means the AI walks through each ratio, each risk factor, and each trend before reaching a conclusion — and you can verify every step.',
           keyPoints: [
@@ -1928,10 +1948,11 @@ export const ELECTIVE_PATHS: ElectivePath[] = [
         description: 'Using 2-3 examples to train AI on your exact format, style, and quality standards',
         estimatedTime: '15 min',
         learningObjectives: [
-          'Design few-shot prompts that lock in output format and quality',
-          'Select effective examples that capture format, tone, and compliance patterns',
-          'Apply multi-shot to recurring banking deliverables',
+          'Select 3 examples for a few-shot prompt that demonstrate format consistency across different content scenarios',
+          'Annotate each example to explain which invariant pattern it reinforces for the AI',
+          'Verify that new output generated from the few-shot prompt matches the target format without additional coaching',
         ],
+        learningOutcome: 'After this module, you can build a multi-shot prompt that locks in consistent output format for any recurring banking deliverable.',
         content: {
           overview: 'Multi-shot prompting provides the AI with 2-3 examples of the exact output you want before asking it to produce the real thing. This is the most reliable technique for consistent formatting in banking — board report commentary that always matches your template, credit memo sections that follow your bank\'s standard, or compliance letters that always include required disclosures. The key is selecting the right examples: they should demonstrate format, tone, compliance language, and quality simultaneously.',
           keyPoints: [
@@ -1968,10 +1989,11 @@ export const ELECTIVE_PATHS: ElectivePath[] = [
         description: 'Prompting AI to critique, score, and improve its own output before human review',
         estimatedTime: '15 min',
         learningObjectives: [
-          'Build self-review prompts with specific evaluation criteria',
-          'Design generate-critique-revise loops for high-stakes banking outputs',
-          'Combine self-review with VERIFY for layered quality assurance',
+          'Write a generate-critique-revise prompt sequence that produces a draft, scores it against 5 criteria, and delivers a revised version',
+          'Design a self-review checklist using measurable ratings (Fully Met / Partially Met / Missing) for a high-stakes banking output',
+          'Identify which quality gaps self-review catches versus which ones require VERIFY to detect',
         ],
+        learningOutcome: 'After this module, you can build a self-review loop that catches surface-level errors before human review and pairs with VERIFY for layered quality assurance.',
         content: {
           overview: 'Self-review prompting asks the AI to evaluate its own output against a checklist before you review it. At an advanced level, you can build complete generate-critique-revise loops: the AI generates a draft, scores it against your criteria, identifies gaps, and produces a revised version — all in a single interaction or two-prompt sequence. Combined with VERIFY, this creates two layers of quality assurance before any human reviews the output.',
           keyPoints: [
@@ -2016,10 +2038,11 @@ export const ELECTIVE_PATHS: ElectivePath[] = [
         description: 'Extract, structure, and analyze data from financial statements, tax returns, and loan documents',
         estimatedTime: '15 min',
         learningObjectives: [
-          'Extract structured data from unstructured financial documents using AI',
-          'Apply PII sanitization to document analysis workflows',
-          'Design a document extraction prompt with validation steps',
+          'Design a document extraction prompt that specifies exact fields, output schema, and validation rules for unusual values',
+          'Apply PII sanitization as the mandatory first step before any AI processing of a financial document',
+          'Verify extracted data using VERIFY by checking at least 2 values against the source document',
         ],
+        learningOutcome: 'After this module, you can design a sanitized extraction prompt for financial statements and validate all output against source documents.',
         content: {
           overview: 'Financial documents — tax returns, financial statements, appraisals, insurance certificates — contain valuable data locked in unstructured formats. AI can extract, structure, and analyze this data dramatically faster than manual transcription. The key is designing extraction prompts that specify exactly what data to pull, what format to output, and what validation checks to apply. And since financial documents almost always contain PII, sanitization must be the first step.',
           keyPoints: [
@@ -2056,10 +2079,11 @@ export const ELECTIVE_PATHS: ElectivePath[] = [
         description: 'Transcription summaries, action items, and compliance considerations for banking meetings',
         estimatedTime: '15 min',
         learningObjectives: [
-          'Design structured meeting summary prompts with action item extraction',
-          'Apply compliance considerations to meeting intelligence in banking',
-          'Create reusable meeting summary templates for different meeting types',
+          'Design a meeting summary prompt that extracts action items with owners and deadlines for a specific meeting type',
+          'Apply compliance screening to identify PII, MNPI, or customer-specific data before processing meeting notes',
+          'Create a reusable prompt template parameterized to work for any recurring instance of the same meeting type',
         ],
+        learningOutcome: 'After this module, you can create a reusable meeting summary template that extracts structured action items with built-in compliance screening.',
         content: {
           overview: 'Banking meetings generate decisions, commitments, and action items that need accurate documentation — loan committee decisions, board meeting minutes, customer review discussions. AI can transform raw meeting notes or transcripts into structured summaries with extracted action items, decision records, and follow-up assignments. The compliance consideration is critical: meeting content may contain MNPI, customer PII, or strategic decisions that require careful handling.',
           keyPoints: [
@@ -2096,10 +2120,11 @@ export const ELECTIVE_PATHS: ElectivePath[] = [
         description: 'Using AI to describe, interpret, and improve financial charts and dashboards',
         estimatedTime: '15 min',
         learningObjectives: [
-          'Use AI to generate descriptions and interpretations of financial data',
-          'Design prompts that produce presentation-ready data narratives',
-          'Apply AI to dashboard commentary and trend interpretation',
+          'Generate dashboard commentary for multiple metrics using a prompt that specifies audience, trend direction, and follow-up questions',
+          'Calibrate the complexity and language level of chart narrative to the specified audience (operational vs executive)',
+          'Apply VERIFY to all percentage figures and calculations in AI-generated narrative commentary',
         ],
+        learningOutcome: 'After this module, you can produce audience-calibrated dashboard commentary and data narratives with VERIFY applied to every figure.',
         content: {
           overview: 'AI cannot create charts directly in a text conversation, but it excels at the work around charts: generating narrative descriptions of data trends, writing dashboard commentary, suggesting improvements to data presentations, and producing the text that accompanies financial visualizations. For banking professionals, this means board report chart descriptions, ALM dashboard commentary, portfolio trend narratives, and performance summary text — all generated consistently and formatted for your audience.',
           keyPoints: [
@@ -2144,10 +2169,11 @@ export const ELECTIVE_PATHS: ElectivePath[] = [
         description: 'Advocating for AI adoption with business cases, peer training, and resistance management',
         estimatedTime: '15 min',
         learningObjectives: [
-          'Draft a 1-page AI adoption proposal for a department head',
-          'Address common resistance objections with evidence-based responses',
-          'Design a peer training approach for your team',
+          'Draft a 1-page AI adoption proposal structured as Problem → Solution → Evidence → Ask → Timeline',
+          'Prepare evidence-based rebuttals for at least 2 common AI resistance objections using ROI data',
+          'Design a peer training approach that demonstrates results through a live demo rather than explaining the technology',
         ],
+        learningOutcome: 'After this module, you can write a credible AI adoption proposal and lead a peer demonstration that converts skeptics through visible results.',
         content: {
           overview: 'Being good at AI yourself is step one. Getting your team and department to adopt AI is where the real organizational value unlocks. This module gives you the playbook: how to build a compelling business case, address common resistance objections, design peer training that actually sticks, and position yourself as the go-to AI resource without being seen as "pushing technology." The most effective AI champions lead by example and results, not by evangelism.',
           keyPoints: [
@@ -2184,10 +2210,11 @@ export const ELECTIVE_PATHS: ElectivePath[] = [
         description: 'Model risk management, AI policies, vendor evaluation, and audit readiness',
         estimatedTime: '15 min',
         learningObjectives: [
-          'Describe how model risk management applies to AI use in banking',
-          'Create an AI use policy checklist for a department',
-          'Identify audit readiness requirements for AI-assisted work products',
+          'Draft a department AI use policy that specifies approved tools, approved use cases, prohibited use cases, and data handling rules',
+          'Build an AI usage log template that satisfies regulatory examiner documentation requirements',
+          'Prepare confident responses to the 5 examiner questions most commonly asked about AI use in banking',
         ],
+        learningOutcome: 'After this module, you can produce a department AI governance framework and usage log that would withstand a regulatory examination.',
         content: {
           overview: 'AI governance in banking is not optional — regulators expect it. This module covers the governance framework: model risk management principles applied to AI, department-level AI use policies, vendor evaluation for AI tools, and what auditors and examiners will look for. You do not need to build the governance framework for your bank — that is compliance and IT\'s job. But you need to understand it well enough to operate within it and advocate for practical policies that enable AI use without creating compliance risk.',
           keyPoints: [
@@ -2224,10 +2251,11 @@ export const ELECTIVE_PATHS: ElectivePath[] = [
         description: 'Design a bank-wide AI strategy with department prioritization and rollout planning',
         estimatedTime: '15 min',
         learningObjectives: [
-          'Prioritize departments for AI rollout based on impact and readiness',
-          'Design a 30-60-90 day implementation plan for two departments',
-          'Define success metrics and executive reporting for AI initiatives',
+          'Prioritize two departments for AI rollout using the four readiness criteria: task volume, AI champion, compliance complexity, and data sensitivity',
+          'Draft a 30-60-90 day rollout plan with specific milestones, user counts, and named tasks for each phase',
+          'Define measurable success metrics for executive reporting that go beyond "it feels faster"',
         ],
+        learningOutcome: 'After this module, you can design a phased bank-wide AI rollout plan with quantifiable success metrics for executive reporting.',
         content: {
           overview: 'Scaling AI from one person to one department to the whole bank requires a deliberate strategy. This module takes you from individual user to strategic thinker: which departments should adopt first, what does a realistic rollout look like, and how do you report results to executive leadership? The best scaling strategies start with departments that have high repetition, established AI champions, and manageable compliance complexity — then use their success to build momentum for more complex departments.',
           keyPoints: [
@@ -2273,10 +2301,11 @@ export const ELECTIVE_PATHS: ElectivePath[] = [
         description: 'ECOA/CRA implications, disparate impact risk, and bias awareness in AI-assisted lending',
         estimatedTime: '15 min',
         learningObjectives: [
-          'Identify fair lending risks in AI-assisted credit analysis',
-          'Evaluate prompts for potential disparate impact through proxy variables',
-          'Apply bias mitigation strategies to AI-assisted lending workflows',
+          'Identify proxy variables in a credit analysis prompt that could correlate with protected characteristics under ECOA',
+          'Rewrite a prompt containing fair lending risks to eliminate proxy variables while preserving legitimate credit analysis factors',
+          'Define the escalation trigger for when a fair lending concern requires compliance review before using AI output',
         ],
+        learningOutcome: 'After this module, you can audit a credit analysis prompt for fair lending risk and rewrite it to remove proxy variables without losing analytical value.',
         content: {
           overview: 'Fair lending laws — ECOA, Fair Housing Act, CRA — apply to AI-assisted lending work just as they apply to manual processes. The risk with AI is that prompts or outputs may inadvertently incorporate proxy variables (geography, industry, property type) that correlate with protected classes. This module teaches you to evaluate AI-assisted lending work for fair lending risks, recognize proxy variable patterns, and build mitigation into your prompts and review processes. This is not legal advice — it is awareness that helps you know when to escalate to compliance.',
           keyPoints: [
@@ -2313,10 +2342,11 @@ export const ELECTIVE_PATHS: ElectivePath[] = [
         description: 'Documenting AI use for examiners with version control and audit trail best practices',
         estimatedTime: '15 min',
         learningObjectives: [
-          'Create an AI usage log template suitable for regulatory examination',
-          'Describe version control best practices for AI-assisted work products',
-          'Identify what examiners will ask about AI use and how to prepare',
+          'Create an AI usage log template with column definitions, a realistic example row, and prompt summary guidelines',
+          'Prepare confident, specific answers to the 5 examiner questions most frequently asked about AI use',
+          'Establish documentation habits that make AI use defensible in a regulatory examination without additional preparation',
         ],
+        learningOutcome: 'After this module, you can produce an examiner-ready AI usage log and answer regulatory questions about your AI documentation with confidence.',
         content: {
           overview: 'Regulatory examiners are increasingly asking about AI use in banking. Your preparation now determines whether those questions are comfortable or uncomfortable. This module covers what to document, how to version-control AI work products, and what examiners will ask. The goal is not to create bureaucracy — it is to build habits that make AI use defensible and transparent, so when the examiner asks "Do you use AI?" your answer is confident and documented.',
           keyPoints: [
@@ -2353,10 +2383,11 @@ export const ELECTIVE_PATHS: ElectivePath[] = [
         description: 'Evaluating third-party AI tools with due diligence, data handling, and contract provisions',
         estimatedTime: '15 min',
         learningObjectives: [
-          'Complete a structured vendor AI risk assessment',
-          'Identify critical contract provisions for AI vendor agreements',
-          'Evaluate data handling and retention policies for banking compliance',
+          'Complete a vendor AI risk assessment across all 5 domains: data handling, security certifications, contract provisions, regulatory support, and practical evaluation',
+          'Identify at least 3 specific contract provisions to negotiate in any AI vendor agreement',
+          'Produce an approve, approve-with-conditions, or reject recommendation based on documented assessment results',
         ],
+        learningOutcome: 'After this module, you can complete a structured vendor AI risk assessment and deliver an evidence-based approve/reject recommendation.',
         content: {
           overview: 'Your bank will evaluate AI vendors — and your input as a user matters. This module gives you a structured assessment framework covering the areas that matter most: data handling (where does your data go?), security certifications (SOC 2, penetration testing), regulatory compliance (can the vendor support your examination requirements?), contract provisions (data deletion, breach notification), and business continuity (what happens if the vendor goes down?). A thorough vendor assessment protects the bank and ensures the tool actually works for your use case.',
           keyPoints: [

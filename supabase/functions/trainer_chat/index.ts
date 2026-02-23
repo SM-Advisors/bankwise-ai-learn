@@ -45,6 +45,8 @@ interface TrainerChatRequest {
   workflowContext?: WorkflowContext; // The learner's workflow data from Workflow Studio
   learnerState?: {
     currentCardTitle?: string;
+    learningObjectives?: string[];
+    learningOutcome?: string;
     progressSummary?: string;
     completedModules?: string[];
     displayName?: string;
@@ -955,6 +957,8 @@ WORKFLOW COACHING RULES:
 - Lesson ID: ${lessonId}
 ${moduleId ? `- Module ID: ${moduleId}` : ""}
 ${learnerState?.currentCardTitle ? `- Current Module: ${learnerState.currentCardTitle}` : ""}
+${learnerState?.learningOutcome ? `- Module Goal: ${learnerState.learningOutcome}` : ""}
+${learnerState?.learningObjectives?.length ? `- This Module's Objectives:\n${learnerState.learningObjectives.map(o => `  • ${o}`).join("\n")}` : ""}
 ${learnerState?.progressSummary ? `- Learner's Practice: ${learnerState.progressSummary}` : ""}
 ${displayName ? `- Learner Name: ${displayName}` : ""}
 ${bankRole ? `- Learner Role: ${bankRole}` : ""}

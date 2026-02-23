@@ -28,6 +28,8 @@ interface SubmissionReviewRequest {
   };
   learnerState?: {
     currentCardTitle?: string;
+    learningObjectives?: string[];
+    learningOutcome?: string;
     attemptNumber?: number;
     progressSummary?: string;
   };
@@ -603,6 +605,8 @@ Evaluate whether the submission is relevant to their department. Note if example
 - Lesson ID: ${lessonId}
 ${moduleId ? `- Module ID: ${moduleId}` : ""}
 ${learnerState?.currentCardTitle ? `- Task: ${learnerState.currentCardTitle}` : ""}
+${learnerState?.learningOutcome ? `- Module Goal: ${learnerState.learningOutcome}` : ""}
+${learnerState?.learningObjectives?.length ? `- This Module's Objectives (evaluate whether submission demonstrates these):\n${learnerState.learningObjectives.map((o: string) => `  • ${o}`).join("\n")}` : ""}
 ${learnerState?.attemptNumber ? `- Attempt #${learnerState.attemptNumber}` : ""}
 
 ## CRITICAL RULES
