@@ -1,4 +1,6 @@
 const PRODUCTION_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") || "https://bankwise-ai-learn.lovable.app";
+const PUBLISHED_ORIGIN = "https://smile-enablement.lovable.app";
+const PREVIEW_ORIGIN_SUFFIX = ".lovable.app";
 const DEV_ORIGINS = ["http://localhost:5173", "http://localhost:8080", "http://localhost:3000"];
 
 const CORS_HEADERS_BASE = {
@@ -12,11 +14,12 @@ export function getCorsHeaders(requestOrigin: string | null): Record<string, str
 
   if (isDev && requestOrigin && DEV_ORIGINS.includes(requestOrigin)) {
     allowedOrigin = requestOrigin;
-  } else if (!isDev && requestOrigin === PRODUCTION_ORIGIN) {
-    allowedOrigin = PRODUCTION_ORIGIN;
+  } else if (requestOrigin && requestOrigin.endsWith(PREVIEW_ORIGIN_SUFFIX)) {
+    // Allow all Lovable preview/published domains
+    allowedOrigin = requestOrigin;
+  } else if (requestOrigin === PRODUCTION_ORIGIN || requestOrigin === PUBLISHED_ORIGIN) {
+    allowedOrigin = requestOrigin;
   } else {
-    // Default to production origin (browser will block mismatched origins via CORS,
-    // but the response still needs a valid header)
     allowedOrigin = PRODUCTION_ORIGIN;
   }
 
