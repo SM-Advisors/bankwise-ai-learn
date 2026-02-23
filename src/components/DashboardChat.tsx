@@ -40,6 +40,19 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
   const [view, setView] = useState<'chat' | 'history'>('chat');
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Close when clicking outside the chat panel
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [isOpen]);
 
   const {
     conversations,
@@ -210,7 +223,7 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
 
   // Expanded state - chat panel
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] w-[400px] h-[500px] flex flex-col">
+    <div ref={panelRef} className="fixed bottom-6 right-6 z-[9999] w-[400px] h-[500px] flex flex-col">
       <Card className="flex flex-col h-full shadow-xl border">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b bg-primary text-primary-foreground rounded-t-lg">
