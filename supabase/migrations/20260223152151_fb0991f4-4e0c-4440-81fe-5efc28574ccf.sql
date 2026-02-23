@@ -1,0 +1,1 @@
+ALTER TABLE public.user_profiles ADD COLUMN organization_id uuid REFERENCES public.organizations(id) ON DELETE SET NULL;
