@@ -32,11 +32,21 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useDepartments } from '@/hooks/useDepartments';
-import { Users, Edit, Loader2, CheckCircle, Clock, Shield, Building2 } from 'lucide-react';
+import { Users, Edit, Loader2, CheckCircle, Clock, Shield, Building2, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export function UsersManagement() {
   const { toast } = useToast();
-  const { users, loading, updateUserProfile, updateUserRole } = useAllUsersWithRoles();
+  const { users, loading, updateUserProfile, updateUserRole, deleteUser } = useAllUsersWithRoles();
   const { organizations, loading: orgsLoading } = useOrganizations();
   const { departments: deptOptions, getDepartmentName } = useDepartments();
   const [editingUser, setEditingUser] = useState<any>(null);
@@ -48,6 +58,8 @@ export function UsersManagement() {
   });
   const [saving, setSaving] = useState(false);
   const [deactivatingUser, setDeactivatingUser] = useState<string | null>(null);
+  const [deletingUser, setDeletingUser] = useState<any>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   // Build a map of org ID -> org name for display
   const orgNameMap = useMemo(() => {
@@ -152,7 +164,7 @@ export function UsersManagement() {
           {users.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">No users found.</p>
           ) : (
-            <ScrollArea className="w-full">
+            <ScrollArea className="w-full max-h-[60vh]">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -264,6 +276,14 @@ export function UsersManagement() {
                               ) : (
                                 'Deactivate'
                               )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => { setDeletingUser(user); setDeleteConfirmOpen(true); }}
+                              className="gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
                         </TableCell>
@@ -378,6 +398,36 @@ export function UsersManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete User Confirmation */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete user permanently?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove <strong>{deletingUser?.display_name || 'this user'}</strong> and all their training data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                if (!deletingUser) return;
+                const result = await deleteUser(deletingUser.user_id);
+                if (result.success) {
+                  toast({ title: 'User deleted', description: `${deletingUser.display_name} has been permanently removed.` });
+                } else {
+                  toast({ title: 'Error', description: result.error, variant: 'destructive' });
+                }
+                setDeletingUser(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
