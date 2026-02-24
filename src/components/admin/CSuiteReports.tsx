@@ -499,7 +499,7 @@ export function CSuiteReports() {
                           <td className="py-2 px-3 font-medium">{user.display_name || 'Unknown'}</td>
                           <td className="py-2 px-3">
                             <Badge variant="outline" className="text-xs">
-                              {LOB_LABELS[user.line_of_business || ''] || user.line_of_business || 'Unknown'}
+                              {LOB_LABELS[user.department || ''] || user.department || 'Unknown'}
                             </Badge>
                           </td>
                           <td className="py-2 px-3 text-center">

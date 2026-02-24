@@ -48,7 +48,7 @@ export function useShareContent() {
           source_context: payload.sourceContext ?? null,
           linked_agent_id: payload.linkedContentType === 'agent' ? payload.linkedContentId ?? null : null,
           submitter_name: profile?.display_name ?? null,
-          submitter_department: profile?.line_of_business ?? null,
+          submitter_department: profile?.department ?? null,
         });
 
       if (error) {
@@ -70,7 +70,7 @@ export function useShareContent() {
           linked_content_id: payload.linkedContentId ?? null,
           linked_content_type: payload.linkedContentType ?? null,
           author_name: profile?.display_name ?? 'Unknown',
-          author_role: profile?.bank_role ?? null,
+          author_role: profile?.job_role ?? null,
         });
 
       if (error) {

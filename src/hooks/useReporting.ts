@@ -4,8 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 export interface UserProgressRow {
   user_id: string;
   display_name: string | null;
-  bank_role: string | null;
-  line_of_business: string | null;
+  job_role: string | null;
+  department: string | null;
   ai_proficiency_level: number | null;
   session_1_completed: boolean;
   session_2_completed: boolean;
@@ -68,7 +68,7 @@ export interface ExceptionTypeItem {
 export interface RepeatOffender {
   user_id: string;
   display_name: string | null;
-  line_of_business: string | null;
+  department: string | null;
   exception_count: number;
 }
 
@@ -167,7 +167,7 @@ export function useReporting(organizationId: string | null = null) {
 
       let profilesQuery = supabase
         .from('user_profiles' as any)
-        .select('user_id, display_name, bank_role, line_of_business, ai_proficiency_level')
+        .select('user_id, display_name, job_role, department, ai_proficiency_level')
         .eq('onboarding_completed', true);
 
       if (organizationId) {
@@ -192,8 +192,8 @@ export function useReporting(organizationId: string | null = null) {
         return {
           user_id: profile.user_id,
           display_name: profile.display_name,
-          bank_role: profile.bank_role,
-          line_of_business: profile.line_of_business,
+          job_role: profile.job_role,
+          department: profile.department,
           ai_proficiency_level: profile.ai_proficiency_level,
           session_1_completed: prog?.session_1_completed || false,
           session_2_completed: prog?.session_2_completed || false,
@@ -274,7 +274,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
       let allProfilesQuery = supabase.from('user_profiles' as any).select('user_id');
       let enrolledProfilesQuery = supabase
         .from('user_profiles' as any)
-        .select('user_id, display_name, bank_role, line_of_business, ai_proficiency_level')
+        .select('user_id, display_name, job_role, department, ai_proficiency_level')
         .eq('onboarding_completed', true);
 
       if (organizationId) {
@@ -373,7 +373,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
       // Department breakdowns
       const deptMap: Record<string, any[]> = {};
       combined.forEach((u: any) => {
-        const dept = u.line_of_business || 'unknown';
+        const dept = u.department || 'unknown';
         if (!deptMap[dept]) deptMap[dept] = [];
         deptMap[dept].push(u);
       });
@@ -420,7 +420,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
 
       // Exceptions by department
       const userDeptMap = new Map<string, string>();
-      combined.forEach((u: any) => userDeptMap.set(u.user_id, u.line_of_business || 'unknown'));
+      combined.forEach((u: any) => userDeptMap.set(u.user_id, u.department || 'unknown'));
       const deptExceptions: Record<string, number> = {};
       exceptionEvents.forEach((e) => {
         const dept = userDeptMap.get(e.user_id) || 'unknown';
@@ -458,7 +458,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
           return {
             user_id,
             display_name: profile?.display_name || null,
-            line_of_business: profile?.line_of_business || null,
+            department: profile?.department || null,
             exception_count,
           };
         })

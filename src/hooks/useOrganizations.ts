@@ -7,6 +7,8 @@ export interface Organization {
   slug: string;
   created_at: string;
   allowed_models: string[];
+  audience_type: 'enterprise' | 'consumer';
+  industry: string | null;
 }
 
 export interface RegistrationCode {
@@ -34,7 +36,7 @@ export function useOrganizations() {
       // Fetch all organizations
       const { data: orgs, error: orgsError } = await (supabase
         .from('organizations' as any)
-        .select('id, name, slug, created_at, allowed_models')
+        .select('id, name, slug, created_at, allowed_models, audience_type, industry')
         .order('name', { ascending: true }) as any);
 
       if (orgsError) {
@@ -43,6 +45,8 @@ export function useOrganizations() {
         const mapped: Organization[] = (orgs || []).map((o: any) => ({
           ...o,
           allowed_models: Array.isArray(o.allowed_models) ? o.allowed_models : ['claude-sonnet-4-6'],
+          audience_type: o.audience_type || 'enterprise',
+          industry: o.industry || null,
         }));
         setOrganizations(mapped);
       }
@@ -81,11 +85,16 @@ export function useOrganizations() {
     fetchOrganizations();
   }, [fetchOrganizations]);
 
-  const createOrganization = useCallback(async (name: string, slug: string) => {
+  const createOrganization = useCallback(async (
+    name: string,
+    slug: string,
+    audienceType: 'enterprise' | 'consumer' = 'enterprise',
+    industry?: string | null,
+  ) => {
     try {
       const { error } = await (supabase
         .from('organizations' as any)
-        .insert({ name, slug }) as any);
+        .insert({ name, slug, audience_type: audienceType, industry: industry || null }) as any);
 
       if (error) {
         console.error('Error creating organization:', error);

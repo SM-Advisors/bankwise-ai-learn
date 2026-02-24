@@ -89,7 +89,7 @@ export function BrainstormPanel() {
             status: 'not_started',
             category: 'csuite_submission',
             submitter_name: profile?.display_name || null,
-            submitter_department: profile?.line_of_business || null,
+            submitter_department: profile?.department || null,
           }) as any);
         if (error) throw error;
         toast({ title: 'Sent to C-Suite', description: 'Your idea is now in the Innovation Pipeline.' });
@@ -192,7 +192,7 @@ After presenting options, end with: "Which of these feels closest to where you'd
 - Do not volunteer cost specifics beyond the $ scale above — costs vary too much by usage.
 - CRITICAL OVERRIDE: Do NOT mirror prompt quality. A short or vague opening from the user is exactly why the discovery phase exists — always engage fully regardless of how brief their message is.`;
 
-      const isFF = !(profile?.line_of_business) && !!(profile as any)?.interests?.length;
+      const isFF = !(profile?.department) && !!(profile as any)?.interests?.length;
 
       const { data, error } = await supabase.functions.invoke('ai-practice', {
         body: {
@@ -200,8 +200,8 @@ After presenting options, end with: "Which of these feels closest to where you'd
           moduleTitle: 'AI Brainstorm',
           scenario: initialTask,
           messages: [...history, userMsg],
-          bankRole: profile?.bank_role || undefined,
-          lineOfBusiness: isFF ? undefined : (profile?.line_of_business || undefined),
+          bankRole: profile?.job_role || undefined,
+          lineOfBusiness: isFF ? undefined : (profile?.department || undefined),
           interests: (profile as any)?.interests || undefined,
         },
       });

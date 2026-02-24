@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, LearningStyleType } from '@/contexts/AuthContext';
+import { getIndustryConfig, type IndustryConfig } from '@/data/industryConfigs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -119,30 +120,36 @@ export default function Onboarding() {
     !!(profile?.intake_role_key || profile?.learning_style || profile?.ai_proficiency_level),
   );
 
-  // Org type: prefer sessionStorage (set during fresh signup) so there's no flicker.
-  // Fall back to a DB lookup so the retake flow (and any other path that skips
-  // sessionStorage) shows the correct form for F&F organisations.
+  // Audience type + industry: prefer sessionStorage (set during fresh signup) so there's
+  // no flicker. Fall back to a DB lookup for retake flow and other paths.
   const [orgType, setOrgType] = useState<string>(() => sessionStorage.getItem('signup_org_type') || '');
+  const [orgIndustry, setOrgIndustry] = useState<string>(() => sessionStorage.getItem('signup_industry') || 'banking');
   const [orgTypeResolved, setOrgTypeResolved] = useState<boolean>(!!sessionStorage.getItem('signup_org_type'));
-  const isFriendsFamily = orgType === 'friends_family';
+  const isConsumer = orgType === 'consumer';
+  // Keep legacy alias for internal use
+  const isFriendsFamily = isConsumer;
+
+  // Derived industry config — drives dynamic copy + micro-task
+  const industryConfig: IndustryConfig = getIndustryConfig(orgIndustry, isConsumer ? 'consumer' : 'enterprise');
 
   useEffect(() => {
     if (orgTypeResolved) return;
     if (loading) return; // wait for auth to finish loading before checking profile
     if (!profile?.organization_id) {
-      // No org attached — default to bank flow
-      setOrgType('bank');
+      // No org attached — default to enterprise flow
+      setOrgType('enterprise');
       setOrgTypeResolved(true);
       return;
     }
-    // Fetch the org's type from the database
+    // Fetch the org's audience_type + industry from the database
     (supabase
       .from('organizations' as any)
-      .select('org_type')
+      .select('audience_type, industry')
       .eq('id', profile.organization_id)
       .single() as any)
-      .then(({ data }: { data: { org_type: string } | null }) => {
-        setOrgType(data?.org_type || 'bank');
+      .then(({ data }: { data: { audience_type: string; industry: string } | null }) => {
+        setOrgType(data?.audience_type || 'enterprise');
+        setOrgIndustry(data?.industry || 'banking');
         setOrgTypeResolved(true);
       });
   }, [profile?.organization_id, orgTypeResolved, loading]);
@@ -151,7 +158,7 @@ export default function Onboarding() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // ── F&F state ─────────────────────────────────────────────────────────
-  const [jobTitle, setJobTitle] = useState(profile?.bank_role || '');
+  const [jobTitle, setJobTitle] = useState(profile?.job_role || '');
   const [interests, setInterests] = useState<string[]>(profile?.interests || []);
 
   // Shared for F&F
@@ -371,7 +378,7 @@ export default function Onboarding() {
 
   const completeFriendsFamily = async () => {
     const { error } = await updateProfile({
-      bank_role: jobTitle,
+      job_role: jobTitle,
       interests,
       ai_proficiency_level: aiProficiency,
       learning_style: learningStyle,
@@ -382,6 +389,7 @@ export default function Onboarding() {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
       sessionStorage.removeItem('signup_org_type');
+      sessionStorage.removeItem('signup_industry');
       toast({ title: 'You\'re all set!', description: 'Let\'s start your learning journey.' });
       navigate('/dashboard');
     }
@@ -421,8 +429,8 @@ export default function Onboarding() {
     const lob = selectedRole?.lobSlug || null;
 
     const { error } = await updateProfile({
-      bank_role: selectedRole?.label || roleKey,
-      line_of_business: lob,
+      job_role: selectedRole?.label || roleKey,
+      department: lob,
       ai_proficiency_level: placement.level,
       learning_style: derivedStyle,
       tech_learning_style: derivedStyle,
@@ -438,6 +446,7 @@ export default function Onboarding() {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
       sessionStorage.removeItem('signup_org_type');
+      sessionStorage.removeItem('signup_industry');
       toast({ title: 'Profile Complete!', description: 'Let\'s start your training journey.' });
       navigate('/dashboard');
     }
@@ -484,15 +493,15 @@ export default function Onboarding() {
                   <div className="p-2 rounded-lg bg-primary/10">
                     <Heart className="h-5 w-5 text-primary" />
                   </div>
-                  <CardTitle>Welcome, Friend!</CardTitle>
+                  <CardTitle>Welcome!</CardTitle>
                 </div>
                 <CardDescription>
-                  You're joining as a Friends & Family tester. Just tell us a little about yourself.
+                  {industryConfig.welcomeMessage || 'Just tell us a little about yourself to get started.'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="job-title">What do you do?</Label>
+                  <Label htmlFor="job-title">{industryConfig.jobRoleLabel}</Label>
                   <Input
                     id="job-title"
                     placeholder="e.g., Software Engineer, Teacher, Marketing Manager"
@@ -783,7 +792,7 @@ export default function Onboarding() {
                 <div className="p-4 bg-muted/40 rounded-lg border text-sm space-y-1">
                   <p className="font-semibold text-foreground">Your task:</p>
                   <p className="text-muted-foreground leading-relaxed">
-                    Write the actual prompt you would type into an AI tool to draft a follow-up email to a small business customer after a meeting about a commercial line of credit.
+                    {industryConfig.onboardingMicroTask}
                   </p>
                 </div>
 

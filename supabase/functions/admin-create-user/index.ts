@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { email, password, display_name, bank_role, line_of_business, role, organization_id } = await req.json();
+    const { email, password, display_name, job_role, department, role, organization_id } = await req.json();
 
     if (!email || !password || !display_name) {
       return new Response(JSON.stringify({ error: "Email, password, and display_name are required" }), {
@@ -85,8 +85,8 @@ Deno.serve(async (req) => {
     await adminClient.from("user_profiles").insert({
       user_id: userId,
       display_name,
-      bank_role: bank_role || null,
-      line_of_business: line_of_business || null,
+      job_role: job_role || null,
+      department: department || null,
       organization_id: resolvedOrgId,
       onboarding_completed: false,
     });

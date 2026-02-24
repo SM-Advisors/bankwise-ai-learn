@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useOrganizations } from '@/hooks/useOrganizations';
 import { useToast } from '@/hooks/use-toast';
+import { ENTERPRISE_INDUSTRIES, CONSUMER_INDUSTRIES, type AudienceType } from '@/data/industryConfigs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,6 +70,8 @@ export function OrganizationsManager() {
   // Create org form state
   const [orgName, setOrgName] = useState('');
   const [orgSlug, setOrgSlug] = useState('');
+  const [orgAudienceType, setOrgAudienceType] = useState<AudienceType>('enterprise');
+  const [orgIndustry, setOrgIndustry] = useState('banking');
   const [creatingOrg, setCreatingOrg] = useState(false);
 
   // Create code form state
@@ -83,18 +86,27 @@ export function OrganizationsManager() {
     setOrgSlug(toSlug(value));
   };
 
+  const handleAudienceTypeChange = (value: AudienceType) => {
+    setOrgAudienceType(value);
+    // Reset industry to first option for the new audience type
+    if (value === 'enterprise') setOrgIndustry('banking');
+    else setOrgIndustry('general');
+  };
+
   const handleCreateOrg = async () => {
     if (!orgName.trim() || !orgSlug.trim()) {
       toast({ title: 'Missing fields', description: 'Organization name is required.', variant: 'destructive' });
       return;
     }
     setCreatingOrg(true);
-    const result = await createOrganization(orgName.trim(), orgSlug.trim());
+    const result = await createOrganization(orgName.trim(), orgSlug.trim(), orgAudienceType, orgIndustry);
     setCreatingOrg(false);
     if (result.success) {
       toast({ title: 'Organization created', description: `"${orgName}" has been added.` });
       setOrgName('');
       setOrgSlug('');
+      setOrgAudienceType('enterprise');
+      setOrgIndustry('banking');
     } else {
       toast({ title: 'Error', description: result.error || 'Failed to create organization.', variant: 'destructive' });
     }
@@ -231,12 +243,22 @@ export function OrganizationsManager() {
               {organizations.map((org) => (
                 <Card key={org.id} className="border">
                   <CardContent className="pt-4 pb-3 px-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{org.name}</p>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">{org.name}</p>
                         <p className="text-xs text-muted-foreground font-mono">{org.slug}</p>
+                        <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                          <Badge variant={org.audience_type === 'consumer' ? 'secondary' : 'outline'} className="text-xs capitalize">
+                            {org.audience_type}
+                          </Badge>
+                          {org.industry && (
+                            <Badge variant="outline" className="text-xs capitalize">
+                              {org.industry}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs shrink-0">
                         {new Date(org.created_at).toLocaleDateString()}
                       </Badge>
                     </div>
@@ -252,14 +274,14 @@ export function OrganizationsManager() {
               <Plus className="h-4 w-4" />
               Create Organization
             </h4>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               <div className="space-y-2">
                 <Label htmlFor="org-name">Name</Label>
                 <Input
                   id="org-name"
                   value={orgName}
                   onChange={(e) => handleOrgNameChange(e.target.value)}
-                  placeholder="Acme Bank"
+                  placeholder="Acme Corp"
                 />
               </div>
               <div className="space-y-2">
@@ -268,9 +290,34 @@ export function OrganizationsManager() {
                   id="org-slug"
                   value={orgSlug}
                   onChange={(e) => setOrgSlug(e.target.value)}
-                  placeholder="acme-bank"
+                  placeholder="acme-corp"
                   className="font-mono text-sm"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="org-audience">Audience Type</Label>
+                <Select value={orgAudienceType} onValueChange={(v) => handleAudienceTypeChange(v as AudienceType)}>
+                  <SelectTrigger id="org-audience">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card">
+                    <SelectItem value="enterprise">Enterprise (B2B)</SelectItem>
+                    <SelectItem value="consumer">Consumer (B2C)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="org-industry">Industry / Sector</Label>
+                <Select value={orgIndustry} onValueChange={setOrgIndustry}>
+                  <SelectTrigger id="org-industry">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card">
+                    {(orgAudienceType === 'enterprise' ? ENTERPRISE_INDUSTRIES : CONSUMER_INDUSTRIES).map((cfg) => (
+                      <SelectItem key={cfg.slug} value={cfg.slug}>{cfg.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex items-end">
                 <Button onClick={handleCreateOrg} disabled={creatingOrg} className="gap-2">

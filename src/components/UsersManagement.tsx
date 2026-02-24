@@ -57,8 +57,8 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
   const [editingUser, setEditingUser] = useState<any>(null);
   const [editForm, setEditForm] = useState({
     display_name: '',
-    bank_role: '',
-    line_of_business: '',
+    job_role: '',
+    department: '',
     role: 'user' as AppRole,
   });
   const [saving, setSaving] = useState(false);
@@ -71,12 +71,12 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
     email: '',
     password: '',
     display_name: '',
-    bank_role: '',
-    line_of_business: '',
+    job_role: '',
+    department: '',
     role: 'user' as AppRole,
   });
 
-  const resetAddForm = () => setAddForm({ email: '', password: '', display_name: '', bank_role: '', line_of_business: '', role: 'user' });
+  const resetAddForm = () => setAddForm({ email: '', password: '', display_name: '', job_role: '', department: '', role: 'user' });
 
   // Build a map of org ID -> org name for display
   const orgNameMap = useMemo(() => {
@@ -91,8 +91,8 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
     setEditingUser(user);
     setEditForm({
       display_name: user.display_name || '',
-      bank_role: user.bank_role || '',
-      line_of_business: user.line_of_business || '',
+      job_role: user.job_role || '',
+      department: user.department || '',
       role: user.role || 'user',
     });
   };
@@ -121,8 +121,8 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
     // Update profile
     const profileResult = await updateUserProfile(editingUser.user_id, {
       display_name: editForm.display_name,
-      bank_role: editForm.bank_role,
-      line_of_business: editForm.line_of_business || null,
+      job_role: editForm.job_role,
+      department: editForm.department || null,
     });
 
     // Update role
@@ -167,8 +167,8 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
           email: addForm.email,
           password: addForm.password,
           display_name: addForm.display_name,
-          bank_role: addForm.bank_role || null,
-          line_of_business: addForm.line_of_business || null,
+          job_role: addForm.job_role || null,
+          department: addForm.department || null,
           role: addForm.role,
           organization_id: organizationId || null,
         },
@@ -256,12 +256,12 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
                                   <Badge variant="destructive" className="text-xs py-0">Deactivated</Badge>
                                 )}
                               </div>
-                              <p className="text-xs text-muted-foreground">{user.bank_role || 'No role'}</p>
+                              <p className="text-xs text-muted-foreground">{user.job_role || 'No role'}</p>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm">{user.bank_role || '-'}</span>
+                          <span className="text-sm">{user.job_role || '-'}</span>
                         </TableCell>
                         <TableCell>
                           {orgName ? (
@@ -275,7 +275,7 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
                         </TableCell>
                         <TableCell>
                           <span className="text-sm">
-                            {user.line_of_business ? getDepartmentName(user.line_of_business) : '-'}
+                            {user.department ? getDepartmentName(user.department) : '-'}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -372,16 +372,16 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
               <Label htmlFor="user-job-role">Job Title / Role</Label>
               <Input
                 id="user-job-role"
-                value={editForm.bank_role}
-                onChange={(e) => setEditForm({ ...editForm, bank_role: e.target.value })}
+                value={editForm.job_role}
+                onChange={(e) => setEditForm({ ...editForm, job_role: e.target.value })}
                 placeholder="e.g. Senior Analyst"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="user-lob">Department</Label>
               <Select
-                value={editForm.line_of_business}
-                onValueChange={(value) => setEditForm({ ...editForm, line_of_business: value })}
+                value={editForm.department}
+                onValueChange={(value) => setEditForm({ ...editForm, department: value })}
               >
                 <SelectTrigger id="user-lob">
                   <SelectValue placeholder="Select department" />
@@ -508,12 +508,12 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="add-role">Job Title / Role</Label>
-              <Input id="add-role" value={addForm.bank_role} onChange={(e) => setAddForm({ ...addForm, bank_role: e.target.value })} placeholder="e.g. Senior Analyst" />
+              <Input id="add-role" value={addForm.job_role} onChange={(e) => setAddForm({ ...addForm, job_role: e.target.value })} placeholder="e.g. Senior Analyst" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="add-lob">Department</Label>
-                <Select value={addForm.line_of_business} onValueChange={(value) => setAddForm({ ...addForm, line_of_business: value })}>
+                <Select value={addForm.department} onValueChange={(value) => setAddForm({ ...addForm, department: value })}>
                   <SelectTrigger id="add-lob"><SelectValue placeholder="Select department" /></SelectTrigger>
                   <SelectContent className="bg-card max-h-60">
                     {deptOptions.map((dept) => (

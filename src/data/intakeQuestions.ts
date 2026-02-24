@@ -20,7 +20,7 @@ export type RoleKey =
 export interface RoleOption {
   key: RoleKey;
   label: string;
-  lobSlug?: string; // best-fit line_of_business mapping for content personalization
+  lobSlug?: string; // best-fit department mapping for content personalization
 }
 
 export const ROLE_OPTIONS: RoleOption[] = [

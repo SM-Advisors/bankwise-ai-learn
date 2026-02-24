@@ -47,7 +47,7 @@ export function useCommunityReplies(topicId: string | null) {
     if (!user || !topicId) return { success: false, error: 'Not authenticated or no topic selected' };
     try {
       const firstName = (profile?.display_name || 'Anonymous').split(' ')[0];
-      const role = profile?.bank_role || null;
+      const role = profile?.job_role || null;
 
       const { error: insertError } = await (supabase
         .from('community_replies' as any)

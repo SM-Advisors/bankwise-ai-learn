@@ -10,11 +10,11 @@ export interface UserProfile {
   id: string;
   user_id: string;
   display_name: string | null;
-  employer_bank_name: string | null;
+  employer_name: string | null;
   organization_id: string | null;
-  line_of_business: LineOfBusiness | null;
+  department: LineOfBusiness | null;
   department_id: string | null;
-  bank_role: string | null;
+  job_role: string | null;
   learning_style: LearningStyleType | null;
   tech_learning_style: LearningStyleType | null;
   ai_proficiency_level: number | null;

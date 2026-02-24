@@ -103,7 +103,7 @@ export default function TrainingWorkspace() {
     if (!lob) return null;
     return lob.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   };
-  const departmentLabel = isSession3 ? getDepartmentLabel(profile?.line_of_business ?? null) : null;
+  const departmentLabel = isSession3 ? getDepartmentLabel(profile?.department ?? null) : null;
 
   // Capstone state (from session_3_progress)
   const getCapstoneData = (): CapstoneData | null => {
@@ -171,8 +171,8 @@ export default function TrainingWorkspace() {
                 learningOutcome: selectedModule.learningOutcome,
                 completedModules: Array.from(completedModules),
                 displayName: profile.display_name || undefined,
-                bankRole: profile.bank_role || undefined,
-                lineOfBusiness: profile.line_of_business || undefined,
+                jobRole: profile.job_role || undefined,
+                departmentLob: profile.department || undefined,
                 retrievalContext: retrievalContext || undefined,
               },
             },
@@ -374,7 +374,7 @@ export default function TrainingWorkspace() {
 
     try {
       // Resolve role-specific scenario: inline departmentScenarios → role scenario bank → default
-      const lob = profile?.line_of_business;
+      const lob = profile?.department;
       const inlineDept = selectedModule.content.practiceTask.departmentScenarios;
       const resolvedScenario = (inlineDept && lob && inlineDept[lob]?.scenario)
         ? inlineDept[lob].scenario
@@ -390,8 +390,8 @@ export default function TrainingWorkspace() {
           // Session 3: use deployed agent's custom system prompt if available
           ...(isSession3 && deployedAgent?.system_prompt ? { customSystemPrompt: deployedAgent.system_prompt } : {}),
           // Department context for bankers; interests for F&F users
-          bankRole: profile?.bank_role,
-          lineOfBusiness: profile?.line_of_business,
+          jobRole: profile?.job_role,
+          departmentLob: profile?.department,
           interests: (profile as any)?.interests || undefined,
         },
       });
@@ -458,8 +458,8 @@ export default function TrainingWorkspace() {
               progressSummary: `Submitted practice conversation with ${activeMessages.filter(m => m.role === 'user').length} prompts for review`,
               completedModules: Array.from(completedModules),
               displayName: profile?.display_name || undefined,
-              bankRole: profile?.bank_role || undefined,
-              lineOfBusiness: profile?.line_of_business || undefined,
+              jobRole: profile?.job_role || undefined,
+              departmentLob: profile?.department || undefined,
             },
           },
         }),
@@ -473,7 +473,7 @@ export default function TrainingWorkspace() {
             // Pass agent template for modules 2-3 and 2-5 for agent-specific rubrics
             ...(isAgentModule && currentAgent?.template_data ? { agentTemplate: currentAgent.template_data } : {}),
             // Session 3: department context for role-specific evaluation
-            ...(isSession3 ? { departmentContext: { bankRole: profile?.bank_role, lineOfBusiness: profile?.line_of_business } } : {}),
+            ...(isSession3 ? { departmentContext: { jobRole: profile?.job_role, departmentLob: profile?.department } } : {}),
             // Module 3-3: workflow-specific rubric
             ...(isWorkflowModule && draftWorkflow?.workflow_data ? { workflowData: draftWorkflow.workflow_data } : {}),
             learnerState: {
@@ -682,8 +682,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
               : 'Working on module',
             completedModules: Array.from(completedModules),
             displayName: profile?.display_name || undefined,
-            bankRole: profile?.bank_role || undefined,
-            lineOfBusiness: profile?.line_of_business || undefined,
+            jobRole: profile?.job_role || undefined,
+            departmentLob: profile?.department || undefined,
             retrievalContext: retrievalContext || undefined,
           },
         },
@@ -755,8 +755,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
               : 'Working on module',
             completedModules: Array.from(completedModules),
             displayName: profile?.display_name || undefined,
-            bankRole: profile?.bank_role || undefined,
-            lineOfBusiness: profile?.line_of_business || undefined,
+            jobRole: profile?.job_role || undefined,
+            departmentLob: profile?.department || undefined,
             retrievalContext: retrievalContext || undefined,
           },
         },
@@ -1032,7 +1032,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                 isSubmitting={isTrainerLoading}
                 departmentLabel={departmentLabel || undefined}
                 userName={profile?.display_name || undefined}
-                bankName={profile?.employer_bank_name || undefined}
+                bankName={profile?.employer_name || undefined}
               />
             ) : selectedModule ? (
               <PracticeChatPanel
@@ -1051,7 +1051,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                 onNewChat={startNewChat}
                 onSelectConversation={selectConversation}
                 departmentLabel={departmentLabel || undefined}
-                lineOfBusiness={profile?.line_of_business || undefined}
+                departmentLob={profile?.department || undefined}
                 allowedModels={allowedModels}
                 selectedModel={preferredModel}
                 onModelChange={setPreferredModel}

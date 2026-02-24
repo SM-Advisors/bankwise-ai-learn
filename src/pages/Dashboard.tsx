@@ -198,9 +198,9 @@ export default function Dashboard() {
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
           <div className="min-w-0">
-            {(orgName || profile.employer_bank_name) && (
+            {(orgName || profile.employer_name) && (
               <p className="text-xs text-muted-foreground/70 font-medium tracking-wide uppercase truncate">
-                {orgName || profile.employer_bank_name}
+                {orgName || profile.employer_name}
               </p>
             )}
             <h1 className="text-lg md:text-xl font-display font-bold">AI Training Dashboard</h1>
@@ -280,7 +280,7 @@ export default function Dashboard() {
                 <nav className="flex flex-col py-6">
                   <div className="px-4 pb-4 border-b">
                     <p className="font-semibold">{profile.display_name || 'Learner'}</p>
-                    <p className="text-xs text-muted-foreground">{profile.bank_role}</p>
+                    <p className="text-xs text-muted-foreground">{profile.job_role}</p>
                   </div>
                   <div className="flex flex-col py-2">
                     <button className="flex items-center gap-3 px-4 py-3 text-sm text-destructive hover:bg-muted transition-colors" onClick={() => setFeedbackOpen(true)}>
@@ -334,9 +334,9 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold">{profile.display_name}</h2>
-                  <p className="text-sm text-muted-foreground">{profile.bank_role}</p>
+                  <p className="text-sm text-muted-foreground">{profile.job_role}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="secondary">{getLobLabel(profile.line_of_business)}</Badge>
+                    <Badge variant="secondary">{getLobLabel(profile.department)}</Badge>
                     <Badge variant="outline">Level {profile.ai_proficiency_level}</Badge>
                   </div>
                   {topSkills.length > 0 && (

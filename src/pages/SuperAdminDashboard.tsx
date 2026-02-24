@@ -173,7 +173,7 @@ export default function SuperAdminDashboard() {
                   </div>
                   <div className="text-2xl font-bold">{platform.total_orgs}</div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    {orgs.filter(o => o.org_type === 'friends_family').length} F&F
+                    {orgs.filter(o => o.audience_type === 'consumer').length} Consumer
                   </div>
                 </CardContent>
               </Card>
@@ -270,13 +270,13 @@ export default function SuperAdminDashboard() {
                       >
                         <TableCell className="font-medium">{org.name}</TableCell>
                         <TableCell>
-                          {org.org_type === 'friends_family' ? (
+                          {org.audience_type === 'consumer' ? (
                             <Badge variant="secondary" className="gap-1">
                               <Heart className="h-3 w-3" />
-                              F&F
+                              Consumer
                             </Badge>
                           ) : (
-                            <Badge variant="outline">Bank</Badge>
+                            <Badge variant="outline">{org.industry ? org.industry.charAt(0).toUpperCase() + org.industry.slice(1) : 'Enterprise'}</Badge>
                           )}
                         </TableCell>
                         <TableCell className="text-right">{org.user_count}</TableCell>

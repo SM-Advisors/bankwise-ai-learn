@@ -45,16 +45,16 @@ export function ProfileDropdown({ onReplayTour }: ProfileDropdownProps = {}) {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     display_name: '',
-    bank_role: '',
-    line_of_business: '',
+    job_role: '',
+    department: '',
   });
 
   const handleOpenProfile = () => {
     if (profile) {
       setFormData({
         display_name: profile.display_name || '',
-        bank_role: profile.bank_role || '',
-        line_of_business: profile.line_of_business || '',
+        job_role: profile.job_role || '',
+        department: profile.department || '',
       });
     }
     setProfileOpen(true);
@@ -69,8 +69,8 @@ export function ProfileDropdown({ onReplayTour }: ProfileDropdownProps = {}) {
     setSaving(true);
     const { error } = await updateProfile({
       display_name: formData.display_name.trim(),
-      bank_role: formData.bank_role.trim() || null,
-      line_of_business: formData.line_of_business || null,
+      job_role: formData.job_role.trim() || null,
+      department: formData.department || null,
     });
     setSaving(false);
 
@@ -118,7 +118,7 @@ export function ProfileDropdown({ onReplayTour }: ProfileDropdownProps = {}) {
           <DropdownMenuLabel>
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium">{profile?.display_name || 'User'}</p>
-              <p className="text-xs text-muted-foreground truncate">{profile?.bank_role || 'No role set'}</p>
+              <p className="text-xs text-muted-foreground truncate">{profile?.job_role || 'No role set'}</p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
@@ -176,16 +176,16 @@ export function ProfileDropdown({ onReplayTour }: ProfileDropdownProps = {}) {
               <Label htmlFor="profile-role">Job Title / Role</Label>
               <Input
                 id="profile-role"
-                value={formData.bank_role}
-                onChange={(e) => setFormData({ ...formData, bank_role: e.target.value })}
+                value={formData.job_role}
+                onChange={(e) => setFormData({ ...formData, job_role: e.target.value })}
                 placeholder="e.g. Senior Analyst, VP of Finance"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="profile-lob">Department</Label>
               <Select
-                value={formData.line_of_business}
-                onValueChange={(value) => setFormData({ ...formData, line_of_business: value })}
+                value={formData.department}
+                onValueChange={(value) => setFormData({ ...formData, department: value })}
               >
                 <SelectTrigger id="profile-lob">
                   <SelectValue placeholder="Select your department" />

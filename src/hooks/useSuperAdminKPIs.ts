@@ -5,7 +5,8 @@ export interface OrgSummary {
   id: string;
   name: string;
   slug: string;
-  org_type: string;
+  audience_type: string;
+  industry: string | null;
   created_at: string;
   user_count: number;
   active_user_count: number;
@@ -39,7 +40,7 @@ export function useSuperAdminKPIs() {
         // Fetch all organizations
         const { data: orgsData, error: orgsErr } = await supabase
           .from('organizations')
-          .select('id, name, slug, org_type, created_at')
+          .select('id, name, slug, audience_type, industry, created_at')
           .order('created_at', { ascending: false }) as any;
 
         if (orgsErr) throw orgsErr;
@@ -77,7 +78,8 @@ export function useSuperAdminKPIs() {
             id: org.id,
             name: org.name,
             slug: org.slug,
-            org_type: org.org_type || 'bank',
+            audience_type: org.audience_type || 'enterprise',
+            industry: org.industry || null,
             created_at: org.created_at,
             user_count: 0,
             active_user_count: 0,
@@ -138,7 +140,7 @@ export function useSuperAdminKPIs() {
           .eq('onboarding_completed', true) as any;
 
         const ffOrgIds = new Set(
-          (orgsData || []).filter((o: any) => o.org_type === 'friends_family').map((o: any) => o.id)
+          (orgsData || []).filter((o: any) => o.audience_type === 'consumer').map((o: any) => o.id)
         );
         const ffCount = (orgTypeProfiles || []).filter((p: any) => ffOrgIds.has(p.organization_id)).length;
 

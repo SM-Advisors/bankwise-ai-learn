@@ -53,7 +53,7 @@ export function useCommunityTopics() {
     if (!user) return { success: false, error: 'Not authenticated' };
     try {
       const firstName = (profile?.display_name || 'Anonymous').split(' ')[0];
-      const role = profile?.bank_role || null;
+      const role = profile?.job_role || null;
 
       const { error: insertError } = await (supabase
         .from('community_topics' as any)

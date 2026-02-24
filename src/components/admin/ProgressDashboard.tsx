@@ -35,7 +35,7 @@ export function ProgressDashboard() {
 
   const filteredProgress = useMemo(() => {
     if (!lobFilter) return userProgress;
-    return userProgress.filter((u) => u.line_of_business === lobFilter);
+    return userProgress.filter((u) => u.department === lobFilter);
   }, [userProgress, lobFilter]);
 
   if (loading && orgsLoading) {
@@ -80,7 +80,7 @@ export function ProgressDashboard() {
   // LOB distribution
   const lobDist: Record<string, number> = {};
   filteredProgress.forEach((u) => {
-    const label = LOB_LABELS[u.line_of_business || ''] || 'Unknown';
+    const label = LOB_LABELS[u.department || ''] || 'Unknown';
     lobDist[label] = (lobDist[label] || 0) + 1;
   });
   const lobDistData = Object.entries(lobDist).map(([name, value]) => ({ name, value }));
@@ -90,7 +90,7 @@ export function ProgressDashboard() {
     (u) => u.session_1_completed && u.session_2_completed && u.session_3_completed
   ).length;
 
-  const uniqueLobs = [...new Set(userProgress.map((u) => u.line_of_business).filter(Boolean))];
+  const uniqueLobs = [...new Set(userProgress.map((u) => u.department).filter(Boolean))];
 
   return (
     <div className="space-y-6">
@@ -295,10 +295,10 @@ export function ProgressDashboard() {
                   {filteredProgress.map((user) => (
                     <tr key={user.user_id} className="border-b hover:bg-muted/50">
                       <td className="py-2 px-3">{user.display_name || 'Unknown'}</td>
-                      <td className="py-2 px-3 text-muted-foreground">{user.bank_role || '—'}</td>
+                      <td className="py-2 px-3 text-muted-foreground">{user.job_role || '—'}</td>
                       <td className="py-2 px-3">
                         <Badge variant="outline" className="text-xs">
-                          {LOB_LABELS[user.line_of_business || ''] || '—'}
+                          {LOB_LABELS[user.department || ''] || '—'}
                         </Badge>
                       </td>
                       <td className="py-2 px-3 text-center">{user.ai_proficiency_level ?? '—'}</td>

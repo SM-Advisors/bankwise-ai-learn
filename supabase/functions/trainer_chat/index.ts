@@ -50,9 +50,9 @@ interface TrainerChatRequest {
     progressSummary?: string;
     completedModules?: string[];
     displayName?: string;
-    bankRole?: string;
-    lineOfBusiness?: string;
-    interests?: string[]; // F&F users: personal interest tags instead of department
+    jobRole?: string;
+    departmentLob?: string;
+    interests?: string[]; // Consumer users: personal interest tags instead of department
     retrievalContext?: string; // Formatted spaced repetition questions block
   };
   userId?: string;
@@ -449,21 +449,69 @@ async function retrieveBankPolicies(supabaseUrl: string): Promise<BankPolicy[]> 
   return data || [];
 }
 
+// ─── INDUSTRY PERSONA CONTEXT ──────────────────────────────────────────────
+function getIndustryPersonaContext(industry?: string | null): {
+  orgContext: string;
+  savvyDescription: string;
+  colleagueDescription: string;
+} {
+  switch (industry) {
+    case "healthcare":
+      return {
+        orgContext: " in healthcare",
+        savvyDescription: "You speak healthcare naturally. You reference clinical workflows, patient records, HIPAA compliance, care coordination, EHR systems, and care team communication. Use real healthcare vocabulary — say \"care transition note\" not \"professional handoff document.\"",
+        colleagueDescription: "healthcare colleague",
+      };
+    case "insurance":
+      return {
+        orgContext: " in insurance",
+        savvyDescription: "You speak insurance naturally. You reference underwriting guidelines, claims processing, policy administration, actuarial analysis, loss ratios, and compliance. Use real insurance vocabulary — say \"claims adjuster review\" not \"document review.\"",
+        colleagueDescription: "insurance colleague",
+      };
+    case "retail":
+      return {
+        orgContext: " in retail",
+        savvyDescription: "You speak retail naturally. You reference merchandising, inventory management, customer experience, supply chain, planograms, and store operations. Use real retail vocabulary — say \"seasonal collection launch\" not \"product introduction.\"",
+        colleagueDescription: "retail colleague",
+      };
+    case "manufacturing":
+      return {
+        orgContext: " in manufacturing",
+        savvyDescription: "You speak manufacturing naturally. You reference production planning, quality control (SPC, FMEA), supply chain, preventive maintenance, safety compliance, and continuous improvement (Lean/Six Sigma). Use real manufacturing vocabulary — say \"root cause analysis\" not \"problem investigation.\"",
+        colleagueDescription: "manufacturing colleague",
+      };
+    case "general":
+      return {
+        orgContext: " for everyday AI skills",
+        savvyDescription: "You use clear, relatable language that works in any context. Avoid industry jargon. Focus on practical skills that apply broadly — at work, at home, or in a career transition. Make examples feel personal and immediately useful. Meet the learner where they are.",
+        colleagueDescription: "knowledgeable colleague",
+      };
+    case "banking":
+    default:
+      return {
+        orgContext: " for banking professionals",
+        savvyDescription: "You speak banking naturally. You reference credit committees, BSA/AML reviews, loan documentation, board reports, and regulatory examinations like someone who's been in the industry. Use real banking vocabulary — don't genericize. Say \"underwriting memo\" not \"professional document.\"",
+        colleagueDescription: "banking colleague",
+      };
+  }
+}
+
 // ─── ANDREA'S PERSONA ──────────────────────────────────────────────────────
-function buildAndreaPersona(): string {
-  return `You are Andrea, an AI Training Coach for banking professionals learning to use AI effectively.
+function buildAndreaPersona(industry?: string | null): string {
+  const ctx = getIndustryPersonaContext(industry);
+  return `You are Andrea, an AI Training Coach helping professionals learn to use AI effectively${ctx.orgContext}.
 
 ## WHO YOU ARE — 5 PERSONA ANCHORS (Never break character)
 
-1. DIRECT BUT WARM: You don't hedge or over-qualify. When something needs fixing, you say so — kindly, but clearly. You never say "Great job!" when the work needs improvement. You say "That's close — the compliance clause is missing. Here's why it matters."
+1. DIRECT BUT WARM: You don't hedge or over-qualify. When something needs fixing, you say so — kindly, but clearly. You never say "Great job!" when the work needs improvement. You say "That's close — [specific issue]. Here's why it matters."
 
-2. BANKING-SAVVY: You speak banking naturally. You reference credit committees, BSA/AML reviews, loan documentation, board reports, and regulatory examinations like someone who's been in the industry. Use real banking vocabulary — don't genericize. Say "underwriting memo" not "professional document."
+2. INDUSTRY-SAVVY: ${ctx.savvyDescription}
 
-3. QUIETLY ENCOURAGING: You celebrate progress with specifics, not hollow praise. Instead of "Great work!", say "Your output format is much tighter than your first attempt — the tabular layout works well for credit summaries." Action-empathy over hollow-empathy.
+3. QUIETLY ENCOURAGING: You celebrate progress with specifics, not hollow praise. Instead of "Great work!", say "Your output format is much tighter than your first attempt — the structure works well for [use case]." Action-empathy over hollow-empathy.
 
-4. SOLUTION-FOCUSED: Every critique comes with a concrete path forward. Never point out a problem without immediately suggesting how to fix it. "The tone is too casual for a board report. Try framing the opening as: [specific suggestion]."
+4. SOLUTION-FOCUSED: Every critique comes with a concrete path forward. Never point out a problem without immediately suggesting how to fix it. "The tone is too casual. Try framing the opening as: [specific suggestion]."
 
-5. KNOWS SHE'S AI: You're honest about what you are. You don't pretend to have worked at a bank. You say things like "I can't review your actual loan file, but I can help you build the prompt that would." This builds trust through transparency.`;
+5. KNOWS SHE'S AI: You're honest about what you are. You don't pretend to have worked in the field. You say things like "I can't review your actual document, but I can help you build the prompt that would." This builds trust through transparency.`;
 }
 
 // ─── SOCRATIC COACHING RULES ───────────────────────────────────────────────
@@ -561,15 +609,17 @@ serve(async (req) => {
     let techLearningStyle: string | null = null;
     let aiProficiencyLevel: number | null = null;
     let displayName: string | null = null;
-    let bankRole: string | null = null;
-    let lineOfBusiness: string | null = null;
-    let employerBankName: string | null = null;
+    let jobRole: string | null = null;
+    let departmentLob: string | null = null;
+    let employerName: string | null = null;
     let userInterests: string[] | null = null;
+    let orgIndustry: string | null = null;
+    let isEnterpriseUser = false;
 
     if (userId) {
       const { data: profile } = await supabase
         .from("user_profiles")
-        .select("learning_style, tech_learning_style, ai_proficiency_level, display_name, bank_role, line_of_business, employer_bank_name, interests")
+        .select("learning_style, tech_learning_style, ai_proficiency_level, display_name, job_role, department, employer_name, interests, organization_id")
         .eq("user_id", userId)
         .single();
 
@@ -578,24 +628,41 @@ serve(async (req) => {
         if (profile.tech_learning_style) techLearningStyle = profile.tech_learning_style;
         if (profile.ai_proficiency_level !== undefined) aiProficiencyLevel = profile.ai_proficiency_level;
         displayName = profile.display_name;
-        bankRole = profile.bank_role;
-        lineOfBusiness = profile.line_of_business;
-        employerBankName = profile.employer_bank_name;
+        jobRole = profile.job_role;
+        departmentLob = profile.department;
+        employerName = profile.employer_name;
         if (profile.interests && Array.isArray(profile.interests) && profile.interests.length > 0) {
           userInterests = profile.interests;
+        }
+
+        // Fetch org's audience_type + industry for persona parameterization
+        if (profile.organization_id) {
+          const { data: orgData } = await supabase
+            .from("organizations")
+            .select("audience_type, industry")
+            .eq("id", profile.organization_id)
+            .single();
+          if (orgData) {
+            isEnterpriseUser = orgData.audience_type === "enterprise";
+            orgIndustry = orgData.industry || (isEnterpriseUser ? "banking" : "general");
+          }
+        }
+
+        // Fallback: if no org, treat as enterprise user if they have an employer name
+        if (!profile.organization_id) {
+          isEnterpriseUser = !!(employerName && employerName.trim());
         }
       }
     }
 
     // Use learnerState overrides if profile data not available
     if (!displayName && learnerState?.displayName) displayName = learnerState.displayName;
-    if (!bankRole && learnerState?.bankRole) bankRole = learnerState.bankRole;
-    if (!lineOfBusiness && learnerState?.lineOfBusiness) lineOfBusiness = learnerState.lineOfBusiness;
+    if (!jobRole && learnerState?.jobRole) jobRole = learnerState.jobRole;
+    if (!departmentLob && learnerState?.departmentLob) departmentLob = learnerState.departmentLob;
     if (!userInterests && learnerState?.interests?.length) userInterests = learnerState.interests;
 
-    // Determine if this is a bank employee or a non-bank (F&F / individual) user
-    // Bank users have a real employer bank name set; F&F / personal users do not
-    const isBankUser = !!(employerBankName && employerBankName.trim());
+    // isBankUser is kept as a legacy alias for backward compatibility in prompts
+    const isBankUser = isEnterpriseUser;
 
     // Fetch AI preferences and memories (pinned + recent unpinned)
     let aiPreferences: AIPreferences | null = null;
@@ -626,21 +693,21 @@ serve(async (req) => {
     // ─── HANDLE GREETING REQUEST ─────────────────────────────────────
     if (greeting) {
       const completedCount = learnerState?.completedModules?.length || 0;
-      const greetingPrompt = buildAndreaPersona() + `\n\n` +
+      const greetingPrompt = buildAndreaPersona(orgIndustry) + `\n\n` +
         getSessionCoachingDepth(effectiveSessionNumber) + `\n\n` +
         `Generate a SHORT, personalized greeting (3-4 sentences max) for this learner who just opened the training workspace.
 
 LEARNER CONTEXT:
 - Name: ${displayName || "there"}
-${isBankUser ? `- Role: ${bankRole || "banking professional"}
-- Bank: ${employerBankName}
-- Line of Business: ${lineOfBusiness || "general banking"}` : `- Context: Personal learner / non-bank user${userInterests?.length ? `\n- Interests: ${userInterests.join(", ")}` : ""}`}
+${isEnterpriseUser ? `- Role: ${jobRole || "professional"}
+- Organization: ${employerName || ""}
+- Department: ${departmentLob || ""}` : `- Context: Personal learner / consumer user${userInterests?.length ? `\n- Interests: ${userInterests.join(", ")}` : ""}`}
 - AI Proficiency: Level ${aiProficiencyLevel ?? 3}/8
 - Current Session: ${effectiveSessionNumber}
 - Modules Completed: ${completedCount}
 ${learnerState?.currentCardTitle ? `- Starting Module: ${learnerState.currentCardTitle}` : ""}
-${!isBankUser ? `
-IMPORTANT — NON-BANK USER: This learner is NOT a banking professional. Do NOT reference bank policies, BSA/AML, credit committees, underwriting, or ask "Has your bank issued AI guidance?". Use general professional or personal contexts. Reference their interests above for examples and analogies.` : ""}
+${!isEnterpriseUser ? `
+IMPORTANT — CONSUMER USER: This learner is NOT in an enterprise organization. Do NOT reference industry-specific policies, BSA/AML, credit committees, clinical workflows, or any industry jargon. Use general professional or personal contexts. Reference their interests above for examples and analogies.` : ""}
 
 ${aiMemories.length > 0 ? `THINGS YOU REMEMBER ABOUT THIS LEARNER:\n${aiMemories.slice(0, 5).map(m => `- ${m.content}`).join("\n")}` : ""}
 
@@ -840,7 +907,7 @@ You are in BRAINSTORM mode — a creative thinking partner helping the learner d
 - Do NOT teach CLEAR framework, VERIFY, or curriculum content in this mode
 - For non-bank users: use general professional or personal examples based on their interests`;
 
-    const systemPrompt = `${buildAndreaPersona()}
+    const systemPrompt = `${buildAndreaPersona(orgIndustry)}
 
 ${buildSocraticRules()}
 
@@ -992,10 +1059,10 @@ ${learnerState?.learningOutcome ? `- Module Goal: ${learnerState.learningOutcome
 ${learnerState?.learningObjectives?.length ? `- This Module's Objectives:\n${learnerState.learningObjectives.map(o => `  • ${o}`).join("\n")}` : ""}
 ${learnerState?.progressSummary ? `- Learner's Practice: ${learnerState.progressSummary}` : ""}
 ${displayName ? `- Learner Name: ${displayName}` : ""}
-${bankRole ? `- Learner Role: ${bankRole}` : ""}
-${lineOfBusiness ? `- Department: ${lineOfBusiness}` : ""}
-${employerBankName ? `- Bank: ${employerBankName}` : ""}
-${userInterests && !lineOfBusiness ? `- Interests (use for analogies): ${userInterests.join(", ")}` : ""}
+${jobRole ? `- Learner Role: ${jobRole}` : ""}
+${departmentLob ? `- Department: ${departmentLob}` : ""}
+${employerName ? `- Organization: ${employerName}` : ""}
+${userInterests && !departmentLob ? `- Interests (use for analogies): ${userInterests.join(", ")}` : ""}
 
 ${learnerState?.retrievalContext ? learnerState.retrievalContext : ""}
 ${(() => {
@@ -1025,16 +1092,15 @@ This learner is engaging confidently with detailed, substantive messages.
       return "";
     })()}
 
-${!isBankUser ? `## NON-BANK USER — PERSONA OVERRIDE (highest priority)
-This learner is NOT a banking professional. They are a personal learner, F&F tester, or general professional.
-Completely override the BANKING-SAVVY persona anchor for this learner:
-- NEVER use: BSA/AML, credit committees, underwriting memos, board reports, loan documentation, regulatory examinations, "your bank"
-- NEVER ask: "Has your bank issued guidance on AI?" or any bank-policy question
-- REPLACE "your bank" → "your workplace or personal projects"
-- REPLACE "banking use cases" → "everyday tasks or projects"
+${!isEnterpriseUser ? `## CONSUMER/PERSONAL USER — PERSONA OVERRIDE (highest priority)
+This learner is NOT in an enterprise organization. They are a personal learner or general professional.
+Completely override the INDUSTRY-SAVVY persona anchor for this learner:
+- NEVER use industry-specific jargon (no BSA/AML, credit committees, clinical workflows, underwriting, etc.)
+- NEVER ask policy questions specific to any industry ("Has your bank issued guidance on AI?" etc.)
+- REPLACE industry-specific examples → everyday tasks or personal projects
 ${userInterests?.length ? `- USE these interests for all examples and analogies: ${userInterests.join(", ")}` : "- Use general professional or everyday contexts for examples"}
-- When the curriculum references banking examples, tell the learner they can apply the same concepts to their own context
-- You are still a supportive, direct AI coach — just for a general audience, not a banking one` : ""}
+- When the curriculum references industry-specific examples, tell the learner they can apply the same concepts to their own context
+- You are still a supportive, direct AI coach — just for a general audience` : ""}
 
 ## CRITICAL RULES
 1. ALWAYS respond with valid JSON containing ALL required fields
@@ -1044,7 +1110,7 @@ ${userInterests?.length ? `- USE these interests for all examples and analogies:
 5. Match the SESSION COACHING DEPTH for this session
 6. Reference bank policies ONLY when directly relevant AND only for bank users
 7. If their practice looks good, say so specifically and encourage them to submit
-8. Never lecture — be a ${isBankUser ? "banking colleague" : "knowledgeable colleague"} who happens to be great at AI
+8. Never lecture — be a ${isEnterpriseUser ? getIndustryPersonaContext(orgIndustry).colleagueDescription : "knowledgeable colleague"} who happens to be great at AI
 9. Use their name occasionally (not every message) if you know it
 10. If compliance coaching is required above, address it FIRST before anything else
 ${effectiveSessionNumber >= 2 ? `11. VERIFY INTEGRATION: When reviewing any AI-generated output the learner shows you in Sessions 2-4, check whether they applied VERIFY. If they present output without verification commentary, ask: "Before we move on — did you run VERIFY on this? What would you check first?" Reinforce the habit across all sessions.` : ""}

@@ -13,10 +13,10 @@ import type { DashboardMessage } from '@/hooks/useDashboardConversations';
 interface DashboardChatProps {
   profile: {
     display_name: string | null;
-    bank_role: string | null;
-    line_of_business: string | null;
+    job_role: string | null;
+    department: string | null;
     ai_proficiency_level: number | null;
-    employer_bank_name: string | null;
+    employer_name: string | null;
   };
   progress: {
     session_1_completed: boolean;
@@ -119,8 +119,8 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
 
     return {
       displayName: profile.display_name || undefined,
-      bankRole: profile.bank_role || undefined,
-      lineOfBusiness: profile.line_of_business || undefined,
+      jobRole: profile.job_role || undefined,
+      departmentLob: profile.department || undefined,
       completedModules,
       progressSummary,
     };

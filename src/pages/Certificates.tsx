@@ -53,7 +53,7 @@ export default function Certificates() {
     const data = getSessionProgressData(sessionId);
     const completedAt = data?.capstoneData?.completedAt || new Date().toISOString();
     const userName = profile.display_name || 'Learner';
-    const bankName = profile.employer_bank_name || '';
+    const bankName = profile.employer_name || '';
     const formattedDate = new Date(completedAt).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
