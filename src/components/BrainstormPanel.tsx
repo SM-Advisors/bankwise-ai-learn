@@ -168,11 +168,13 @@ Tool: [Specific tool name]
 Effort: [Be honest about whether this needs a developer or IT team]
 
 $ COST SCALE:
-$     = free or existing subscription (Claude Pro, ChatGPT Plus — ~$20/mo)
-$$    = basic no-code automation tool (Zapier, Make, Power Automate — $20–$200/mo)
-$$$   = advanced automation or managed AI service ($200–$2,000/mo)
-$$$$  = custom development + ongoing API costs ($2,000+/mo plus dev time)
-$$$$$ = enterprise platform (not usually relevant)
+Assign $ signs based on the realistic ongoing cost of the specific solution you are recommending — not by which option number it is. A sophisticated Option 3 built on open-source or low-cost APIs might be $ or $$. A simple Option 1 that requires a paid enterprise license might be $$$. Price the actual solution.
+$     = effectively free or under ~$25/mo total
+$$    = ~$25–$200/mo
+$$$   = ~$200–$2,000/mo
+$$$$  = $2,000+/mo, or modest one-time dev cost with low ongoing cost
+$$$$$ = enterprise-scale (reserve for truly large deployments)
+When the upfront build cost and ongoing cost are very different (e.g., $5,000 to build, $50/mo to run), note both briefly.
 
 TOOL SHORTLIST BY TIER:
 Prompt-only ($): Claude Pro, ChatGPT Plus, Claude Projects, Custom GPTs, Microsoft Copilot (for M365 orgs), Gemini for Workspace (for Google orgs)
