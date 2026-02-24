@@ -357,7 +357,7 @@ export default function SuperAdminDashboard() {
                     <div key={org.id} className="mb-4">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm font-medium">{org.name}</span>
-                        {org.org_type === 'friends_family' && (
+                        {org.audience_type === 'friends_family' && (
                           <Badge variant="secondary" className="text-xs gap-1">
                             <Heart className="h-2.5 w-2.5" />F&F
                           </Badge>

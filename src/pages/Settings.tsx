@@ -282,7 +282,7 @@ export default function Settings() {
               <div className="flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
                   <span className="font-medium text-foreground">Current profile:</span>{' '}
-                  {profile?.display_name} &middot; {profile?.bank_role} &middot; Level {profile?.ai_proficiency_level}
+                  {profile?.display_name} &middot; {profile?.job_role} &middot; Level {profile?.ai_proficiency_level}
                 </div>
                 <div className="flex gap-2">
                   <Badge variant="secondary">{profile?.learning_style}</Badge>
