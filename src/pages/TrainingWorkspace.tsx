@@ -1057,7 +1057,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                 onNewChat={startNewChat}
                 onSelectConversation={selectConversation}
                 departmentLabel={departmentLabel || undefined}
-                departmentLob={profile?.department || undefined}
+                lineOfBusiness={profile?.department || undefined}
                 displayName={profile?.display_name?.split(' ')[0] || undefined}
                 allowedModels={allowedModels}
                 selectedModel={preferredModel}
