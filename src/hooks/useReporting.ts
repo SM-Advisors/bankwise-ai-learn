@@ -301,6 +301,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
         (supabase
           .from('user_ideas' as any)
           .select('*')
+          .eq('category', 'csuite_submission')
           .order('votes', { ascending: false }) as any),
       ]);
 

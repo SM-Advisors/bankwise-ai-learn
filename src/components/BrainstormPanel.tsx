@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Lightbulb, Send, Loader2, Sparkles, Bookmark, Users, TrendingUp, X, Check } from 'lucide-react';
+import { Lightbulb, Send, Loader2, Sparkles, Bookmark, Users, TrendingUp, X, Check, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -32,6 +32,7 @@ export function BrainstormPanel() {
   const [submitTitle, setSubmitTitle] = useState('');
   const [submitDescription, setSubmitDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSummarizing, setIsSummarizing] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -54,11 +55,53 @@ export function BrainstormPanel() {
     setOpen(true);
   };
 
-  const openSubmitForm = (mode: SubmitMode) => {
+  const openSubmitForm = async (mode: SubmitMode) => {
+    // Fallback: use first user message if Andrea summarization fails
     const firstUserMsg = localMessages.find(m => m.role === 'user')?.content || '';
-    setSubmitTitle(firstUserMsg.length > 80 ? firstUserMsg.slice(0, 77) + '...' : firstUserMsg);
-    setSubmitDescription(firstUserMsg);
-    setSubmitMode(mode);
+    const fallbackTitle = firstUserMsg.length > 80 ? firstUserMsg.slice(0, 77) + '...' : firstUserMsg;
+
+    setIsSummarizing(true);
+    setSubmitMode(mode); // open form immediately so spinner is visible
+
+    try {
+      const destinationLabel = mode === 'ideas' ? 'My Ideas' : mode === 'community' ? 'Community Hub' : 'C-Suite Innovation Pipeline';
+      const summaryPrompt = `You are summarizing a brainstorm conversation for a ${destinationLabel} submission.
+
+Based on the conversation below, write:
+1. A professional title (under 80 characters) that captures the workflow/task and AI opportunity
+2. A compelling 2–3 sentence description that explains the task, the AI opportunity identified, and why it matters
+
+Return ONLY valid JSON with no extra text:
+{"title": "...", "description": "..."}`;
+
+      const { data } = await supabase.functions.invoke('ai-practice', {
+        body: {
+          customSystemPrompt: summaryPrompt,
+          moduleTitle: 'Brainstorm Summary',
+          scenario: 'Generate a professional submission summary from a brainstorm conversation.',
+          messages: [
+            ...localMessages,
+            { role: 'user', content: `Summarize this brainstorm conversation for a ${destinationLabel} submission. Return JSON only.` },
+          ],
+        },
+      });
+
+      const raw = data?.reply || '';
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        setSubmitTitle(parsed.title || fallbackTitle);
+        setSubmitDescription(parsed.description || firstUserMsg);
+      } else {
+        setSubmitTitle(fallbackTitle);
+        setSubmitDescription(firstUserMsg);
+      }
+    } catch {
+      setSubmitTitle(fallbackTitle);
+      setSubmitDescription(firstUserMsg);
+    } finally {
+      setIsSummarizing(false);
+    }
   };
 
   const handleSubmitIdea = async () => {
@@ -245,6 +288,15 @@ After presenting options, end with: "Which of these feels closest to where you'd
     await sendToAndrea(content, history);
   };
 
+  const handleForceOptions = async () => {
+    if (isLoading) return;
+    const forceMsg = "Please give me your three options now based on what we've discussed. Start with a brief note on anything you still needed to know for the best recommendation.";
+    const userMsg: LocalMessage = { role: 'user', content: forceMsg };
+    const history = [...localMessages];
+    setLocalMessages(prev => [...prev, userMsg]);
+    await sendToAndrea(forceMsg, history);
+  };
+
   // Show action bar after at least one full exchange (user + assistant)
   const hasExchange = localMessages.some(m => m.role === 'assistant');
 
@@ -351,27 +403,39 @@ After presenting options, end with: "Which of these feels closest to where you'd
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Save idea action bar — shown after first exchange */}
+              {/* Action bar — shown after first exchange */}
               {hasExchange && !submitMode && (
-                <div className="border-t px-3 py-2 flex items-center gap-1.5 bg-muted/30 shrink-0">
-                  <span className="text-[10px] text-muted-foreground mr-1 shrink-0">Drop idea to:</span>
+                <div className="border-t px-3 py-2 flex items-center gap-1.5 bg-muted/30 shrink-0 flex-wrap">
+                  <span className="text-[10px] text-muted-foreground mr-0.5 shrink-0">Drop idea to:</span>
                   <button
                     onClick={() => openSubmitForm('ideas')}
-                    className="flex items-center gap-1 text-[10px] font-medium text-blue-600 hover:bg-blue-50 px-2 py-1 rounded-md transition-colors"
+                    disabled={isSummarizing}
+                    className="flex items-center gap-1 text-[10px] font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 px-2 py-1 rounded-md transition-colors disabled:opacity-50"
                   >
                     <Bookmark className="h-3 w-3" /> My Ideas
                   </button>
                   <button
                     onClick={() => openSubmitForm('community')}
-                    className="flex items-center gap-1 text-[10px] font-medium text-purple-600 hover:bg-purple-50 px-2 py-1 rounded-md transition-colors"
+                    disabled={isSummarizing}
+                    className="flex items-center gap-1 text-[10px] font-medium text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/40 px-2 py-1 rounded-md transition-colors disabled:opacity-50"
                   >
                     <Users className="h-3 w-3" /> Community
                   </button>
                   <button
                     onClick={() => openSubmitForm('csuite')}
-                    className="flex items-center gap-1 text-[10px] font-medium text-orange-600 hover:bg-orange-50 px-2 py-1 rounded-md transition-colors"
+                    disabled={isSummarizing}
+                    className="flex items-center gap-1 text-[10px] font-medium text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/40 px-2 py-1 rounded-md transition-colors disabled:opacity-50"
                   >
                     <TrendingUp className="h-3 w-3" /> C-Suite
+                  </button>
+                  <div className="flex-1" />
+                  <button
+                    onClick={handleForceOptions}
+                    disabled={isLoading}
+                    className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted px-2 py-1 rounded-md transition-colors disabled:opacity-50 border border-border/60"
+                    title="Skip Andrea's questions and get the 3-option recommendation now"
+                  >
+                    <Zap className="h-3 w-3" /> Skip to options
                   </button>
                 </div>
               )}
@@ -389,32 +453,41 @@ After presenting options, end with: "Which of these feels closest to where you'd
                       <X className="h-4 w-4" />
                     </button>
                   </div>
-                  <Input
-                    value={submitTitle}
-                    onChange={(e) => setSubmitTitle(e.target.value)}
-                    placeholder="Title"
-                    className="text-sm h-8"
-                  />
-                  <Textarea
-                    value={submitDescription}
-                    onChange={(e) => setSubmitDescription(e.target.value)}
-                    placeholder="Description (optional)"
-                    className="text-sm min-h-[60px] resize-none"
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={handleSubmitIdea}
-                      disabled={!submitTitle.trim() || isSubmitting}
-                      className="flex-1 gap-1.5 h-8 text-xs"
-                    >
-                      {isSubmitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
-                      Submit
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => setSubmitMode(null)} className="h-8 text-xs">
-                      Cancel
-                    </Button>
-                  </div>
+                  {isSummarizing ? (
+                    <div className="flex items-center justify-center gap-2 py-4 text-xs text-muted-foreground">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Andrea is summarizing your conversation...
+                    </div>
+                  ) : (
+                    <>
+                      <Input
+                        value={submitTitle}
+                        onChange={(e) => setSubmitTitle(e.target.value)}
+                        placeholder="Title"
+                        className="text-sm h-8"
+                      />
+                      <Textarea
+                        value={submitDescription}
+                        onChange={(e) => setSubmitDescription(e.target.value)}
+                        placeholder="Description (optional)"
+                        className="text-sm min-h-[60px] resize-none"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={handleSubmitIdea}
+                          disabled={!submitTitle.trim() || isSubmitting}
+                          className="flex-1 gap-1.5 h-8 text-xs"
+                        >
+                          {isSubmitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                          Submit
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setSubmitMode(null)} className="h-8 text-xs">
+                          Cancel
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
