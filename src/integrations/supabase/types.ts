@@ -1463,6 +1463,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_my_org_id: { Args: never; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -1474,6 +1475,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_super_admin: { Args: never; Returns: boolean }
       match_lesson_chunks: {
         Args: {
           filter_learning_style?: string
