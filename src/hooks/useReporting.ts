@@ -515,19 +515,34 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
 // Ideas hook (existing, enhanced with ROI)
 // ---------------------------------------------------------------------------
 
-export function useAllIdeas() {
+export function useAllIdeas(organizationId?: string | null) {
   const [ideas, setIdeas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchIdeas = async () => {
     try {
       setLoading(true);
+
+      // If org-scoped, first get user_ids in that org, then filter ideas
+      let orgUserIds: Set<string> | null = null;
+      if (organizationId) {
+        const { data: profiles } = await (supabase
+          .from('user_profiles' as any)
+          .select('user_id')
+          .eq('organization_id', organizationId) as any);
+        orgUserIds = new Set((profiles || []).map((p: any) => p.user_id));
+      }
+
       const { data, error } = await (supabase
         .from('user_ideas' as any)
         .select('*')
         .order('created_at', { ascending: false }) as any);
       if (error) throw error;
-      setIdeas(data || []);
+
+      const filtered = orgUserIds
+        ? (data || []).filter((idea: any) => orgUserIds!.has(idea.user_id))
+        : (data || []);
+      setIdeas(filtered);
     } catch (err) {
       console.error('Error fetching all ideas:', err);
     } finally {
@@ -565,6 +580,6 @@ export function useAllIdeas() {
     }
   };
 
-  useEffect(() => { fetchIdeas(); }, []);
+  useEffect(() => { fetchIdeas(); }, [organizationId]);
   return { ideas, loading, updateIdeaStatus, updateIdeaROI, refetch: fetchIdeas };
 }

@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { email, password, display_name, bank_role, line_of_business, role } = await req.json();
+    const { email, password, display_name, bank_role, line_of_business, role, organization_id } = await req.json();
 
     if (!email || !password || !display_name) {
       return new Response(JSON.stringify({ error: "Email, password, and display_name are required" }), {
@@ -54,6 +54,17 @@ Deno.serve(async (req) => {
 
     // Use service role to create user
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Resolve organization: use provided org_id, or fall back to caller's org
+    let resolvedOrgId = organization_id || null;
+    if (!resolvedOrgId) {
+      const { data: callerProfile } = await adminClient
+        .from("user_profiles")
+        .select("organization_id")
+        .eq("user_id", caller.id)
+        .maybeSingle();
+      resolvedOrgId = callerProfile?.organization_id || null;
+    }
 
     const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
       email,
@@ -70,12 +81,13 @@ Deno.serve(async (req) => {
 
     const userId = newUser.user.id;
 
-    // Create user profile
+    // Create user profile with organization assignment
     await adminClient.from("user_profiles").insert({
       user_id: userId,
       display_name,
       bank_role: bank_role || null,
       line_of_business: line_of_business || null,
+      organization_id: resolvedOrgId,
       onboarding_completed: false,
     });
 

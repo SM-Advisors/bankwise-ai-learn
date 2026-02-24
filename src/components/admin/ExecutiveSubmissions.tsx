@@ -49,7 +49,11 @@ function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-export function ExecutiveSubmissions() {
+interface ExecutiveSubmissionsProps {
+  organizationId?: string | null;
+}
+
+export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsProps) {
   const { toast } = useToast();
   const [submissions, setSubmissions] = useState<ExecutiveSubmission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,6 +64,17 @@ export function ExecutiveSubmissions() {
 
   const fetchSubmissions = async () => {
     setLoading(true);
+
+    // Get org user_ids for filtering if org-scoped
+    let orgUserIds: Set<string> | null = null;
+    if (organizationId) {
+      const { data: profiles } = await (supabase
+        .from('user_profiles' as any)
+        .select('user_id')
+        .eq('organization_id', organizationId) as any);
+      orgUserIds = new Set((profiles || []).map((p: any) => p.user_id));
+    }
+
     const { data, error } = await (supabase
       .from('executive_submissions' as any)
       .select('*')
@@ -69,14 +84,17 @@ export function ExecutiveSubmissions() {
       console.error('Failed to load submissions:', error);
       toast({ title: 'Failed to load submissions', variant: 'destructive' });
     } else {
-      setSubmissions(data || []);
+      const filtered = orgUserIds
+        ? (data || []).filter((s: any) => orgUserIds!.has(s.user_id))
+        : (data || []);
+      setSubmissions(filtered);
     }
     setLoading(false);
   };
 
   useEffect(() => {
     fetchSubmissions();
-  }, []);
+  }, [organizationId]);
 
   const updateSubmission = async (id: string, status: SubmissionStatus) => {
     setUpdatingId(id);

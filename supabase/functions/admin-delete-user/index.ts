@@ -52,6 +52,26 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Verify org membership: caller must be in same org as target (or be super admin)
+    const { data: callerProfile } = await adminClient
+      .from("user_profiles")
+      .select("organization_id, is_super_admin")
+      .eq("user_id", caller.id)
+      .maybeSingle();
+
+    const { data: targetProfile } = await adminClient
+      .from("user_profiles")
+      .select("organization_id")
+      .eq("user_id", user_id)
+      .maybeSingle();
+
+    if (!callerProfile?.is_super_admin && callerProfile?.organization_id !== targetProfile?.organization_id) {
+      return new Response(JSON.stringify({ error: "Cannot delete users from another organization" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Delete from public tables first
     await adminClient.from("user_roles").delete().eq("user_id", user_id);
     await adminClient.from("training_progress").delete().eq("user_id", user_id);

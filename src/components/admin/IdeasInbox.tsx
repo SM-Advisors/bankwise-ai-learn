@@ -18,8 +18,12 @@ const STATUS_BADGE: Record<string, { variant: 'default' | 'secondary' | 'outline
   future: { variant: 'default', label: 'Future' },
 };
 
-export function IdeasInbox() {
-  const { ideas, loading, updateIdeaStatus } = useAllIdeas();
+interface IdeasInboxProps {
+  organizationId?: string | null;
+}
+
+export function IdeasInbox({ organizationId }: IdeasInboxProps) {
+  const { ideas, loading, updateIdeaStatus } = useAllIdeas(organizationId);
   const { toast } = useToast();
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 

@@ -18,7 +18,11 @@ interface PendingTopic {
   created_at: string;
 }
 
-export function CommunityReviewQueue() {
+interface CommunityReviewQueueProps {
+  organizationId?: string | null;
+}
+
+export function CommunityReviewQueue({ organizationId }: CommunityReviewQueueProps) {
   const { toast } = useToast();
   const [topics, setTopics] = useState<PendingTopic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,14 +30,31 @@ export function CommunityReviewQueue() {
 
   const fetchPending = useCallback(async () => {
     setLoading(true);
+
+    // Get org user_ids for filtering if org-scoped
+    let orgUserIds: Set<string> | null = null;
+    if (organizationId) {
+      const { data: profiles } = await (supabase
+        .from('user_profiles' as any)
+        .select('user_id')
+        .eq('organization_id', organizationId) as any);
+      orgUserIds = new Set((profiles || []).map((p: any) => p.user_id));
+    }
+
     const { data, error } = await (supabase
       .from('community_topics' as any)
       .select('id, user_id, author_name, author_role, title, body, category, created_at')
       .eq('status', 'pending')
       .order('created_at', { ascending: true }) as any);
-    if (!error) setTopics(data || []);
+
+    if (!error) {
+      const filtered = orgUserIds
+        ? (data || []).filter((t: any) => orgUserIds!.has(t.user_id))
+        : (data || []);
+      setTopics(filtered);
+    }
     setLoading(false);
-  }, []);
+  }, [organizationId]);
 
   useEffect(() => { fetchPending(); }, [fetchPending]);
 

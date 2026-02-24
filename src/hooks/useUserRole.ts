@@ -50,18 +50,24 @@ export function useUserRole() {
   return { role, isAdmin, loading };
 }
 
-export function useAllUsersWithRoles() {
+export function useAllUsersWithRoles(organizationId?: string | null) {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchUsers = async () => {
     setLoading(true);
-    
-    // Fetch all profiles (admin RLS allows this)
-    const { data: profiles, error: profilesError } = await supabase
+
+    // Fetch profiles scoped to organization (RLS also enforces this at DB level)
+    let profilesQuery = supabase
       .from('user_profiles')
       .select('*')
       .order('created_at', { ascending: false });
+
+    if (organizationId) {
+      profilesQuery = profilesQuery.eq('organization_id', organizationId);
+    }
+
+    const { data: profiles, error: profilesError } = await profilesQuery;
 
     if (profilesError) {
       console.error('Error fetching profiles:', profilesError);
@@ -69,7 +75,7 @@ export function useAllUsersWithRoles() {
       return;
     }
 
-    // Fetch all training progress
+    // Fetch training progress (RLS enforces org-scoping at DB level)
     const { data: progressData, error: progressError } = await supabase
       .from('training_progress')
       .select('*');
@@ -78,7 +84,7 @@ export function useAllUsersWithRoles() {
       console.error('Error fetching progress:', progressError);
     }
 
-    // Fetch all roles
+    // Fetch roles (RLS enforces org-scoping at DB level)
     const { data: rolesData, error: rolesError } = await supabase
       .from('user_roles')
       .select('*');
@@ -104,7 +110,7 @@ export function useAllUsersWithRoles() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [organizationId]);
 
   const updateUserProfile = async (userId: string, updates: Record<string, any>) => {
     const { error } = await supabase

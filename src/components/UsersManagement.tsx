@@ -45,9 +45,13 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-export function UsersManagement() {
+interface UsersManagementProps {
+  organizationId?: string | null;
+}
+
+export function UsersManagement({ organizationId }: UsersManagementProps) {
   const { toast } = useToast();
-  const { users, loading, updateUserProfile, updateUserRole, deleteUser, refetch } = useAllUsersWithRoles();
+  const { users, loading, updateUserProfile, updateUserRole, deleteUser, refetch } = useAllUsersWithRoles(organizationId);
   const { organizations, loading: orgsLoading } = useOrganizations();
   const { departments: deptOptions, getDepartmentName } = useDepartments();
   const [editingUser, setEditingUser] = useState<any>(null);
@@ -166,6 +170,7 @@ export function UsersManagement() {
           bank_role: addForm.bank_role || null,
           line_of_business: addForm.line_of_business || null,
           role: addForm.role,
+          organization_id: organizationId || null,
         },
       });
       if (error) throw error;

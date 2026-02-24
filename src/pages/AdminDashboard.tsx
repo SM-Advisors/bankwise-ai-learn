@@ -154,6 +154,8 @@ export default function AdminDashboard() {
   const [searchParams] = useSearchParams();
   const viewingOrgId = searchParams.get('org_id');
   const { user, profile, loading: authLoading } = useAuth();
+  // Effective org: super admin drill-down takes priority, otherwise use admin's own org
+  const effectiveOrgId = viewingOrgId || profile?.organization_id || null;
   const { isAdmin, loading: roleLoading } = useUserRole();
   const { toast } = useToast();
   const { policies, loading: policiesLoading, updatePolicy, createPolicy } = useAllBankPolicies();
@@ -651,7 +653,7 @@ export default function AdminDashboard() {
               <TabsTrigger value="orgs" className="gap-1.5 text-xs"><Building2 className="h-3.5 w-3.5" />Organizations</TabsTrigger>
               <TabsTrigger value="depts" className="gap-1.5 text-xs"><Building2 className="h-3.5 w-3.5" />Departments</TabsTrigger>
             </TabsList>
-            <TabsContent value="users"><UsersManagement /></TabsContent>
+            <TabsContent value="users"><UsersManagement organizationId={effectiveOrgId} /></TabsContent>
             <TabsContent value="orgs"><OrganizationsManager /></TabsContent>
             <TabsContent value="depts"><DepartmentsManager /></TabsContent>
           </Tabs>
@@ -677,7 +679,7 @@ export default function AdminDashboard() {
               <TabsTrigger value="submissions" className="gap-1.5 text-xs"><Building2 className="h-3.5 w-3.5" />Submissions</TabsTrigger>
               <TabsTrigger value="community" className="gap-1.5 text-xs"><MessageSquare className="h-3.5 w-3.5" />Community</TabsTrigger>
             </TabsList>
-            <TabsContent value="ideas"><IdeasInbox /></TabsContent>
+            <TabsContent value="ideas"><IdeasInbox organizationId={effectiveOrgId} /></TabsContent>
             <TabsContent value="submissions">
               <Card>
                 <CardHeader>
@@ -690,11 +692,11 @@ export default function AdminDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ExecutiveSubmissions />
+                  <ExecutiveSubmissions organizationId={effectiveOrgId} />
                 </CardContent>
               </Card>
             </TabsContent>
-            <TabsContent value="community"><CommunityReviewQueue /></TabsContent>
+            <TabsContent value="community"><CommunityReviewQueue organizationId={effectiveOrgId} /></TabsContent>
           </Tabs>
         </TabsContent>
 
