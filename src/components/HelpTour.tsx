@@ -51,10 +51,19 @@ export function HelpTour({ open, onOpenChange, onComplete }: HelpTourProps) {
             },
           },
           {
+            element: '[data-tour="bank-policies-btn"]',
+            popover: {
+              title: 'Bank Policies',
+              description: 'Your bank\'s AI governance and usage policies live here. Check back as your institution updates its guidelines — knowing the guardrails makes you a more confident AI user.',
+              side: 'bottom' as const,
+              align: 'start' as const,
+            },
+          },
+          {
             element: '[data-tour="personalization-btn"]',
             popover: {
               title: 'My Personalization',
-              description: 'Your personal AI hub. Here you can tune Andrea\'s tone, verbosity, and formatting in <b>AI Settings</b>; review what she remembers about you in <b>Memories</b>; track AI use cases in <b>My Ideas</b>; save and reuse your best prompts in <b>Prompt Library</b>; and visualise your growth in <b>My AI Journey</b>.',
+              description: 'Your personal AI hub. Tune Andrea\'s tone, verbosity, and formatting in <b>AI Settings</b>; review what she remembers about you in <b>Memories</b>; track AI use cases in <b>My Ideas</b>; save reusable prompts in <b>Prompt Library</b>; and track your growth in <b>My AI Journey</b>.',
               side: 'bottom' as const,
               align: 'end' as const,
             },

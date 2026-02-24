@@ -211,7 +211,7 @@ export default function Dashboard() {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="gap-2" onClick={() => navigate('/policies')}>
+            <Button variant="ghost" size="sm" className="gap-2" data-tour="bank-policies-btn" onClick={() => navigate('/policies')}>
               <Shield className="h-4 w-4" />
               Bank Policies
             </Button>
@@ -408,10 +408,10 @@ export default function Dashboard() {
 
             // Module dot colors by engagement state
             const dotColor: Record<string, string> = {
-              not_started: 'bg-muted',
-              content_viewed: 'bg-blue-400',
-              practicing: 'bg-amber-400',
-              submitted: 'bg-orange-500',
+              not_started: 'bg-gray-300',
+              content_viewed: 'bg-yellow-400',
+              practicing: 'bg-yellow-400',
+              submitted: 'bg-yellow-400',
               completed: 'bg-green-500',
             };
 
