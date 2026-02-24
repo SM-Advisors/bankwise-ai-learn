@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ChevronLeft, ChevronRight, BookOpen, CheckCircle, FileText, Lightbulb, Play, Eye, MessageCircle, Clock, Lock, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, CheckCircle, FileText, Lightbulb, Play, Eye, MessageCircle, Clock, Lock, ShieldCheck, Sparkles } from 'lucide-react';
 import { type ModuleContent } from '@/data/trainingContent';
 import type { ModuleEngagement, ModuleState } from '@/types/progress';
 import { getModuleState } from '@/utils/computeProgress';
@@ -24,6 +24,7 @@ const getModuleTypeIcon = (type: ModuleContent['type']) => {
     case 'example': return Lightbulb;
     case 'exercise': return Play;
     case 'video': return Play;
+    case 'sandbox': return Sparkles;
     default: return BookOpen;
   }
 };

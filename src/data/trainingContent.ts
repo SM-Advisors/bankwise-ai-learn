@@ -3,7 +3,7 @@
 export interface ModuleContent {
   id: string;
   title: string;
-  type: 'document' | 'example' | 'exercise' | 'video';
+  type: 'document' | 'example' | 'exercise' | 'video' | 'sandbox';
   description: string;
   estimatedTime: string;
   videoUrl?: string; // Optional video URL for video-type modules
@@ -402,6 +402,36 @@ Write a CLEAR prompt for your chosen deliverable, iterate at least 2 times, then
             'All customer data is anonymized with synthetic replacements',
             'Final prompt is production-quality and usable in real banking work',
           ],
+        },
+      },
+    },
+    {
+      id: '1-sandbox',
+      title: 'Sandbox',
+      type: 'sandbox',
+      description: 'Free exploration — try any prompt, task, or question using what you\'ve learned in Session 1.',
+      estimatedTime: 'Open-ended',
+      learningObjectives: [],
+      learningOutcome: 'Practice freely using AI on any topic or task that interests you.',
+      content: {
+        overview: 'The Sandbox is your open practice space. No tasks, no submission — just explore. Try out prompts from this session, experiment with new ideas, or ask the AI for help with something real from your work.',
+        keyPoints: [
+          'No rules — try any prompt or task you like',
+          'Ask Andrea for coaching or feedback whenever you want it',
+          'Experiment with the CLEAR framework on a topic of your choice',
+          'Practice anything you didn\'t feel fully confident about in Session 1',
+        ],
+        practiceTask: {
+          title: 'Free Exploration',
+          instructions: 'Try anything you like. There\'s no specific task here — just explore freely.',
+          scenario: 'This is your free-form practice space. Use it however helps you learn best. Try prompts from Session 1, test something from your real work, or simply experiment with what you\'ve learned.',
+          hints: [
+            'Try applying the CLEAR framework to a real task from your job',
+            'Ask the AI to help you draft something you\'ve been putting off',
+            'Experiment with different levels of context and see how the output changes',
+            'Try a prompt that didn\'t work earlier and iterate until it does',
+          ],
+          successCriteria: [],
         },
       },
     },
@@ -880,6 +910,36 @@ Part 3 — Living Agent Plan: Write 2-3 sentences answering: What will you watch
             'Includes a Living Agent Plan with specific monitoring criteria and first iteration target',
             'The completed agent could be shared with a colleague in the same role and function correctly without modification',
           ],
+        },
+      },
+    },
+    {
+      id: '2-sandbox',
+      title: 'Sandbox',
+      type: 'sandbox',
+      description: 'Free exploration — experiment with agent-building, prompting, or anything from Session 2.',
+      estimatedTime: 'Open-ended',
+      learningObjectives: [],
+      learningOutcome: 'Practice freely using AI on any topic or task that interests you.',
+      content: {
+        overview: 'The Sandbox is your open practice space. No tasks, no submission — just explore. Test your agent, try new system prompts, or experiment with ideas from Session 2.',
+        keyPoints: [
+          'No rules — try any prompt, agent test, or task you like',
+          'Ask Andrea for coaching or feedback whenever you want it',
+          'Stress-test your agent from this session with unusual requests',
+          'Experiment with different system prompt structures and observe the results',
+        ],
+        practiceTask: {
+          title: 'Free Exploration',
+          instructions: 'Try anything you like. There\'s no specific task here — just explore freely.',
+          scenario: 'This is your free-form practice space. Use it however helps you learn best. Test your agent, build a new mini-agent, or experiment with anything from Session 2.',
+          hints: [
+            'Test your agent from this session with an edge-case scenario',
+            'Try building a mini-agent for a different use case than the one you built',
+            'Ask the AI to stress-test or critique the system prompt you designed',
+            'Experiment with adding or removing guard rails and observe how behavior changes',
+          ],
+          successCriteria: [],
         },
       },
     },
@@ -1530,6 +1590,36 @@ For whichever option you choose, include in your submission:
             'Demonstrates compliance awareness through checklist use, guard rail activation, or explicit compliance notes',
             'Reflection identifies both a genuine strength and a genuine limitation of the AI-assisted approach',
           ],
+        },
+      },
+    },
+    {
+      id: '3-sandbox',
+      title: 'Sandbox',
+      type: 'sandbox',
+      description: 'Free exploration — apply advanced techniques, build workflows, or practice anything from Session 3.',
+      estimatedTime: 'Open-ended',
+      learningObjectives: [],
+      learningOutcome: 'Practice freely using AI on any topic or task that interests you.',
+      content: {
+        overview: 'The Sandbox is your open practice space. No tasks, no submission — just explore. Apply the advanced techniques from Session 3, design real workflows, or experiment with anything you\'ve learned.',
+        keyPoints: [
+          'No rules — try any prompt, workflow, or task you like',
+          'Ask Andrea for coaching or feedback whenever you want it',
+          'Design a multi-step AI workflow for a real process in your role',
+          'Practice chain-of-thought, multi-shot prompting, or self-review techniques',
+        ],
+        practiceTask: {
+          title: 'Free Exploration',
+          instructions: 'Try anything you like. There\'s no specific task here — just explore freely.',
+          scenario: 'This is your free-form practice space. Use it however helps you learn best. Design workflows, apply advanced techniques, or experiment with anything from Session 3.',
+          hints: [
+            'Design a multi-step AI workflow for a real process in your role',
+            'Ask the AI to audit a piece of work for compliance considerations',
+            'Try chain-of-thought prompting on a complex problem you face at work',
+            'Build a reusable prompt template for a task your team does repeatedly',
+          ],
+          successCriteria: [],
         },
       },
     },

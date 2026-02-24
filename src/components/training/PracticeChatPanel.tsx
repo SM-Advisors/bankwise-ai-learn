@@ -8,7 +8,7 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/component
 import {
   Loader2, Send, Lightbulb, AlertCircle, Target, CheckCircle,
   ChevronRight, ChevronDown, Bot, User, Mic, AudioLines, Plus, SlidersHorizontal,
-  MessageSquarePlus, History, Clock, Building2, ChevronUp,
+  MessageSquarePlus, History, Clock, Building2, ChevronUp, Sparkles,
 } from 'lucide-react';
 import { type ModuleContent } from '@/data/trainingContent';
 import { getRoleScenario } from '@/data/roleScenarioBanks';
@@ -112,6 +112,7 @@ export function PracticeChatPanel({
 
   const hasConversation = messages.length > 0;
   const pastConversations = conversations.filter(c => c.id !== activeConversationId);
+  const isSandbox = module.type === 'sandbox';
 
   // Format relative time
   const formatRelativeTime = (dateStr: string) => {
@@ -255,52 +256,73 @@ export function PracticeChatPanel({
       {/* Empty state — shown before any messages */}
       {!hasConversation && (
         <div className="flex-1 flex flex-col items-center justify-center w-full max-w-2xl mx-auto px-4">
-          {departmentLabel && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-2">
-              <Building2 className="h-3.5 w-3.5" />
-              {departmentLabel}
-            </div>
-          )}
-          <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1">Practice Task</p>
-          <h2 className="text-xl md:text-2xl font-semibold text-foreground text-center mb-1 tracking-tight">
-            {module.content.practiceTask.title}
-          </h2>
-          <p className="text-sm text-muted-foreground text-center">Try a prompt below or write your own</p>
-
-          {/* Collapsible details */}
-          <div className="w-full max-w-lg space-y-1 mb-4 mt-4">
-            <Collapsible open={scenarioOpen} onOpenChange={setScenarioOpen}>
-              <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-3 py-2 rounded-lg hover:bg-muted">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>View Scenario</span>
-                <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${scenarioOpen ? 'rotate-180' : ''}`} />
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="mt-1 bg-card border border-border p-4 rounded-xl">
-                  <p className="text-sm whitespace-pre-wrap text-muted-foreground">{activeScenario}</p>
+          {isSandbox ? (
+            /* Sandbox empty state */
+            <>
+              <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 mb-3">
+                <Sparkles className="h-6 w-6 text-accent" />
+              </div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1">Free Exploration</p>
+              <h2 className="text-xl md:text-2xl font-semibold text-foreground text-center mb-1 tracking-tight">
+                Sandbox
+              </h2>
+              <p className="text-sm text-muted-foreground text-center max-w-sm">
+                No task, no submission — just explore. Try anything below or write your own prompt.
+              </p>
+              <p className="text-xs text-muted-foreground/60 text-center mt-1 max-w-sm">
+                Ask Andrea for coaching anytime via the panel on the right.
+              </p>
+            </>
+          ) : (
+            /* Standard practice empty state */
+            <>
+              {departmentLabel && (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-2">
+                  <Building2 className="h-3.5 w-3.5" />
+                  {departmentLabel}
                 </div>
-              </CollapsibleContent>
-            </Collapsible>
+              )}
+              <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1">Practice Task</p>
+              <h2 className="text-xl md:text-2xl font-semibold text-foreground text-center mb-1 tracking-tight">
+                {module.content.practiceTask.title}
+              </h2>
+              <p className="text-sm text-muted-foreground text-center">Try a prompt below or write your own</p>
 
-            <Collapsible open={criteriaOpen} onOpenChange={setCriteriaOpen}>
-              <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-3 py-2 rounded-lg hover:bg-muted">
-                <Target className="h-4 w-4 text-accent shrink-0" />
-                <span>Success Criteria</span>
-                <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${criteriaOpen ? 'rotate-180' : ''}`} />
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <ul className="mt-1 space-y-1.5 px-3 pb-2">
-                  {module.content.practiceTask.successCriteria.map((criteria, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <CheckCircle className="h-4 w-4 text-muted-foreground/60 shrink-0 mt-0.5" />
-                      {criteria}
-                    </li>
-                  ))}
-                </ul>
-              </CollapsibleContent>
-            </Collapsible>
-          </div>
+              {/* Collapsible details */}
+              <div className="w-full max-w-lg space-y-1 mb-4 mt-4">
+                <Collapsible open={scenarioOpen} onOpenChange={setScenarioOpen}>
+                  <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-3 py-2 rounded-lg hover:bg-muted">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <span>View Scenario</span>
+                    <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${scenarioOpen ? 'rotate-180' : ''}`} />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="mt-1 bg-card border border-border p-4 rounded-xl">
+                      <p className="text-sm whitespace-pre-wrap text-muted-foreground">{activeScenario}</p>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
 
+                <Collapsible open={criteriaOpen} onOpenChange={setCriteriaOpen}>
+                  <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-3 py-2 rounded-lg hover:bg-muted">
+                    <Target className="h-4 w-4 text-accent shrink-0" />
+                    <span>Success Criteria</span>
+                    <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${criteriaOpen ? 'rotate-180' : ''}`} />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <ul className="mt-1 space-y-1.5 px-3 pb-2">
+                      {module.content.practiceTask.successCriteria.map((criteria, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                          <CheckCircle className="h-4 w-4 text-muted-foreground/60 shrink-0 mt-0.5" />
+                          {criteria}
+                        </li>
+                      ))}
+                    </ul>
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -310,8 +332,17 @@ export function PracticeChatPanel({
           <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
             {/* Compact task header */}
             <div className="text-center pb-3 border-b border-border">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Practice Task</p>
-              <h3 className="text-sm font-medium text-foreground mt-0.5">{module.content.practiceTask.title}</h3>
+              {isSandbox ? (
+                <div className="flex items-center justify-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-accent" />
+                  <p className="text-xs text-accent uppercase tracking-wide font-medium">Sandbox — Free Exploration</p>
+                </div>
+              ) : (
+                <>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Practice Task</p>
+                  <h3 className="text-sm font-medium text-foreground mt-0.5">{module.content.practiceTask.title}</h3>
+                </>
+              )}
             </div>
 
             {messages.map((message, idx) => (
@@ -394,8 +425,8 @@ export function PracticeChatPanel({
         </ScrollArea>
       )}
 
-      {/* Submit for Review button — appears after 1+ exchanges, not yet submitted */}
-      {hasConversation && !isSubmitted && !isLoading && (
+      {/* Submit for Review button — appears after 1+ exchanges, not yet submitted (hidden in sandbox) */}
+      {hasConversation && !isSubmitted && !isLoading && !isSandbox && (
         <div className="w-full max-w-2xl mx-auto px-4 pt-2">
           <button
             onClick={onSubmitForReview}
@@ -415,7 +446,7 @@ export function PracticeChatPanel({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={hasConversation ? "Continue the conversation..." : `Message ${module.content.practiceTask.title}...`}
+            placeholder={isSandbox ? "Try anything — no rules here..." : hasConversation ? "Continue the conversation..." : `Message ${module.content.practiceTask.title}...`}
             className="min-h-[56px] max-h-[180px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-foreground placeholder:text-muted-foreground/60 rounded-t-2xl px-4 pt-3.5 pb-0"
           />
           {/* Toolbar row */}
@@ -501,9 +532,16 @@ export function PracticeChatPanel({
               <button
                 key={idx}
                 onClick={() => handleHintClick(hint)}
-                className="text-left p-3.5 rounded-xl border border-border bg-card hover:bg-accent/5 hover:border-accent/30 transition-all group"
+                className={`text-left p-3.5 rounded-xl border transition-all group ${
+                  isSandbox
+                    ? 'border-accent/20 bg-accent/5 hover:bg-accent/10 hover:border-accent/40'
+                    : 'border-border bg-card hover:bg-accent/5 hover:border-accent/30'
+                }`}
               >
-                <Lightbulb className="h-4 w-4 text-muted-foreground mb-2 group-hover:text-accent transition-colors" />
+                {isSandbox
+                  ? <Sparkles className="h-4 w-4 text-accent/60 mb-2 group-hover:text-accent transition-colors" />
+                  : <Lightbulb className="h-4 w-4 text-muted-foreground mb-2 group-hover:text-accent transition-colors" />
+                }
                 <p className="text-sm text-foreground line-clamp-2 leading-snug">{hint}</p>
               </button>
             ))}

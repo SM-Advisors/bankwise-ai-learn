@@ -40,6 +40,7 @@ interface TrainerChatRequest {
   sessionNumber?: number;
   messages: Message[];
   greeting?: boolean; // If true, generate a personalized greeting instead of a normal reply
+  isSandbox?: boolean; // If true, the learner is in a free-form sandbox module
   practiceConversation?: Message[]; // The learner's practice chat from the center panel
   agentContext?: AgentContext; // The learner's agent data from Agent Studio
   workflowContext?: WorkflowContext; // The learner's workflow data from Workflow Studio
@@ -550,12 +551,16 @@ serve(async (req) => {
       sessionNumber,
       messages,
       greeting,
+      isSandbox,
       practiceConversation,
       agentContext,
       workflowContext,
       learnerState,
       userId: bodyUserId,
     } = requestBody;
+
+    // Detect sandbox mode from the flag or moduleId pattern
+    const isSandboxModule = isSandbox === true || (moduleId?.endsWith('-sandbox') ?? false);
 
     console.log("[trainer_chat] practiceConversation received:", practiceConversation ? `${practiceConversation.length} messages` : "none");
 
@@ -693,6 +698,72 @@ serve(async (req) => {
     // ─── HANDLE GREETING REQUEST ─────────────────────────────────────
     if (greeting) {
       const completedCount = learnerState?.completedModules?.length || 0;
+
+      // ── Sandbox greeting ──────────────────────────────────────────
+      if (isSandboxModule) {
+        const sandboxGreetingPrompt = buildAndreaPersona(orgIndustry) + `\n\n` +
+          `Generate a SHORT, warm welcome (2-3 sentences) for a learner entering the Sandbox — a free exploration space at the end of their training session.
+
+LEARNER CONTEXT:
+- Name: ${displayName || "there"}
+${isEnterpriseUser ? `- Role: ${jobRole || "professional"}` : `- Context: Personal learner`}
+- AI Proficiency: Level ${aiProficiencyLevel ?? 3}/8
+- Session: ${effectiveSessionNumber}
+
+SANDBOX GREETING RULES:
+- Make it clear: no task, no submission, no grading — just explore
+- Be warm and inviting — this is the "play" zone after structured work
+- Suggest 2-3 things they might try (based on skills from this session)
+- Ask what they'd like to explore, or invite them to just dive in
+- Keep it concise and energetic — they earned this free time
+
+RESPONSE FORMAT — MANDATORY:
+{
+  "reply": "Your sandbox welcome here",
+  "suggestedPrompts": ["Try a real work task", "Test a prompt idea", "Ask me anything about AI"],
+  "coachingAction": "celebrate"
+}`;
+
+        const sandboxGreetingResponse = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "x-api-key": ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-6",
+            max_tokens: 300,
+            system: sandboxGreetingPrompt,
+            messages: [{ role: "user", content: "Generate my sandbox greeting." }],
+          }),
+        });
+
+        if (sandboxGreetingResponse.ok) {
+          const sandboxGreetingData = await sandboxGreetingResponse.json();
+          const rawText = sandboxGreetingData.content?.[0]?.text || "";
+          try {
+            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+            const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+            if (parsed?.reply) {
+              return new Response(
+                JSON.stringify({ reply: parsed.reply, suggestedPrompts: parsed.suggestedPrompts || [], coachingAction: "celebrate" }),
+                { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+          } catch (_) { /* fall through to standard greeting */ }
+        }
+        // Fallback sandbox greeting
+        return new Response(
+          JSON.stringify({
+            reply: `Welcome to the Sandbox${displayName ? `, ${displayName}` : ""}! This is your free exploration space — no tasks, no submission, just you and AI. Try anything that's on your mind, test a real work idea, or experiment with something from this session. What would you like to explore?`,
+            suggestedPrompts: ["Help me with a real task from work", "Let's test a prompt idea I have", "What should I try first?"],
+            coachingAction: "celebrate",
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       const greetingPrompt = buildAndreaPersona(orgIndustry) + `\n\n` +
         getSessionCoachingDepth(effectiveSessionNumber) + `\n\n` +
         `Generate a SHORT, personalized greeting (3-4 sentences max) for this learner who just opened the training workspace.
@@ -803,28 +874,31 @@ RESPONSE FORMAT — MANDATORY:
       contextSection = `## MODULE NAVIGATION MAP
 You can direct learners to specific modules. Here is the complete curriculum:
 
-Session 1: AI Foundations & Prompting (6 modules)
+Session 1: AI Foundations & Prompting (7 modules)
 - Module 1-1: What AI Can Do For You (AI basics, banking use cases, 5 elements of a prompt)
 - Module 1-2: The CLEAR Framework (Context, Length, Examples, Audience, Requirements + 5-Element mapping)
 - Module 1-3: Context & Data Security (5 context types, PII sanitization, synthetic data)
 - Module 1-4: Iteration & Refinement (iterative improvement + Troubleshooting Ladder)
 - Module 1-5: Verifying AI Output (hallucination types, VERIFY checklist)
 - Module 1-6: Session 1 Capstone (CLEAR + iterate + VERIFY exercise)
+- Module 1-sandbox: Sandbox (free exploration — no task, just practice)
 
-Session 2: Building Your AI Agent (6 modules)
+Session 2: Building Your AI Agent (7 modules)
 - Module 2-1: From Prompts to Agents (bridge from CLEAR to agent architecture, CLEAR-to-agent mapping)
 - Module 2-2: Agent Architecture (4 pillars, guard rails, compliance anchors, prompt security)
 - Module 2-3: Custom Instructions Template (5-section template builder)
 - Module 2-4: Tool Integration & Evaluation (evaluating data source connections)
 - Module 2-5: Your Living Agent (agent iteration, sharing, measuring effectiveness)
 - Module 2-6: Build Your Agent Capstone (assemble + test agent + Living Agent Plan)
+- Module 2-sandbox: Sandbox (free exploration — no task, just practice)
 
-Session 3: Role-Specific Training (5 modules)
+Session 3: Role-Specific Training (6 modules)
 - Module 3-1: Department AI Use Cases (role-specific prompt examples)
 - Module 3-2: Compliance & AI (3 pillars, pre-task compliance checklist, when NOT to use AI)
 - Module 3-3: Workflow Examples (multi-step AI workflows for banking)
 - Module 3-4: Advanced Techniques (chain-of-thought, multi-shot, self-review, decomposition)
 - Module 3-5: Capstone Project (real banking task with advanced techniques)
+- Module 3-sandbox: Sandbox (free exploration — no task, just practice)
 
 Session 4: AI-Native Integration (5 modules)
 - Module 4-1: Your AI Audit (AI Eligibility Matrix — Automate/Assist/Augment/Skip)
@@ -907,11 +981,26 @@ You are in BRAINSTORM mode — a creative thinking partner helping the learner d
 - Do NOT teach CLEAR framework, VERIFY, or curriculum content in this mode
 - For non-bank users: use general professional or personal examples based on their interests`;
 
+    const sandboxCoachingDepth = `SESSION COACHING DEPTH: Sandbox — Free Exploration
+You are in SANDBOX mode — an open, unstructured practice space at the end of the training session.
+- The learner has NO specific task to complete. There is NO submission. There is NO evaluation.
+- Respond freely and helpfully to WHATEVER they bring — prompts, questions, experiments, real work tasks, creative ideas
+- Do NOT ask about submitting or reference a rubric or success criteria — there are none
+- Do NOT try to steer them toward a specific module objective
+- DO help them iterate, improve, and explore anything they try
+- DO offer proactive suggestions if they seem unsure where to start
+- Be more conversational and playful than in structured modules — this is the "free play" zone
+- Your goal: make this feel like working with a knowledgeable colleague, not a teacher grading work
+- If they're experimenting with prompts: give real-time feedback, offer improvements, celebrate good structure
+- If they ask about AI capabilities: explain and demonstrate freely
+- If they bring real work: help them actually do it (within compliance limits)
+- You can still flag compliance issues if PII or sensitive data appears`;
+
     const systemPrompt = `${buildAndreaPersona(orgIndustry)}
 
 ${buildSocraticRules()}
 
-${isDashboardMode ? dashboardCoachingDepth : isBrainstormMode ? brainstormCoachingDepth : getSessionCoachingDepth(effectiveSessionNumber)}
+${isDashboardMode ? dashboardCoachingDepth : isBrainstormMode ? brainstormCoachingDepth : isSandboxModule ? sandboxCoachingDepth : getSessionCoachingDepth(effectiveSessionNumber)}
 
 ## RESPONSE FORMAT — CRITICAL
 You MUST respond with valid JSON in this exact format:

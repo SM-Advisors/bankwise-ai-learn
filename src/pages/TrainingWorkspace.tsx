@@ -165,6 +165,7 @@ export default function TrainingWorkspace() {
               sessionNumber: parseInt(sessionId || '1'),
               messages: [],
               greeting: true,
+              isSandbox: selectedModule.type === 'sandbox',
               learnerState: {
                 currentCardTitle: selectedModule.title,
                 learningObjectives: selectedModule.learningObjectives,
@@ -355,6 +356,11 @@ export default function TrainingWorkspace() {
           chatStarted: true,
           chatStartedAt: new Date().toISOString(),
           practiceMessageCount: 1,
+          // Sandbox modules auto-complete on first message — no submission needed
+          ...(selectedModule.type === 'sandbox' ? {
+            completed: true,
+            completedAt: new Date().toISOString(),
+          } : {}),
         });
       }
     } else {
