@@ -147,7 +147,6 @@ export const SJT_SCENARIOS: SJTScenario[] = [
       { key: 'B', label: 'Read the original FinCEN guidance before forwarding anything',                      strength: 'strong',   d4: 3.5 },
       { key: 'C', label: 'Share it with a clear note that it\'s AI-generated and urge verification',         strength: 'strong',   d4: 3,   d2: 3 },
       { key: 'D', label: 'Have compliance confirm the key action items first',                                strength: 'strong',   d4: 3,   d6: 3 },
-      { key: 'E', label: 'Forward it without reading — the BSA officer is the expert',                       strength: 'weak',     d4: 1 },
     ],
   },
   {

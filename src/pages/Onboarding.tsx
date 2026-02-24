@@ -800,20 +800,6 @@ export default function Onboarding() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-                  <div className="p-2 rounded bg-muted/30 text-center">
-                    <div className="font-medium text-foreground mb-0.5">Context</div>
-                    Who's the customer, what was discussed?
-                  </div>
-                  <div className="p-2 rounded bg-muted/30 text-center">
-                    <div className="font-medium text-foreground mb-0.5">Constraints</div>
-                    Tone, length, what to include or avoid?
-                  </div>
-                  <div className="p-2 rounded bg-muted/30 text-center">
-                    <div className="font-medium text-foreground mb-0.5">Output</div>
-                    What exactly should the AI produce?
-                  </div>
-                </div>
               </div>
             </CardContent>
           )}
