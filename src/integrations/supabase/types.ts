@@ -738,26 +738,29 @@ export type Database = {
       organizations: {
         Row: {
           allowed_models: Json | null
+          audience_type: string | null
           created_at: string
           id: string
+          industry: string | null
           name: string
-          org_type: string | null
           slug: string
         }
         Insert: {
           allowed_models?: Json | null
+          audience_type?: string | null
           created_at?: string
           id?: string
+          industry?: string | null
           name: string
-          org_type?: string | null
           slug: string
         }
         Update: {
           allowed_models?: Json | null
+          audience_type?: string | null
           created_at?: string
           id?: string
+          industry?: string | null
           name?: string
-          org_type?: string | null
           slug?: string
         }
         Relationships: []
@@ -1245,12 +1248,12 @@ export type Database = {
       user_profiles: {
         Row: {
           ai_proficiency_level: number | null
-          bank_role: string | null
           created_at: string | null
           current_session: number | null
+          department: string | null
           department_id: string | null
           display_name: string | null
-          employer_bank_name: string | null
+          employer_name: string | null
           id: string
           intake_motivation: string[] | null
           intake_orientation: string | null
@@ -1259,11 +1262,11 @@ export type Database = {
           interests: string[] | null
           is_active: boolean
           is_super_admin: boolean
+          job_role: string | null
           last_login_at: string | null
           learning_style:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
-          line_of_business: string | null
           onboarding_completed: boolean | null
           organization_id: string | null
           preferred_model: string | null
@@ -1277,12 +1280,12 @@ export type Database = {
         }
         Insert: {
           ai_proficiency_level?: number | null
-          bank_role?: string | null
           created_at?: string | null
           current_session?: number | null
+          department?: string | null
           department_id?: string | null
           display_name?: string | null
-          employer_bank_name?: string | null
+          employer_name?: string | null
           id?: string
           intake_motivation?: string[] | null
           intake_orientation?: string | null
@@ -1291,11 +1294,11 @@ export type Database = {
           interests?: string[] | null
           is_active?: boolean
           is_super_admin?: boolean
+          job_role?: string | null
           last_login_at?: string | null
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
-          line_of_business?: string | null
           onboarding_completed?: boolean | null
           organization_id?: string | null
           preferred_model?: string | null
@@ -1309,12 +1312,12 @@ export type Database = {
         }
         Update: {
           ai_proficiency_level?: number | null
-          bank_role?: string | null
           created_at?: string | null
           current_session?: number | null
+          department?: string | null
           department_id?: string | null
           display_name?: string | null
-          employer_bank_name?: string | null
+          employer_name?: string | null
           id?: string
           intake_motivation?: string[] | null
           intake_orientation?: string | null
@@ -1323,11 +1326,11 @@ export type Database = {
           interests?: string[] | null
           is_active?: boolean
           is_super_admin?: boolean
+          job_role?: string | null
           last_login_at?: string | null
           learning_style?:
             | Database["public"]["Enums"]["learning_style_type"]
             | null
-          line_of_business?: string | null
           onboarding_completed?: boolean | null
           organization_id?: string | null
           preferred_model?: string | null
