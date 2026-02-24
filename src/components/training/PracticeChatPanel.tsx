@@ -283,18 +283,6 @@ export function PracticeChatPanel({
               )}
             </div>
             <div className="flex gap-2">
-              <Collapsible open={scenarioOpen} onOpenChange={setScenarioOpen} className="flex-1">
-                <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-2.5 py-1.5 rounded-lg hover:bg-muted">
-                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                  <span>View Scenario</span>
-                  <ChevronDown className={`h-3.5 w-3.5 ml-auto transition-transform duration-200 ${scenarioOpen ? 'rotate-180' : ''}`} />
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="mt-1 bg-card border border-border p-3 rounded-xl">
-                    <p className="text-xs whitespace-pre-wrap text-muted-foreground">{activeScenario}</p>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
               {module.content.practiceTask.successCriteria.length > 0 && (
                 <Collapsible open={criteriaOpen} onOpenChange={setCriteriaOpen} className="flex-1">
                   <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-2.5 py-1.5 rounded-lg hover:bg-muted">
@@ -314,6 +302,18 @@ export function PracticeChatPanel({
                   </CollapsibleContent>
                 </Collapsible>
               )}
+              <Collapsible open={scenarioOpen} onOpenChange={setScenarioOpen} className="flex-1">
+                <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-2.5 py-1.5 rounded-lg hover:bg-muted">
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                  <span>View Scenario</span>
+                  <ChevronDown className={`h-3.5 w-3.5 ml-auto transition-transform duration-200 ${scenarioOpen ? 'rotate-180' : ''}`} />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="mt-1 bg-card border border-border p-3 rounded-xl">
+                    <p className="text-xs whitespace-pre-wrap text-muted-foreground">{activeScenario}</p>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
           </div>
         )}
