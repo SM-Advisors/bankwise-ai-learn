@@ -10,6 +10,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Header } from "@/components/Header";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { FeedbackButton } from "@/components/FeedbackButton";
+import { ViewAsBanner } from "@/components/ViewAsBanner";
 
 
 // Pages
@@ -56,6 +57,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <SessionProvider>
+                <ViewAsBanner />
                 <FeedbackButton />
                 <Routes>
                   {/* Public routes */}

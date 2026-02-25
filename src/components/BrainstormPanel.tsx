@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Lightbulb, Send, Loader2, Sparkles, Bookmark, Users, TrendingUp, X, Check, Zap } from 'lucide-react';
+import { Lightbulb, Send, Loader2, Sparkles, Bookmark, Users, TrendingUp, X, Check, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -288,13 +288,13 @@ After presenting options, end with: "Which of these feels closest to where you'd
     await sendToAndrea(content, history);
   };
 
-  const handleForceOptions = async () => {
+  const handleAssumeAndAnswer = async () => {
     if (isLoading) return;
-    const forceMsg = "Please give me your three options now based on what we've discussed. Start with a brief note on anything you still needed to know for the best recommendation.";
-    const userMsg: LocalMessage = { role: 'user', content: forceMsg };
+    const assumeMsg = "I may not have covered all the details — please make reasonable assumptions about anything unclear or missing, and give me your three options now. Note any key assumptions you made.";
+    const userMsg: LocalMessage = { role: 'user', content: assumeMsg };
     const history = [...localMessages];
     setLocalMessages(prev => [...prev, userMsg]);
-    await sendToAndrea(forceMsg, history);
+    await sendToAndrea(assumeMsg, history);
   };
 
   // Show action bar after at least one full exchange (user + assistant)
@@ -430,12 +430,12 @@ After presenting options, end with: "Which of these feels closest to where you'd
                   </button>
                   <div className="flex-1" />
                   <button
-                    onClick={handleForceOptions}
+                    onClick={handleAssumeAndAnswer}
                     disabled={isLoading}
                     className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted px-2 py-1 rounded-md transition-colors disabled:opacity-50 border border-border/60"
-                    title="Skip Andrea's questions and get the 3-option recommendation now"
+                    title="Andrea fills in any gaps with assumptions and gives you the three options now"
                   >
-                    <Zap className="h-3 w-3" /> Skip to options
+                    <Brain className="h-3 w-3" /> Assume & answer
                   </button>
                 </div>
               )}

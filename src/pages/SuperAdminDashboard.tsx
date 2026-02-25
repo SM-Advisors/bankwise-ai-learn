@@ -18,7 +18,7 @@ import {
 import {
   Building2, Users, TrendingUp, Award, ArrowLeft,
   Shield, Heart, BarChart3, ExternalLink, Loader2, MessageSquare, Download, Paperclip,
-  CircleDot, CheckCircle2
+  CircleDot, CheckCircle2, Eye
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import jsPDF from 'jspdf';
@@ -37,7 +37,7 @@ interface FeedbackItem {
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, setViewAsOrg } = useAuth();
   const { orgs, platform, loading, error } = useSuperAdminKPIs();
   const [selectedOrg, setSelectedOrg] = useState<OrgSummary | null>(null); // reserved for future detail panel
   const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
@@ -299,16 +299,37 @@ export default function SuperAdminDashboard() {
                           {org.avg_proficiency != null ? `${org.avg_proficiency}%` : '—'}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/admin?org_id=${org.id}`);
-                            }}
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/admin?org_id=${org.id}`);
+                              }}
+                              title="Open admin view for this org"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setViewAsOrg({
+                                  id: org.id,
+                                  name: org.name,
+                                  audience_type: org.audience_type,
+                                  industry: org.industry || 'banking',
+                                });
+                                navigate('/dashboard');
+                              }}
+                              title="Preview this org's user experience"
+                              className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                            >
+                              <Eye className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

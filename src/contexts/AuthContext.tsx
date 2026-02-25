@@ -45,12 +45,23 @@ export interface TrainingProgress {
   session_3_progress: SessionProgressData;
 }
 
+export interface ViewAsOrg {
+  id: string;
+  name: string;
+  audience_type: string;
+  industry: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: UserProfile | null;
   progress: TrainingProgress | null;
   loading: boolean;
+  viewAsOrg: ViewAsOrg | null;
+  effectiveOrgId: string | null;
+  setViewAsOrg: (org: ViewAsOrg) => void;
+  clearViewAsOrg: () => void;
   signUp: (email: string, password: string, displayName: string, organizationId?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -68,6 +79,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [progress, setProgress] = useState<TrainingProgress | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Super admin "view as org" state — persisted to sessionStorage
+  const [viewAsOrg, setViewAsOrgState] = useState<ViewAsOrg | null>(() => {
+    try {
+      const stored = sessionStorage.getItem('view_as_org');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const setViewAsOrg = (org: ViewAsOrg) => {
+    sessionStorage.setItem('view_as_org', JSON.stringify(org));
+    setViewAsOrgState(org);
+  };
+
+  const clearViewAsOrg = () => {
+    sessionStorage.removeItem('view_as_org');
+    setViewAsOrgState(null);
+  };
+
+  const effectiveOrgId = viewAsOrg?.id ?? profile?.organization_id ?? null;
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -254,6 +287,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setProfile(null);
     setProgress(null);
+    clearViewAsOrg();
   };
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
@@ -358,6 +392,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile,
         progress,
         loading,
+        viewAsOrg,
+        effectiveOrgId,
+        setViewAsOrg,
+        clearViewAsOrg,
         signUp,
         signIn,
         signOut,

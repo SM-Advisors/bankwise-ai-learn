@@ -73,7 +73,7 @@ const policyIconMap: Record<string, React.ElementType> = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user, profile, progress, loading, signOut, updateProfile } = useAuth();
+  const { user, profile, progress, loading, signOut, updateProfile, effectiveOrgId, viewAsOrg } = useAuth();
   const [helpOpen, setHelpOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
@@ -85,16 +85,21 @@ export default function Dashboard() {
   const { settings: appSettings } = useAppSettings();
   const { agents, isLoading: agentsLoading } = useUserAgents();
 
-  // Fetch org name for the header
+  // Fetch org name for the header — uses effectiveOrgId so super admin preview shows the viewed org
   const [orgName, setOrgName] = useState<string | null>(null);
   useEffect(() => {
-    if (profile?.organization_id) {
-      (supabase.from('organizations' as any).select('name').eq('id', profile.organization_id).maybeSingle() as any)
+    // If viewing as another org, use the stored name directly (no extra query)
+    if (viewAsOrg) {
+      setOrgName(viewAsOrg.name);
+      return;
+    }
+    if (effectiveOrgId) {
+      (supabase.from('organizations' as any).select('name').eq('id', effectiveOrgId).maybeSingle() as any)
         .then(({ data }: any) => {
           if (data?.name) setOrgName(data.name);
         });
     }
-  }, [profile?.organization_id]);
+  }, [effectiveOrgId, viewAsOrg]);
 
   // Auto-start tour for new users who haven't completed it
   useEffect(() => {
