@@ -283,6 +283,18 @@ export function PracticeChatPanel({
               )}
             </div>
             <div className="flex gap-2">
+              <Collapsible open={scenarioOpen} onOpenChange={setScenarioOpen} className="flex-1">
+                <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-2.5 py-1.5 rounded-lg hover:bg-muted">
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                  <span>View Scenario</span>
+                  <ChevronDown className={`h-3.5 w-3.5 ml-auto transition-transform duration-200 ${scenarioOpen ? 'rotate-180' : ''}`} />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="mt-1 bg-card border border-border p-3 rounded-xl">
+                    <p className="text-xs whitespace-pre-wrap text-muted-foreground">{activeScenario}</p>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
               {module.content.practiceTask.successCriteria.length > 0 && (
                 <Collapsible open={criteriaOpen} onOpenChange={setCriteriaOpen} className="flex-1">
                   <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-2.5 py-1.5 rounded-lg hover:bg-muted">
@@ -302,25 +314,13 @@ export function PracticeChatPanel({
                   </CollapsibleContent>
                 </Collapsible>
               )}
-              <Collapsible open={scenarioOpen} onOpenChange={setScenarioOpen} className="flex-1">
-                <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-2.5 py-1.5 rounded-lg hover:bg-muted">
-                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                  <span>View Scenario</span>
-                  <ChevronDown className={`h-3.5 w-3.5 ml-auto transition-transform duration-200 ${scenarioOpen ? 'rotate-180' : ''}`} />
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="mt-1 bg-card border border-border p-3 rounded-xl">
-                    <p className="text-xs whitespace-pre-wrap text-muted-foreground">{activeScenario}</p>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
             </div>
           </div>
         )}
       </div>
 
-      {/* Empty spacer when no messages — keeps input at bottom */}
-      {!hasConversation && <div className="flex-1" />}
+      {/* Empty spacer when no messages — keeps input at bottom (sandbox only; welcome greeting handles spacing in standard modules) */}
+      {!hasConversation && isSandbox && <div className="flex-1" />}
 
       {/* Chat messages — shown when conversation has started */}
       {hasConversation && (
@@ -409,8 +409,8 @@ export function PracticeChatPanel({
 
       {/* Welcome greeting — shown above input when no conversation has started */}
       {!hasConversation && !isSandbox && (
-        <div className="w-full max-w-2xl mx-auto px-4 pb-1 text-center">
-          <p className="text-xs text-muted-foreground">
+        <div className="flex-1 flex items-center justify-center w-full max-w-2xl mx-auto px-4 text-center">
+          <p className="text-3xl font-light text-muted-foreground">
             Welcome {displayName ? <span className="font-medium text-foreground">{displayName}</span> : 'there'} — let's get started.
           </p>
         </div>

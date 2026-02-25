@@ -307,7 +307,14 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
 
       const profiles: any[] = enrolledProfiles || [];
       const progress: any[] = progressData || [];
-      const ideas: IdeaItem[] = (ideasData || []) as IdeaItem[];
+      // Deduplicate ideas by ID to prevent duplicates from join multiplicity
+      const ideasRaw: IdeaItem[] = (ideasData || []) as IdeaItem[];
+      const seenIds = new Set<string>();
+      const ideas: IdeaItem[] = ideasRaw.filter(idea => {
+        if (seenIds.has(idea.id)) return false;
+        seenIds.add(idea.id);
+        return true;
+      });
 
       // Build a set of user IDs in this org to filter prompt_events
       const orgUserIds = new Set(profiles.map((p: any) => p.user_id));

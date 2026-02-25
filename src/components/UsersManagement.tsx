@@ -229,9 +229,7 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
                     <TableHead>Organization</TableHead>
                     <TableHead>Line of Business</TableHead>
                     <TableHead>Access Level</TableHead>
-                     <TableHead>Last Login</TableHead>
-                     <TableHead>Progress</TableHead>
-                     <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -243,21 +241,14 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
                     return (
                       <TableRow key={user.id}>
                         <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                              <span className="text-sm font-semibold text-primary">
-                                {user.display_name?.charAt(0)?.toUpperCase() || 'U'}
-                              </span>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium">{user.display_name || 'No name'}</p>
+                              {user.is_active === false && (
+                                <Badge variant="destructive" className="text-xs py-0">Deactivated</Badge>
+                              )}
                             </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <p className="font-medium">{user.display_name || 'No name'}</p>
-                                {user.is_active === false && (
-                                  <Badge variant="destructive" className="text-xs py-0">Deactivated</Badge>
-                                )}
-                              </div>
-                              <p className="text-xs text-muted-foreground">{user.job_role || 'No role'}</p>
-                            </div>
+                            <p className="text-xs text-muted-foreground">{user.job_role || 'No role'}</p>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -286,26 +277,6 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
                             {user.role === 'admin' && <Shield className="h-3 w-3" />}
                             {user.role === 'admin' ? 'Admin' : 'User'}
                           </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-muted-foreground whitespace-nowrap">
-                            {user.last_login_at
-                              ? new Date(user.last_login_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
-                              : 'Never'}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2 min-w-32">
-                            <Progress value={sessionProgress.percentage} className="h-2 flex-1" />
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">
-                              {sessionProgress.completed}/{sessionProgress.total}
-                            </span>
-                            {sessionProgress.completed === 3 ? (
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                            ) : (
-                              <Clock className="h-4 w-4 text-muted-foreground" />
-                            )}
-                          </div>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">

@@ -175,8 +175,14 @@ export default function Auth() {
       }
     } else {
       // Store audience_type + industry so Onboarding can tailor the flow without an extra DB query
-      if (codeData.audience_type) {
-        sessionStorage.setItem('signup_org_type', codeData.audience_type);
+      // Handle both new field (audience_type) and legacy field (org_type) from the RPC
+      const audienceType = codeData.audience_type || codeData.org_type;
+      if (audienceType) {
+        // Map legacy values: 'friends_family' → 'consumer', 'bank' → 'enterprise'
+        const mapped = audienceType === 'friends_family' ? 'consumer'
+          : audienceType === 'bank' ? 'enterprise'
+          : audienceType;
+        sessionStorage.setItem('signup_org_type', mapped);
       }
       if (codeData.industry) {
         sessionStorage.setItem('signup_industry', codeData.industry);

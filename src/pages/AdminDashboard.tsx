@@ -611,7 +611,7 @@ export default function AdminDashboard() {
             <Shield className="h-6 w-6 text-primary" />
           </div>
           <h1 className="text-3xl font-bold">
-            {viewingOrgName ? `${viewingOrgName} — Administration` : 'Training Administration'}
+            {viewingOrgName ? `${viewingOrgName} — Administration` : 'Enablement Administration'}
           </h1>
         </div>
         <p className="text-muted-foreground">

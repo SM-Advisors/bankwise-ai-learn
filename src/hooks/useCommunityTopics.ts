@@ -31,11 +31,17 @@ export function useCommunityTopics() {
       setLoading(true);
       const { data, error: fetchError } = await (supabase
         .from('community_topics' as any)
-        .select('*')
+        .select('*, community_replies(count)')
         .order('created_at', { ascending: false }) as any);
 
       if (fetchError) throw fetchError;
-      setTopics(data || []);
+      // Map the embedded count to a flat reply_count field
+      const mapped = (data || []).map((t: any) => ({
+        ...t,
+        reply_count: t.community_replies?.[0]?.count ?? t.reply_count ?? 0,
+        community_replies: undefined, // remove the nested object
+      }));
+      setTopics(mapped);
       setError(null);
     } catch (err) {
       console.error('Error fetching community topics:', err);
