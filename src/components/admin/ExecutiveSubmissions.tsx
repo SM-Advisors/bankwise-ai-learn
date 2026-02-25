@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Building2, Lightbulb, AlertCircle, Bot, GitBranch, Clock, ChevronDown, ChevronRight } from 'lucide-react';
+import { Loader2, Building2, Lightbulb, AlertCircle, Bot, GitBranch, Clock, ChevronDown, ChevronRight, Download } from 'lucide-react';
 
 type SubmissionStatus = 'submitted' | 'reviewed' | 'acknowledged' | 'in_progress' | 'archived';
 type SubmissionType = 'idea' | 'friction_point' | 'shared_agent' | 'shared_workflow';
@@ -119,6 +119,25 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
 
   const displayed = statusFilter === 'all' ? submissions : submissions.filter(s => s.status === statusFilter);
 
+  const handleExportCSV = () => {
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+    const rows = [
+      `Executive Submissions Export — ${date}`,
+      '',
+      '"Title","Type","Status","Reviewer Notes","Created","Reviewed"',
+      ...submissions.map((s) =>
+        `"${(s.title ?? '').replace(/"/g, '""')}","${TYPE_LABELS[s.submission_type] ?? s.submission_type}","${STATUS_CONFIG[s.status]?.label ?? s.status}","${(s.reviewer_notes ?? '').replace(/"/g, '""')}","${s.created_at ? new Date(s.created_at).toLocaleDateString() : ''}","${s.reviewed_at ? new Date(s.reviewed_at).toLocaleDateString() : ''}"`
+      ),
+    ];
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `submissions-${date}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -129,7 +148,7 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
 
   return (
     <div className="space-y-4">
-      {/* Filters */}
+      {/* Filters + Export */}
       <div className="flex items-center gap-3 flex-wrap">
         <Building2 className="h-4 w-4 text-muted-foreground" />
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -152,7 +171,13 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
             </button>
           ))}
         </div>
-        <span className="text-xs text-muted-foreground ml-auto">{displayed.length} submission{displayed.length !== 1 ? 's' : ''}</span>
+        <div className="flex items-center gap-3 ml-auto">
+          <span className="text-xs text-muted-foreground">{displayed.length} submission{displayed.length !== 1 ? 's' : ''}</span>
+          <Button size="sm" variant="outline" className="gap-1.5 h-7 text-xs" onClick={handleExportCSV}>
+            <Download className="h-3 w-3" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Submissions list */}

@@ -61,11 +61,10 @@ const TOUR_DEFINITIONS: TourDefinition[] = [
   },
   {
     id: 'andrea',
-    name: 'Andrea AI Advisor',
-    description: 'Tour the C-Suite advisor panel — live KPIs, suggestions, and strategic Q&A.',
+    name: 'Andrea — Your AI Coach',
+    description: "Tour Andrea's chat window — how to ask questions, use suggested prompts, and brainstorm with AI.",
     icon: Bot,
-    adminOnly: true,
-    route: '/admin',
+    route: '/dashboard',
     routeTourParam: 'andrea',
   },
 ];

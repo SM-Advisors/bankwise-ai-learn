@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Lightbulb, Filter } from 'lucide-react';
+import { Loader2, Lightbulb, Filter, Download } from 'lucide-react';
 
 const STATUS_OPTIONS = [
   { value: 'not_started', label: 'Not Started', color: 'bg-gray-500' },
@@ -26,6 +26,25 @@ export function IdeasInbox({ organizationId }: IdeasInboxProps) {
   const { ideas, loading, updateIdeaStatus } = useAllIdeas(organizationId);
   const { toast } = useToast();
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+
+  const handleExportCSV = () => {
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+    const rows = [
+      `Ideas Inbox Export — ${date}`,
+      '',
+      '"Title","Description","Status","Created"',
+      ...ideas.map((idea: any) =>
+        `"${(idea.title ?? '').replace(/"/g, '""')}","${(idea.description ?? '').replace(/"/g, '""')}","${STATUS_BADGE[idea.status]?.label ?? idea.status ?? ''}","${idea.created_at ? new Date(idea.created_at).toLocaleDateString() : ''}"`
+      ),
+    ];
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ideas-${date}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const filteredIdeas = statusFilter
     ? ideas.filter((i) => i.status === statusFilter)
@@ -82,8 +101,8 @@ export function IdeasInbox({ organizationId }: IdeasInboxProps) {
         ))}
       </div>
 
-      {/* Filter */}
-      <div className="flex items-center gap-2">
+      {/* Filter + Export */}
+      <div className="flex items-center gap-2 flex-wrap">
         <Filter className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm font-medium text-muted-foreground">Filter:</span>
         <Button
@@ -103,6 +122,12 @@ export function IdeasInbox({ organizationId }: IdeasInboxProps) {
             {status.label}
           </Button>
         ))}
+        <div className="ml-auto">
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={handleExportCSV}>
+            <Download className="h-3.5 w-3.5" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Ideas List */}

@@ -23,6 +23,8 @@ interface DashboardChatProps {
     session_2_completed: boolean;
     session_3_completed: boolean;
   } | null;
+  /** When true, programmatically opens the chat panel (e.g. for a guided tour) */
+  forceOpen?: boolean;
 }
 
 const DEFAULT_SUGGESTIONS = [
@@ -31,7 +33,7 @@ const DEFAULT_SUGGESTIONS = [
   'What should I work on next?',
 ];
 
-export function DashboardChat({ profile, progress }: DashboardChatProps) {
+export function DashboardChat({ profile, progress, forceOpen }: DashboardChatProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasBeenOpened, setHasBeenOpened] = useState(false);
   const [input, setInput] = useState('');
@@ -42,9 +44,17 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Close when clicking outside the chat panel
+  // Open programmatically when a tour is running
   useEffect(() => {
-    if (!isOpen) return;
+    if (forceOpen) {
+      setIsOpen(true);
+      setHasBeenOpened(true);
+    }
+  }, [forceOpen]);
+
+  // Close when clicking outside the chat panel (disabled during guided tour)
+  useEffect(() => {
+    if (!isOpen || forceOpen) return;
     const handler = (e: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
         setIsOpen(false);
@@ -52,7 +62,7 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [isOpen]);
+  }, [isOpen, forceOpen]);
 
   const {
     conversations,
@@ -226,7 +236,7 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
     <div ref={panelRef} className="fixed bottom-6 right-6 z-[9999] w-[400px] h-[500px] flex flex-col">
       <Card className="flex flex-col h-full shadow-xl border">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b bg-primary text-primary-foreground rounded-t-lg">
+        <div data-tour="andrea-panel-header" className="flex items-center justify-between px-4 py-3 border-b bg-primary text-primary-foreground rounded-t-lg">
           <div className="flex items-center gap-2">
             <img src={andreaCoach2} alt="Andrea" className="h-14 w-14 rounded-full object-cover border border-primary-foreground/30" />
             <div>
@@ -339,7 +349,7 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
 
             {/* Suggested Prompts */}
             {suggestedPrompts.length > 0 && !isLoading && (
-              <div className="px-4 pb-2 flex flex-wrap gap-1.5">
+              <div data-tour="andrea-panel-suggestions" className="px-4 pb-2 flex flex-wrap gap-1.5">
                 {suggestedPrompts.map((prompt, i) => (
                   <button
                     key={i}
@@ -353,7 +363,7 @@ export function DashboardChat({ profile, progress }: DashboardChatProps) {
             )}
 
             {/* Input */}
-            <form onSubmit={handleSubmit} className="px-4 pb-4 pt-2 border-t">
+            <form data-tour="andrea-panel-input" onSubmit={handleSubmit} className="px-4 pb-4 pt-2 border-t">
               <div className="flex items-center gap-2">
                 <Input
                   ref={inputRef}

@@ -157,39 +157,50 @@ export const ADMIN_STEPS: DriveStep[] = [
   },
 ];
 
-// ─── Andrea C-Suite Advisor Tour ─────────────────────────────────────────────
+// ─── Andrea Dashboard Chat Tour ──────────────────────────────────────────────
+// This tour opens the dashboard floating chat panel and walks through it.
+// Elements targeted are inside DashboardChat (panel must be open before tour starts).
 export const ANDREA_STEPS: DriveStep[] = [
   {
     popover: {
-      title: 'Meet Andrea — C-Suite AI Advisor',
-      description: "Andrea is your strategic AI advisor. She has live access to your organization's KPI data and can answer executive-level questions about your AI training program.",
+      title: 'Meet Andrea — Your AI Training Coach',
+      description: "Andrea lives in the bottom-right corner of your dashboard as a floating chat bubble. She's always available to answer questions about your training journey.",
       side: 'over' as const,
       align: 'center' as const,
     },
   },
   {
-    element: '[data-tour="andrea-kpi-bar"]',
+    element: '[data-tour="andrea-panel-header"]',
     popover: {
-      title: 'Live KPI Snapshot',
-      description: 'These metrics are live — enrollment rates, completion funnels, and compliance exception counts. Andrea reads this data before every response so her answers are always grounded in real numbers.',
-      side: 'bottom' as const,
-      align: 'center' as const,
+      title: "Andrea's Chat Window",
+      description: "This is Andrea's full chat window. Use the history button to revisit past conversations, or the + button to start a fresh chat anytime.",
+      side: 'left' as const,
+      align: 'start' as const,
     },
   },
   {
-    element: '[data-tour="andrea-suggestions"]',
+    element: '[data-tour="andrea-panel-suggestions"]',
     popover: {
-      title: 'Suggested Questions',
-      description: "Start here. These chips surface the most common executive questions about your org's AI training progress — completion gaps, at-risk departments, compliance trends.",
+      title: 'Suggested Prompts',
+      description: "Not sure where to start? These prompts surface the most useful questions — from 'where do I begin?' to module-specific guidance.",
       side: 'top' as const,
       align: 'center' as const,
     },
   },
   {
-    element: '[data-tour="andrea-input"]',
+    element: '[data-tour="andrea-panel-input"]',
     popover: {
-      title: 'Ask Andrea Anything',
-      description: 'Type any strategic question — completion rates by department, users who need follow-up, ROI framing for leadership, or compliance risk summaries. She knows your data.',
+      title: 'Ask Anything',
+      description: 'Type any question — about your training progress, AI concepts, or how to apply AI to your day-to-day banking tasks.',
+      side: 'top' as const,
+      align: 'center' as const,
+    },
+  },
+  {
+    element: '[data-tour="brainstorm-btn"]',
+    popover: {
+      title: 'AI Brainstorm',
+      description: "Have a task in mind? Click this to describe it and Andrea will brainstorm how AI could help — adapted to your skill level.",
       side: 'top' as const,
       align: 'center' as const,
     },
@@ -197,7 +208,7 @@ export const ANDREA_STEPS: DriveStep[] = [
   {
     popover: {
       title: "That's Andrea!",
-      description: "Her conversation resets when you click the reset button. Replay this tour anytime from the Help menu.",
+      description: "She's your go-to guide throughout this entire program. Replay this tour anytime from the Help menu.",
       side: 'over' as const,
       align: 'center' as const,
     },

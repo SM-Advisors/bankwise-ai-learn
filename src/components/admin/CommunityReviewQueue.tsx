@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle, Clock, Loader2, MessageSquare } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Loader2, MessageSquare, Download } from 'lucide-react';
 
 interface PendingTopic {
   id: string;
@@ -78,16 +78,43 @@ export function CommunityReviewQueue({ organizationId }: CommunityReviewQueuePro
     setActioningId(null);
   };
 
+  const handleExportCSV = () => {
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+    const rows = [
+      `Community Review Queue Export — ${date}`,
+      '',
+      '"Author","Role","Title","Category","Body Preview","Created"',
+      ...topics.map((t) =>
+        `"${(t.author_name ?? '').replace(/"/g, '""')}","${(t.author_role ?? '').replace(/"/g, '""')}","${(t.title ?? '').replace(/"/g, '""')}","${(t.category ?? '').replace(/"/g, '""')}","${(t.body ?? '').slice(0, 100).replace(/"/g, '""')}","${t.created_at ? new Date(t.created_at).toLocaleDateString() : ''}"`
+      ),
+    ];
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `community-queue-${date}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-primary" />
-          Community Review Queue
-        </CardTitle>
-        <CardDescription>
-          Review and approve community posts before they are visible to all users.
-        </CardDescription>
+      <CardHeader className="flex flex-row items-start justify-between gap-4">
+        <div>
+          <CardTitle className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-primary" />
+            Community Review Queue
+          </CardTitle>
+          <CardDescription>
+            Review and approve community posts before they are visible to all users.
+          </CardDescription>
+        </div>
+        {topics.length > 0 && (
+          <Button size="sm" variant="outline" className="gap-1.5 shrink-0" onClick={handleExportCSV}>
+            <Download className="h-3.5 w-3.5" />
+            Export CSV
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         {loading ? (

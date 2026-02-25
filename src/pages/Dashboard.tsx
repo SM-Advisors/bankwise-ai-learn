@@ -9,6 +9,8 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { HelpTour } from '@/components/HelpTour';
 import { HelpPanel } from '@/components/HelpPanel';
+import { useTour } from '@/hooks/useTour';
+import { ANDREA_STEPS } from '@/constants/tourSteps';
 import { BankPolicyModal } from '@/components/BankPolicyModal';
 import { VideoModal } from '@/components/VideoModal';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
@@ -76,9 +78,13 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, profile, progress, loading, signOut, updateProfile, effectiveOrgId, viewAsOrg } = useAuth();
-  const [helpOpen, setHelpOpen] = useState(false);       // controls HelpTour (first-time auto-trigger)
-  const [helpPanelOpen, setHelpPanelOpen] = useState(false); // controls HelpPanel modal (Help button / replay)
+  const [helpOpen, setHelpOpen] = useState(false);             // controls HelpTour (first-time auto-trigger)
+  const [helpPanelOpen, setHelpPanelOpen] = useState(false);   // controls HelpPanel modal (Help button / replay)
+  const [andreaPanelOpenForTour, setAndreaPanelOpenForTour] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+
+  // Andrea tour — used to replay the DashboardChat tour from HelpPanel
+  const { startTour: startAndreaTour } = useTour('andrea');
   const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
@@ -111,11 +117,23 @@ export default function Dashboard() {
     }
   }, [profile?.tour_completed]);
 
-  // Handle ?tour=dashboard URL param (triggered by HelpPanel replay from another page)
+  // Handle ?tour= URL params (triggered by HelpPanel replay)
   useEffect(() => {
-    if (searchParams.get('tour') === 'dashboard') {
-      setSearchParams({}, { replace: true });
+    const tourParam = searchParams.get('tour');
+    if (!tourParam) return;
+
+    const next = new URLSearchParams(searchParams);
+    next.delete('tour');
+    setSearchParams(next, { replace: true });
+
+    if (tourParam === 'dashboard') {
       setTimeout(() => setHelpOpen(true), 300);
+    } else if (tourParam === 'andrea') {
+      // Open the DashboardChat panel, then start the Andrea tour
+      setAndreaPanelOpenForTour(true);
+      setTimeout(() => {
+        startAndreaTour(ANDREA_STEPS, () => setAndreaPanelOpenForTour(false));
+      }, 600);
     }
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -749,7 +767,7 @@ export default function Dashboard() {
       </div>
 
       {/* Andrea Dashboard Chat */}
-      <DashboardChat profile={profile} progress={progress} />
+      <DashboardChat profile={profile} progress={progress} forceOpen={andreaPanelOpenForTour} />
     </div>
   );
 }

@@ -119,6 +119,22 @@ export function CSuiteReports() {
     (kpis.departmentBreakdowns || []).forEach((item) => {
       lines.push(`"${item.label || item.department || ''}","${item.total ?? 0}","${item.s1 ?? 0}","${item.s2 ?? 0}","${item.s3 ?? 0}","${item.avgProficiency ?? 0}"`);
     });
+    lines.push('');
+    lines.push('INNOVATION PIPELINE');
+    lines.push(`"Total Ideas Submitted","${kpis.totalIdeas ?? 0}"`);
+    lines.push('');
+    lines.push('"Status","Count"');
+    Object.entries(kpis.ideasByStatus || {}).forEach(([status, count]) => {
+      lines.push(`"${status.replace(/_/g, ' ')}","${count}"`);
+    });
+    if ((kpis.topIdeas || []).length > 0) {
+      lines.push('');
+      lines.push('"Top Ideas (by votes)"');
+      lines.push('"Title","Votes","Status","ROI"');
+      (kpis.topIdeas as IdeaItem[]).forEach((idea) => {
+        lines.push(`"${idea.title ?? ''}","${idea.votes ?? 0}","${(idea.status ?? '').replace(/_/g, ' ')}","${idea.roi_level ?? ''}"`);
+      });
+    }
 
     const csv = lines.join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

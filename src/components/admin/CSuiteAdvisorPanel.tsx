@@ -7,8 +7,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useCSuiteKPIs, getLobLabel } from '@/hooks/useReporting';
-import { useTour } from '@/hooks/useTour';
-import { ANDREA_STEPS } from '@/constants/tourSteps';
 import andreaCoach from '@/assets/andrea-coach.png';
 
 type LocalMessage = { role: 'user' | 'assistant'; content: string };
@@ -120,16 +118,12 @@ What would you like to explore first?`;
 
 interface CSuiteAdvisorPanelProps {
   organizationId?: string | null;
-  /** When true the tour starts even if the user has already completed it (replay) */
-  triggerTour?: boolean;
 }
 
-export function CSuiteAdvisorPanel({ organizationId, triggerTour }: CSuiteAdvisorPanelProps) {
+export function CSuiteAdvisorPanel({ organizationId }: CSuiteAdvisorPanelProps) {
   const { profile } = useAuth();
   const { toast } = useToast();
   const kpis = useCSuiteKPIs(organizationId || null);
-
-  const { isCompleted: andreaTourDone, startTour } = useTour('andrea');
 
   const [chatInput, setChatInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -138,16 +132,6 @@ export function CSuiteAdvisorPanel({ organizationId, triggerTour }: CSuiteAdviso
   ]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Auto-trigger Andrea tour on first panel mount (after KPI data loads),
-  // or whenever the parent signals a replay via triggerTour=true.
-  useEffect(() => {
-    if (kpis.loading) return;
-    if (triggerTour || !andreaTourDone) {
-      const t = setTimeout(() => startTour(ANDREA_STEPS), 600);
-      return () => clearTimeout(t);
-    }
-  }, [kpis.loading, triggerTour]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (messagesEndRef.current) {

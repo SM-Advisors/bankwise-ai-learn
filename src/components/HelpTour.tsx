@@ -26,7 +26,7 @@ export function HelpTour({ open, onOpenChange, onComplete }: HelpTourProps) {
       const driverObj = driver({
         showProgress: true,
         progressText: '{{current}} of {{total}}',
-        allowClose: false,
+        allowClose: true,
         onDestroyStarted: () => {
           driverRef.current = null;
           onComplete?.();

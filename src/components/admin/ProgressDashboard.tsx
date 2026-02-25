@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Users, TrendingUp, AlertTriangle, BarChart3, Building2 } from 'lucide-react';
+import { Loader2, Users, TrendingUp, AlertTriangle, BarChart3, Building2, Download } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -32,6 +32,33 @@ export function ProgressDashboard() {
   const { organizations, loading: orgsLoading } = useOrganizations();
   const { userProgress, promptStats, loading } = useReporting(selectedOrgId);
   const [lobFilter, setLobFilter] = useState<string | null>(null);
+
+  const handleExportCSV = () => {
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+    const rows: string[] = [];
+    rows.push(`Learner Progress Report — ${date}`);
+    rows.push('');
+    rows.push('"Name","Role","Department","Level","S1 Done","S2 Done","S3 Done"');
+    (filteredProgress as UserProgressRow[]).forEach((u) => {
+      rows.push(
+        `"${u.display_name ?? ''}","${u.job_role ?? ''}","${u.department ?? ''}","${u.ai_proficiency_level ?? 0}","${u.session_1_completed ? 'Yes' : 'No'}","${u.session_2_completed ? 'Yes' : 'No'}","${u.session_3_completed ? 'Yes' : 'No'}"`
+      );
+    });
+    rows.push('');
+    rows.push('PROMPT STATS');
+    rows.push(`"Total Prompts","${promptStats.total_prompts}"`);
+    rows.push(`"Total Exceptions","${promptStats.total_exceptions}"`);
+    Object.entries(promptStats.by_exception_type || {}).forEach(([type, count]) => {
+      rows.push(`"Exception — ${type}","${count}"`);
+    });
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `learner-progress-${date}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const filteredProgress = useMemo(() => {
     if (!lobFilter) return userProgress;
@@ -270,9 +297,15 @@ export function ProgressDashboard() {
 
       {/* User Progress Table */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Learner Progress</CardTitle>
-          <CardDescription>Individual completion status for all learners</CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div>
+            <CardTitle className="text-lg">Learner Progress</CardTitle>
+            <CardDescription>Individual completion status for all learners</CardDescription>
+          </div>
+          <Button size="sm" variant="outline" className="gap-1.5 shrink-0" onClick={handleExportCSV} disabled={loading}>
+            <Download className="h-3.5 w-3.5" />
+            Export CSV
+          </Button>
         </CardHeader>
         <CardContent>
           {filteredProgress.length === 0 ? (

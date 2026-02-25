@@ -45,10 +45,10 @@ export function useTour(tourId: TourId) {
     const driverObj = driver({
       showProgress: true,
       progressText: '{{current}} of {{total}}',
-      allowClose: false,
+      allowClose: true,
       onDestroyStarted: () => {
         driverRef.current = null;
-        // Mark complete whenever the tour finishes (skip or complete)
+        // Mark complete whenever the tour finishes OR is skipped
         markComplete();
         onComplete?.();
         driverObj.destroy();

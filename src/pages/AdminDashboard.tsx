@@ -28,6 +28,7 @@ import { DepartmentsManager } from '@/components/admin/DepartmentsManager';
 import { ExecutiveSubmissions } from '@/components/admin/ExecutiveSubmissions';
 import { CommunityReviewQueue } from '@/components/admin/CommunityReviewQueue';
 import { OrgResourcesManager } from '@/components/admin/OrgResourcesManager';
+import { AdminAndreaFloat } from '@/components/admin/AdminAndreaFloat';
 import { HelpPanel } from '@/components/HelpPanel';
 import { useTour } from '@/hooks/useTour';
 import { ADMIN_STEPS } from '@/constants/tourSteps';
@@ -166,13 +167,11 @@ export default function AdminDashboard() {
   const { isAdmin, loading: roleLoading } = useUserRole();
   const { toast } = useToast();
 
-  // ── Controlled tab state (needed for URL-param tour navigation) ─────────────
+  // ── Controlled tab state (needed for URL-param admin tour navigation) ───────
   const [activeMainTab, setActiveMainTab] = useState('people');
-  const [activeAnalyticsTab, setActiveAnalyticsTab] = useState('reporting');
 
-  // ── Help panel & tour state ─────────────────────────────────────────────────
+  // ── Help panel state ─────────────────────────────────────────────────────────
   const [helpPanelOpen, setHelpPanelOpen] = useState(false);
-  const [andreaTourTrigger, setAndreaTourTrigger] = useState(false);
 
   // Admin tour — auto-trigger on first visit or ?tour=admin param
   const { isCompleted: adminTourDone, startTour: startAdminTour } = useTour('admin');
@@ -275,13 +274,6 @@ export default function AdminDashboard() {
     if (tourParam === 'admin') {
       // Start admin tour — wait for tabs to render
       setTimeout(() => startAdminTour(ADMIN_STEPS), 600);
-    } else if (tourParam === 'andrea') {
-      // Navigate to Analytics > Andrea tab, then trigger the Andrea tour
-      setActiveMainTab('analytics');
-      setActiveAnalyticsTab('advisor');
-      setTimeout(() => setAndreaTourTrigger(true), 800);
-      // Reset trigger after tour has had time to start
-      setTimeout(() => setAndreaTourTrigger(false), 2000);
     }
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -611,6 +603,8 @@ export default function AdminDashboard() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Help panel modal */}
       <HelpPanel open={helpPanelOpen} onOpenChange={setHelpPanelOpen} />
+      {/* Floating Andrea C-Suite advisor bubble */}
+      <AdminAndreaFloat organizationId={effectiveOrgId} />
 
       {/* Org context banner for super admin drill-down */}
       {viewingOrgId && viewingOrgName && (
@@ -708,28 +702,28 @@ export default function AdminDashboard() {
           <Tabs defaultValue="users" className="space-y-4">
             <TabsList className="bg-background border">
               <TabsTrigger value="users" className="gap-1.5 text-xs"><Users className="h-3.5 w-3.5" />Users</TabsTrigger>
-              <TabsTrigger value="orgs" className="gap-1.5 text-xs"><Building2 className="h-3.5 w-3.5" />Organizations</TabsTrigger>
+              {isSuperAdmin && (
+                <TabsTrigger value="orgs" className="gap-1.5 text-xs"><Building2 className="h-3.5 w-3.5" />Organizations</TabsTrigger>
+              )}
               <TabsTrigger value="depts" className="gap-1.5 text-xs"><Building2 className="h-3.5 w-3.5" />Departments</TabsTrigger>
             </TabsList>
             <TabsContent value="users"><UsersManagement organizationId={effectiveOrgId} /></TabsContent>
-            <TabsContent value="orgs"><OrganizationsManager /></TabsContent>
+            {isSuperAdmin && (
+              <TabsContent value="orgs"><OrganizationsManager /></TabsContent>
+            )}
             <TabsContent value="depts"><DepartmentsManager /></TabsContent>
           </Tabs>
         </TabsContent>
 
         {/* ── ANALYTICS ── */}
         <TabsContent value="analytics" className="space-y-6">
-          <Tabs value={activeAnalyticsTab} onValueChange={setActiveAnalyticsTab} className="space-y-4">
+          <Tabs defaultValue="reporting" className="space-y-4">
             <TabsList className="bg-background border">
               <TabsTrigger value="reporting" className="gap-1.5 text-xs"><BarChart3 className="h-3.5 w-3.5" />Reports</TabsTrigger>
               <TabsTrigger value="csuite" className="gap-1.5 text-xs"><PieChartIcon className="h-3.5 w-3.5" />C-Suite</TabsTrigger>
-              <TabsTrigger value="advisor" className="gap-1.5 text-xs"><Brain className="h-3.5 w-3.5" />Andrea</TabsTrigger>
             </TabsList>
             <TabsContent value="reporting"><ProgressDashboard /></TabsContent>
             <TabsContent value="csuite"><CSuiteReports /></TabsContent>
-            <TabsContent value="advisor">
-              <CSuiteAdvisorPanel organizationId={effectiveOrgId} triggerTour={andreaTourTrigger} />
-            </TabsContent>
           </Tabs>
         </TabsContent>
 
