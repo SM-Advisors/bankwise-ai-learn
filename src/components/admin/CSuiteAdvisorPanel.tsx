@@ -7,6 +7,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useCSuiteKPIs, getLobLabel } from '@/hooks/useReporting';
+import { useTour } from '@/hooks/useTour';
+import { ANDREA_STEPS } from '@/constants/tourSteps';
 import andreaCoach from '@/assets/andrea-coach.png';
 
 type LocalMessage = { role: 'user' | 'assistant'; content: string };
@@ -118,12 +120,16 @@ What would you like to explore first?`;
 
 interface CSuiteAdvisorPanelProps {
   organizationId?: string | null;
+  /** When true the tour starts even if the user has already completed it (replay) */
+  triggerTour?: boolean;
 }
 
-export function CSuiteAdvisorPanel({ organizationId }: CSuiteAdvisorPanelProps) {
+export function CSuiteAdvisorPanel({ organizationId, triggerTour }: CSuiteAdvisorPanelProps) {
   const { profile } = useAuth();
   const { toast } = useToast();
   const kpis = useCSuiteKPIs(organizationId || null);
+
+  const { isCompleted: andreaTourDone, startTour } = useTour('andrea');
 
   const [chatInput, setChatInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -132,6 +138,16 @@ export function CSuiteAdvisorPanel({ organizationId }: CSuiteAdvisorPanelProps) 
   ]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-trigger Andrea tour on first panel mount (after KPI data loads),
+  // or whenever the parent signals a replay via triggerTour=true.
+  useEffect(() => {
+    if (kpis.loading) return;
+    if (triggerTour || !andreaTourDone) {
+      const t = setTimeout(() => startTour(ANDREA_STEPS), 600);
+      return () => clearTimeout(t);
+    }
+  }, [kpis.loading, triggerTour]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -202,8 +218,8 @@ export function CSuiteAdvisorPanel({ organizationId }: CSuiteAdvisorPanelProps) 
 
   return (
     <Card className="flex flex-col h-[700px] overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b bg-primary text-primary-foreground shrink-0">
+      {/* Header — data-tour="andrea-kpi-bar" for tour targeting */}
+      <div data-tour="andrea-kpi-bar" className="flex items-center gap-3 px-4 py-3 border-b bg-primary text-primary-foreground shrink-0">
         <img
           src={andreaCoach}
           alt="Andrea"
@@ -252,7 +268,7 @@ export function CSuiteAdvisorPanel({ organizationId }: CSuiteAdvisorPanelProps) 
 
       {/* Suggestion chips — only show when there's just the welcome message */}
       {localMessages.length === 1 && !isLoading && (
-        <div className="px-4 pb-2 flex flex-wrap gap-1.5 shrink-0">
+        <div data-tour="andrea-suggestions" className="px-4 pb-2 flex flex-wrap gap-1.5 shrink-0">
           {suggestions.map((text) => (
             <button
               key={text}
@@ -266,7 +282,7 @@ export function CSuiteAdvisorPanel({ organizationId }: CSuiteAdvisorPanelProps) 
       )}
 
       {/* Input bar */}
-      <div className="border-t p-3 flex gap-2 shrink-0">
+      <div data-tour="andrea-input" className="border-t p-3 flex gap-2 shrink-0">
         <Textarea
           value={chatInput}
           onChange={(e) => setChatInput(e.target.value)}

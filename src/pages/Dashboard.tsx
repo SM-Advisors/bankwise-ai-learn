@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { HelpTour } from '@/components/HelpTour';
+import { HelpPanel } from '@/components/HelpPanel';
 import { BankPolicyModal } from '@/components/BankPolicyModal';
 import { VideoModal } from '@/components/VideoModal';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
@@ -73,8 +74,10 @@ const policyIconMap: Record<string, React.ElementType> = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, profile, progress, loading, signOut, updateProfile, effectiveOrgId, viewAsOrg } = useAuth();
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);       // controls HelpTour (first-time auto-trigger)
+  const [helpPanelOpen, setHelpPanelOpen] = useState(false); // controls HelpPanel modal (Help button / replay)
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
@@ -107,6 +110,14 @@ export default function Dashboard() {
       setHelpOpen(true);
     }
   }, [profile?.tour_completed]);
+
+  // Handle ?tour=dashboard URL param (triggered by HelpPanel replay from another page)
+  useEffect(() => {
+    if (searchParams.get('tour') === 'dashboard') {
+      setSearchParams({}, { replace: true });
+      setTimeout(() => setHelpOpen(true), 300);
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleTourComplete = async () => {
     if (profile && !profile.tour_completed) {
@@ -173,8 +184,10 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Help Tour Dialog */}
+      {/* First-time tour auto-trigger */}
       <HelpTour open={helpOpen} onOpenChange={setHelpOpen} onComplete={handleTourComplete} />
+      {/* Help panel modal (Help button / tour replay) */}
+      <HelpPanel open={helpPanelOpen} onOpenChange={setHelpPanelOpen} />
       <FeedbackModal open={feedbackOpen} onOpenChange={setFeedbackOpen} />
       
       {/* Bank Policy Modal */}
@@ -265,16 +278,16 @@ export default function Dashboard() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="ghost" size="sm" className="gap-2" onClick={() => setHelpOpen(true)}>
+            <Button variant="ghost" size="sm" className="gap-2" onClick={() => setHelpPanelOpen(true)}>
               <HelpCircle className="h-4 w-4" />
               Help
             </Button>
-            <ProfileDropdown onReplayTour={() => setHelpOpen(true)} />
+            <ProfileDropdown onReplayTour={() => setHelpPanelOpen(true)} />
           </div>
 
           {/* Mobile nav */}
           <div className="flex md:hidden items-center gap-2">
-            <ProfileDropdown onReplayTour={() => setHelpOpen(true)} />
+            <ProfileDropdown onReplayTour={() => setHelpPanelOpen(true)} />
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-9 w-9">
@@ -315,7 +328,7 @@ export default function Dashboard() {
                     <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/electives')}>
                       <GraduationCap className="h-4 w-4 text-muted-foreground" /> Elective Paths
                     </button>
-                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => setHelpOpen(true)}>
+                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => setHelpPanelOpen(true)}>
                       <HelpCircle className="h-4 w-4 text-muted-foreground" /> Help
                     </button>
                   </div>

@@ -27,6 +27,10 @@ import { OrganizationsManager } from '@/components/admin/OrganizationsManager';
 import { DepartmentsManager } from '@/components/admin/DepartmentsManager';
 import { ExecutiveSubmissions } from '@/components/admin/ExecutiveSubmissions';
 import { CommunityReviewQueue } from '@/components/admin/CommunityReviewQueue';
+import { OrgResourcesManager } from '@/components/admin/OrgResourcesManager';
+import { HelpPanel } from '@/components/HelpPanel';
+import { useTour } from '@/hooks/useTour';
+import { ADMIN_STEPS } from '@/constants/tourSteps';
 import { learningStyles } from '@/data/learningStyles';
 import { departments } from '@/data/topics';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
@@ -68,6 +72,8 @@ import {
   Database,
   RefreshCw,
   Upload,
+  HelpCircle,
+  Link2,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -152,13 +158,24 @@ const CORE_PROGRAMS = [
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const viewingOrgId = searchParams.get('org_id');
   const { user, profile, loading: authLoading } = useAuth();
   // Effective org: super admin drill-down takes priority, otherwise use admin's own org
   const effectiveOrgId = viewingOrgId || profile?.organization_id || null;
   const { isAdmin, loading: roleLoading } = useUserRole();
   const { toast } = useToast();
+
+  // ── Controlled tab state (needed for URL-param tour navigation) ─────────────
+  const [activeMainTab, setActiveMainTab] = useState('people');
+  const [activeAnalyticsTab, setActiveAnalyticsTab] = useState('reporting');
+
+  // ── Help panel & tour state ─────────────────────────────────────────────────
+  const [helpPanelOpen, setHelpPanelOpen] = useState(false);
+  const [andreaTourTrigger, setAndreaTourTrigger] = useState(false);
+
+  // Admin tour — auto-trigger on first visit or ?tour=admin param
+  const { isCompleted: adminTourDone, startTour: startAdminTour } = useTour('admin');
   const { policies, loading: policiesLoading, updatePolicy, createPolicy } = useAllBankPolicies();
   const { sessions: liveSessions, loading: liveSessionsLoading, createSession, updateSession, deleteSession } = useAllLiveTrainingSessions();
   const { settings: appSettings, loading: settingsLoading, updateSetting, getSetting } = useAdminAppSettings();
@@ -244,6 +261,37 @@ export default function AdminDashboard() {
       setCommunityUrl(getSetting('community_slack_url'));
     }
   }, [settingsLoading, appSettings]);
+
+  // Handle ?tour= URL params (triggered by HelpPanel replay)
+  useEffect(() => {
+    const tourParam = searchParams.get('tour');
+    if (!tourParam) return;
+
+    // Clear the tour param without affecting other params (e.g. org_id)
+    const next = new URLSearchParams(searchParams);
+    next.delete('tour');
+    setSearchParams(next, { replace: true });
+
+    if (tourParam === 'admin') {
+      // Start admin tour — wait for tabs to render
+      setTimeout(() => startAdminTour(ADMIN_STEPS), 600);
+    } else if (tourParam === 'andrea') {
+      // Navigate to Analytics > Andrea tab, then trigger the Andrea tour
+      setActiveMainTab('analytics');
+      setActiveAnalyticsTab('advisor');
+      setTimeout(() => setAndreaTourTrigger(true), 800);
+      // Reset trigger after tour has had time to start
+      setTimeout(() => setAndreaTourTrigger(false), 2000);
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-trigger admin tour on first visit (when profile is loaded)
+  useEffect(() => {
+    if (!profile || adminTourDone) return;
+    // Only auto-start if no ?tour= param is driving it (that's handled above)
+    if (searchParams.get('tour')) return;
+    setTimeout(() => startAdminTour(ADMIN_STEPS), 600);
+  }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Redirect non-admins away
   useEffect(() => {
@@ -561,6 +609,9 @@ export default function AdminDashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
+      {/* Help panel modal */}
+      <HelpPanel open={helpPanelOpen} onOpenChange={setHelpPanelOpen} />
+
       {/* Org context banner for super admin drill-down */}
       {viewingOrgId && viewingOrgName && (
         <div className="mb-4 flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
@@ -598,15 +649,21 @@ export default function AdminDashboard() {
       )}
 
       <div className="mb-8">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => viewingOrgId && isSuperAdmin ? navigate('/super-admin') : navigate('/dashboard')}
-          className="mb-4 gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {viewingOrgId && isSuperAdmin ? 'Back to Super Admin' : 'Back to Dashboard'}
-        </Button>
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => viewingOrgId && isSuperAdmin ? navigate('/super-admin') : navigate('/dashboard')}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {viewingOrgId && isSuperAdmin ? 'Back to Super Admin' : 'Back to Dashboard'}
+          </Button>
+          <Button variant="ghost" size="sm" className="gap-2" onClick={() => setHelpPanelOpen(true)}>
+            <HelpCircle className="h-4 w-4" />
+            Help
+          </Button>
+        </div>
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-primary/10 rounded-lg">
             <Shield className="h-6 w-6 text-primary" />
@@ -622,25 +679,25 @@ export default function AdminDashboard() {
         </p>
       </div>
 
-      <Tabs defaultValue="people" className="space-y-6">
+      <Tabs value={activeMainTab} onValueChange={setActiveMainTab} className="space-y-6">
         <TabsList className="inline-flex h-auto gap-1 bg-muted p-1">
-          <TabsTrigger value="people" className="flex items-center gap-1.5 text-sm px-4 py-2">
+          <TabsTrigger value="people" data-tour="admin-people-tab" className="flex items-center gap-1.5 text-sm px-4 py-2">
             <Users className="h-4 w-4" />
             People
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center gap-1.5 text-sm px-4 py-2">
+          <TabsTrigger value="analytics" data-tour="admin-analytics-tab" className="flex items-center gap-1.5 text-sm px-4 py-2">
             <BarChart3 className="h-4 w-4" />
             Analytics
           </TabsTrigger>
-          <TabsTrigger value="engagement" className="flex items-center gap-1.5 text-sm px-4 py-2">
+          <TabsTrigger value="engagement" data-tour="admin-engagement-tab" className="flex items-center gap-1.5 text-sm px-4 py-2">
             <MessageSquare className="h-4 w-4" />
             Engagement
           </TabsTrigger>
-          <TabsTrigger value="training" className="flex items-center gap-1.5 text-sm px-4 py-2">
+          <TabsTrigger value="training" data-tour="admin-training-tab" className="flex items-center gap-1.5 text-sm px-4 py-2">
             <Sparkles className="h-4 w-4" />
             Training
           </TabsTrigger>
-          <TabsTrigger value="config" className="flex items-center gap-1.5 text-sm px-4 py-2">
+          <TabsTrigger value="config" data-tour="admin-config-tab" className="flex items-center gap-1.5 text-sm px-4 py-2">
             <Settings className="h-4 w-4" />
             Config
           </TabsTrigger>
@@ -662,7 +719,7 @@ export default function AdminDashboard() {
 
         {/* ── ANALYTICS ── */}
         <TabsContent value="analytics" className="space-y-6">
-          <Tabs defaultValue="reporting" className="space-y-4">
+          <Tabs value={activeAnalyticsTab} onValueChange={setActiveAnalyticsTab} className="space-y-4">
             <TabsList className="bg-background border">
               <TabsTrigger value="reporting" className="gap-1.5 text-xs"><BarChart3 className="h-3.5 w-3.5" />Reports</TabsTrigger>
               <TabsTrigger value="csuite" className="gap-1.5 text-xs"><PieChartIcon className="h-3.5 w-3.5" />C-Suite</TabsTrigger>
@@ -670,7 +727,9 @@ export default function AdminDashboard() {
             </TabsList>
             <TabsContent value="reporting"><ProgressDashboard /></TabsContent>
             <TabsContent value="csuite"><CSuiteReports /></TabsContent>
-            <TabsContent value="advisor"><CSuiteAdvisorPanel organizationId={effectiveOrgId} /></TabsContent>
+            <TabsContent value="advisor">
+              <CSuiteAdvisorPanel organizationId={effectiveOrgId} triggerTour={andreaTourTrigger} />
+            </TabsContent>
           </Tabs>
         </TabsContent>
 
@@ -1285,6 +1344,7 @@ export default function AdminDashboard() {
           <Tabs defaultValue="events" className="space-y-4">
             <TabsList className="bg-background border">
               <TabsTrigger value="events" className="gap-1.5 text-xs"><CalendarDays className="h-3.5 w-3.5" />Events</TabsTrigger>
+              <TabsTrigger value="resources" className="gap-1.5 text-xs"><Link2 className="h-3.5 w-3.5" />Resources</TabsTrigger>
               <TabsTrigger value="settings" className="gap-1.5 text-xs"><Settings className="h-3.5 w-3.5" />Settings</TabsTrigger>
             </TabsList>
 
@@ -1464,6 +1524,11 @@ export default function AdminDashboard() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+            </TabsContent>
+
+            {/* Resources */}
+            <TabsContent value="resources" className="space-y-6">
+              <OrgResourcesManager organizationId={effectiveOrgId} />
             </TabsContent>
 
             {/* Settings */}

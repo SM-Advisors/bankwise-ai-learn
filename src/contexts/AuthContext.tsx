@@ -32,6 +32,8 @@ export interface UserProfile {
   intake_role_key?: string;
   intake_orientation?: string;
   intake_motivation?: string[];
+  // Per-tour completion map — keys are tour IDs ('dashboard', 'admin', 'andrea')
+  tours_completed?: Record<string, boolean>;
 }
 
 export interface TrainingProgress {
