@@ -22,6 +22,7 @@ import { UsersManagement } from '@/components/UsersManagement';
 import { ProgressDashboard } from '@/components/admin/ProgressDashboard';
 import { IdeasInbox } from '@/components/admin/IdeasInbox';
 import { CSuiteReports } from '@/components/admin/CSuiteReports';
+import { CSuiteAdvisorPanel } from '@/components/admin/CSuiteAdvisorPanel';
 import { OrganizationsManager } from '@/components/admin/OrganizationsManager';
 import { DepartmentsManager } from '@/components/admin/DepartmentsManager';
 import { ExecutiveSubmissions } from '@/components/admin/ExecutiveSubmissions';
@@ -665,9 +666,11 @@ export default function AdminDashboard() {
             <TabsList className="bg-background border">
               <TabsTrigger value="reporting" className="gap-1.5 text-xs"><BarChart3 className="h-3.5 w-3.5" />Reports</TabsTrigger>
               <TabsTrigger value="csuite" className="gap-1.5 text-xs"><PieChartIcon className="h-3.5 w-3.5" />C-Suite</TabsTrigger>
+              <TabsTrigger value="advisor" className="gap-1.5 text-xs"><Brain className="h-3.5 w-3.5" />Andrea</TabsTrigger>
             </TabsList>
             <TabsContent value="reporting"><ProgressDashboard /></TabsContent>
             <TabsContent value="csuite"><CSuiteReports /></TabsContent>
+            <TabsContent value="advisor"><CSuiteAdvisorPanel organizationId={effectiveOrgId} /></TabsContent>
           </Tabs>
         </TabsContent>
 
