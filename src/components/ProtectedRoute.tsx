@@ -42,8 +42,18 @@ export function ProtectedRoute({ children, requireOnboarding = false }: Protecte
     return null;
   }
 
+  // If onboarding is required but profile hasn't loaded yet, show spinner
+  // (guards against the auth race window where loading=false but profile=null)
+  if (requireOnboarding && !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   // Don't render if onboarding is required but not completed
-  if (requireOnboarding && profile && !profile.onboarding_completed) {
+  if (requireOnboarding && !profile.onboarding_completed) {
     return null;
   }
 

@@ -75,19 +75,29 @@ export function useAllUsersWithRoles(organizationId?: string | null) {
       return;
     }
 
-    // Fetch training progress (RLS enforces org-scoping at DB level)
+    // Build list of user IDs from already-fetched org-scoped profiles so the
+    // subsequent queries are explicitly filtered (defense-in-depth beyond RLS).
+    const profileUserIds = (profiles || []).map((p: any) => p.user_id);
+    // Use a dummy ID when the list is empty to avoid fetching ALL rows.
+    const safeIds = profileUserIds.length > 0
+      ? profileUserIds
+      : ['00000000-0000-0000-0000-000000000000'];
+
+    // Fetch training progress filtered to org users
     const { data: progressData, error: progressError } = await supabase
       .from('training_progress')
-      .select('*');
+      .select('*')
+      .in('user_id', safeIds);
 
     if (progressError) {
       console.error('Error fetching progress:', progressError);
     }
 
-    // Fetch roles (RLS enforces org-scoping at DB level)
+    // Fetch roles filtered to org users
     const { data: rolesData, error: rolesError } = await supabase
       .from('user_roles')
-      .select('*');
+      .select('*')
+      .in('user_id', safeIds);
 
     if (rolesError) {
       console.error('Error fetching roles:', rolesError);

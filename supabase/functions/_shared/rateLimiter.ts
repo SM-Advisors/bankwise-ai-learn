@@ -29,7 +29,16 @@ export async function checkRateLimit(
     const oneMinuteAgo = new Date(now.getTime() - 60 * 1000).toISOString();
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
 
-    // Count events in the last minute and last 24 hours in parallel
+    // INSERT first (awaited, not fire-and-forget) so the row is committed before
+    // the COUNT queries run. This closes the check-then-act race window where two
+    // concurrent requests both count 0, both pass, then both insert.
+    await adminClient
+      .from("rate_limit_events")
+      .insert({ user_id: userId, function_name: functionName });
+
+    // Count events in the last minute and last 24 hours in parallel.
+    // The count includes the row we just inserted, so we compare with > (not >=)
+    // to preserve the same "perMinute / perDay requests allowed" semantics.
     const [minuteResult, dayResult] = await Promise.all([
       adminClient
         .from("rate_limit_events")
@@ -48,23 +57,18 @@ export async function checkRateLimit(
     const minuteCount = minuteResult.count ?? 0;
     const dayCount = dayResult.count ?? 0;
 
-    if (minuteCount >= limits.perMinute) {
+    if (minuteCount > limits.perMinute) {
       return { allowed: false, reason: `Rate limit exceeded: ${limits.perMinute} requests per minute. Please wait a moment.` };
     }
-    if (dayCount >= limits.perDay) {
+    if (dayCount > limits.perDay) {
       return { allowed: false, reason: `Daily limit reached: ${limits.perDay} requests per day. Your limit resets tomorrow.` };
     }
 
-    // Record this event (fire-and-forget)
-    adminClient
-      .from("rate_limit_events")
-      .insert({ user_id: userId, function_name: functionName })
-      .then(() => {});
-
     return { allowed: true };
   } catch (err) {
-    // On error, allow the request (fail open — don't block users due to rate limit DB issues)
-    console.error("[rateLimiter] Error checking rate limit:", err);
+    // Fail open to avoid blocking users during DB outages, but log prominently
+    // so the issue is visible in function logs.
+    console.error("[rateLimiter] CRITICAL: DB check failed, rate limit not enforced. Error:", err);
     return { allowed: true };
   }
 }

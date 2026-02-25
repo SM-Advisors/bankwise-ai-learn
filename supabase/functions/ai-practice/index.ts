@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { checkRateLimit } from "../_shared/rateLimiter.ts";
 
 
 interface Message {
@@ -233,6 +235,33 @@ serve(async (req) => {
   const corsHeaders = getCorsHeaders(req.headers.get("origin"));
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // ── Auth identity + rate limiting ─────────────────────────────────────────
+  const authHeader = req.headers.get("Authorization");
+  const token = authHeader?.replace("Bearer ", "");
+  let userId: string | null = null;
+  if (token) {
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+    const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+    userId = user?.id ?? null;
+  }
+  if (userId) {
+    const rateCheck = await checkRateLimit(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      userId,
+      "ai-practice",
+    );
+    if (!rateCheck.allowed) {
+      return new Response(
+        JSON.stringify({ error: rateCheck.reason || "Rate limit exceeded. Please try again later." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
   }
 
   try {

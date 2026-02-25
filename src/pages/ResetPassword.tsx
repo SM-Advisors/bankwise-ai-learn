@@ -26,15 +26,18 @@ export default function ResetPassword() {
 
   // Check if we have a valid recovery session
   useEffect(() => {
-    const checkSession = async () => {
-      // Listen for auth state changes first - this handles the PKCE flow
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
-          setIsValidSession(true);
-          setIsCheckingSession(false);
-        }
-      });
+    // Subscription must be created synchronously so the useEffect cleanup receives it.
+    // Previously checkSession() was async and returned a Promise — React never received
+    // the unsubscribe cleanup, causing a listener leak on unmount/remount.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
+        setIsValidSession(true);
+        setIsCheckingSession(false);
+      }
+    });
 
+    // Async work runs in an IIFE so the outer useEffect remains synchronous
+    (async () => {
       // Check URL for code parameter (PKCE flow - used by Supabase by default)
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get('code');
@@ -47,7 +50,7 @@ export default function ResetPassword() {
           setIsCheckingSession(false);
         }
         // The onAuthStateChange listener will handle setting isValidSession
-        return () => subscription.unsubscribe();
+        return;
       }
 
       // Check URL hash for legacy token flow (fallback)
@@ -65,7 +68,7 @@ export default function ResetPassword() {
           setIsValidSession(true);
         }
         setIsCheckingSession(false);
-        return () => subscription.unsubscribe();
+        return;
       }
 
       // Check for existing session
@@ -75,10 +78,9 @@ export default function ResetPassword() {
       }
 
       setIsCheckingSession(false);
-      return () => subscription.unsubscribe();
-    };
+    })();
 
-    checkSession();
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleResetPassword = async (e: React.FormEvent) => {

@@ -202,14 +202,20 @@ export function useReporting(organizationId: string | null = null) {
       });
       setUserProgress(combined);
 
-      const { data: events } = await (supabase
+      // Filter at the DB level when org-scoped to avoid fetching all rows.
+      // Use a dummy ID when the set is empty so we don't inadvertently return all rows.
+      let eventsQuery = supabase
         .from('prompt_events' as any)
-        .select('event_type, session_id, exception_flag, exception_type, user_id') as any);
+        .select('event_type, session_id, exception_flag, exception_type, user_id');
 
-      // Filter events to only users in the org if organizationId is set
-      const filteredEvents = organizationId
-        ? (events || []).filter((e: any) => profileUserIds.has(e.user_id))
-        : (events || []);
+      if (organizationId && profileUserIds.size > 0) {
+        eventsQuery = (eventsQuery as any).in('user_id', Array.from(profileUserIds));
+      } else if (organizationId && profileUserIds.size === 0) {
+        eventsQuery = (eventsQuery as any).in('user_id', ['00000000-0000-0000-0000-000000000000']);
+      }
+
+      const { data: events } = await (eventsQuery as any);
+      const filteredEvents = events || [];
 
       if (filteredEvents.length > 0) {
         const total_prompts = filteredEvents.filter((e: any) => e.event_type === 'prompt_submitted').length;
@@ -282,22 +288,42 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
         enrolledProfilesQuery = enrolledProfilesQuery.eq('organization_id', organizationId);
       }
 
-      // Fetch all base data in parallel
+      // Fetch profiles first so we have user ID sets for server-side filtering below
       const [
         { data: allProfiles },
         { data: enrolledProfiles },
+      ] = await Promise.all([
+        (allProfilesQuery as any),
+        (enrolledProfilesQuery as any),
+      ]);
+
+      const profiles: any[] = enrolledProfiles || [];
+      const allOrgUserIds = new Set((allProfiles || []).map((p: any) => p.user_id));
+
+      // Build server-side prompt_events query — filter at DB level when org-scoped
+      // to avoid fetching all rows and relying solely on client-side JS filtering.
+      const allOrgUserIdList = Array.from(allOrgUserIds);
+      const safeOrgIds = allOrgUserIdList.length > 0
+        ? allOrgUserIdList
+        : ['00000000-0000-0000-0000-000000000000'];
+
+      let promptEventsQuery = supabase
+        .from('prompt_events' as any)
+        .select('user_id, session_id, event_type, exception_flag, exception_type, created_at');
+      if (organizationId) {
+        promptEventsQuery = (promptEventsQuery as any).in('user_id', safeOrgIds);
+      }
+
+      // Fetch remaining data in parallel now that we have the org filter
+      const [
         { data: progressData },
         { data: promptEvents },
         { data: ideasData },
       ] = await Promise.all([
-        (allProfilesQuery as any),
-        (enrolledProfilesQuery as any),
         (supabase
           .from('training_progress' as any)
           .select('user_id, session_1_completed, session_2_completed, session_3_completed') as any),
-        (supabase
-          .from('prompt_events' as any)
-          .select('user_id, session_id, event_type, exception_flag, exception_type, created_at') as any),
+        (promptEventsQuery as any),
         (supabase
           .from('user_ideas' as any)
           .select('*')
@@ -305,7 +331,6 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
           .order('votes', { ascending: false }) as any),
       ]);
 
-      const profiles: any[] = enrolledProfiles || [];
       const progress: any[] = progressData || [];
       // Deduplicate ideas by ID to prevent duplicates from join multiplicity
       const ideasRaw: IdeaItem[] = (ideasData || []) as IdeaItem[];
@@ -316,13 +341,11 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
         return true;
       });
 
-      // Build a set of user IDs in this org to filter prompt_events
+      // Build a set of enrolled user IDs for local lookups (department breakdown, etc.)
       const orgUserIds = new Set(profiles.map((p: any) => p.user_id));
-      const allOrgUserIds = new Set((allProfiles || []).map((p: any) => p.user_id));
 
-      const events: any[] = organizationId
-        ? (promptEvents || []).filter((e: any) => allOrgUserIds.has(e.user_id))
-        : (promptEvents || []);
+      // Events are already org-filtered by the DB query above
+      const events: any[] = promptEvents || [];
 
       // ── Section A: Progress & Skill ────────────────────────────────────
       const totalAllUsers = (allProfiles || []).length;

@@ -192,8 +192,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const progressData = await fetchProgress(session.user.id);
             setProgress(progressData);
 
-            // Update last_login_at on every sign-in event (including session restore)
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+            // Update last_login_at only on explicit sign-in (not token refreshes or page reloads)
+            if (event === 'SIGNED_IN') {
               await supabase
                 .from('user_profiles')
                 .update({ last_login_at: new Date().toISOString() })
@@ -210,16 +210,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // THEN check for existing session
+    // THEN check for existing session — only handle the no-session case here.
+    // When a session exists, onAuthStateChange fires INITIAL_SESSION and manages
+    // all state (user, session, profile, progress, loading). Running both paths
+    // independently causes a double-fetch race where profile/progress are fetched
+    // twice and loading=false fires before profile resolves.
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchProfile(session.user.id).then(setProfile);
-        fetchProgress(session.user.id).then(setProgress);
-      }
-      setLoading(false);
+      if (!session) setLoading(false);
     });
 
     return () => subscription.unsubscribe();
