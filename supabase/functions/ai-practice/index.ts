@@ -198,35 +198,6 @@ async function callModel(
     return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
   }
 
-  // ── xAI (grok-*) — OpenAI-compatible ─────────────────────────────────────
-  if (model.startsWith("grok-")) {
-    const XAI_API_KEY = Deno.env.get("XAI_API_KEY");
-    if (!XAI_API_KEY) throw new Error("XAI_API_KEY is not configured");
-
-    const res = await fetch("https://api.x.ai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${XAI_API_KEY}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: maxTokens,
-        messages: [{ role: "system", content: systemPrompt }, ...messages],
-      }),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("xAI API error:", res.status, errText);
-      if (res.status === 429) throw new Error("rate_limit");
-      throw new Error(`xAI API error: ${res.status}`);
-    }
-
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content ?? "";
-  }
-
   throw new Error(`Unknown model: ${model}`);
 }
 
