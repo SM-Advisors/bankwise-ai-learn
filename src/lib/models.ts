@@ -9,8 +9,8 @@ export const AVAILABLE_MODELS: ModelDefinition[] = [
   { id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6', provider: 'anthropic', description: 'Fast, intelligent — recommended' },
   { id: 'claude-opus-4-6',   label: 'Claude Opus 4.6',   provider: 'anthropic', description: 'Most capable Claude model' },
   { id: 'gpt-5.2',           label: 'GPT-5.2',           provider: 'openai',    description: 'OpenAI flagship model' },
-  { id: 'gemini-3-flash',    label: 'Gemini 3 Flash',    provider: 'google',    description: 'Google — fast & efficient' },
-  { id: 'grok-4.1',          label: 'Grok 4.1',          provider: 'xai',       description: 'xAI — real-time reasoning' },
+  { id: 'gemini-2.5-flash',   label: 'Gemini 2.5 Flash',   provider: 'google',    description: 'Google — fast & efficient' },
+  { id: 'grok-3',             label: 'Grok 3',             provider: 'xai',       description: 'xAI — real-time reasoning' },
 ];
 
 export const DEFAULT_MODEL = 'claude-sonnet-4-6';
