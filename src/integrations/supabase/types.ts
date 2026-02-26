@@ -735,6 +735,53 @@ export type Database = {
         }
         Relationships: []
       }
+      org_resources: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          organization_id: string
+          resource_type: string
+          title: string
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          organization_id: string
+          resource_type?: string
+          title: string
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string
+          resource_type?: string
+          title?: string
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_resources_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           allowed_models: Json | null
@@ -743,6 +790,7 @@ export type Database = {
           id: string
           industry: string | null
           name: string
+          org_type: string | null
           slug: string
         }
         Insert: {
@@ -752,6 +800,7 @@ export type Database = {
           id?: string
           industry?: string | null
           name: string
+          org_type?: string | null
           slug: string
         }
         Update: {
@@ -761,6 +810,7 @@ export type Database = {
           id?: string
           industry?: string | null
           name?: string
+          org_type?: string | null
           slug?: string
         }
         Relationships: []
@@ -963,6 +1013,39 @@ export type Database = {
           message_preview?: string | null
           module_id?: string | null
           rating?: number
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      retrieval_responses: {
+        Row: {
+          id: string
+          module_id: string
+          quality: number
+          question_id: string
+          response: string | null
+          seen_at: string
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          module_id: string
+          quality: number
+          question_id: string
+          response?: string | null
+          seen_at?: string
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          module_id?: string
+          quality?: number
+          question_id?: string
+          response?: string | null
+          seen_at?: string
           session_id?: string | null
           user_id?: string
         }
@@ -1275,6 +1358,7 @@ export type Database = {
             | Database["public"]["Enums"]["learning_style_type"]
             | null
           tour_completed: boolean | null
+          tours_completed: Json | null
           updated_at: string | null
           user_id: string
         }
@@ -1307,6 +1391,7 @@ export type Database = {
             | Database["public"]["Enums"]["learning_style_type"]
             | null
           tour_completed?: boolean | null
+          tours_completed?: Json | null
           updated_at?: string | null
           user_id: string
         }
@@ -1339,6 +1424,7 @@ export type Database = {
             | Database["public"]["Enums"]["learning_style_type"]
             | null
           tour_completed?: boolean | null
+          tours_completed?: Json | null
           updated_at?: string | null
           user_id?: string
         }

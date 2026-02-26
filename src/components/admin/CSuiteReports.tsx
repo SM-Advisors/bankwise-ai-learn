@@ -132,7 +132,7 @@ export function CSuiteReports() {
       lines.push('"Top Ideas (by votes)"');
       lines.push('"Title","Votes","Status","ROI"');
       (kpis.topIdeas as IdeaItem[]).forEach((idea) => {
-        lines.push(`"${idea.title ?? ''}","${idea.votes ?? 0}","${(idea.status ?? '').replace(/_/g, ' ')}","${idea.roi_level ?? ''}"`);
+        lines.push(`"${idea.title ?? ''}","${idea.votes ?? 0}","${(idea.status ?? '').replace(/_/g, ' ')}","${idea.roi_impact ?? ''}"`);
       });
     }
 
