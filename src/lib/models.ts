@@ -8,8 +8,8 @@ export interface ModelDefinition {
 export const AVAILABLE_MODELS: ModelDefinition[] = [
   { id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6', provider: 'anthropic', description: 'Fast, intelligent — recommended' },
   { id: 'claude-opus-4-6',   label: 'Claude Opus 4.6',   provider: 'anthropic', description: 'Most capable Claude model' },
-  { id: 'gpt-5.2',           label: 'GPT-5.2',           provider: 'openai',    description: 'OpenAI flagship model' },
-  { id: 'gemini-3-flash-preview', label: 'Gemini 3 Flash', provider: 'google', description: 'Google — fast & efficient' },
+  { id: 'gpt-4o',            label: 'GPT-4o',            provider: 'openai',    description: 'OpenAI flagship model' },
+  { id: 'gemini-2.0-flash',  label: 'Gemini 2.0 Flash',  provider: 'google',    description: 'Google — fast & efficient' },
 ];
 
 export const DEFAULT_MODEL = 'claude-sonnet-4-6';
