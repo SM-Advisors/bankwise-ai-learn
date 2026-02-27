@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Building2, Lightbulb, AlertCircle, Bot, GitBranch, Clock, ChevronDown, ChevronRight, Download } from 'lucide-react';
+import { useIdeaPreview } from '@/hooks/useIdeaPreview';
+import { IdeaPreviewDialog } from '@/components/IdeaPreviewDialog';
+import { Loader2, Building2, Lightbulb, AlertCircle, Bot, GitBranch, Clock, ChevronDown, ChevronRight, Download, Play, Eye } from 'lucide-react';
 
 type SubmissionStatus = 'submitted' | 'reviewed' | 'acknowledged' | 'in_progress' | 'archived';
 type SubmissionType = 'idea' | 'friction_point' | 'shared_agent' | 'shared_workflow';
@@ -20,6 +22,8 @@ interface ExecutiveSubmission {
   status: SubmissionStatus;
   reviewer_notes: string | null;
   reviewed_at: string | null;
+  preview_status: string;
+  preview_html: string | null;
   created_at: string;
 }
 
@@ -55,12 +59,15 @@ interface ExecutiveSubmissionsProps {
 
 export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsProps) {
   const { toast } = useToast();
+  const { generatingId, generatePreview, getPreviewStatus, getPreviewHtml } = useIdeaPreview();
   const [submissions, setSubmissions] = useState<ExecutiveSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<SubmissionStatus | 'all'>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [noteValues, setNoteValues] = useState<Record<string, string>>({});
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewSub, setPreviewSub] = useState<{ id: string; title: string } | null>(null);
 
   const fetchSubmissions = async () => {
     setLoading(true);
@@ -118,6 +125,23 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
   };
 
   const displayed = statusFilter === 'all' ? submissions : submissions.filter(s => s.status === statusFilter);
+
+  const handleBuildPreview = async (sub: ExecutiveSubmission) => {
+    setPreviewSub({ id: sub.id, title: sub.title });
+    setPreviewOpen(true);
+    toast({ title: 'Building preview...', description: 'Claude is generating an interactive prototype. This takes 30-60 seconds.' });
+    const result = await generatePreview(sub.id, sub.title, sub.body, 'executive_submissions');
+    if (result.success) {
+      toast({ title: 'Preview ready!' });
+    } else {
+      toast({ title: 'Preview generation failed', description: result.error, variant: 'destructive' });
+    }
+  };
+
+  const handleViewPreview = (sub: ExecutiveSubmission) => {
+    setPreviewSub({ id: sub.id, title: sub.title });
+    setPreviewOpen(true);
+  };
 
   const handleExportCSV = () => {
     const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
@@ -227,6 +251,56 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
                   <div className="border-t px-4 py-4 space-y-4">
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">{sub.body}</p>
 
+                    {/* Preview button */}
+                    {(() => {
+                      const pvStatus = getPreviewStatus(sub.id, sub.preview_status);
+                      if (pvStatus === 'generating' || generatingId === sub.id) {
+                        return (
+                          <Button variant="outline" size="sm" className="gap-2 text-xs" disabled>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            Building preview...
+                          </Button>
+                        );
+                      }
+                      if (pvStatus === 'generated') {
+                        return (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 text-xs border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950/30"
+                            onClick={() => handleViewPreview(sub)}
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            View Preview
+                          </Button>
+                        );
+                      }
+                      if (pvStatus === 'failed') {
+                        return (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 text-xs border-red-200 text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/30"
+                            onClick={() => handleBuildPreview(sub)}
+                          >
+                            <Play className="h-3.5 w-3.5" />
+                            Retry Preview
+                          </Button>
+                        );
+                      }
+                      return (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 text-xs"
+                          onClick={() => handleBuildPreview(sub)}
+                        >
+                          <Play className="h-3.5 w-3.5" />
+                          Build Preview
+                        </Button>
+                      );
+                    })()}
+
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                         Reviewer Notes
@@ -268,6 +342,20 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
             );
           })}
         </div>
+      )}
+
+      {/* Preview dialog */}
+      {previewSub && (
+        <IdeaPreviewDialog
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+          title={previewSub.title}
+          html={getPreviewHtml(
+            previewSub.id,
+            submissions.find(s => s.id === previewSub.id)?.preview_html,
+          )}
+          isGenerating={generatingId === previewSub.id}
+        />
       )}
     </div>
   );
