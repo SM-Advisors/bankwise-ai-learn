@@ -1,68 +1,77 @@
 # Session Handoff
 
 **Date:** 2026-02-28
-**Branch:** `claude/workflow-idea-code-preview-8Hic5` (feature branch off main)
-**Status:** Ready for Next Phase — Merge to Main
+**Branch:** `claude/workflow-idea-code-preview-8Hic5`
+**Status:** In Progress — Needs Deploy + Validation
 
 ## Goal
-Add a "Build Preview" feature to the BankWise AI Learn platform so users can generate interactive HTML prototypes of their workflow ideas using Claude Sonnet 4.6, viewable in a sandboxed iframe dialog.
+Improve the "Build Preview" feature so that (1) generated previews persist across dialog close/reopen without regenerating, and (2) the generated HTML prototypes are truly interactive with multi-step workflows and working buttons — not static mockups.
 
 ## What Was Done
-- Created Supabase edge function `generate-idea-preview` that calls the Anthropic API (Claude Sonnet 4.6) to generate self-contained HTML prototypes from idea descriptions
-- Added DB migration (`20260227000000_idea_code_preview.sql`) adding `preview_html`, `preview_status`, and `preview_generated_at` columns to both `user_ideas` and `executive_submissions` tables
-- Built `useIdeaPreview` hook to manage preview generation state and API calls
-- Built `IdeaPreviewDialog` component with sandboxed iframe rendering and a "View Source" toggle
-- Updated `Ideas.tsx` with "Build Preview" / "View Preview" button on each idea card
-- Updated `ExecutiveSubmissions.tsx` with same preview functionality for C-Suite view
-- All changes committed (`73df545`) and pushed to the feature branch
+
+### This Session
+- **Fixed preview persistence:** Added `await refetch()` in `Ideas.tsx` and `await fetchSubmissions()` in `ExecutiveSubmissions.tsx` after successful preview generation, so the DB-saved HTML loads on subsequent opens without regeneration
+- **Overhauled system prompt:** Completely rewrote the AI prompt in the edge function to demand multi-screen, fully functional prototypes with working navigation, form submissions, state management, and complete workflow flows
+- **Increased max_tokens:** Bumped from 16,000 to 32,000 to give Claude room for richer multi-screen prototypes
+- **Enhanced user message:** Updated the prompt sent to Claude to emphasize interactivity and multi-screen navigation
+- **All changes committed and pushed** (`626bd6a`)
+
+### Previous Session (still on this branch)
+- Created Supabase edge function `generate-idea-preview` calling Anthropic API (Claude Sonnet 4.6) for HTML prototype generation
+- Added DB migration (`20260227000000_idea_code_preview.sql`) for `preview_html`, `preview_status`, `preview_generated_at` columns on both `user_ideas` and `executive_submissions`
+- Built `useIdeaPreview` hook, `IdeaPreviewDialog` component, and wired up Ideas + ExecutiveSubmissions pages
 
 ## Key Decisions
-- **Claude Sonnet 4.6** chosen as the model for generating previews (via Anthropic API directly, not OpenAI-compatible endpoint)
-- **Self-contained HTML** approach — each preview is a single HTML string with inline CSS/JS, stored directly in the database (`preview_html` column)
-- **Sandboxed iframe** for rendering — prevents generated code from accessing the parent app
-- **Edge function architecture** — generation runs server-side in a Supabase edge function, not client-side
+- **Kept HTML as the format** — user questioned whether HTML was the right approach. Conclusion: HTML + vanilla JS is fine for sandboxed iframes; the real issue was prompt quality, not the format. Prompt was dramatically improved to produce app-like prototypes with multi-screen navigation, state management, working forms, etc.
+- **Used brand colors in prompt** — navy (#202735) primary, orange (#dd4124) accent to match BankWise/SM Advisors brand
+- **Refetch approach over realtime subscriptions** — simple `await refetch()` after generation rather than Supabase realtime listeners, keeping complexity low
+- **Claude Sonnet 4.6** for generation, **32k max_tokens** for rich output
 
 ## Current State
-The feature is **fully implemented and committed** on the feature branch. Working tree is clean.
+All changes committed and pushed to feature branch. The feature should now:
+1. Generate interactive multi-screen prototypes (not static mockups)
+2. Persist previews in DB so closing/reopening the dialog loads from cache
+3. Work on both the Ideas page and the Executive Submissions admin panel
 
-**Not yet merged to `main`.** This is critical because:
-- **Lovable only syncs from the `main` branch** on GitHub
-- Until merged, Lovable cannot see or deploy the edge function to Supabase
-- The frontend "Build Preview" button will error because the edge function won't exist in the deployed environment
+**Not yet merged to `main`** — Lovable only syncs from `main`, so the edge function isn't deployed yet.
 
-## Uncommitted Changes
+### Uncommitted Changes
 None — all changes committed and pushed.
 
 ## Open Issues
-- **Must merge to `main`** before the feature works in the Lovable-deployed environment
-- The Supabase edge function needs the `ANTHROPIC_API_KEY` secret set in Supabase dashboard (Edge Function Secrets) — may already be set from previous work
-- The DB migration needs to be applied — Lovable should handle this automatically after merge, but verify the columns exist on both tables
-- Previous open issue: `line_of_business` enum still needs conversion to TEXT (SQL provided in previous handoff, not yet run)
+- **Must merge to `main`** for Lovable to pick up and deploy the edge function
+- **User skepticism about HTML:** User said "I think html may not be the right idea for this." We kept HTML but dramatically improved the prompt. If results still feel static after deployment, may need to explore alternatives (e.g., multi-file sandboxes, React-based rendering)
+- **Edge function deployment:** After merge, verify `ANTHROPIC_API_KEY` secret is set in Supabase dashboard
+- **DB migration:** Verify `preview_html`, `preview_status`, `preview_generated_at` columns exist on both tables after merge
+- **Loading flash on refetch:** `fetchIdeas` sets `loading: true` which could briefly flash the spinner behind the dialog. Low impact since dialog is modal overlay.
 
 ## Next Steps
-1. **Merge this branch to `main`** — create a PR or merge directly so Lovable picks up the changes
-2. **Set/verify the `ANTHROPIC_API_KEY` secret** in Supabase dashboard under Edge Function Secrets (may already be configured)
-3. **Verify the migration ran** — check that `preview_html`, `preview_status`, and `preview_generated_at` columns exist on both `user_ideas` and `executive_submissions`
-4. **Test end-to-end** — click "Build Preview" on an idea and confirm the prototype generates and displays correctly
-5. **Resume Curriculum v2.0 work** — the phased implementation plan from the previous handoff is still pending (Phase 1: Session 1 restructuring, Module 1-5, 3-level rubrics)
+1. **Merge branch to `main`** so Lovable deploys the edge function and migration
+2. **Test a real preview generation** end-to-end — click "Build Preview" and verify the prototype is interactive with working navigation
+3. **Evaluate prototype quality** — if still too static, further tune the prompt or explore a different rendering approach
+4. **Consider "Regenerate" button** alongside "View Preview" so users can refresh stale previews
+5. **Resume Curriculum v2.0 work** — phased implementation plan still pending
 
 ## Key Files
-- `supabase/functions/generate-idea-preview/index.ts` — edge function calling Claude to generate HTML prototypes
+- `supabase/functions/generate-idea-preview/index.ts` — Edge function with system prompt, user message, Anthropic API call (max_tokens: 32000)
+- `src/pages/Ideas.tsx` — Ideas page with refetch persistence fix (line 124)
+- `src/components/admin/ExecutiveSubmissions.tsx` — Executive view with fetchSubmissions persistence fix (line 136)
+- `src/hooks/useIdeaPreview.ts` — Hook managing preview generation state, local HTML cache, and status overrides
+- `src/hooks/useUserIdeas.ts` — Hook for fetching/managing user ideas from DB (exports `refetch`)
+- `src/components/IdeaPreviewDialog.tsx` — Dialog rendering iframe with `sandbox="allow-scripts"`
 - `supabase/migrations/20260227000000_idea_code_preview.sql` — DB migration for preview columns
-- `src/components/IdeaPreviewDialog.tsx` — full-screen dialog with iframe preview + source view
-- `src/hooks/useIdeaPreview.ts` — hook managing preview generation state
-- `src/hooks/useUserIdeas.ts` — updated to include new preview columns in queries
-- `src/pages/Ideas.tsx` — user-facing ideas page with Build/View Preview buttons
-- `src/components/admin/ExecutiveSubmissions.tsx` — C-Suite view with same preview functionality
 
 ## Context for Next Session
 - **Product name**: SMILE (Smart, Modular, Intelligent Learning Experience for AI). Domain: `smile.smaiadvisors.com`
-- **Lovable is the deployment pipeline**: It watches `main` on GitHub and auto-deploys. Code on feature branches is invisible to it until merged.
+- **Lovable is the deployment pipeline**: Watches `main` on GitHub and auto-deploys. Feature branches are invisible until merged.
+- **`useIdeaPreview` dual-layer cache**: Local state (`previewHtmlMap`) for just-generated previews + DB fallback (`preview_html` column) for persisted ones. `getPreviewHtml` checks local first, then DB.
+- **Iframe security**: `sandbox="allow-scripts"` allows JS execution but blocks form submission to external URLs, navigation, and popups.
+- **Rate limiting**: 3 per minute, 30 per day per user for preview generation.
+- **`as any` casts**: Necessary because Lovable's auto-generated types don't include manually-created tables.
+- **Migration idempotency**: All migrations must use `IF NOT EXISTS` — Lovable may re-run.
 - **Git workflow**: Remote often gets ahead (Lovable pushes). Use `git stash && git pull --rebase origin main && git stash pop && git push` when push is rejected.
 - **Supabase project ID**: `quimkenoecicooiwaojp`
 - **Edge function secrets**: ANTHROPIC_API_KEY, OPENAI_API_KEY, ALLOWED_ORIGIN all set on Supabase project.
-- **`as any` casts**: Necessary because Lovable's auto-generated types don't include manually-created tables.
-- **Migration idempotency**: All migrations must use `IF NOT EXISTS` — Lovable may re-run.
-- **User preference**: Cory prefers fast MVP iteration, no third-party SSO, admin UI for operations. Sends screenshots of reference UIs and expects the app to mirror them.
+- **User preference**: Cory prefers fast MVP iteration, no third-party SSO, admin UI for operations. Sends screenshots of reference UIs. User expressed concern that HTML previews feel like static mockups — interactivity is the top priority.
 - **Brand**: SM Advisors, navy (#202735) + orange (#dd4124), Inter/Playfair Display fonts.
-- **Curriculum v2.0 is still pending** — deliverable documents define a 4-phase implementation plan. Previous handoff had full details on module renumbering, new tables, and code changes needed. Refer to deliverable1.md and deliverable2.md for specs.
+- **Curriculum v2.0 still pending** — refer to deliverable1.md and deliverable2.md for specs.
