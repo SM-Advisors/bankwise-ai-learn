@@ -1,0 +1,1 @@
+UPDATE user_ideas SET preview_status = 'none' WHERE preview_status = 'generating' AND (preview_generated_at IS NULL OR preview_generated_at < now() - interval '5 minutes')
