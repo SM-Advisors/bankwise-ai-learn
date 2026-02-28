@@ -10,34 +10,16 @@ interface GeneratePreviewRequest {
   table?: "user_ideas" | "executive_submissions"; // defaults to user_ideas
 }
 
-const SYSTEM_PROMPT = `You are an expert UI/UX prototyper. Your job is to create a self-contained HTML prototype that demonstrates a software idea as a working, interactive UI.
+const SYSTEM_PROMPT = `You are an expert UI/UX prototyper. Create a self-contained HTML prototype.
 
-REQUIREMENTS:
-1. Output a SINGLE, complete HTML file starting with <!DOCTYPE html>
-2. ALL CSS must be inline in a <style> tag in the <head>
-3. ALL JavaScript must be inline in a <script> tag before </body>
-4. Do NOT use any external CDN links, imports, or dependencies — the file must work completely offline
-5. Do NOT use any frameworks (React, Vue, etc.) — use vanilla HTML, CSS, and JavaScript only
-6. The prototype must be INTERACTIVE — buttons should work, forms should respond, data should display
-7. Use modern CSS (flexbox, grid, variables, transitions) for a polished look
-8. Use a clean, professional color scheme appropriate for a business/banking application
-9. Include realistic placeholder data (names, dates, dollar amounts) that makes the prototype feel real
-10. The UI should be responsive and look good at any width from 400px to 1200px
-11. Include subtle animations/transitions for a polished feel (hover effects, smooth transitions)
-12. Add a header/title bar that names the application
-13. If the idea involves data, show a populated table or card grid with sample data
-14. If the idea involves a process/workflow, show the steps with interactive state changes
-15. If the idea involves a form, make the form functional with validation feedback
-
-DESIGN PRINCIPLES:
-- Clean, modern SaaS aesthetic with rounded corners and soft shadows
-- Use a cohesive color palette (a professional blue primary + neutral grays)
-- Generous whitespace and clear typography hierarchy using system fonts
-- Include status indicators, badges, and icons using Unicode/emoji where helpful
-- Make it feel like a real product, not a wireframe
-
-OUTPUT FORMAT:
-Return ONLY the HTML file. No explanations, no markdown code fences, no commentary before or after. Start with <!DOCTYPE html> and end with </html>.`;
+RULES:
+1. Output ONLY a complete HTML file starting with <!DOCTYPE html>, ending with </html>
+2. ALL CSS inline in <style>, ALL JS inline in <script>. NO external CDN links
+3. Use vanilla HTML/CSS/JS only. Make it INTERACTIVE with working buttons/forms
+4. Use modern CSS (flexbox, grid, variables). Clean professional look with blue primary color
+5. Include realistic placeholder data. Responsive from 400px-1200px
+6. Keep it concise but functional — focus on the core idea
+7. No markdown fences, no explanations — just the HTML`;
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req.headers.get("origin"));
@@ -97,36 +79,37 @@ serve(async (req) => {
       .update({ preview_status: "generating" })
       .eq("id", ideaId);
 
-    // ── Call Anthropic API ──────────────────────────────────────────────────
-    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!ANTHROPIC_API_KEY) {
+    // ── Call Lovable AI Gateway ────────────────────────────────────────────
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
       await supabaseAdmin
         .from(targetTable)
         .update({ preview_status: "failed" })
         .eq("id", ideaId);
-      throw new Error("ANTHROPIC_API_KEY is not configured");
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const userMessage = `Title: ${title}\n\nDescription: ${description || "No additional description provided."}\n\nGenerate a complete, self-contained HTML file that demonstrates this idea as a working interactive prototype.`;
+    const userMessage = `Title: ${title}\n\nDescription: ${description || "No additional description provided."}\n\nGenerate a concise, self-contained HTML file prototype. Keep it under 200 lines of HTML. Focus on the core UI concept.`;
 
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 16000,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: "user", content: userMessage }],
+        model: "google/gemini-2.5-flash-lite",
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userMessage },
+        ],
+        max_tokens: 4000,
       }),
     });
 
     if (!res.ok) {
       const errText = await res.text();
-      console.error("Anthropic API error:", res.status, errText);
+      console.error("AI Gateway error:", res.status, errText);
       await supabaseAdmin
         .from(targetTable)
         .update({ preview_status: "failed" })
@@ -138,11 +121,11 @@ serve(async (req) => {
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
-      throw new Error(`Anthropic API error: ${res.status}`);
+      throw new Error(`AI Gateway error: ${res.status}`);
     }
 
     const data = await res.json();
-    const rawReply = data.content?.[0]?.text ?? "";
+    const rawReply = data.choices?.[0]?.message?.content ?? "";
 
     // ── Extract HTML ────────────────────────────────────────────────────────
     // Claude may wrap in ```html ... ``` or return it directly
