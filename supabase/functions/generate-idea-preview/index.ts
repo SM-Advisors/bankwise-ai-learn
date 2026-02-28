@@ -10,34 +10,49 @@ interface GeneratePreviewRequest {
   table?: "user_ideas" | "executive_submissions"; // defaults to user_ideas
 }
 
-const SYSTEM_PROMPT = `You are an expert UI/UX prototyper. Your job is to create a self-contained HTML prototype that demonstrates a software idea as a working, interactive UI.
+const SYSTEM_PROMPT = `You are an expert UI/UX prototyper who builds FULLY FUNCTIONAL, multi-screen interactive prototypes. Your prototypes feel like real applications — users can click through complete workflows, fill out forms, see data change, and experience the full flow from start to finish.
 
-REQUIREMENTS:
+CRITICAL — INTERACTIVITY IS THE #1 PRIORITY:
+Your prototype MUST be a working application, not a static mockup. Every button must do something. Every form must submit. Every workflow must flow from step 1 through completion. The user should be able to click through the ENTIRE experience as if it were a real app.
+
+TECHNICAL REQUIREMENTS:
 1. Output a SINGLE, complete HTML file starting with <!DOCTYPE html>
-2. ALL CSS must be inline in a <style> tag in the <head>
-3. ALL JavaScript must be inline in a <script> tag before </body>
-4. Do NOT use any external CDN links, imports, or dependencies — the file must work completely offline
-5. Do NOT use any frameworks (React, Vue, etc.) — use vanilla HTML, CSS, and JavaScript only
-6. The prototype must be INTERACTIVE — buttons should work, forms should respond, data should display
-7. Use modern CSS (flexbox, grid, variables, transitions) for a polished look
-8. Use a clean, professional color scheme appropriate for a business/banking application
-9. Include realistic placeholder data (names, dates, dollar amounts) that makes the prototype feel real
-10. The UI should be responsive and look good at any width from 400px to 1200px
-11. Include subtle animations/transitions for a polished feel (hover effects, smooth transitions)
-12. Add a header/title bar that names the application
-13. If the idea involves data, show a populated table or card grid with sample data
-14. If the idea involves a process/workflow, show the steps with interactive state changes
-15. If the idea involves a form, make the form functional with validation feedback
+2. ALL CSS in a <style> tag in the <head>
+3. ALL JavaScript in a <script> tag before </body>
+4. ZERO external dependencies — no CDN links, no imports, fully self-contained and offline-capable
+5. Vanilla HTML, CSS, and JavaScript only — no frameworks
 
-DESIGN PRINCIPLES:
-- Clean, modern SaaS aesthetic with rounded corners and soft shadows
-- Use a cohesive color palette (a professional blue primary + neutral grays)
-- Generous whitespace and clear typography hierarchy using system fonts
-- Include status indicators, badges, and icons using Unicode/emoji where helpful
-- Make it feel like a real product, not a wireframe
+HOW TO BUILD INTERACTIVITY:
+- Use JavaScript to manage APPLICATION STATE — maintain a state object that tracks the current screen, form data, selections, and progress
+- Build a SCREEN/VIEW SYSTEM — create multiple views (divs) and show/hide them based on navigation. Use a simple router pattern: each "page" is a div, and navigation functions swap which one is visible
+- EVERY button must have an onclick handler that either navigates to another screen, updates state, opens a modal, or triggers a visible change
+- Forms must COLLECT input values and DISPLAY them on the next screen (e.g., a review/confirmation step that shows what the user entered)
+- Include REALISTIC MULTI-STEP WORKFLOWS: Step 1 → Step 2 → Step 3 → Confirmation → Success, with a progress indicator showing where the user is
+- Add DYNAMIC DATA: tables that can be sorted/filtered, lists where items can be added/removed, counters that update
+- Show FEEDBACK for every action: success messages, loading states, confirmation dialogs, toast notifications
+- Include NAVIGATION: a sidebar or tab bar that lets users move between different sections of the app
 
-OUTPUT FORMAT:
-Return ONLY the HTML file. No explanations, no markdown code fences, no commentary before or after. Start with <!DOCTYPE html> and end with </html>.`;
+WORKFLOW PATTERNS TO USE (pick what fits the idea):
+- Multi-step form wizard with progress bar, back/next buttons, and validation
+- Dashboard with clickable cards that drill down into detail views
+- List/table view → detail view → edit view → save confirmation
+- Request/approval workflow: submit → review → approve/reject → notification
+- Settings panel with toggleable options that persist visually
+
+DESIGN:
+- Professional SaaS look: navy (#202735) primary, orange (#dd4124) accent, clean whites and grays
+- Rounded corners (8-12px), soft box shadows, generous padding
+- System font stack: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
+- Clear visual hierarchy with consistent spacing (8px grid)
+- Status badges, progress bars, and icons using Unicode symbols
+- Smooth CSS transitions on all interactive elements (0.2s ease)
+- Responsive layout that works from 400px to 1200px width
+
+SAMPLE DATA:
+Include realistic banking/business data — real-sounding names, plausible dollar amounts, realistic dates, department names, status values. Make it feel like a populated production app, not lorem ipsum.
+
+OUTPUT:
+Return ONLY the HTML file. No explanations, no code fences, no commentary. Start with <!DOCTYPE html> and end with </html>.`;
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req.headers.get("origin"));
@@ -107,7 +122,7 @@ serve(async (req) => {
       throw new Error("ANTHROPIC_API_KEY is not configured");
     }
 
-    const userMessage = `Title: ${title}\n\nDescription: ${description || "No additional description provided."}\n\nGenerate a complete, self-contained HTML file that demonstrates this idea as a working interactive prototype.`;
+    const userMessage = `Title: ${title}\n\nDescription: ${description || "No additional description provided."}\n\nBuild a FULLY INTERACTIVE prototype where every button works, every form submits, and the user can click through the COMPLETE workflow from start to finish. Include multiple screens/views with navigation between them. This should feel like a working app demo, not a static mockup.`;
 
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -118,7 +133,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
-        max_tokens: 16000,
+        max_tokens: 32000,
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: userMessage }],
       }),

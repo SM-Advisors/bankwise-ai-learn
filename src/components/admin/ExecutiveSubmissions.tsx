@@ -133,6 +133,7 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
     const result = await generatePreview(sub.id, sub.title, sub.body, 'executive_submissions');
     if (result.success) {
       toast({ title: 'Preview ready!' });
+      await fetchSubmissions(); // Persist to local state so closing/reopening works
     } else {
       toast({ title: 'Preview generation failed', description: result.error, variant: 'destructive' });
     }

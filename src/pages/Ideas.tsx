@@ -41,7 +41,7 @@ const STATUS_CONFIG: Record<IdeaStatus, { label: string; icon: React.ElementType
 export default function Ideas() {
   const navigate = useNavigate();
   const { profile, loading: authLoading } = useAuth();
-  const { ideas, loading, createIdea, updateIdea, deleteIdea } = useUserIdeas();
+  const { ideas, loading, createIdea, updateIdea, deleteIdea, refetch } = useUserIdeas();
   const { generatingId, generatePreview, getPreviewStatus, getPreviewHtml } = useIdeaPreview();
   const { toast } = useToast();
 
@@ -121,6 +121,7 @@ export default function Ideas() {
     const result = await generatePreview(idea.id, idea.title, idea.description);
     if (result.success) {
       toast({ title: 'Preview ready!' });
+      await refetch(); // Persist to local state so closing/reopening works
     } else {
       toast({ title: 'Preview generation failed', description: result.error, variant: 'destructive' });
     }
