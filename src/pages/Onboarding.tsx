@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, LearningStyleType } from '@/contexts/AuthContext';
 import { getIndustryConfig, type IndustryConfig } from '@/data/industryConfigs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Progress } from '@/components/ui/progress';
@@ -16,31 +15,26 @@ import { useToast } from '@/hooks/use-toast';
 import { MAX_INTERESTS } from '@/data/interests';
 import {
   ROLE_OPTIONS,
-  Q3_OPTIONS, Q4_OPTIONS, Q5_OPTIONS, Q6_OPTIONS,
-  Q7_OPTIONS, Q8_OPTIONS, Q9_OPTIONS,
-  SJT_SCENARIOS,
-  Q10_OPTIONS, Q11_OPTIONS, Q12_OPTIONS,
+  Q3_OPTIONS, Q5_OPTIONS, Q6_OPTIONS,
+  Q7_OPTIONS, Q8_OPTIONS,
+  Q10_OPTIONS, Q12_OPTIONS,
   type AnswerOption,
 } from '@/data/intakeQuestions';
 import { scoreIntake, type IntakeAnswers } from '@/utils/intakeScoring';
 import { supabase } from '@/integrations/supabase/client';
 import {
   ArrowRight, ArrowLeft, Heart, Loader2,
-  Briefcase, Brain, ShieldCheck, AlertTriangle, Pencil, Sparkles,
+  Briefcase, Brain,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // ── F&F quick-select chips ────────────────────────────────────────────────
 const FF_JOB_CHIPS = ['Retired', 'Student', 'Between Jobs', 'Other'];
 
-// ── Banker step metadata (conversational, not labeled as "assessment") ────
+// ── Banker step metadata ──────────────────────────────────────────────────
 const BANKER_STEPS = [
-  { label: 'Let\'s get to know you',        icon: Briefcase,   desc: 'Tell us about your role — we\'ll use it to make your training more relevant.' },
-  { label: 'Your AI experience',             icon: Brain,       desc: 'A few questions about how you currently use AI at work. There are no right or wrong answers.' },
-  { label: 'Handling real situations',       icon: ShieldCheck, desc: 'How would you handle these common banking and AI scenarios?' },
-  { label: 'A few more scenarios',           icon: AlertTriangle, desc: 'Five short situations. Pick the response that feels most right to you.' },
-  { label: 'Show your approach',             icon: Pencil,      desc: 'Write a real AI prompt — this is the only step that can\'t be answered theoretically.' },
-  { label: 'One last thing',                 icon: Sparkles,    desc: 'Help us understand how you prefer to learn so Andrea can match your style.' },
+  { label: 'Let\'s get to know you', icon: Briefcase, desc: 'Tell us about your role — we\'ll use it to make your training more relevant.' },
+  { label: 'Your AI experience',     icon: Brain,     desc: 'A few questions to help us understand how you currently work with AI.' },
 ];
 
 // ── Reusable single-select option tile ───────────────────────────────────
@@ -74,40 +68,6 @@ function OptionTile({
   );
 }
 
-// ── Multi-select tile ─────────────────────────────────────────────────────
-function MultiTile({
-  option, selected, onToggle, disabled,
-}: {
-  option: AnswerOption;
-  selected: boolean;
-  onToggle: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      disabled={disabled}
-      className={cn(
-        'w-full text-left flex items-start gap-3 p-3 rounded-lg border-2 transition-all text-sm',
-        selected
-          ? 'border-primary bg-primary/8 text-foreground'
-          : disabled
-          ? 'border-border bg-muted/20 text-muted-foreground opacity-50 cursor-not-allowed'
-          : 'border-border hover:border-primary/40 hover:bg-muted/40',
-      )}
-    >
-      <div className={cn(
-        'shrink-0 mt-0.5 h-5 w-5 rounded-md border-2 flex items-center justify-center',
-        selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/40',
-      )}>
-        {selected && <span className="text-xs font-bold">✓</span>}
-      </div>
-      <span className="leading-snug">{option.label}</span>
-    </button>
-  );
-}
-
 // ── Main component ────────────────────────────────────────────────────────
 
 export default function Onboarding() {
@@ -129,7 +89,7 @@ export default function Onboarding() {
   // Keep legacy alias for internal use
   const isFriendsFamily = isConsumer;
 
-  // Derived industry config — drives dynamic copy + micro-task
+  // Derived industry config — drives dynamic copy
   const industryConfig: IndustryConfig = getIndustryConfig(orgIndustry, isConsumer ? 'consumer' : 'enterprise');
 
   useEffect(() => {
@@ -190,28 +150,14 @@ export default function Onboarding() {
     },
   ];
 
-  // ── Banker intake state (one field per question) ──────────────────────
+  // ── Banker intake state (7 retained questions) ─────────────────────────
   const [roleKey, setRoleKey] = useState('');
-  // Step 2
   const [q3, setQ3] = useState('');
-  const [q4, setQ4] = useState('');
   const [q5, setQ5] = useState('');
   const [q6, setQ6] = useState('');
-  // Step 3
   const [q7, setQ7] = useState('');
   const [q8, setQ8] = useState('');
-  const [q9, setQ9] = useState<string[]>([]);
-  // Step 4 — SJT (keyed by scenario id)
-  const [sjtAnswers, setSjtAnswers] = useState<Record<string, string>>({});
-  // Step 5
-  const [step5Prompt, setStep5Prompt] = useState('');
-  // Ref holds the LLM score for Step 5 once the edge function returns.
-  // Using a ref (not state) so completeBanker() reads the latest value without
-  // stale-closure issues and without triggering a re-render.
-  const step5LlmScoreRef = useRef<number | null>(null);
-  // Step 6
   const [q10, setQ10] = useState('');
-  const [q11, setQ11] = useState<string[]>([]);
   const [q12, setQ12] = useState('');
 
   // Skip onboarding if already completed
@@ -235,8 +181,8 @@ export default function Onboarding() {
 
   // ── Step counts & progress ────────────────────────────────────────────
   // F&F: 5 steps (job title, interests, proficiency, learning, tech learning)
-  // Banker: 6 steps (role, behavioral, governance, SJT, micro-demo, orientation)
-  const totalSteps = isFriendsFamily ? 5 : 6;
+  // Banker: 2 steps (role selection, AI assessment)
+  const totalSteps = isFriendsFamily ? 5 : 2;
 
   // F&F step mapping
   const FF_PROFICIENCY_STEP = 3;
@@ -274,72 +220,18 @@ export default function Onboarding() {
         toast({ title: 'Required', description: 'Please select your role', variant: 'destructive' });
         return false;
       }
-      if (step === 2 && (!q3 || !q4 || !q5 || !q6)) {
+      if (step === 2 && (!q3 || !q5 || !q6 || !q7 || !q8 || !q10 || !q12)) {
         toast({ title: 'Required', description: 'Please answer all questions on this page', variant: 'destructive' });
         return false;
-      }
-      if (step === 3) {
-        if (!q7 || !q8) {
-          toast({ title: 'Required', description: 'Please answer all questions on this page', variant: 'destructive' });
-          return false;
-        }
-        if (q9.length === 0) {
-          toast({ title: 'Required', description: 'Please select at least one stakeholder for Q9', variant: 'destructive' });
-          return false;
-        }
-      }
-      if (step === 4) {
-        const allAnswered = SJT_SCENARIOS.every(s => sjtAnswers[s.id]);
-        if (!allAnswered) {
-          toast({ title: 'Required', description: 'Please answer all five scenarios', variant: 'destructive' });
-          return false;
-        }
-      }
-      if (step === 5 && step5Prompt.trim().length < 20) {
-        toast({ title: 'Required', description: 'Please write a prompt of at least 20 characters', variant: 'destructive' });
-        return false;
-      }
-      if (step === 6) {
-        if (!q10 || !q12) {
-          toast({ title: 'Required', description: 'Please answer all questions on this page', variant: 'destructive' });
-          return false;
-        }
-        if (q11.length === 0) {
-          toast({ title: 'Required', description: 'Please select at least one motivation', variant: 'destructive' });
-          return false;
-        }
       }
     }
     return true;
   };
 
   // ── Navigation ────────────────────────────────────────────────────────
-
-  // Fire LLM scoring for the Step 5 prompt in the background.
-  // Called when the banker advances from Step 5 → Step 6 so the score is
-  // ready (Haiku ~1s) long before they finish Q10–Q12 and hit Complete.
-  // On any failure the ref stays null and scoreIntake() uses the heuristic.
-  const fireStep5LlmScore = async (prompt: string) => {
-    step5LlmScoreRef.current = null; // reset before each attempt
-    try {
-      const { data, error } = await supabase.functions.invoke('intake-prompt-score', {
-        body: { prompt },
-      });
-      if (!error && data && typeof data.score === 'number') {
-        step5LlmScoreRef.current = data.score;
-      }
-    } catch {
-      // Silently ignore — heuristic fallback will be used
-    }
-  };
-
   const handleNext = () => {
     if (!validateStep()) return;
     if (step < totalSteps) {
-      // Prefetch LLM score as soon as the banker leaves Step 5
-      if (!isFriendsFamily && step === 5) {
-        fireStep5LlmScore(step5Prompt);
-      }
       setStep(step + 1);
     } else {
       handleComplete();
@@ -348,10 +240,6 @@ export default function Onboarding() {
 
   const handleBack = () => {
     if (step > 1) {
-      // Invalidate cached LLM score if returning to Step 5 — user may edit their prompt
-      if (!isFriendsFamily && step === 6) {
-        step5LlmScoreRef.current = null;
-      }
       setStep(step - 1);
     }
   };
@@ -398,19 +286,17 @@ export default function Onboarding() {
   const completeBanker = async () => {
     const answers: IntakeAnswers = {
       q2_role: roleKey,
-      q3, q4, q5, q6,
-      q7, q8, q9,
-      sjt1: sjtAnswers['sjt1'] || '',
-      sjt2: sjtAnswers['sjt2'] || '',
-      sjt3: sjtAnswers['sjt3'] || '',
-      sjt4: sjtAnswers['sjt4'] || '',
-      sjt5: sjtAnswers['sjt5'] || '',
-      step5_prompt: step5Prompt,
-      q10, q11, q12,
+      q3, q5, q6,
+      q7, q8,
+      q10, q12,
+      // Removed questions — defaults satisfy the TypeScript type; scoring handles empty values gracefully
+      q4: '', q9: [],
+      sjt1: '', sjt2: '', sjt3: '', sjt4: '', sjt5: '',
+      step5_prompt: '',
+      q11: [],
     };
 
-    // Pass LLM score if it arrived; otherwise scoreIntake() falls back to heuristic
-    const placement = scoreIntake(answers, step5LlmScoreRef.current ?? undefined);
+    const placement = scoreIntake(answers);
 
     // Map Q12 → learning style
     const Q12_STYLE_MAP: Record<string, LearningStyleType> = {
@@ -438,7 +324,6 @@ export default function Onboarding() {
       safe_use_flag: placement.safe_use_flag,
       intake_role_key: roleKey,
       intake_orientation: orientation,
-      intake_motivation: q11,
       onboarding_completed: true,
     });
 
@@ -450,19 +335,6 @@ export default function Onboarding() {
       toast({ title: 'Profile Complete!', description: 'Let\'s start your training journey.' });
       navigate('/dashboard');
     }
-  };
-
-  // ── Helpers ───────────────────────────────────────────────────────────
-  const toggleQ9 = (key: string) => {
-    setQ9(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
-  };
-
-  const toggleQ11 = (key: string) => {
-    setQ11(prev => {
-      if (prev.includes(key)) return prev.filter(k => k !== key);
-      if (prev.length >= 2) return prev; // max 2
-      return [...prev, key];
-    });
   };
 
   const isLastStep = step === totalSteps;
@@ -608,10 +480,10 @@ export default function Onboarding() {
           })()}
 
           {/* ══════════════════════════════════════════════════════════════
-               BANKER INTAKE FLOW (6 Steps per SMILE Intake Spec v1)
+               BANKER INTAKE FLOW (2 Steps)
              ══════════════════════════════════════════════════════════════ */}
 
-          {/* Banker step header (shared across steps 1–6) */}
+          {/* Banker step header (shared across steps 1–2) */}
           {!isFriendsFamily && bankerMeta && BankerIcon && (
             <CardHeader>
               <div className="flex items-center gap-3 mb-2">
@@ -652,212 +524,84 @@ export default function Onboarding() {
             </CardContent>
           )}
 
-          {/* ── Banker Step 2: Behavioral Anchors (Q3–Q6) ────────────── */}
+          {/* ── Banker Step 2: AI Assessment (Q3, Q5, Q6, Q7, Q8, Q10, Q12) ── */}
           {!isFriendsFamily && step === 2 && (
             <CardContent>
-              <div className="space-y-6">
-
-                {/* Q3 */}
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Which of these best describes your most recent use of AI in a work context?</p>
-                  <div className="space-y-1.5">
-                    {Q3_OPTIONS.map(opt => (
-                      <OptionTile key={opt.key} option={opt} selected={q3 === opt.key} onSelect={() => setQ3(opt.key)} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Q4 */}
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Think about the last time you used AI at work. What happened?</p>
-                  <div className="space-y-1.5">
-                    {Q4_OPTIONS.map(opt => (
-                      <OptionTile key={opt.key} option={opt} selected={q4 === opt.key} onSelect={() => setQ4(opt.key)} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Q5 */}
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">When you write a prompt, which best describes your approach?</p>
-                  <div className="space-y-1.5">
-                    {Q5_OPTIONS.map(opt => (
-                      <OptionTile key={opt.key} option={opt} selected={q5 === opt.key} onSelect={() => setQ5(opt.key)} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Q6 */}
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Has your bank issued any guidance, policy, or training on AI use?</p>
-                  <div className="space-y-1.5">
-                    {Q6_OPTIONS.map(opt => (
-                      <OptionTile key={opt.key} option={opt} selected={q6 === opt.key} onSelect={() => setQ6(opt.key)} />
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-            </CardContent>
-          )}
-
-          {/* ── Banker Step 3: Safe Use & Governance (Q7–Q9) ─────────── */}
-          {!isFriendsFamily && step === 3 && (
-            <CardContent>
-              <div className="space-y-6">
-
-                {/* Q7 */}
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">A colleague sends you an AI-generated summary of a customer's loan file and says "I used it to prep — looks solid." What do you do?</p>
-                  <div className="space-y-1.5">
-                    {Q7_OPTIONS.map(opt => (
-                      <OptionTile key={opt.key} option={opt} selected={q7 === opt.key} onSelect={() => setQ7(opt.key)} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Q8 */}
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">You're drafting a memo using AI. The draft includes a customer's account numbers and balances. What do you do?</p>
-                  <div className="space-y-1.5">
-                    {Q8_OPTIONS.map(opt => (
-                      <OptionTile key={opt.key} option={opt} selected={q8 === opt.key} onSelect={() => setQ8(opt.key)} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Q9 */}
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Your bank is adopting an AI-powered loan underwriting tool. Who should be involved? <span className="text-muted-foreground font-normal">(Select all that apply)</span></p>
-                  <div className="space-y-1.5">
-                    {Q9_OPTIONS.map(opt => (
-                      <MultiTile
-                        key={opt.key}
-                        option={opt}
-                        selected={q9.includes(opt.key)}
-                        onToggle={() => toggleQ9(opt.key)}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-            </CardContent>
-          )}
-
-          {/* ── Banker Step 4: Situational Judgment (SJT 1–5) ────────── */}
-          {!isFriendsFamily && step === 4 && (
-            <CardContent>
               <ScrollArea className="h-[520px] pr-2">
-                <div className="space-y-7 pr-1">
-                  {SJT_SCENARIOS.map((scenario, idx) => (
-                    <div key={scenario.id} className="space-y-2">
-                      <p className="text-sm font-medium">
-                        <span className="text-muted-foreground mr-1">{idx + 1}.</span>
-                        {scenario.scenario}
-                      </p>
-                      <div className="space-y-1.5">
-                        {scenario.options.map(opt => (
-                          <OptionTile
-                            key={opt.key}
-                            option={opt}
-                            selected={sjtAnswers[scenario.id] === opt.key}
-                            onSelect={() => setSjtAnswers(prev => ({ ...prev, [scenario.id]: opt.key }))}
-                          />
-                        ))}
-                      </div>
+                <div className="space-y-6 pr-1">
+
+                  {/* Q3 */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Which of these best describes your most recent use of AI in a work context?</p>
+                    <div className="space-y-1.5">
+                      {Q3_OPTIONS.map(opt => (
+                        <OptionTile key={opt.key} option={opt} selected={q3 === opt.key} onSelect={() => setQ3(opt.key)} />
+                      ))}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Q5 */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">When you write a prompt, which best describes your approach?</p>
+                    <div className="space-y-1.5">
+                      {Q5_OPTIONS.map(opt => (
+                        <OptionTile key={opt.key} option={opt} selected={q5 === opt.key} onSelect={() => setQ5(opt.key)} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Q6 */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Has your bank issued any guidance, policy, or training on AI use?</p>
+                    <div className="space-y-1.5">
+                      {Q6_OPTIONS.map(opt => (
+                        <OptionTile key={opt.key} option={opt} selected={q6 === opt.key} onSelect={() => setQ6(opt.key)} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Q7 */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">A colleague sends you an AI-generated summary of a customer's loan file and says "I used it to prep — looks solid." What do you do?</p>
+                    <div className="space-y-1.5">
+                      {Q7_OPTIONS.map(opt => (
+                        <OptionTile key={opt.key} option={opt} selected={q7 === opt.key} onSelect={() => setQ7(opt.key)} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Q8 */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">You're drafting a memo using AI. The draft includes a customer's account numbers and balances. What do you do?</p>
+                    <div className="space-y-1.5">
+                      {Q8_OPTIONS.map(opt => (
+                        <OptionTile key={opt.key} option={opt} selected={q8 === opt.key} onSelect={() => setQ8(opt.key)} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Q10 */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">When you think about using AI more at work, which feeling is most true right now?</p>
+                    <div className="space-y-1.5">
+                      {Q10_OPTIONS.map(opt => (
+                        <OptionTile key={opt.key} option={opt} selected={q10 === opt.key} onSelect={() => setQ10(opt.key)} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Q12 */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">How do you usually get up to speed on something new?</p>
+                    <div className="space-y-1.5">
+                      {Q12_OPTIONS.map(opt => (
+                        <OptionTile key={opt.key} option={opt} selected={q12 === opt.key} onSelect={() => setQ12(opt.key)} />
+                      ))}
+                    </div>
+                  </div>
+
                 </div>
               </ScrollArea>
-              {/* Progress indicator for answered SJT items */}
-              <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                <div className="flex gap-1">
-                  {SJT_SCENARIOS.map(s => (
-                    <div
-                      key={s.id}
-                      className={cn('h-2 w-2 rounded-full', sjtAnswers[s.id] ? 'bg-primary' : 'bg-muted')}
-                    />
-                  ))}
-                </div>
-                <span>{Object.keys(sjtAnswers).length}/5 answered</span>
-              </div>
-            </CardContent>
-          )}
-
-          {/* ── Banker Step 5: Micro-Demonstration Task ───────────────── */}
-          {!isFriendsFamily && step === 5 && (
-            <CardContent>
-              <div className="space-y-4">
-                <div className="p-4 bg-muted/40 rounded-lg border text-sm space-y-1">
-                  <p className="font-semibold text-foreground">Your task:</p>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {industryConfig.onboardingMicroTask}
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Textarea
-                    placeholder="Type your prompt here…"
-                    value={step5Prompt}
-                    onChange={(e) => setStep5Prompt(e.target.value)}
-                    className="min-h-[160px] resize-none text-sm"
-                  />
-                  <div className="flex justify-between items-center text-xs text-muted-foreground">
-                    <span>Write it as you actually would — no need to explain what you're doing.</span>
-                    <span>{step5Prompt.length} chars</span>
-                  </div>
-                </div>
-
-              </div>
-            </CardContent>
-          )}
-
-          {/* ── Banker Step 6: Orientation & Motivation (Q10–Q12) ──────── */}
-          {!isFriendsFamily && step === 6 && (
-            <CardContent>
-              <div className="space-y-6">
-
-                {/* Q10 */}
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">When you think about using AI more at work, which feeling is most true right now?</p>
-                  <div className="space-y-1.5">
-                    {Q10_OPTIONS.map(opt => (
-                      <OptionTile key={opt.key} option={opt} selected={q10 === opt.key} onSelect={() => setQ10(opt.key)} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Q11 */}
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">
-                    What would make this feel worthwhile?{' '}
-                    <span className="text-muted-foreground font-normal">Pick up to 2</span>
-                  </p>
-                  <div className="space-y-1.5">
-                    {Q11_OPTIONS.map(opt => (
-                      <MultiTile
-                        key={opt.key}
-                        option={opt}
-                        selected={q11.includes(opt.key)}
-                        onToggle={() => toggleQ11(opt.key)}
-                        disabled={!q11.includes(opt.key) && q11.length >= 2}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Q12 */}
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">How do you usually get up to speed on something new?</p>
-                  <div className="space-y-1.5">
-                    {Q12_OPTIONS.map(opt => (
-                      <OptionTile key={opt.key} option={opt} selected={q12 === opt.key} onSelect={() => setQ12(opt.key)} />
-                    ))}
-                  </div>
-                </div>
-
-              </div>
             </CardContent>
           )}
 

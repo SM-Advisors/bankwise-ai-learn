@@ -280,38 +280,23 @@ export function scoreDragRank(
 }
 
 /**
- * Calculate the final proficiency score (0-8) from self-report + performance + confidence.
+ * Calculate the final proficiency score (0-8) from self-report + confidence.
  *
- * v2.0 formula:
+ * v3.0 formula (performance items removed):
  * selfReportAvg = average of self-report question scores (0-8 scale)
- * performanceNormalized = average of performance item scores normalized to 0-8
- * composite = selfReportAvg * 0.5 + performanceNormalized * 0.5
  * confidenceAdjustment: maps 1-5 → -1.5, -0.75, 0, +0.75, +1.5
- * finalScore = clamp(round(composite + confidenceAdjustment), 0, 8)
+ * finalScore = clamp(round(selfReportAvg + confidenceAdjustment), 0, 8)
  */
 export function calculateProficiencyScore(
   answers: Record<string, number>,
   confidence: number,
-  performanceScores?: { prompt_evaluation: number; prompt_ranking: number }
 ): number {
   // Self-report average
   const questionIds = PROFICIENCY_QUESTIONS.map((q) => q.id);
   const selfReportScores = questionIds.map((id) => answers[id] ?? 0);
   const selfReportAvg = selfReportScores.reduce((sum, s) => sum + s, 0) / selfReportScores.length;
 
-  // Performance scores (normalized to 0-8)
-  let performanceAvg = 0;
-  if (performanceScores) {
-    performanceAvg = (performanceScores.prompt_evaluation + performanceScores.prompt_ranking) / 2;
-  }
-
-  // Composite: 50% self-report + 50% performance
-  const hasPerformance = performanceScores !== undefined;
-  const composite = hasPerformance
-    ? selfReportAvg * 0.5 + performanceAvg * 0.5
-    : selfReportAvg; // Fallback to self-report only if performance not available
-
-  // Confidence adjustment (increased from +/- 1 to +/- 1.5)
+  // Confidence adjustment
   const confidenceAdjustmentMap: Record<number, number> = {
     1: -1.5,
     2: -0.75,
@@ -321,5 +306,5 @@ export function calculateProficiencyScore(
   };
   const adjustment = confidenceAdjustmentMap[confidence] ?? 0;
 
-  return Math.max(0, Math.min(8, Math.round(composite + adjustment)));
+  return Math.max(0, Math.min(8, Math.round(selfReportAvg + adjustment)));
 }

@@ -1,20 +1,15 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowRight, ArrowLeft, CheckCircle, GripVertical } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import {
   PROFICIENCY_QUESTIONS,
-  PERFORMANCE_ITEMS,
   CONFIDENCE_LEVELS,
   calculateProficiencyScore,
-  scoreMultiSelect,
-  scoreDragRank,
 } from '@/data/proficiencyAssessment';
-import type { PerformanceItem } from '@/data/proficiencyAssessment';
 
 const PROFICIENCY_LABELS: Record<number, { label: string; description: string }> = {
   0: { label: 'True Beginner', description: 'We\'ll start from the very basics' },
@@ -32,147 +27,6 @@ interface ProficiencyAssessmentProps {
   onComplete: (score: number) => void;
 }
 
-// ─── DRAG-TO-RANK SUB-COMPONENT ───────────────────────────────────────────
-function DragRankPanel({
-  item,
-  rankedIds,
-  onReorder,
-}: {
-  item: PerformanceItem;
-  rankedIds: string[];
-  onReorder: (ids: string[]) => void;
-}) {
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-
-  const prompts = item.prompts || [];
-  const orderedPrompts = rankedIds.map((id) => prompts.find((p) => p.id === id)!).filter(Boolean);
-
-  const handleDragStart = (index: number) => {
-    setDragIndex(index);
-  };
-
-  const handleDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault();
-    if (dragIndex === null || dragIndex === index) return;
-    const newOrder = [...rankedIds];
-    const [removed] = newOrder.splice(dragIndex, 1);
-    newOrder.splice(index, 0, removed);
-    onReorder(newOrder);
-    setDragIndex(index);
-  };
-
-  const handleDragEnd = () => {
-    setDragIndex(null);
-  };
-
-  // Arrow-based reorder for accessibility
-  const moveItem = (index: number, direction: 'up' | 'down') => {
-    const newOrder = [...rankedIds];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= newOrder.length) return;
-    [newOrder[index], newOrder[targetIndex]] = [newOrder[targetIndex], newOrder[index]];
-    onReorder(newOrder);
-  };
-
-  return (
-    <div className="space-y-3">
-      <p className="text-sm text-muted-foreground">{item.instructions}</p>
-      <div className="space-y-2">
-        {orderedPrompts.map((prompt, index) => (
-          <div
-            key={prompt.id}
-            draggable
-            onDragStart={() => handleDragStart(index)}
-            onDragOver={(e) => handleDragOver(e, index)}
-            onDragEnd={handleDragEnd}
-            className={`flex items-start gap-3 p-4 rounded-lg border bg-card transition-all cursor-grab active:cursor-grabbing ${
-              dragIndex === index ? 'border-primary bg-primary/5 shadow-md' : 'border-border hover:border-muted-foreground/50'
-            }`}
-          >
-            <div className="flex flex-col items-center gap-1 pt-1">
-              <GripVertical className="h-4 w-4 text-muted-foreground" />
-              <Badge variant="outline" className="text-[10px] px-1.5">
-                {index + 1}
-              </Badge>
-              <div className="flex flex-col gap-0.5">
-                <button
-                  className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-30"
-                  onClick={() => moveItem(index, 'up')}
-                  disabled={index === 0}
-                  aria-label="Move up"
-                >
-                  ▲
-                </button>
-                <button
-                  className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-30"
-                  onClick={() => moveItem(index, 'down')}
-                  disabled={index === orderedPrompts.length - 1}
-                  aria-label="Move down"
-                >
-                  ▼
-                </button>
-              </div>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-medium text-sm mb-1">{prompt.label}</div>
-              <p className="text-sm text-muted-foreground italic leading-relaxed">
-                "{prompt.text}"
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-      <p className="text-xs text-muted-foreground text-center">
-        Drag to reorder, or use the arrows. 1 = weakest, {orderedPrompts.length} = strongest.
-      </p>
-    </div>
-  );
-}
-
-// ─── MULTI-SELECT SUB-COMPONENT ──────────────────────────────────────────
-function MultiSelectPanel({
-  item,
-  selectedIds,
-  onToggle,
-}: {
-  item: PerformanceItem;
-  selectedIds: string[];
-  onToggle: (id: string) => void;
-}) {
-  const options = item.options || [];
-
-  return (
-    <div className="space-y-3">
-      <p className="text-sm text-muted-foreground">{item.instructions}</p>
-      <div className="space-y-2">
-        {options.map((option) => {
-          const isSelected = selectedIds.includes(option.id);
-          return (
-            <div
-              key={option.id}
-              className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
-                isSelected
-                  ? 'border-primary bg-primary/5'
-                  : 'border-border hover:border-muted-foreground/50'
-              }`}
-              onClick={() => onToggle(option.id)}
-            >
-              <Checkbox
-                checked={isSelected}
-                onCheckedChange={() => onToggle(option.id)}
-                id={`ms-${option.id}`}
-              />
-              <Label htmlFor={`ms-${option.id}`} className="font-medium cursor-pointer flex-1">
-                {option.label}
-              </Label>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 // ─── MAIN ASSESSMENT COMPONENT ───────────────────────────────────────────
 export function ProficiencyAssessment({ onComplete }: ProficiencyAssessmentProps) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -180,29 +34,14 @@ export function ProficiencyAssessment({ onComplete }: ProficiencyAssessmentProps
   const [confidence, setConfidence] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
 
-  // Performance state
-  const [multiSelectIds, setMultiSelectIds] = useState<string[]>([]);
-  const [dragRankOrder, setDragRankOrder] = useState<string[]>(
-    () => {
-      const rankItem = PERFORMANCE_ITEMS.find((i) => i.type === 'drag_rank');
-      // Shuffle prompts initially
-      const prompts = rankItem?.prompts || [];
-      return [...prompts].sort(() => Math.random() - 0.5).map((p) => p.id);
-    }
-  );
-
-  // Steps: 4 self-report questions + 2 performance items + 1 confidence = 7
+  // Steps: 4 self-report questions + 1 confidence = 5
   const selfReportCount = PROFICIENCY_QUESTIONS.length;
-  const performanceCount = PERFORMANCE_ITEMS.length;
-  const totalSteps = selfReportCount + performanceCount + 1; // +1 for confidence
+  const totalSteps = selfReportCount + 1; // +1 for confidence
 
   const isSelfReport = currentStep < selfReportCount;
-  const isPerformance = currentStep >= selfReportCount && currentStep < selfReportCount + performanceCount;
-  const isConfidence = currentStep === selfReportCount + performanceCount;
-  const performanceIndex = currentStep - selfReportCount;
+  const isConfidence = currentStep === selfReportCount;
 
   const currentQ = isSelfReport ? PROFICIENCY_QUESTIONS[currentStep] : null;
-  const currentPerf = isPerformance ? PERFORMANCE_ITEMS[performanceIndex] : null;
 
   const progressPercent = ((currentStep + (showResult ? 1 : 0)) / totalSteps) * 100;
 
@@ -210,16 +49,8 @@ export function ProficiencyAssessment({ onComplete }: ProficiencyAssessmentProps
     setAnswers((prev) => ({ ...prev, [questionId]: score }));
   };
 
-  const toggleMultiSelect = useCallback((id: string) => {
-    setMultiSelectIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  }, []);
-
   const canProceed = () => {
     if (isSelfReport && currentQ) return answers[currentQ.id] !== undefined;
-    if (isPerformance && currentPerf?.type === 'multi_select_evaluate') return multiSelectIds.length > 0;
-    if (isPerformance && currentPerf?.type === 'drag_rank') return true; // always has an order
     if (isConfidence) return confidence !== null;
     return false;
   };
@@ -243,16 +74,8 @@ export function ProficiencyAssessment({ onComplete }: ProficiencyAssessmentProps
     }
   };
 
-  // Compute final score
-  const multiSelectItem = PERFORMANCE_ITEMS.find((i) => i.type === 'multi_select_evaluate')!;
-  const dragRankItem = PERFORMANCE_ITEMS.find((i) => i.type === 'drag_rank')!;
-
-  const performanceScores = {
-    prompt_evaluation: scoreMultiSelect(multiSelectIds, multiSelectItem),
-    prompt_ranking: scoreDragRank(dragRankOrder, dragRankItem),
-  };
-
-  const finalScore = calculateProficiencyScore(answers, confidence ?? 3, performanceScores);
+  // Compute final score (self-report only, no performance items)
+  const finalScore = calculateProficiencyScore(answers, confidence ?? 3);
   const resultInfo = PROFICIENCY_LABELS[finalScore] || PROFICIENCY_LABELS[4];
 
   // ─── RESULT SCREEN ───────────────────────────────────────────────────
@@ -273,17 +96,6 @@ export function ProficiencyAssessment({ onComplete }: ProficiencyAssessmentProps
           <div className="text-5xl font-bold text-primary mb-2">{finalScore}</div>
           <div className="text-lg font-semibold">{resultInfo.label}</div>
           <p className="text-sm text-muted-foreground mt-1">{resultInfo.description}</p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 text-center">
-          <div className="p-3 rounded-lg border bg-muted/30">
-            <div className="text-lg font-bold text-primary">{performanceScores.prompt_evaluation}/8</div>
-            <div className="text-xs text-muted-foreground">Prompt Evaluation</div>
-          </div>
-          <div className="p-3 rounded-lg border bg-muted/30">
-            <div className="text-lg font-bold text-primary">{performanceScores.prompt_ranking}/8</div>
-            <div className="text-xs text-muted-foreground">Prompt Ranking</div>
-          </div>
         </div>
 
         <div className="space-y-2">
@@ -359,51 +171,6 @@ export function ProficiencyAssessment({ onComplete }: ProficiencyAssessmentProps
           </Button>
           <Button onClick={handleNext} disabled={confidence === null} className="gap-2">
             See Results
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // ─── PERFORMANCE ITEMS ───────────────────────────────────────────────
-  if (isPerformance && currentPerf) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-          <span>Step {currentStep + 1} of {totalSteps}</span>
-          <span>{Math.round(progressPercent)}%</span>
-        </div>
-        <Progress value={progressPercent} className="h-1.5" />
-
-        <div>
-          <Badge variant="secondary" className="mb-3">{currentPerf.dimension}</Badge>
-          <h3 className="text-lg font-semibold">{currentPerf.scenario}</h3>
-        </div>
-
-        {currentPerf.type === 'multi_select_evaluate' && (
-          <MultiSelectPanel
-            item={currentPerf}
-            selectedIds={multiSelectIds}
-            onToggle={toggleMultiSelect}
-          />
-        )}
-
-        {currentPerf.type === 'drag_rank' && (
-          <DragRankPanel
-            item={currentPerf}
-            rankedIds={dragRankOrder}
-            onReorder={setDragRankOrder}
-          />
-        )}
-
-        <div className="flex justify-between">
-          <Button variant="outline" onClick={handleBack} className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-          <Button onClick={handleNext} disabled={!canProceed()} className="gap-2">
-            Next
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
