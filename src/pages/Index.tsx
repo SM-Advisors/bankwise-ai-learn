@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { BookOpen, Sparkles, ArrowRight, ShieldCheck, Settings, LogIn } from 'lucide-react';
+import { BookOpen, ClipboardCheck, ArrowRight, ShieldCheck, Settings, LogIn } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { Logo } from '@/components/Logo';
 
@@ -124,7 +124,7 @@ const Index = () => {
 
             <div className="bg-card rounded-xl border shadow-sm p-6 text-left">
               <div className="p-3 rounded-lg bg-secondary inline-block mb-4">
-                <Sparkles className="h-6 w-6 text-primary" />
+                <ClipboardCheck className="h-6 w-6 text-primary" />
               </div>
               <h3 className="font-semibold text-lg mb-2">Practical Outputs</h3>
               <p className="text-muted-foreground text-sm">

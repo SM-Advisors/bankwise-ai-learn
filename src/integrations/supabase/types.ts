@@ -527,6 +527,9 @@ export type Database = {
           department_id: string | null
           id: string
           idea_id: string | null
+          preview_generated_at: string | null
+          preview_html: string | null
+          preview_status: string
           reviewed_at: string | null
           reviewed_by: string | null
           reviewer_notes: string | null
@@ -543,6 +546,9 @@ export type Database = {
           department_id?: string | null
           id?: string
           idea_id?: string | null
+          preview_generated_at?: string | null
+          preview_html?: string | null
+          preview_status?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
           reviewer_notes?: string | null
@@ -559,6 +565,9 @@ export type Database = {
           department_id?: string | null
           id?: string
           idea_id?: string | null
+          preview_generated_at?: string | null
+          preview_html?: string | null
+          preview_status?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
           reviewer_notes?: string | null
@@ -1270,6 +1279,9 @@ export type Database = {
           description: string
           id: string
           linked_agent_id: string | null
+          preview_generated_at: string | null
+          preview_html: string | null
+          preview_status: string
           roi_impact: string | null
           source: string
           source_context: string | null
@@ -1288,6 +1300,9 @@ export type Database = {
           description?: string
           id?: string
           linked_agent_id?: string | null
+          preview_generated_at?: string | null
+          preview_html?: string | null
+          preview_status?: string
           roi_impact?: string | null
           source?: string
           source_context?: string | null
@@ -1306,6 +1321,9 @@ export type Database = {
           description?: string
           id?: string
           linked_agent_id?: string | null
+          preview_generated_at?: string | null
+          preview_html?: string | null
+          preview_status?: string
           roi_impact?: string | null
           source?: string
           source_context?: string | null

@@ -15,6 +15,9 @@ export interface UserIdea {
   category: string | null;
   submitter_name: string | null;
   submitter_department: string | null;
+  preview_status: string;
+  preview_html: string | null;
+  preview_generated_at: string | null;
   created_at: string;
   updated_at: string;
 }

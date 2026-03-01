@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserIdeas, IdeaStatus } from '@/hooks/useUserIdeas';
+import { useIdeaPreview } from '@/hooks/useIdeaPreview';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,9 +27,10 @@ import {
 } from '@/components/ui/dialog';
 import {
   Lightbulb, ArrowLeft, Plus, Loader2, Trash2, Pencil,
-  Clock, BookOpen, CalendarClock
+  Clock, BookOpen, CalendarClock, Play, Eye
 } from 'lucide-react';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
+import { IdeaPreviewDialog } from '@/components/IdeaPreviewDialog';
 
 const STATUS_CONFIG: Record<IdeaStatus, { label: string; icon: React.ElementType; variant: 'default' | 'secondary' | 'outline' }> = {
   not_started: { label: 'Not Started', icon: Clock, variant: 'outline' },
@@ -40,6 +42,7 @@ export default function Ideas() {
   const navigate = useNavigate();
   const { profile, loading: authLoading } = useAuth();
   const { ideas, loading, createIdea, updateIdea, deleteIdea } = useUserIdeas();
+  const { generatingId, generatePreview, getPreviewStatus, getPreviewHtml } = useIdeaPreview();
   const { toast } = useToast();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -47,6 +50,10 @@ export default function Ideas() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<IdeaStatus>('not_started');
+
+  // Preview dialog state
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewIdea, setPreviewIdea] = useState<{ id: string; title: string } | null>(null);
 
   if (authLoading || !profile) {
     return (
@@ -105,6 +112,23 @@ export default function Ideas() {
     } else {
       toast({ title: 'Failed to delete idea', variant: 'destructive' });
     }
+  };
+
+  const handleBuildPreview = async (idea: typeof ideas[0]) => {
+    setPreviewIdea({ id: idea.id, title: idea.title });
+    setPreviewOpen(true);
+    toast({ title: 'Building preview...', description: 'Claude is generating an interactive prototype. This takes 30-60 seconds.' });
+    const result = await generatePreview(idea.id, idea.title, idea.description);
+    if (result.success) {
+      toast({ title: 'Preview ready!' });
+    } else {
+      toast({ title: 'Preview generation failed', description: result.error, variant: 'destructive' });
+    }
+  };
+
+  const handleViewPreview = (idea: typeof ideas[0]) => {
+    setPreviewIdea({ id: idea.id, title: idea.title });
+    setPreviewOpen(true);
   };
 
   return (
@@ -237,10 +261,59 @@ export default function Ideas() {
                   </CardHeader>
                   <CardContent>
                     {idea.description && (
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
                         {idea.description}
                       </p>
                     )}
+                    {/* Preview button */}
+                    {(() => {
+                      const pvStatus = getPreviewStatus(idea.id, idea.preview_status);
+                      if (pvStatus === 'generating' || generatingId === idea.id) {
+                        return (
+                          <Button variant="outline" size="sm" className="w-full gap-2 text-xs mb-3" disabled>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            Building preview...
+                          </Button>
+                        );
+                      }
+                      if (pvStatus === 'generated') {
+                        return (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full gap-2 text-xs mb-3 border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950/30"
+                            onClick={() => handleViewPreview(idea)}
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            View Preview
+                          </Button>
+                        );
+                      }
+                      if (pvStatus === 'failed') {
+                        return (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full gap-2 text-xs mb-3 border-red-200 text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/30"
+                            onClick={() => handleBuildPreview(idea)}
+                          >
+                            <Play className="h-3.5 w-3.5" />
+                            Retry Preview
+                          </Button>
+                        );
+                      }
+                      return (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full gap-2 text-xs mb-3"
+                          onClick={() => handleBuildPreview(idea)}
+                        >
+                          <Play className="h-3.5 w-3.5" />
+                          Build Preview
+                        </Button>
+                      );
+                    })()}
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">
                         {new Date(idea.created_at).toLocaleDateString()}
@@ -270,6 +343,20 @@ export default function Ideas() {
           </div>
         )}
       </div>
+
+      {/* Preview dialog */}
+      {previewIdea && (
+        <IdeaPreviewDialog
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+          title={previewIdea.title}
+          html={getPreviewHtml(
+            previewIdea.id,
+            ideas.find(i => i.id === previewIdea.id)?.preview_html,
+          )}
+          isGenerating={generatingId === previewIdea.id}
+        />
+      )}
     </div>
   );
 }

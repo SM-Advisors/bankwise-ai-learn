@@ -169,7 +169,7 @@ async function callModel(
   // ── Google Generative AI (gemini-*) ───────────────────────────────────────
   if (model.startsWith("gemini-")) {
     const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
-    if (!GOOGLE_AI_API_KEY) return "**Gemini 2.0 Flash** isn't available in this environment yet — a Google AI API key hasn't been configured. Switch back to **Claude Sonnet 4.6** using the model selector to continue.";
+    if (!GOOGLE_AI_API_KEY) return "**Gemini 2.5 Flash** isn't available in this environment yet — a Google AI API key hasn't been configured. Switch back to **Claude Sonnet 4.6** using the model selector to continue.";
 
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`,
