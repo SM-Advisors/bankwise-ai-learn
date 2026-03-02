@@ -94,28 +94,6 @@ export default function Settings() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate('/dashboard')}
-        className="mb-4 gap-2"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Dashboard
-      </Button>
-
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-primary/10 rounded-lg">
-          <SettingsIcon className="h-6 w-6 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">AI Settings</h1>
-          <p className="text-sm text-muted-foreground">
-            Customize how Andrea communicates with you
-          </p>
-        </div>
-      </div>
-
       {loading ? (
         <div className="flex items-center justify-center py-16">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />

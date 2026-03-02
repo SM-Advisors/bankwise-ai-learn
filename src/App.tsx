@@ -7,11 +7,10 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { TrainingProvider } from "@/contexts/TrainingContext";
 import { SessionProvider } from "@/contexts/SessionContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { Header } from "@/components/Header";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { ViewAsBanner } from "@/components/ViewAsBanner";
-
+import { AppShell } from "@/components/shell";
 
 // Pages
 import Index from "./pages/Index";
@@ -40,14 +39,6 @@ import ShellPreview from "./pages/ShellPreview";
 
 const queryClient = new QueryClient();
 
-// Layout wrapper for legacy routes that need the header
-const LegacyLayout = ({ children }: { children: React.ReactNode }) => (
-  <div className="min-h-screen flex flex-col">
-    <Header />
-    <main className="flex-1">{children}</main>
-  </div>
-);
-
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
@@ -66,55 +57,24 @@ const App = () => (
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
 
-                  {/* Protected routes */}
+                  {/* Onboarding — pre-shell, no AppShell */}
                   <Route path="/onboarding" element={
                     <ProtectedRoute>
                       <Onboarding />
                     </ProtectedRoute>
                   } />
+
+                  {/* Dashboard — wraps itself in AppShell (needs dynamic topBarActions) */}
                   <Route path="/dashboard" element={
                     <ProtectedRoute requireOnboarding>
                       <Dashboard />
                     </ProtectedRoute>
                   } />
+
+                  {/* Training — focus mode, full-screen, no AppShell */}
                   <Route path="/training/:sessionId" element={
                     <ProtectedRoute requireOnboarding>
                       <TrainingWorkspace />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/ideas" element={
-                    <ProtectedRoute requireOnboarding>
-                      <Ideas />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/policies" element={
-                    <ProtectedRoute requireOnboarding>
-                      <Policies />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/policies/:id" element={
-                    <ProtectedRoute requireOnboarding>
-                      <PolicyDetail />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/settings" element={
-                    <ProtectedRoute requireOnboarding>
-                      <Settings />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/memories" element={
-                    <ProtectedRoute requireOnboarding>
-                      <AIMemories />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/prompts" element={
-                    <ProtectedRoute requireOnboarding>
-                      <PromptLibrary />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/electives" element={
-                    <ProtectedRoute requireOnboarding>
-                      <Electives />
                     </ProtectedRoute>
                   } />
                   <Route path="/training/elective" element={
@@ -122,48 +82,130 @@ const App = () => (
                       <ElectiveWorkspace />
                     </ProtectedRoute>
                   } />
+
+                  {/* Learner routes — AppShell with breadcrumbs */}
+                  <Route path="/ideas" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AppShell breadcrumbs={[
+                        { label: 'Home', path: '/dashboard' },
+                        { label: 'My Ideas' },
+                      ]}>
+                        <Ideas />
+                      </AppShell>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/policies" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AppShell breadcrumbs={[
+                        { label: 'Home', path: '/dashboard' },
+                        { label: 'Bank Policies' },
+                      ]}>
+                        <Policies />
+                      </AppShell>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/policies/:id" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AppShell breadcrumbs={[
+                        { label: 'Home', path: '/dashboard' },
+                        { label: 'Bank Policies', path: '/policies' },
+                        { label: 'Policy' },
+                      ]}>
+                        <PolicyDetail />
+                      </AppShell>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/settings" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AppShell breadcrumbs={[
+                        { label: 'Home', path: '/dashboard' },
+                        { label: 'Settings' },
+                      ]}>
+                        <Settings />
+                      </AppShell>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/memories" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AppShell breadcrumbs={[
+                        { label: 'Home', path: '/dashboard' },
+                        { label: 'AI Memories' },
+                      ]}>
+                        <AIMemories />
+                      </AppShell>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/prompts" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AppShell breadcrumbs={[
+                        { label: 'Home', path: '/dashboard' },
+                        { label: 'Prompt Library' },
+                      ]}>
+                        <PromptLibrary />
+                      </AppShell>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/electives" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AppShell breadcrumbs={[
+                        { label: 'Home', path: '/dashboard' },
+                        { label: 'Elective Paths' },
+                      ]}>
+                        <Electives />
+                      </AppShell>
+                    </ProtectedRoute>
+                  } />
                   <Route path="/certificates" element={
                     <ProtectedRoute requireOnboarding>
-                      <Certificates />
+                      <AppShell breadcrumbs={[
+                        { label: 'Home', path: '/dashboard' },
+                        { label: 'Certificates' },
+                      ]}>
+                        <Certificates />
+                      </AppShell>
                     </ProtectedRoute>
                   } />
                   <Route path="/journey" element={
                     <ProtectedRoute requireOnboarding>
-                      <AIJourney />
+                      <AppShell breadcrumbs={[
+                        { label: 'Home', path: '/dashboard' },
+                        { label: 'My AI Journey' },
+                      ]}>
+                        <AIJourney />
+                      </AppShell>
                     </ProtectedRoute>
                   } />
-                  {/* Legacy routes with header */}
+
+                  {/* Legacy training flow — removed LegacyLayout, bare routes */}
                   <Route path="/questionnaire" element={
                     <ProtectedRoute requireOnboarding>
-                      <LegacyLayout><Questionnaire /></LegacyLayout>
+                      <Questionnaire />
                     </ProtectedRoute>
                   } />
                   <Route path="/topics" element={
                     <ProtectedRoute requireOnboarding>
-                      <LegacyLayout><TopicSelection /></LegacyLayout>
+                      <TopicSelection />
                     </ProtectedRoute>
                   } />
                   <Route path="/lesson" element={
                     <ProtectedRoute requireOnboarding>
-                      <LegacyLayout><Lesson /></LegacyLayout>
+                      <Lesson />
                     </ProtectedRoute>
                   } />
 
-                  {/* Admin */}
+                  {/* Admin — no AppShell for now */}
                   <Route path="/admin" element={
                     <ProtectedRoute requireOnboarding>
                       <AdminDashboard />
                     </ProtectedRoute>
                   } />
-
-                  {/* Super Admin */}
                   <Route path="/super-admin" element={
                     <ProtectedRoute requireOnboarding>
                       <SuperAdminDashboard />
                     </ProtectedRoute>
                   } />
 
-                  {/* Phase 0 — Shell preview (dev/QA only, not linked in existing nav) */}
+                  {/* Phase 0 — Shell preview (dev/QA only) */}
                   <Route path="/shell-preview" element={
                     <ProtectedRoute requireOnboarding>
                       <ShellPreview />

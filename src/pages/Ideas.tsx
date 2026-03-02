@@ -29,7 +29,6 @@ import {
   Lightbulb, ArrowLeft, Plus, Loader2, Trash2, Pencil,
   Clock, BookOpen, CalendarClock, Play, Eye
 } from 'lucide-react';
-import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { IdeaPreviewDialog } from '@/components/IdeaPreviewDialog';
 
 const STATUS_CONFIG: Record<IdeaStatus, { label: string; icon: React.ElementType; variant: 'default' | 'secondary' | 'outline' }> = {
@@ -132,29 +131,6 @@ export default function Ideas() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-xl font-display font-bold flex items-center gap-2">
-                <Lightbulb className="h-5 w-5 text-yellow-500" />
-                My Ideas
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Capture AI use case ideas for future exploration
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <ProfileDropdown />
-          </div>
-        </div>
-      </header>
 
       <div className="container mx-auto px-4 py-8">
         {/* Summary + Add Button */}
@@ -357,6 +333,5 @@ export default function Ideas() {
           isGenerating={generatingId === previewIdea.id}
         />
       )}
-    </div>
   );
 }

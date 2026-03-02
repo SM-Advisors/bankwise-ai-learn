@@ -13,7 +13,6 @@ import { useTour } from '@/hooks/useTour';
 import { ANDREA_STEPS } from '@/constants/tourSteps';
 import { BankPolicyModal } from '@/components/BankPolicyModal';
 import { VideoModal } from '@/components/VideoModal';
-import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { useLiveTrainingSessions } from '@/hooks/useLiveTrainingSessions';
 import { useEvents } from '@/hooks/useEvents';
@@ -24,10 +23,9 @@ import {
   Loader2, Play, CheckCircle, Sparkles, Bot,
   Building2, HelpCircle, BookOpen, Shield, Lightbulb,
   Radio, Calendar, Users, MessageCircle,
-  CalendarDays, Video, Settings, Brain, Cpu, Zap, Menu,
-  TrendingUp, Award, GraduationCap
+  CalendarDays, Video, Settings, Brain, Cpu, Zap,
+  TrendingUp
 } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { computeOverallProgress, computeSessionProgress, getModuleStates, getCompletedModuleCount, getSessionModuleTotal } from '@/utils/computeProgress';
 import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';
 import type { SessionProgressData, SkillSignal } from '@/types/progress';
@@ -36,6 +34,8 @@ import { DashboardChat } from '@/components/DashboardChat';
 import { CommunityFeed } from '@/components/CommunityFeed';
 import { FeedbackModal } from '@/components/FeedbackModal';
 import { BrainstormPanel } from '@/components/BrainstormPanel';
+import { AppShell } from '@/components/shell';
+
 
 const SESSIONS = [
   {
@@ -200,8 +200,76 @@ export default function Dashboard() {
     navigate(`/training/${sessionId}`);
   };
 
+
+  // TopBar contextual actions — lifted from old Dashboard header
+  const dashboardActions = (
+    <div className="flex items-center gap-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-2"
+        data-tour="bank-policies-btn"
+        onClick={() => navigate('/policies')}
+      >
+        <Shield className="h-4 w-4" />
+        <span className="hidden sm:inline">Bank Policies</span>
+      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="gap-2" data-tour="personalization-btn">
+            <Sparkles className="h-4 w-4" />
+            <span className="hidden sm:inline">My Personalization</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56 bg-card">
+          <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
+            <Settings className="mr-2 h-4 w-4" />
+            <div>
+              <div className="font-medium">AI Settings</div>
+              <div className="text-xs text-muted-foreground">Customize Andrea\'s behavior</div>
+            </div>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/memories')} className="cursor-pointer">
+            <Brain className="mr-2 h-4 w-4" />
+            <div>
+              <div className="font-medium">Memories</div>
+              <div className="text-xs text-muted-foreground">What Andrea remembers</div>
+            </div>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/ideas')} className="cursor-pointer">
+            <Lightbulb className="mr-2 h-4 w-4" />
+            <div>
+              <div className="font-medium">My Ideas</div>
+              <div className="text-xs text-muted-foreground">AI use cases to explore</div>
+            </div>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/prompts')} className="cursor-pointer">
+            <BookOpen className="mr-2 h-4 w-4" />
+            <div>
+              <div className="font-medium">Prompt Library</div>
+              <div className="text-xs text-muted-foreground">Saved reusable prompts</div>
+            </div>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/journey')} className="cursor-pointer">
+            <TrendingUp className="mr-2 h-4 w-4" />
+            <div>
+              <div className="font-medium">My AI Journey</div>
+              <div className="text-xs text-muted-foreground">Skills & progress timeline</div>
+            </div>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <Button variant="ghost" size="sm" className="gap-2" onClick={() => setHelpPanelOpen(true)}>
+        <HelpCircle className="h-4 w-4" />
+        <span className="hidden sm:inline">Help</span>
+      </Button>
+    </div>
+  );
+
+
   return (
-    <div className="min-h-screen bg-background">
+    <AppShell breadcrumbs={[{ label: 'Home' }]} topBarActions={dashboardActions}>
+
       {/* First-time tour auto-trigger */}
       <HelpTour open={helpOpen} onOpenChange={setHelpOpen} onComplete={handleTourComplete} />
       {/* Help panel modal (Help button / tour replay) */}
@@ -230,132 +298,6 @@ export default function Dashboard() {
         title="Session 1: Introduction to AI Prompting"
       />
 
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
-          <div className="min-w-0">
-            {(orgName || profile.employer_name) && (
-              <p className="text-xs text-muted-foreground/70 font-medium tracking-wide uppercase truncate">
-                {orgName || profile.employer_name}
-              </p>
-            )}
-            <h1 className="text-lg md:text-xl font-display font-bold">AI Training Dashboard</h1>
-            <p className="text-sm text-muted-foreground hidden sm:block">
-              Welcome back, {profile.display_name || 'Learner'}
-            </p>
-          </div>
-
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="gap-2" data-tour="bank-policies-btn" onClick={() => navigate('/policies')}>
-              <Shield className="h-4 w-4" />
-              Bank Policies
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2" data-tour="personalization-btn">
-                  <Sparkles className="h-4 w-4" />
-                  My Personalization
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-card">
-                <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <div>
-                    <div className="font-medium">AI Settings</div>
-                    <div className="text-xs text-muted-foreground">Customize Andrea's behavior</div>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/memories')} className="cursor-pointer">
-                  <Brain className="mr-2 h-4 w-4" />
-                  <div>
-                    <div className="font-medium">Memories</div>
-                    <div className="text-xs text-muted-foreground">What Andrea remembers</div>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/ideas')} className="cursor-pointer">
-                  <Lightbulb className="mr-2 h-4 w-4" />
-                  <div>
-                    <div className="font-medium">My Ideas</div>
-                    <div className="text-xs text-muted-foreground">AI use cases to explore</div>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/prompts')} className="cursor-pointer">
-                  <BookOpen className="mr-2 h-4 w-4" />
-                  <div>
-                    <div className="font-medium">Prompt Library</div>
-                    <div className="text-xs text-muted-foreground">Saved reusable prompts</div>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/journey')} className="cursor-pointer">
-                  <TrendingUp className="mr-2 h-4 w-4" />
-                  <div>
-                    <div className="font-medium">My AI Journey</div>
-                    <div className="text-xs text-muted-foreground">Skills & progress timeline</div>
-                  </div>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button variant="ghost" size="sm" className="gap-2" onClick={() => setHelpPanelOpen(true)}>
-              <HelpCircle className="h-4 w-4" />
-              Help
-            </Button>
-            <ProfileDropdown onReplayTour={() => setHelpPanelOpen(true)} />
-          </div>
-
-          {/* Mobile nav */}
-          <div className="flex md:hidden items-center gap-2">
-            <ProfileDropdown onReplayTour={() => setHelpPanelOpen(true)} />
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-72 p-0">
-                <nav className="flex flex-col py-6">
-                  <div className="px-4 pb-4 border-b">
-                    <p className="font-semibold">{profile.display_name || 'Learner'}</p>
-                    <p className="text-xs text-muted-foreground">{profile.job_role}</p>
-                  </div>
-                  <div className="flex flex-col py-2">
-                    <button className="flex items-center gap-3 px-4 py-3 text-sm text-destructive hover:bg-muted transition-colors" onClick={() => setFeedbackOpen(true)}>
-                      <MessageCircle className="h-4 w-4" /> Feedback
-                    </button>
-                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/policies')}>
-                      <Shield className="h-4 w-4 text-muted-foreground" /> Bank Policies
-                    </button>
-                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/settings')}>
-                      <Settings className="h-4 w-4 text-muted-foreground" /> AI Settings
-                    </button>
-                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/memories')}>
-                      <Brain className="h-4 w-4 text-muted-foreground" /> Memories
-                    </button>
-                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/ideas')}>
-                      <Lightbulb className="h-4 w-4 text-muted-foreground" /> My Ideas
-                    </button>
-                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/prompts')}>
-                      <BookOpen className="h-4 w-4 text-muted-foreground" /> Prompt Library
-                    </button>
-                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/journey')}>
-                      <TrendingUp className="h-4 w-4 text-muted-foreground" /> My AI Journey
-                    </button>
-                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/certificates')}>
-                      <Award className="h-4 w-4 text-muted-foreground" /> Certificates
-                    </button>
-                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => navigate('/electives')}>
-                      <GraduationCap className="h-4 w-4 text-muted-foreground" /> Elective Paths
-                    </button>
-                    <button className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted transition-colors" onClick={() => setHelpPanelOpen(true)}>
-                      <HelpCircle className="h-4 w-4 text-muted-foreground" /> Help
-                    </button>
-                  </div>
-                </nav>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
-      </header>
 
       <div className="container mx-auto px-4 py-8">
         {/* Profile Summary */}
@@ -768,7 +710,7 @@ export default function Dashboard() {
 
       {/* Andrea Dashboard Chat */}
       <DashboardChat profile={profile} progress={progress} forceOpen={andreaPanelOpenForTour} />
-    </div>
+    </AppShell>
   );
 }
 
