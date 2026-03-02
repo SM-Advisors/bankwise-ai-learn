@@ -36,6 +36,7 @@ import ElectiveWorkspace from "./pages/ElectiveWorkspace";
 import Certificates from "./pages/Certificates";
 import AIJourney from "./pages/AIJourney";
 import NotFound from "./pages/NotFound";
+import ShellPreview from "./pages/ShellPreview";
 
 const queryClient = new QueryClient();
 
@@ -159,6 +160,13 @@ const App = () => (
                   <Route path="/super-admin" element={
                     <ProtectedRoute requireOnboarding>
                       <SuperAdminDashboard />
+                    </ProtectedRoute>
+                  } />
+
+                  {/* Phase 0 — Shell preview (dev/QA only, not linked in existing nav) */}
+                  <Route path="/shell-preview" element={
+                    <ProtectedRoute requireOnboarding>
+                      <ShellPreview />
                     </ProtectedRoute>
                   } />
 
