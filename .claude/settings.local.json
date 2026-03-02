@@ -66,7 +66,10 @@
       "Bash(ForEach-Object { $_Value })",
       "Bash(/tmp/add_rate_limit_trainer.ps1:*)",
       "Bash(/tmp/fix_all_functions.ps1:*)",
-      "Bash(/tmp/verify_all.ps1:*)"
+      "Bash(/tmp/verify_all.ps1:*)",
+      "Bash(wc:*)",
+      "Bash(xargs:*)",
+      "Bash(git -C \"C:\\\\Users\\\\coryk\\\\OneDrive\\\\Documents\\\\GitHub Repos\\\\bankwise-ai-learn\" log --oneline -20)"
     ]
   }
 }
