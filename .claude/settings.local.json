@@ -69,7 +69,8 @@
       "Bash(/tmp/verify_all.ps1:*)",
       "Bash(wc:*)",
       "Bash(xargs:*)",
-      "Bash(git -C \"C:\\\\Users\\\\coryk\\\\OneDrive\\\\Documents\\\\GitHub Repos\\\\bankwise-ai-learn\" log --oneline -20)"
+      "Bash(git -C \"C:\\\\Users\\\\coryk\\\\OneDrive\\\\Documents\\\\GitHub Repos\\\\bankwise-ai-learn\" log --oneline -20)",
+      "mcp__Microsoft_365__sharepoint_search"
     ]
   }
 }
