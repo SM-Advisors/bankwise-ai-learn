@@ -8,7 +8,6 @@ import { TrainingProvider } from "@/contexts/TrainingContext";
 import { SessionProvider } from "@/contexts/SessionContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { FeedbackButton } from "@/components/FeedbackButton";
 import { ViewAsBanner } from "@/components/ViewAsBanner";
 import { AppShell } from "@/components/shell";
 
@@ -50,7 +49,6 @@ const App = () => (
             <BrowserRouter>
               <SessionProvider>
                 <ViewAsBanner />
-                <FeedbackButton />
                 <Routes>
                   {/* Public routes */}
                   <Route path="/" element={<Index />} />
