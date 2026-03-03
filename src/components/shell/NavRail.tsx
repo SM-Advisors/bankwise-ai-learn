@@ -78,13 +78,13 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
       <nav
         aria-label="Main navigation"
         className={cn(
-          'fixed left-0 top-0 z-40 flex h-screen flex-col bg-card border-r border-border transition-all duration-200 overflow-hidden',
+          'fixed left-0 top-0 z-40 flex h-screen flex-col bg-primary transition-all duration-200 overflow-hidden',
           isExpanded ? 'w-60' : 'w-14'
         )}
       >
         {/* ── Header ─────────────────────────────────────────────────────── */}
         {isExpanded ? (
-          <div className="flex items-center justify-between px-3 py-3 mb-2">
+          <div className="flex items-center justify-between px-3 py-3 mb-2 bg-card border-b border-border">
             <button
               onClick={() => navigate('/dashboard')}
               className="transition-opacity hover:opacity-80"
@@ -101,7 +101,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
             </button>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-2 py-3 mb-2">
+          <div className="flex flex-col items-center gap-2 py-3 mb-2 bg-card border-b border-border">
             <button
               onClick={() => navigate('/dashboard')}
               className="flex h-9 w-9 items-center justify-center rounded-lg transition-opacity hover:opacity-80"
@@ -136,7 +136,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
                     'flex items-center gap-3 rounded-lg px-2 py-2.5 text-left transition-all duration-150 w-full',
                     active
                       ? 'bg-accent/20 text-accent'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      : 'text-primary-foreground/70 hover:bg-white/10 hover:text-primary-foreground'
                   )}
                 >
                   <Icon className="h-5 w-5 shrink-0" />
@@ -159,7 +159,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
                       'flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-150',
                       active
                         ? 'bg-accent/20 text-accent'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        : 'text-primary-foreground/60 hover:bg-white/10 hover:text-primary-foreground'
                     )}
                   >
                     <Icon className="h-5 w-5" />
@@ -175,13 +175,13 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
         </div>
 
         {/* ── User at bottom ───────────────────────────────────────────────── */}
-        <div className="border-t border-border p-2">
+        <div className="border-t border-white/10 p-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 aria-label="User menu"
                 className={cn(
-                  'flex items-center rounded-lg transition-all text-muted-foreground hover:bg-muted hover:text-foreground w-full',
+                  'flex items-center rounded-lg transition-all text-primary-foreground/60 hover:bg-white/10 hover:text-primary-foreground w-full',
                   isExpanded ? 'gap-3 px-2 py-2' : 'justify-center p-1'
                 )}
               >
@@ -190,7 +190,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
                 </div>
                 {isExpanded && (
                   <div className="overflow-hidden min-w-0">
-                    <div className="text-sm font-medium leading-tight truncate text-foreground">
+                    <div className="text-sm font-medium leading-tight truncate text-primary-foreground">
                       {profile?.display_name ?? 'User'}
                     </div>
                     <div className="text-[10px] opacity-60 leading-tight truncate">
