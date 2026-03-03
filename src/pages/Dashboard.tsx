@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -13,8 +14,10 @@ import {
 } from '@/utils/computeProgress';
 import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';
 import type { SessionProgressData, SkillSignal } from '@/types/progress';
-import { CheckCircle, Play, Sparkles, Bot, Building2, Zap } from 'lucide-react';
+import { CheckCircle, Play, Sparkles, Bot, Building2, Zap, Calendar, Clock, MapPin } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
+import { useEvents, type Event } from '@/hooks/useEvents';
+import { EventModal, getEventTypeConfig } from '@/components/EventModal';
 
 // ─── Session metadata ─────────────────────────────────────────────────────────
 
@@ -66,6 +69,12 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { profile, progress, loading } = useAuth();
   const { canAccessCommunity } = useFeatureGates();
+  const { events } = useEvents();
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+
+  const upcomingEvents = events
+    .filter((e) => new Date(e.scheduled_date) >= new Date())
+    .slice(0, 3);
 
   if (loading || !profile) {
     return (
@@ -157,8 +166,14 @@ export default function Dashboard() {
             onCommunity={() => navigate('/community')}
           />
         )}
+
+        {upcomingEvents.length > 0 && (
+          <UpcomingEventsSection events={upcomingEvents} onEventClick={setSelectedEvent} />
+        )}
       </div>
       </div>
+
+      <EventModal open={!!selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)} event={selectedEvent} />
     </AppShell>
   );
 }
@@ -391,6 +406,58 @@ function AllCompleteView({
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// ─── Upcoming events section ──────────────────────────────────────────────────
+
+function UpcomingEventsSection({
+  events,
+  onEventClick,
+}: {
+  events: Event[];
+  onEventClick: (e: Event) => void;
+}) {
+  return (
+    <div className="mt-6">
+      <div className="flex items-center gap-2 mb-3">
+        <Calendar className="h-4 w-4 text-muted-foreground" />
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Upcoming Events</h3>
+      </div>
+      <div className="space-y-2">
+        {events.map((event) => {
+          const config = getEventTypeConfig(event.event_type);
+          const Icon = config.icon;
+          const date = new Date(event.scheduled_date);
+          return (
+            <button
+              key={event.id}
+              onClick={() => onEventClick(event)}
+              className="w-full text-left flex items-start gap-3 px-4 py-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+            >
+              <div className={`p-1.5 rounded-md shrink-0 ${config.color}`}>
+                <Icon className="h-3.5 w-3.5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium leading-snug truncate">{event.title}</p>
+                <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {date.toLocaleDateString()} · {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  {event.location && (
+                    <span className="flex items-center gap-1 truncate">
+                      <MapPin className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{event.location.startsWith('http') ? 'Online' : event.location}</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

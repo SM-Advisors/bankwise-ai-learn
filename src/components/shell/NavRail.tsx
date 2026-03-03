@@ -84,7 +84,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
       >
         {/* ── Header ─────────────────────────────────────────────────────── */}
         {isExpanded ? (
-          <div className="flex items-center justify-between px-3 py-3 mb-2 bg-card border-b border-border">
+          <div className="flex h-16 shrink-0 items-center justify-between px-3 bg-card border-b border-border">
             <button
               onClick={() => navigate('/dashboard')}
               className="transition-opacity hover:opacity-80"
@@ -101,7 +101,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
             </button>
           </div>
         ) : (
-          <div className="flex flex-col items-center py-3 mb-2 bg-card border-b border-border">
+          <div className="flex h-16 shrink-0 items-center justify-center bg-card border-b border-border">
             <button
               onClick={onToggle}
               className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
@@ -128,7 +128,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
                   className={cn(
                     'flex items-center gap-3 rounded-lg px-2 py-2.5 text-left transition-all duration-150 w-full',
                     active
-                      ? 'bg-accent/20 text-accent'
+                      ? 'bg-accent/20 text-primary-foreground'
                       : 'text-primary-foreground/70 hover:bg-white/10 hover:text-primary-foreground'
                   )}
                 >
@@ -151,7 +151,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
                     className={cn(
                       'flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-150',
                       active
-                        ? 'bg-accent/20 text-accent'
+                        ? 'bg-accent/20 text-primary-foreground'
                         : 'text-primary-foreground/60 hover:bg-white/10 hover:text-primary-foreground'
                     )}
                   >
