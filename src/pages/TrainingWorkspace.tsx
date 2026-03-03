@@ -203,14 +203,15 @@ export default function TrainingWorkspace() {
 
   useEffect(() => {
     if (session?.modules?.length && !selectedModule) {
-      const firstModule = session.modules[0];
-      setSelectedModule(firstModule);
-      // Auto-open video modal for video-type modules (like Introduction)
-      if (firstModule.type === 'video') {
+      // Prefer the next unfinished module; fall back to the first module.
+      const nextModule =
+        session.modules.find((m) => !completedModules.has(m.id)) ?? session.modules[0];
+      setSelectedModule(nextModule);
+      if (nextModule.type === 'video') {
         setVideoModalOpen(true);
       }
     }
-  }, [session, selectedModule]);
+  }, [session, selectedModule, completedModules]);
 
   // Reset when module changes
   const prevModuleRef = useRef<string | null>(null);
