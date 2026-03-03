@@ -127,6 +127,36 @@ export type Database = {
         }
         Relationships: []
       }
+      andrea_trigger_log: {
+        Row: {
+          dismissed: boolean
+          engaged: boolean
+          id: string
+          surfaced_at: string
+          trigger_context: Json
+          trigger_type: string
+          user_id: string
+        }
+        Insert: {
+          dismissed?: boolean
+          engaged?: boolean
+          id?: string
+          surfaced_at?: string
+          trigger_context?: Json
+          trigger_type: string
+          user_id: string
+        }
+        Update: {
+          dismissed?: boolean
+          engaged?: boolean
+          id?: string
+          surfaced_at?: string
+          trigger_context?: Json
+          trigger_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           created_at: string
@@ -1564,6 +1594,41 @@ export type Database = {
           workflow_data?: Json
         }
         Relationships: []
+      }
+      value_signals: {
+        Row: {
+          created_at: string
+          id: string
+          org_id: string | null
+          signal_data: Json
+          signal_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          org_id?: string | null
+          signal_data?: Json
+          signal_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          org_id?: string | null
+          signal_data?: Json
+          signal_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "value_signals_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
