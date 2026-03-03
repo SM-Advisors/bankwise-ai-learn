@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { NavRail } from './NavRail';
 import { TopBar, type BreadcrumbItem } from './TopBar';
@@ -36,20 +36,26 @@ export function AppShell({
   contentClassName,
 }: AppShellProps) {
   const isMobile = useIsMobile();
+  const [navExpanded, setNavExpanded] = useState(false);
   const andreaRef = useRef<AndreaDockHandle>(null);
   const { handleDismiss } = useAndreaTriggers(andreaRef);
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {/* Desktop NavRail — hidden on mobile (renders as bottom bar) */}
-      {!isMobile && <NavRail />}
+      {!isMobile && (
+        <NavRail
+          isExpanded={navExpanded}
+          onToggle={() => setNavExpanded((v) => !v)}
+        />
+      )}
 
       {/* Main column */}
       <div
         className={cn(
-          'flex flex-1 flex-col min-w-0',
-          // Offset for desktop nav rail
-          !isMobile && 'ml-14'
+          'flex flex-1 flex-col min-w-0 transition-all duration-200',
+          // Offset for desktop nav rail — grows when rail expands
+          !isMobile && (navExpanded ? 'ml-60' : 'ml-14')
         )}
       >
         <TopBar breadcrumbs={breadcrumbs} actions={topBarActions} />
@@ -67,7 +73,7 @@ export function AppShell({
       </div>
 
       {/* Mobile NavRail renders as bottom bar — outside main column so it overlays */}
-      {isMobile && <NavRail />}
+      {isMobile && <NavRail isExpanded={false} onToggle={() => {}} />}
 
       {/* Andrea Dock — persistent across all views */}
       <AndreaDock ref={andreaRef} onDismiss={handleDismiss} />

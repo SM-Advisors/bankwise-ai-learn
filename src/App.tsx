@@ -33,6 +33,7 @@ import Electives from "./pages/Electives";
 import ElectiveWorkspace from "./pages/ElectiveWorkspace";
 import Certificates from "./pages/Certificates";
 import AIJourney from "./pages/AIJourney";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import ShellPreview from "./pages/ShellPreview";
 import Explore from "./pages/Explore";
@@ -80,6 +81,13 @@ const App = () => (
                   <Route path="/training/elective" element={
                     <ProtectedRoute requireOnboarding>
                       <ElectiveWorkspace />
+                    </ProtectedRoute>
+                  } />
+
+                  {/* Profile zone hub */}
+                  <Route path="/profile" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Profile />
                     </ProtectedRoute>
                   } />
 
