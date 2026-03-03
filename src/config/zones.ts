@@ -60,7 +60,7 @@ export const LEARNER_ZONES: Zone[] = [
     icon: User,
     label: 'Profile',
     description: 'Preferences, memories, journey',
-    path: '/settings',
+    path: '/profile',
     unlockedBy: 'onboarding_completed',
   },
 ];
