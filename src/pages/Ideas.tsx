@@ -131,7 +131,7 @@ export default function Ideas() {
   };
 
   return (
-
+    <>
       <div className="container mx-auto px-4 py-8">
         {/* Summary + Add Button */}
         <div className="flex items-center justify-between mb-6">
@@ -333,5 +333,6 @@ export default function Ideas() {
           isGenerating={generatingId === previewIdea.id}
         />
       )}
+    </>
   );
 }

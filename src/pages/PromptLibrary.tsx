@@ -125,7 +125,7 @@ export default function PromptLibrary() {
   }
 
   return (
-
+    <>
       <div className="container mx-auto px-4 py-6">
         {/* Search + Filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -324,5 +324,6 @@ export default function PromptLibrary() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </>
   );
 }
