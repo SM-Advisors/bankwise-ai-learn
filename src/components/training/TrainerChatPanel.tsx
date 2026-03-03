@@ -593,19 +593,20 @@ export function TrainerChatPanel({
           {/* Composer - pinned to bottom */}
           <div className="p-3 border-t shrink-0">
             <div className="flex gap-2 items-end">
-              <div className="shrink-0">
-                <Avatar className="h-16 w-16 border-2 border-primary/20 shadow-sm">
-                  <AvatarImage src={andreaCoach} alt="Andrea" className="object-cover" />
-                  <AvatarFallback className="text-sm">A</AvatarFallback>
-                </Avatar>
-              </div>
               <div className="flex-1 flex flex-col gap-1.5">
                 <Textarea
                   ref={inputRef}
                   value={input}
-                  onChange={(e) => onInputChange(e.target.value)}
+                  onChange={(e) => {
+                    onInputChange(e.target.value);
+                    // Auto-grow
+                    const el = e.target;
+                    el.style.height = 'auto';
+                    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+                  }}
                   placeholder="Ask Andrea for help..."
-                  className="min-h-[40px] max-h-[100px] resize-none text-sm rounded-xl"
+                  className="min-h-[40px] resize-none text-sm rounded-xl overflow-hidden"
+                  style={{ height: '40px' }}
                   onKeyDown={handleKeyDown}
                 />
                 <div className="flex items-center justify-between">
