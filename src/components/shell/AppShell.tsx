@@ -1,9 +1,7 @@
-import { useRef, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { NavRail } from './NavRail';
 import { TopBar, type BreadcrumbItem } from './TopBar';
-import { AndreaDock, type AndreaDockHandle } from './AndreaDock';
-import { useAndreaTriggers } from '@/hooks/useAndreaTriggers';
 import { cn } from '@/lib/utils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -20,7 +18,7 @@ interface AppShellProps {
 // ─── AppShell ─────────────────────────────────────────────────────────────────
 //
 // Persistent application shell. The user never "leaves" this shell —
-// the content area changes while NavRail, TopBar, and AndreaDock remain constant.
+// the content area changes while NavRail and TopBar remain constant.
 //
 // Desktop layout:
 //   [NavRail 56px] | [TopBar 64px + Content Area]
@@ -37,8 +35,6 @@ export function AppShell({
 }: AppShellProps) {
   const isMobile = useIsMobile();
   const [navExpanded, setNavExpanded] = useState(false);
-  const andreaRef = useRef<AndreaDockHandle>(null);
-  const { handleDismiss } = useAndreaTriggers(andreaRef);
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -74,9 +70,6 @@ export function AppShell({
 
       {/* Mobile NavRail renders as bottom bar — outside main column so it overlays */}
       {isMobile && <NavRail isExpanded={false} onToggle={() => {}} />}
-
-      {/* Andrea Dock — persistent across all views */}
-      <AndreaDock ref={andreaRef} onDismiss={handleDismiss} />
     </div>
   );
 }
