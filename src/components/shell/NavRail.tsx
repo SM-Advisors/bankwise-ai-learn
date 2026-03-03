@@ -8,7 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { ChevronRight, ChevronLeft, User, LayoutDashboard, ShieldCheck } from 'lucide-react';
+import { ChevronRight, ChevronLeft, User, LayoutDashboard, ShieldCheck, Settings, LogOut } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +37,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { unlockedZones } = useFeatureGates();
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
   const { isAdmin } = useUserRole();
 
   const initials = profile?.display_name
@@ -84,7 +84,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
       >
         {/* ── Header ─────────────────────────────────────────────────────── */}
         {isExpanded ? (
-          <div className="flex items-center justify-between px-3 py-3 mb-2">
+          <div className="flex items-center justify-between px-3 py-3 mb-2 bg-card border-b border-border">
             <button
               onClick={() => navigate('/dashboard')}
               className="transition-opacity hover:opacity-80"
@@ -94,24 +94,17 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
             </button>
             <button
               onClick={onToggle}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-primary-foreground/60 hover:bg-white/10 hover:text-primary-foreground transition-all"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
               aria-label="Collapse menu"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-2 py-3 mb-2">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="flex h-9 w-9 items-center justify-center rounded-lg transition-opacity hover:opacity-80"
-              aria-label="Go to home"
-            >
-              <img src={sparkLogo} alt="SMILE" className="h-7 w-7 object-contain" />
-            </button>
+          <div className="flex flex-col items-center py-3 mb-2 bg-card border-b border-border">
             <button
               onClick={onToggle}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-primary-foreground/60 hover:bg-white/10 hover:text-primary-foreground transition-all"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
               aria-label="Expand menu"
             >
               <ChevronRight className="h-4 w-4" />
@@ -205,6 +198,10 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
                 <User className="mr-2 h-4 w-4" />
                 My Profile
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </DropdownMenuItem>
               {(isAdmin || profile?.is_super_admin) && (
                 <DropdownMenuSeparator />
               )}
@@ -220,6 +217,11 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
                   Super Admin
                 </DropdownMenuItem>
               )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive focus:text-destructive">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

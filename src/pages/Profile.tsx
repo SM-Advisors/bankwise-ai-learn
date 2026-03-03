@@ -290,7 +290,7 @@ export default function Profile() {
   return (
     <AppShell breadcrumbs={[{ label: 'Profile' }]}>
       {/* Sticky tab bar */}
-      <div className="sticky top-16 z-20 border-b bg-card px-6">
+      <div className="sticky top-0 z-20 border-b bg-card px-6">
         <div className="flex">
           <TabBtn tab="settings" active={activeTab === 'settings'} icon={SettingsIcon} label="Settings" onClick={() => setActiveTab('settings')} />
           <TabBtn tab="memories" active={activeTab === 'memories'} icon={Brain}        label="Memories" onClick={() => setActiveTab('memories')} />

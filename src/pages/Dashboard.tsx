@@ -14,6 +14,7 @@ import {
 import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';
 import type { SessionProgressData, SkillSignal } from '@/types/progress';
 import { CheckCircle, Play, Sparkles, Bot, Building2, Zap } from 'lucide-react';
+import andreaCoach from '@/assets/andrea-coach.png';
 
 // ─── Session metadata ─────────────────────────────────────────────────────────
 
@@ -69,9 +70,9 @@ export default function Dashboard() {
   if (loading || !profile) {
     return (
       <AppShell breadcrumbs={[{ label: 'Home' }]}>
-        <div className="container mx-auto px-4 py-10 max-w-2xl space-y-4">
+        <div className="flex justify-center w-full px-4 py-10"><div className="w-full max-w-2xl space-y-4">
           <SkeletonLoader type="card" count={2} />
-        </div>
+        </div></div>
       </AppShell>
     );
   }
@@ -116,7 +117,8 @@ export default function Dashboard() {
 
   return (
     <AppShell breadcrumbs={[{ label: 'Home' }]}>
-      <div className="container mx-auto px-4 py-10 max-w-2xl">
+      <div className="flex justify-center w-full px-4 py-10">
+      <div className="w-full max-w-2xl">
         {homeState === 'brand_new' && (
           <BrandNewView
             name={profile.display_name || 'there'}
@@ -156,6 +158,7 @@ export default function Dashboard() {
           />
         )}
       </div>
+      </div>
     </AppShell>
   );
 }
@@ -175,16 +178,17 @@ function BrandNewView({
   return (
     <div className="space-y-5">
       {/* Andrea greeting */}
-      <Card className="border-accent/30 bg-accent/5">
-        <CardContent className="p-5">
-          <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-1.5">Andrea</p>
+      <div className="flex items-start gap-3">
+        <img src={andreaCoach} alt="Andrea" className="h-12 w-12 rounded-full object-cover shrink-0 border-2 border-accent/30" />
+        <div className="relative bg-white border border-accent/20 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
+          <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-1">Andrea</p>
           <p className="text-sm text-foreground leading-relaxed">
             Welcome, {name}. I'll be your AI coach throughout this journey. We'll start with the
             fundamentals — once you've worked through Session 1, you'll have a real foundation for
             everything that follows.
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Session card */}
       <Card>
@@ -228,12 +232,13 @@ function MidSessionView({
   return (
     <div className="space-y-5">
       {/* Andrea nudge */}
-      <Card className="border-accent/30 bg-accent/5">
-        <CardContent className="p-5">
-          <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-1.5">Andrea</p>
+      <div className="flex items-start gap-3">
+        <img src={andreaCoach} alt="Andrea" className="h-12 w-12 rounded-full object-cover shrink-0 border-2 border-accent/30" />
+        <div className="relative bg-white border border-accent/20 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
+          <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-1">Andrea</p>
           <p className="text-sm text-foreground">Ready to pick up where you left off, {name}?</p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Current session card */}
       <Card>
