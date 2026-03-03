@@ -101,14 +101,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
             </button>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-2 py-3 mb-2 bg-card border-b border-border">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="flex h-9 w-9 items-center justify-center rounded-lg transition-opacity hover:opacity-80"
-              aria-label="Go to home"
-            >
-              <img src={sparkLogo} alt="SMILE" className="h-7 w-7 object-contain" />
-            </button>
+          <div className="flex flex-col items-center py-3 mb-2 bg-card border-b border-border">
             <button
               onClick={onToggle}
               className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
