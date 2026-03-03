@@ -3,6 +3,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { NavRail } from './NavRail';
 import { TopBar, type BreadcrumbItem } from './TopBar';
 import { AndreaDock, type AndreaDockHandle } from './AndreaDock';
+import { useAndreaTriggers } from '@/hooks/useAndreaTriggers';
 import { cn } from '@/lib/utils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -36,6 +37,7 @@ export function AppShell({
 }: AppShellProps) {
   const isMobile = useIsMobile();
   const andreaRef = useRef<AndreaDockHandle>(null);
+  const { handleDismiss } = useAndreaTriggers(andreaRef);
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -68,7 +70,7 @@ export function AppShell({
       {isMobile && <NavRail />}
 
       {/* Andrea Dock — persistent across all views */}
-      <AndreaDock ref={andreaRef} />
+      <AndreaDock ref={andreaRef} onDismiss={handleDismiss} />
     </div>
   );
 }

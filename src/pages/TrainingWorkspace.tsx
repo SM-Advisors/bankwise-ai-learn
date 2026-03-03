@@ -37,6 +37,7 @@ import { AppShell, type BreadcrumbItem } from '@/components/shell';
 import { ProgressStrip, type ProgressModule } from '@/components/smile';
 import { useValueSignals } from '@/hooks/useValueSignals';
 import { ModuleContentPanel } from '@/components/training/ModuleContentPanel';
+import { SessionSwitcher } from '@/components/training/SessionSwitcher';
 
 export default function TrainingWorkspace() {
   const isMobile = useIsMobile();
@@ -908,6 +909,17 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
       topBarActions={trainingActions}
       contentClassName="flex flex-col overflow-hidden p-0"
     >
+      {/* Session switcher — navigate between sessions 1–4 */}
+      <SessionSwitcher
+        activeSession={parseInt(sessionId || '1')}
+        currentSession={profile?.current_session ?? 1}
+        completedSessions={{
+          1: !!progress?.session_1_completed,
+          2: !!progress?.session_2_completed,
+          3: !!progress?.session_3_completed,
+        }}
+      />
+
       {/* Mobile mode tab bar (Learn / Practice / Coach) */}
       {isMobile && (
         <div className="flex border-b bg-card shrink-0">
