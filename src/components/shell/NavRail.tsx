@@ -8,7 +8,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronRight, ChevronLeft, User, LayoutDashboard, ShieldCheck } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useUserRole } from '@/hooks/useUserRole';
 import sparkLogo from '@/assets/SM ADVISORS SPARK_Merch_Transparent.svg';
 import smAdvisorsLogo from '@/assets/sm-advisors-logo-transparent.png';
 
@@ -30,6 +38,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
   const location = useLocation();
   const { unlockedZones } = useFeatureGates();
   const { profile } = useAuth();
+  const { isAdmin } = useUserRole();
 
   const initials = profile?.display_name
     ? profile.display_name
@@ -167,28 +176,52 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
 
         {/* ── User at bottom ───────────────────────────────────────────────── */}
         <div className="border-t border-white/10 p-2">
-          <button
-            onClick={() => navigate('/profile')}
-            aria-label="Go to profile"
-            className={cn(
-              'flex items-center rounded-lg transition-all text-primary-foreground/60 hover:bg-white/10 hover:text-primary-foreground w-full',
-              isExpanded ? 'gap-3 px-2 py-2' : 'justify-center p-1'
-            )}
-          >
-            <div className="h-8 w-8 shrink-0 rounded-full bg-accent/20 flex items-center justify-center text-xs font-semibold text-accent border border-accent/30">
-              {initials}
-            </div>
-            {isExpanded && (
-              <div className="overflow-hidden min-w-0">
-                <div className="text-sm font-medium leading-tight truncate text-primary-foreground">
-                  {profile?.display_name ?? 'User'}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                aria-label="User menu"
+                className={cn(
+                  'flex items-center rounded-lg transition-all text-primary-foreground/60 hover:bg-white/10 hover:text-primary-foreground w-full',
+                  isExpanded ? 'gap-3 px-2 py-2' : 'justify-center p-1'
+                )}
+              >
+                <div className="h-8 w-8 shrink-0 rounded-full bg-accent/20 flex items-center justify-center text-xs font-semibold text-accent border border-accent/30">
+                  {initials}
                 </div>
-                <div className="text-[10px] opacity-60 leading-tight truncate">
-                  {profile?.job_role ?? profile?.employer_name ?? 'View profile'}
-                </div>
-              </div>
-            )}
-          </button>
+                {isExpanded && (
+                  <div className="overflow-hidden min-w-0">
+                    <div className="text-sm font-medium leading-tight truncate text-primary-foreground">
+                      {profile?.display_name ?? 'User'}
+                    </div>
+                    <div className="text-[10px] opacity-60 leading-tight truncate">
+                      {profile?.job_role ?? profile?.employer_name ?? 'View profile'}
+                    </div>
+                  </div>
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="right" align="end" className="w-48 mb-1">
+              <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+                <User className="mr-2 h-4 w-4" />
+                My Profile
+              </DropdownMenuItem>
+              {(isAdmin || profile?.is_super_admin) && (
+                <DropdownMenuSeparator />
+              )}
+              {isAdmin && (
+                <DropdownMenuItem onClick={() => navigate('/admin')} className="cursor-pointer">
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Admin Dashboard
+                </DropdownMenuItem>
+              )}
+              {profile?.is_super_admin && (
+                <DropdownMenuItem onClick={() => navigate('/super-admin')} className="cursor-pointer">
+                  <ShieldCheck className="mr-2 h-4 w-4" />
+                  Super Admin
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </nav>
     );
