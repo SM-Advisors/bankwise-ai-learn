@@ -7,13 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ALL_SESSION_CONTENT, type ModuleContent } from '@/data/trainingContent';
-import { ModuleContentModal } from '@/components/ModuleContentModal';
 import { VideoModal } from '@/components/VideoModal';
-import { BankPolicyModal } from '@/components/BankPolicyModal';
-import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { TrainerChatPanel } from '@/components/training/TrainerChatPanel';
 import { PracticeChatPanel } from '@/components/training/PracticeChatPanel';
-import { type Message, type BankPolicy } from '@/types/training';
+import { type Message } from '@/types/training';
 import type { SessionProgressData, ModuleEngagement } from '@/types/progress';
 import { DEFAULT_ENGAGEMENT } from '@/types/progress';
 import { deriveSkillSignals } from '@/utils/deriveSkillSignals';
@@ -34,11 +31,12 @@ import { WorkflowStudioPanel } from '@/components/workflow-studio/WorkflowStudio
 import { CapstonePanel } from '@/components/capstone/CapstonePanel';
 import type { CapstoneData } from '@/types/progress';
 import type { WorkflowData } from '@/types/workflow';
-import { Loader2, Shield, Bot, Building2, MessageSquare, GraduationCap } from 'lucide-react';
+import { Loader2, Bot, Building2, MessageSquare, GraduationCap, BookOpen } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AppShell, type BreadcrumbItem } from '@/components/shell';
 import { ProgressStrip, type ProgressModule } from '@/components/smile';
 import { useValueSignals } from '@/hooks/useValueSignals';
+import { ModuleContentPanel } from '@/components/training/ModuleContentPanel';
 
 export default function TrainingWorkspace() {
   const isMobile = useIsMobile();
@@ -55,17 +53,12 @@ export default function TrainingWorkspace() {
   const [isTrainerLoading, setIsTrainerLoading] = useState(false);
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
   const [moduleCompleted, setModuleCompleted] = useState(false);
-  const [contentModalOpen, setContentModalOpen] = useState(false);
-  const [contentModalModule, setContentModalModule] = useState<ModuleContent | null>(null);
+  // 'learn' shows the content panel; 'practice' shows the chat
+  const [workspaceMode, setWorkspaceMode] = useState<'learn' | 'practice'>('learn');
   const [videoModalOpen, setVideoModalOpen] = useState(false);
-  const [policyModalOpen, setPolicyModalOpen] = useState(false);
-  const [selectedPolicy, setSelectedPolicy] = useState<BankPolicy | null>(null);
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
-  const [policyDropdownOpen, setPolicyDropdownOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<'practice' | 'coach'>('practice');
-
-  const { policies } = useBankPolicies();
   const { emitSignal } = useValueSignals();
   const { createMemory } = useAIMemories();
   const { pendingRequest, respondToLevelChange } = useSkillAssessment();
@@ -320,8 +313,7 @@ export default function TrainingWorkspace() {
     if (module.type === 'video') {
       setVideoModalOpen(true);
     } else {
-      setContentModalModule(module);
-      setContentModalOpen(true);
+      setWorkspaceMode('learn');
     }
 
     // Track content viewed engagement
@@ -898,59 +890,15 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
   ];
 
   const trainingActions = (
-    <div className="flex items-center gap-3 min-w-0">
-      <ProgressStrip
-        modules={progressModules}
-        currentModuleId={selectedModule?.id}
-        onModuleClick={(id) => {
-          const mod = session.modules.find((m) => m.id === id);
-          if (mod) handleModuleSelect(mod);
-        }}
-        className="max-w-[480px]"
-      />
-      {policies.length > 0 && (
-        <div className="relative hidden md:block shrink-0">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={() => setPolicyDropdownOpen(!policyDropdownOpen)}
-            aria-expanded={policyDropdownOpen}
-            aria-haspopup="true"
-          >
-            <Shield className="h-4 w-4" />
-            Bank Policies
-          </Button>
-          {policyDropdownOpen && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setPolicyDropdownOpen(false)} />
-              <div className="absolute right-0 top-full mt-1 w-64 bg-popover border rounded-lg shadow-lg z-50">
-                <div className="p-2 space-y-1">
-                  {policies.map((policy) => (
-                    <button
-                      key={policy.id}
-                      className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
-                      onClick={() => {
-                        setSelectedPolicy(policy as BankPolicy);
-                        setPolicyModalOpen(true);
-                        setPolicyDropdownOpen(false);
-                      }}
-                    >
-                      <div className="font-medium">{policy.title}</div>
-                      <div className="text-xs text-muted-foreground line-clamp-1">
-                        {policy.summary || 'View policy details'}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-      <Badge variant="secondary" className="hidden md:inline-flex shrink-0">{profile.learning_style}</Badge>
-      <Badge variant="outline" className="hidden md:inline-flex shrink-0">Level {profile.ai_proficiency_level}</Badge>
-    </div>
+    <ProgressStrip
+      modules={progressModules}
+      currentModuleId={selectedModule?.id}
+      onModuleClick={(id) => {
+        const mod = session.modules.find((m) => m.id === id);
+        if (mod) handleModuleSelect(mod);
+      }}
+      className="max-w-[480px]"
+    />
   );
 
   return (
@@ -959,22 +907,27 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
       topBarActions={trainingActions}
       contentClassName="flex flex-col overflow-hidden p-0"
     >
-      <BankPolicyModal
-        open={policyModalOpen}
-        onOpenChange={setPolicyModalOpen}
-        policy={selectedPolicy}
-      />
-
-      {/* Mobile tab bar */}
+      {/* Mobile mode tab bar (Learn / Practice / Coach) */}
       {isMobile && (
         <div className="flex border-b bg-card shrink-0">
           <button
             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
-              mobileTab === 'practice'
+              mobileTab === 'practice' && workspaceMode === 'learn'
                 ? 'text-primary border-b-2 border-primary'
                 : 'text-muted-foreground'
             }`}
-            onClick={() => setMobileTab('practice')}
+            onClick={() => { setMobileTab('practice'); setWorkspaceMode('learn'); }}
+          >
+            <BookOpen className="h-3.5 w-3.5" />
+            Learn
+          </button>
+          <button
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
+              mobileTab === 'practice' && workspaceMode === 'practice'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-muted-foreground'
+            }`}
+            onClick={() => { setMobileTab('practice'); setWorkspaceMode('practice'); }}
           >
             <MessageSquare className="h-3.5 w-3.5" />
             Practice
@@ -996,9 +949,17 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
 
-        {/* Middle Column - Practice Chat Area (shown on desktop always, on mobile when practice tab active) */}
+        {/* Left column — Learn Mode content (65%) or Practice Chat (flex-1) */}
         {(!isMobile || mobileTab === 'practice') && (
-          <div data-tour="practice-area" className="flex-1 flex flex-col overflow-hidden" ref={contentScrollRef}>
+          <div
+            data-tour="practice-area"
+            className={`flex flex-col overflow-hidden ${
+              workspaceMode === 'learn' && selectedModule && !isAgentModule && !isWorkflowModule && !isCapstoneModule
+                ? 'w-[65%]'
+                : 'flex-1'
+            }`}
+            ref={contentScrollRef}
+          >
             {/* Session 3 deployed agent banner */}
             {isSession3 && deployedAgent && selectedModule && !isWorkflowModule && !isCapstoneModule && (
               <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 border-b border-primary/10">
@@ -1022,7 +983,13 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
               </div>
             )}
 
-            {selectedModule && isAgentModule ? (
+            {/* Learn Mode: show content panel inline */}
+            {workspaceMode === 'learn' && selectedModule && !isAgentModule && !isWorkflowModule && !isCapstoneModule ? (
+              <ModuleContentPanel
+                module={selectedModule}
+                onStartPractice={() => setWorkspaceMode('practice')}
+              />
+            ) : selectedModule && isAgentModule ? (
               <AgentStudioPanel module={selectedModule} />
             ) : selectedModule && isWorkflowModule ? (
               <WorkflowStudioPanel
@@ -1116,11 +1083,6 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
       </div>
 
       {/* Modals */}
-      <ModuleContentModal
-        module={contentModalModule}
-        open={contentModalOpen}
-        onOpenChange={setContentModalOpen}
-      />
 
       <VideoModal
         open={videoModalOpen}

@@ -1,41 +1,21 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { HelpTour } from '@/components/HelpTour';
-import { HelpPanel } from '@/components/HelpPanel';
-import { useTour } from '@/hooks/useTour';
-import { ANDREA_STEPS } from '@/constants/tourSteps';
-import { BankPolicyModal } from '@/components/BankPolicyModal';
-import { VideoModal } from '@/components/VideoModal';
-import { useBankPolicies } from '@/hooks/useBankPolicies';
-import { useLiveTrainingSessions } from '@/hooks/useLiveTrainingSessions';
-import { useEvents } from '@/hooks/useEvents';
-import { useUserAgents } from '@/hooks/useUserAgents';
-import { EventModal, getEventTypeConfig } from '@/components/EventModal';
-import { useAppSettings } from '@/hooks/useAppSettings';
+import { AppShell } from '@/components/shell';
+import { SkeletonLoader } from '@/components/smile';
+import { useFeatureGates } from '@/hooks/useFeatureGates';
 import {
-  Loader2, Play, CheckCircle, Sparkles, Bot,
-  Building2, HelpCircle, BookOpen, Shield, Lightbulb,
-  Radio, Calendar, Users, MessageCircle,
-  CalendarDays, Video, Settings, Brain, Cpu, Zap,
-  TrendingUp
-} from 'lucide-react';
-import { computeOverallProgress, computeSessionProgress, getModuleStates, getCompletedModuleCount, getSessionModuleTotal } from '@/utils/computeProgress';
+  computeSessionProgress,
+  getCompletedModuleCount,
+  getSessionModuleTotal,
+} from '@/utils/computeProgress';
 import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';
 import type { SessionProgressData, SkillSignal } from '@/types/progress';
-import { CompletionSummary } from '@/components/capstone/CompletionSummary';
-import { DashboardChat } from '@/components/DashboardChat';
-import { CommunityFeed } from '@/components/CommunityFeed';
-import { FeedbackModal } from '@/components/FeedbackModal';
-import { BrainstormPanel } from '@/components/BrainstormPanel';
-import { AppShell } from '@/components/shell';
+import { CheckCircle, Play, Sparkles, Bot, Building2, Zap } from 'lucide-react';
 
+// ─── Session metadata ─────────────────────────────────────────────────────────
 
 const SESSIONS = [
   {
@@ -43,763 +23,369 @@ const SESSIONS = [
     title: 'AI Foundations & Prompting',
     description: 'Master the fundamentals of effective AI prompting with the CLEAR framework and VERIFY checklist.',
     icon: Sparkles,
-    modules: ['What AI Can Do', 'CLEAR Framework', 'Context & Security', 'Iteration', 'Verifying Output', 'Capstone'],
+    duration: '~45 min',
   },
   {
     id: 2,
     title: 'Building Your AI Agent',
     description: 'Create a custom AI agent tailored to your line of business and daily tasks.',
     icon: Bot,
-    modules: ['Prompts to Agents', 'Architecture', 'Template Builder', 'Tool Integration', 'Living Agent', 'Capstone'],
+    duration: '~60 min',
   },
   {
     id: 3,
     title: 'Role-Specific Training',
     description: 'Deep dive into AI applications specific to your department and role.',
     icon: Building2,
-    modules: ['Department Use Cases', 'Compliance & AI', 'Workflows', 'Advanced Techniques', 'Capstone'],
+    duration: '~50 min',
   },
   {
     id: 4,
     title: 'AI-Native Integration',
     description: 'Move from AI-capable to AI-native — integrate AI as a default part of your workflow.',
     icon: Zap,
-    modules: ['AI Audit', 'Team Conventions', 'Measuring ROI', 'Tool Landscape', 'Integration Plan'],
+    duration: '~50 min',
   },
-];
+] as const;
 
-const policyIconMap: Record<string, React.ElementType> = {
-  BookOpen,
-  Shield,
-  Lightbulb,
-};
+type SessionMeta = (typeof SESSIONS)[number];
+
+// ─── Home state ───────────────────────────────────────────────────────────────
+//
+// brand_new        — onboarding done, nothing started yet
+// mid_session      — currently in progress on a session
+// between_sessions — previous session done, next not yet started
+// all_complete     — all sessions finished
+
+type HomeState = 'brand_new' | 'mid_session' | 'between_sessions' | 'all_complete';
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { user, profile, progress, loading, signOut, updateProfile, effectiveOrgId, viewAsOrg } = useAuth();
-  const [helpOpen, setHelpOpen] = useState(false);             // controls HelpTour (first-time auto-trigger)
-  const [helpPanelOpen, setHelpPanelOpen] = useState(false);   // controls HelpPanel modal (Help button / replay)
-  const [andreaPanelOpenForTour, setAndreaPanelOpenForTour] = useState(false);
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
-
-  // Andrea tour — used to replay the DashboardChat tour from HelpPanel
-  const { startTour: startAndreaTour } = useTour('andrea');
-  const [selectedPolicy, setSelectedPolicy] = useState<any>(null);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  const [videoModalOpen, setVideoModalOpen] = useState(false);
-  const { policies, loading: policiesLoading } = useBankPolicies();
-  const { sessions: liveSessions, loading: liveSessionsLoading } = useLiveTrainingSessions();
-  const { events, loading: eventsLoading } = useEvents();
-  const { settings: appSettings } = useAppSettings();
-  const { agents, isLoading: agentsLoading } = useUserAgents();
-
-  // Fetch org name for the header — uses effectiveOrgId so super admin preview shows the viewed org
-  const [orgName, setOrgName] = useState<string | null>(null);
-  useEffect(() => {
-    // If viewing as another org, use the stored name directly (no extra query)
-    if (viewAsOrg) {
-      setOrgName(viewAsOrg.name);
-      return;
-    }
-    if (effectiveOrgId) {
-      (supabase.from('organizations' as any).select('name').eq('id', effectiveOrgId).maybeSingle() as any)
-        .then(({ data }: any) => {
-          if (data?.name) setOrgName(data.name);
-        });
-    }
-  }, [effectiveOrgId, viewAsOrg]);
-
-  // Auto-start tour for new users who haven't completed it
-  useEffect(() => {
-    if (profile && !profile.tour_completed && !helpOpen) {
-      setHelpOpen(true);
-    }
-  }, [profile?.tour_completed]);
-
-  // Handle ?tour= URL params (triggered by HelpPanel replay)
-  useEffect(() => {
-    const tourParam = searchParams.get('tour');
-    if (!tourParam) return;
-
-    const next = new URLSearchParams(searchParams);
-    next.delete('tour');
-    setSearchParams(next, { replace: true });
-
-    if (tourParam === 'dashboard') {
-      setTimeout(() => setHelpOpen(true), 300);
-    } else if (tourParam === 'andrea') {
-      // Open the DashboardChat panel, then start the Andrea tour
-      setAndreaPanelOpenForTour(true);
-      setTimeout(() => {
-        startAndreaTour(ANDREA_STEPS, () => setAndreaPanelOpenForTour(false));
-      }, 600);
-    }
-  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleTourComplete = async () => {
-    if (profile && !profile.tour_completed) {
-      await updateProfile({ tour_completed: true } as any);
-    }
-  };
+  const { profile, progress, loading } = useAuth();
+  const { canAccessCommunity } = useFeatureGates();
 
   if (loading || !profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <AppShell breadcrumbs={[{ label: 'Home' }]}>
+        <div className="container mx-auto px-4 py-10 max-w-2xl space-y-4">
+          <SkeletonLoader type="card" count={2} />
+        </div>
+      </AppShell>
     );
   }
 
-  const currentSession = profile.current_session;
-  const sessionProgress = [
-    progress?.session_1_completed || false,
-    progress?.session_2_completed || false,
-    progress?.session_3_completed || false,
-    (progress as any)?.session_4_completed || false,
-  ];
-
-  const overallProgress = computeOverallProgress(progress);
-
-  // Total completed modules across all sessions
-  const totalCompletedModules = [1, 2, 3, 4].reduce(
-    (sum, sid) => sum + getCompletedModuleCount(sid, getSessionProgressData(sid)),
-    0
-  );
-  const totalModules = [1, 2, 3, 4].reduce(
-    (sum, sid) => sum + getSessionModuleTotal(sid),
-    0
-  );
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
   function getSessionProgressData(sessionId: number): SessionProgressData | null {
     if (!progress) return null;
-    const key = `session_${sessionId}_progress`;
-    return ((progress as any)[key] as SessionProgressData) || null;
+    return ((progress as any)[`session_${sessionId}_progress`] as SessionProgressData) || null;
   }
 
-  // Aggregate skill signals from all sessions
+  const sessionCompleted = (id: number) => !!(progress as any)?.[`session_${id}_completed`];
+
+  const currentSession = Math.min(profile.current_session || 1, 4);
+  const currentSessionData = getSessionProgressData(currentSession);
+  const currentSessionInfo: SessionMeta = SESSIONS[currentSession - 1];
+
+  function deriveHomeState(): HomeState {
+    if (sessionCompleted(4)) return 'all_complete';
+
+    const completedInCurrent = getCompletedModuleCount(currentSession, currentSessionData);
+    if (completedInCurrent > 0) return 'mid_session';
+
+    const prevDone = currentSession > 1 && sessionCompleted(currentSession - 1);
+    if (prevDone) return 'between_sessions';
+
+    return 'brand_new';
+  }
+
+  const homeState = deriveHomeState();
+  const sessionPct = computeSessionProgress(currentSession, currentSessionData);
+  const completedCount = getCompletedModuleCount(currentSession, currentSessionData);
+  const moduleTotal = getSessionModuleTotal(currentSession);
+
   const allSkillSignals: SkillSignal[] = [1, 2, 3, 4].flatMap((sid) => {
     const data = getSessionProgressData(sid);
     return data?.skillSignals || [];
   });
-  const topSkills = aggregateSkillSignals(allSkillSignals).filter((s) => s.level === 'proficient').slice(0, 3);
-
-  const getSessionStatus = (sessionId: number) => {
-    if (sessionProgress[sessionId - 1]) return 'completed';
-    if (sessionId === currentSession) return 'current';
-    return 'available';
-  };
-
-  const getLobLabel = (lob: string | null) => {
-    if (!lob) return 'Not Set';
-    // Convert slug to display name: accounting_finance → Accounting Finance
-    return lob.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-  };
-
-  const handleStartSession = (sessionId: number) => {
-    navigate(`/training/${sessionId}`);
-  };
-
-
-  // TopBar contextual actions — lifted from old Dashboard header
-  const dashboardActions = (
-    <div className="flex items-center gap-2">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="gap-2"
-        data-tour="bank-policies-btn"
-        onClick={() => navigate('/policies')}
-      >
-        <Shield className="h-4 w-4" />
-        <span className="hidden sm:inline">Bank Policies</span>
-      </Button>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="gap-2" data-tour="personalization-btn">
-            <Sparkles className="h-4 w-4" />
-            <span className="hidden sm:inline">My Personalization</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 bg-card">
-          <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
-            <Settings className="mr-2 h-4 w-4" />
-            <div>
-              <div className="font-medium">AI Settings</div>
-              <div className="text-xs text-muted-foreground">Customize Andrea\'s behavior</div>
-            </div>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/memories')} className="cursor-pointer">
-            <Brain className="mr-2 h-4 w-4" />
-            <div>
-              <div className="font-medium">Memories</div>
-              <div className="text-xs text-muted-foreground">What Andrea remembers</div>
-            </div>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/ideas')} className="cursor-pointer">
-            <Lightbulb className="mr-2 h-4 w-4" />
-            <div>
-              <div className="font-medium">My Ideas</div>
-              <div className="text-xs text-muted-foreground">AI use cases to explore</div>
-            </div>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/prompts')} className="cursor-pointer">
-            <BookOpen className="mr-2 h-4 w-4" />
-            <div>
-              <div className="font-medium">Prompt Library</div>
-              <div className="text-xs text-muted-foreground">Saved reusable prompts</div>
-            </div>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/journey')} className="cursor-pointer">
-            <TrendingUp className="mr-2 h-4 w-4" />
-            <div>
-              <div className="font-medium">My AI Journey</div>
-              <div className="text-xs text-muted-foreground">Skills & progress timeline</div>
-            </div>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <Button variant="ghost" size="sm" className="gap-2" onClick={() => setHelpPanelOpen(true)}>
-        <HelpCircle className="h-4 w-4" />
-        <span className="hidden sm:inline">Help</span>
-      </Button>
-    </div>
-  );
-
+  const topSkills = aggregateSkillSignals(allSkillSignals)
+    .filter((s) => s.level === 'proficient')
+    .slice(0, 4);
 
   return (
-    <AppShell breadcrumbs={[{ label: 'Home' }]} topBarActions={dashboardActions}>
-
-      {/* First-time tour auto-trigger */}
-      <HelpTour open={helpOpen} onOpenChange={setHelpOpen} onComplete={handleTourComplete} />
-      {/* Help panel modal (Help button / tour replay) */}
-      <HelpPanel open={helpPanelOpen} onOpenChange={setHelpPanelOpen} />
-      <FeedbackModal open={feedbackOpen} onOpenChange={setFeedbackOpen} />
-      
-      {/* Bank Policy Modal */}
-      <BankPolicyModal
-        open={!!selectedPolicy}
-        onOpenChange={(open) => !open && setSelectedPolicy(null)}
-        policy={selectedPolicy}
-      />
-
-      {/* Event Detail Modal */}
-      <EventModal
-        open={!!selectedEvent}
-        onOpenChange={(open) => !open && setSelectedEvent(null)}
-        event={selectedEvent}
-      />
-
-      {/* Session 1 Intro Video Modal */}
-      <VideoModal
-        open={videoModalOpen}
-        onOpenChange={setVideoModalOpen}
-        videoUrl="https://youtu.be/xZ1FAm7IoA4"
-        title="Session 1: Introduction to AI Prompting"
-      />
-
-
-      <div className="container mx-auto px-4 py-8">
-        {/* Profile Summary */}
-        <Card className="mb-8" data-tour="profile-card">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-primary">
-                    {profile.display_name?.charAt(0)?.toUpperCase() || 'U'}
-                  </span>
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold">{profile.display_name}</h2>
-                  <p className="text-sm text-muted-foreground">{profile.job_role}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="secondary">{getLobLabel(profile.department)}</Badge>
-                    <Badge variant="outline">Level {profile.ai_proficiency_level}</Badge>
-                  </div>
-                  {topSkills.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {topSkills.map((skill) => (
-                        <Badge key={skill.skill} variant="outline" className="text-xs gap-1 border-green-500/30 text-green-600">
-                          <CheckCircle className="h-3 w-3" />
-                          {skill.displayName}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="md:text-right mt-4 md:mt-0">
-                <div className="text-sm text-muted-foreground mb-1">Overall Progress</div>
-                <div className="text-2xl font-bold text-primary">{Math.round(overallProgress)}%</div>
-                <Progress value={overallProgress} className="w-full md:w-48 h-2 mt-2" />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {totalCompletedModules} of {totalModules} modules completed
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Completion Summary — shown when Session 4 (final) is completed */}
-        {sessionProgress[3] && (
-          <div className="mb-8">
-            <CompletionSummary
-              userName={profile.display_name || 'Learner'}
-              completedAt={(() => {
-                const s4 = getSessionProgressData(4);
-                return s4?.capstoneData?.completedAt;
-              })()}
-              skillSignals={allSkillSignals}
-              totalModulesCompleted={totalCompletedModules}
-              totalModules={totalModules}
-              onViewCertificate={() => navigate('/training/4')}
-            />
-          </div>
+    <AppShell breadcrumbs={[{ label: 'Home' }]}>
+      <div className="container mx-auto px-4 py-10 max-w-2xl">
+        {homeState === 'brand_new' && (
+          <BrandNewView
+            name={profile.display_name || 'there'}
+            session={currentSessionInfo}
+            onStart={() => navigate(`/training/${currentSession}`)}
+          />
         )}
 
-        {/* Learning Track + Brainstorm */}
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <h2 className="text-2xl font-display font-bold mb-2">Your Learning Track</h2>
-            <p className="text-muted-foreground">
-              Your training is customized based on your 
-              {' '}<span className="text-primary font-medium">{profile.learning_style}</span> learning style.
-            </p>
-          </div>
-          <div className="w-36 shrink-0 ml-6">
-            <BrainstormPanel />
-          </div>
-        </div>
+        {homeState === 'mid_session' && (
+          <MidSessionView
+            name={profile.display_name || 'there'}
+            session={currentSessionInfo}
+            completedCount={completedCount}
+            moduleTotal={moduleTotal}
+            sessionPct={sessionPct}
+            onContinue={() => navigate(`/training/${currentSession}`)}
+          />
+        )}
 
+        {homeState === 'between_sessions' && (
+          <BetweenSessionsView
+            prevSession={SESSIONS[currentSession - 2]}
+            nextSession={currentSessionInfo}
+            canAccessCommunity={canAccessCommunity}
+            onStart={() => navigate(`/training/${currentSession}`)}
+            onCommunity={() => navigate('/community')}
+          />
+        )}
 
-        {/* Sessions Grid */}
-        <div data-tour="sessions-grid" className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {SESSIONS.map((session) => {
-            const status = getSessionStatus(session.id);
-            const IconComponent = session.icon;
-            const sessionData = getSessionProgressData(session.id);
-            const sessionPct = status === 'completed' ? 100 : computeSessionProgress(session.id, sessionData);
-            const moduleStates = getModuleStates(session.id, sessionData);
-            const completedCount = getCompletedModuleCount(session.id, sessionData);
-            const moduleTotal = getSessionModuleTotal(session.id);
-
-            // Module dot colors by engagement state
-            const dotColor: Record<string, string> = {
-              not_started: 'bg-gray-300',
-              content_viewed: 'bg-yellow-400',
-              practicing: 'bg-yellow-400',
-              submitted: 'bg-yellow-400',
-              completed: 'bg-green-500',
-            };
-
-            const dotLabel: Record<string, string> = {
-              not_started: 'Not started',
-              content_viewed: 'Content viewed',
-              practicing: 'Practicing',
-              submitted: 'Submitted',
-              completed: 'Completed',
-            };
-
-            return (
-              <Card
-                key={session.id}
-                className="transition-all hover:shadow-lg flex flex-col"
-              >
-                <CardHeader className="flex-1">
-                  <div className="flex items-start justify-between">
-                    <div className={`p-3 rounded-lg ${
-                      status === 'completed' ? 'bg-green-100 text-green-600' :
-                      status === 'current' ? 'bg-primary/10 text-primary' :
-                      'bg-secondary text-secondary-foreground'
-                    }`}>
-                      {status === 'completed' ? (
-                        <CheckCircle className="h-6 w-6" />
-                      ) : (
-                        <IconComponent className="h-6 w-6" />
-                      )}
-                    </div>
-                    <Badge variant={
-                      status === 'completed' ? 'default' :
-                      status === 'current' ? 'secondary' :
-                      'outline'
-                    }>
-                      {status === 'completed' ? 'Completed' :
-                       status === 'current' ? 'In Progress' :
-                       'Available'}
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-lg mt-4">
-                    Session {session.id}: {session.title}
-                  </CardTitle>
-                  <CardDescription>{session.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="mt-auto">
-                  {/* Module progress breakdown */}
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-                      <span>{completedCount}/{moduleTotal} modules</span>
-                      <span>{sessionPct}%</span>
-                    </div>
-                    <Progress value={sessionPct} className="h-1.5" />
-                    {/* Module state dots */}
-                    <div className="flex gap-1 mt-2">
-                      {moduleStates.map((ms) => (
-                        <div
-                          key={ms.moduleId}
-                          className={`h-2 flex-1 rounded-full transition-colors ${dotColor[ms.state] || 'bg-muted'}`}
-                          title={`${ms.title}: ${dotLabel[ms.state] || ms.state}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  <Button
-                    className="w-full gap-2"
-                    variant={status === 'completed' ? 'outline' : 'default'}
-                    onClick={() => handleStartSession(session.id)}
-                  >
-                    {status === 'completed' ? (
-                      <>Review Session</>
-                    ) : status === 'current' ? (
-                      <>
-                        <Play className="h-4 w-4" />
-                        Continue Learning
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-4 w-4" />
-                        Start Session
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-
-        {/* Live Feed and Community Hub - Side by Side */}
-        <div className="mt-6 grid gap-6 lg:grid-cols-2">
-          {/* Live Feed Section - Video Thumbnail Only */}
-          <Card data-tour="live-feed">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <Radio className="h-5 w-5 text-destructive" />
-                  <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-destructive rounded-full animate-pulse" />
-                </div>
-                <CardTitle>Live Enablement Feed</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {/* Featured Intro Video - Thumbnail + Description */}
-              <div className="flex items-start gap-3">
-                <div
-                  className="relative rounded-lg overflow-hidden cursor-pointer group w-1/3 shrink-0"
-                  onClick={() => setVideoModalOpen(true)}
-                >
-                  <img
-                    src="https://img.youtube.com/vi/xZ1FAm7IoA4/maxresdefault.jpg"
-                    alt="Introduction to AI Prompting"
-                    className="w-full aspect-video object-cover rounded-lg"
-                  />
-                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                    <div className="p-2 rounded-full bg-primary/90 text-primary-foreground shadow-lg group-hover:scale-110 transition-transform">
-                      <Play className="h-5 w-5" />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground leading-snug">Introduction to AI Prompting</p>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Effective LLM prompting, a custom GPT demo, and how to build your own setup.</p>
-                </div>
-              </div>
-
-              {/* Live Sessions as thumbnails */}
-              {!liveSessionsLoading && liveSessions.filter(s => new Date(s.scheduled_date) >= new Date()).length > 0 && (
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  {liveSessions.filter(s => new Date(s.scheduled_date) >= new Date()).slice(0, 2).map((session) => (
-                    <div
-                      key={session.id}
-                      className="relative rounded-lg overflow-hidden cursor-pointer group bg-muted aspect-video flex items-center justify-center"
-                    >
-                      <div className="text-center p-2">
-                        <Video className="h-6 w-6 mx-auto text-muted-foreground mb-1" />
-                        <p className="text-xs font-medium line-clamp-2">{session.title}</p>
-                      </div>
-                      <div className="absolute top-1.5 right-1.5">
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Live</Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Community Hub Section — Inline Feed */}
-          <Card className="overflow-hidden">
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/20">
-                  <Users className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Community Hub</CardTitle>
-                  <CardDescription>
-                    Discuss AI use cases with peers
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <CommunityFeed />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Calendar & Agents - Side by Side like above */}
-        <div className="mt-6 grid gap-6 lg:grid-cols-2">
-          {/* Upcoming Events / Calendar */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="h-5 w-5 text-primary" />
-                  <CardTitle>Upcoming Events</CardTitle>
-                </div>
-                {(() => {
-                  const upcomingEvents = events.filter(e => new Date(e.scheduled_date) >= new Date());
-                  return upcomingEvents.length > 0 ? (
-                    <Badge variant="secondary" className="gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {upcomingEvents.length} Upcoming
-                    </Badge>
-                  ) : null;
-                })()}
-              </div>
-              <CardDescription>
-                Training sessions, webinars, and community events
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DashboardCalendar
-                events={events}
-                onSelectEvent={setSelectedEvent}
-                loading={eventsLoading}
-              />
-              {/* Upcoming event list below calendar */}
-              {!eventsLoading && (() => {
-                const upcomingEvents = events.filter(e => new Date(e.scheduled_date) >= new Date()).slice(0, 3);
-                if (upcomingEvents.length === 0) return null;
-                return (
-                  <div className="mt-4 space-y-2">
-                    {upcomingEvents.map((event) => {
-                      const config = getEventTypeConfig(event.event_type);
-                      const EventIcon = config.icon;
-                      const eventDate = new Date(event.scheduled_date);
-                      return (
-                        <div
-                          key={event.id}
-                          className="flex items-center gap-3 p-2.5 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
-                          onClick={() => setSelectedEvent(event)}
-                        >
-                          <div className={`p-1.5 rounded ${config.color}`}>
-                            <EventIcon className="h-3.5 w-3.5" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{event.title}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {eventDate.toLocaleDateString()} · {eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-            </CardContent>
-          </Card>
-
-          {/* My Agents & Workflows */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Bot className="h-5 w-5 text-primary" />
-                  <CardTitle>My Agents & Workflows</CardTitle>
-                </div>
-                <Badge variant="secondary" className="gap-1">
-                  <Cpu className="h-3 w-3" />
-                  {agents.length} Built
-                </Badge>
-              </div>
-              <CardDescription>
-                AI agents you've created during training
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {agentsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : agents.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="mx-auto h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
-                    <Bot className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <p className="text-sm font-medium mb-1">No agents yet</p>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    You'll build your first agent in Session 2
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => handleStartSession(2)}
-                  >
-                    <Play className="h-3.5 w-3.5" />
-                    Start Session 2
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {agents.slice(0, 5).map((agent) => (
-                    <div
-                      key={agent.id}
-                      className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className={`p-2 rounded-lg ${
-                        agent.is_deployed ? 'bg-green-500/10 text-green-600' : 'bg-muted text-muted-foreground'
-                      }`}>
-                        <Bot className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{agent.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {agent.description || 'No description'}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        {agent.is_deployed && (
-                          <Badge variant="outline" className="text-[10px] gap-1 border-green-500/30 text-green-600">
-                            <Zap className="h-2.5 w-2.5" />
-                            Active
-                          </Badge>
-                        )}
-                        <Badge variant="secondary" className="text-[10px] capitalize">
-                          {agent.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                  {agents.length > 5 && (
-                    <p className="text-xs text-muted-foreground text-center pt-1">
-                      +{agents.length - 5} more agents
-                    </p>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        {homeState === 'all_complete' && (
+          <AllCompleteView
+            name={profile.display_name || 'there'}
+            topSkills={topSkills}
+            canAccessCommunity={canAccessCommunity}
+            onExplore={() => navigate('/electives')}
+            onCommunity={() => navigate('/community')}
+          />
+        )}
       </div>
-
-      {/* Andrea Dashboard Chat */}
-      <DashboardChat profile={profile} progress={progress} forceOpen={andreaPanelOpenForTour} />
     </AppShell>
   );
 }
 
-// Inline calendar component for dashboard
-function DashboardCalendar({
-  events,
-  onSelectEvent,
-  loading,
+// ─── State views ──────────────────────────────────────────────────────────────
+
+function BrandNewView({
+  name,
+  session,
+  onStart,
 }: {
-  events: any[];
-  onSelectEvent: (event: any) => void;
-  loading: boolean;
+  name: string;
+  session: SessionMeta;
+  onStart: () => void;
 }) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-
-  const year = currentMonth.getFullYear();
-  const month = currentMonth.getMonth();
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const today = new Date();
-
-  const eventDates = new Map<string, any[]>();
-  events.forEach((event) => {
-    const dateKey = new Date(event.scheduled_date).toDateString();
-    if (!eventDates.has(dateKey)) eventDates.set(dateKey, []);
-    eventDates.get(dateKey)!.push(event);
-  });
-
-  const days = [];
-  for (let i = 0; i < firstDay; i++) {
-    days.push(<div key={`empty-${i}`} />);
-  }
-  for (let day = 1; day <= daysInMonth; day++) {
-    const date = new Date(year, month, day);
-    const dateKey = date.toDateString();
-    const dayEvents = eventDates.get(dateKey) || [];
-    const isToday = date.toDateString() === today.toDateString();
-
-    days.push(
-      <button
-        key={day}
-        onClick={() => dayEvents.length > 0 && onSelectEvent(dayEvents[0])}
-        className={`relative aspect-square flex flex-col items-center justify-center rounded-md text-sm transition-colors ${
-          isToday
-            ? 'bg-primary text-primary-foreground font-bold'
-            : dayEvents.length > 0
-            ? 'hover:bg-muted cursor-pointer font-medium'
-            : 'text-muted-foreground hover:bg-muted/50'
-        }`}
-      >
-        {day}
-        {dayEvents.length > 0 && (
-          <span className={`absolute bottom-0.5 h-1.5 w-1.5 rounded-full ${isToday ? 'bg-primary-foreground' : 'bg-primary'}`} />
-        )}
-      </button>
-    );
-  }
-
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
+  const Icon = session.icon;
   return (
-    <div className="select-none">
-      <div className="flex items-center justify-between mb-3">
-        <button
-          onClick={() => setCurrentMonth(new Date(year, month - 1, 1))}
-          className="p-1 rounded hover:bg-muted text-muted-foreground"
-        >
-          ‹
-        </button>
-        <span className="font-medium text-sm">
-          {monthNames[month]} {year}
-        </span>
-        <button
-          onClick={() => setCurrentMonth(new Date(year, month + 1, 1))}
-          className="p-1 rounded hover:bg-muted text-muted-foreground"
-        >
-          ›
-        </button>
-      </div>
-      <div className="grid grid-cols-7 gap-0.5 text-center mb-1">
-        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-          <div key={d} className="text-xs font-medium text-muted-foreground py-1">
-            {d}
+    <div className="space-y-5">
+      {/* Andrea greeting */}
+      <Card className="border-accent/30 bg-accent/5">
+        <CardContent className="p-5">
+          <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-1.5">Andrea</p>
+          <p className="text-sm text-foreground leading-relaxed">
+            Welcome, {name}. I'll be your AI coach throughout this journey. We'll start with the
+            fundamentals — once you've worked through Session 1, you'll have a real foundation for
+            everything that follows.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Session card */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="p-3 rounded-lg bg-primary/10 text-primary shrink-0">
+              <Icon className="h-6 w-6" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground mb-1">Session 1 · {session.duration}</p>
+              <h2 className="text-xl font-semibold mb-1.5">{session.title}</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">{session.description}</p>
+            </div>
           </div>
-        ))}
+          <Button className="w-full gap-2" size="lg" onClick={onStart}>
+            <Play className="h-4 w-4" />
+            Begin Session 1
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function MidSessionView({
+  name,
+  session,
+  completedCount,
+  moduleTotal,
+  sessionPct,
+  onContinue,
+}: {
+  name: string;
+  session: SessionMeta;
+  completedCount: number;
+  moduleTotal: number;
+  sessionPct: number;
+  onContinue: () => void;
+}) {
+  const Icon = session.icon;
+  return (
+    <div className="space-y-5">
+      {/* Andrea nudge */}
+      <Card className="border-accent/30 bg-accent/5">
+        <CardContent className="p-5">
+          <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-1.5">Andrea</p>
+          <p className="text-sm text-foreground">Ready to pick up where you left off, {name}?</p>
+        </CardContent>
+      </Card>
+
+      {/* Current session card */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-start gap-4 mb-5">
+            <div className="p-3 rounded-lg bg-primary/10 text-primary shrink-0">
+              <Icon className="h-6 w-6" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground mb-1">Session {session.id} · In progress</p>
+              <h2 className="text-xl font-semibold">{session.title}</h2>
+            </div>
+          </div>
+
+          <div className="mb-5">
+            <div className="flex items-center justify-between text-sm mb-2">
+              <span className="text-muted-foreground">
+                {completedCount} of {moduleTotal} modules complete
+              </span>
+              <span className="font-medium text-primary">{sessionPct}%</span>
+            </div>
+            <Progress value={sessionPct} className="h-2" />
+          </div>
+
+          <Button className="w-full gap-2" size="lg" onClick={onContinue}>
+            <Play className="h-4 w-4" />
+            Continue
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function BetweenSessionsView({
+  prevSession,
+  nextSession,
+  canAccessCommunity,
+  onStart,
+  onCommunity,
+}: {
+  prevSession: SessionMeta;
+  nextSession: SessionMeta;
+  canAccessCommunity: boolean;
+  onStart: () => void;
+  onCommunity: () => void;
+}) {
+  const Icon = nextSession.icon;
+  return (
+    <div className="space-y-5">
+      {/* Completion badge */}
+      <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-green-500/10 border border-green-500/20">
+        <CheckCircle className="h-5 w-5 text-green-600 shrink-0" />
+        <span className="text-sm font-medium text-green-700">
+          Session {prevSession.id}: {prevSession.title} — complete
+        </span>
       </div>
-      <div className="grid grid-cols-7 gap-0.5">
-        {days}
-      </div>
+
+      {/* Next session card */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="p-3 rounded-lg bg-primary/10 text-primary shrink-0">
+              <Icon className="h-6 w-6" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground mb-1">
+                Session {nextSession.id} · {nextSession.duration}
+              </p>
+              <h2 className="text-xl font-semibold mb-1.5">{nextSession.title}</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {nextSession.description}
+              </p>
+            </div>
+          </div>
+          <Button className="w-full gap-2" size="lg" onClick={onStart}>
+            <Play className="h-4 w-4" />
+            Start Session {nextSession.id}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Community highlight — only if unlocked */}
+      {canAccessCommunity && (
+        <button
+          onClick={onCommunity}
+          className="w-full text-left px-4 py-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+        >
+          <p className="text-xs text-muted-foreground mb-0.5">From the community</p>
+          <p className="text-sm font-medium">See what your peers are sharing →</p>
+        </button>
+      )}
+    </div>
+  );
+}
+
+function AllCompleteView({
+  name,
+  topSkills,
+  canAccessCommunity,
+  onExplore,
+  onCommunity,
+}: {
+  name: string;
+  topSkills: { skill: string; displayName: string }[];
+  canAccessCommunity: boolean;
+  onExplore: () => void;
+  onCommunity: () => void;
+}) {
+  return (
+    <div className="space-y-5">
+      <Card>
+        <CardContent className="p-8 text-center">
+          <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-green-500/10 text-green-600 mb-5">
+            <CheckCircle className="h-7 w-7" />
+          </div>
+          <h2 className="text-2xl font-semibold mb-2">
+            You've completed all sessions, {name}.
+          </h2>
+          <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+            You've built a real foundation in AI. What's next is applying it at depth.
+          </p>
+
+          {topSkills.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+              {topSkills.map((s) => (
+                <span
+                  key={s.skill}
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-green-500/10 text-green-700 border border-green-500/20 font-medium"
+                >
+                  <CheckCircle className="h-3 w-3" />
+                  {s.displayName}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <Button className="w-full gap-2" size="lg" onClick={onExplore}>
+            Explore Electives
+          </Button>
+
+          {canAccessCommunity && (
+            <Button
+              variant="ghost"
+              className="w-full mt-2"
+              onClick={onCommunity}
+            >
+              Visit Community
+            </Button>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
