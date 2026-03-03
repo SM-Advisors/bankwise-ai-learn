@@ -35,10 +35,23 @@ export function NavRail() {
     return defaultPath;
   }
 
-  function isActive(zonePath: string): boolean {
-    // Home/dashboard exact match; others prefix match
-    if (zonePath === '/dashboard') return location.pathname === '/dashboard';
-    return location.pathname.startsWith(zonePath);
+  // Sub-paths that belong to each zone (for active highlighting when navigating
+  // to a zone's sub-pages, e.g. /prompts is part of Explore zone).
+  const ZONE_SUB_PATHS: Record<string, string[]> = {
+    explore:   ['/prompts', '/ideas', '/electives', '/journey', '/certificates'],
+    profile:   ['/settings', '/memories'],
+    community: ['/community'],
+    learn:     ['/training'],
+  };
+
+  function isActive(zoneId: string, zonePath: string): boolean {
+    const path = location.pathname;
+    if (zonePath === '/dashboard') return path === '/dashboard';
+    // Check primary path
+    if (path.startsWith(zonePath)) return true;
+    // Check sub-paths for this zone
+    const subPaths = ZONE_SUB_PATHS[zoneId] || [];
+    return subPaths.some((sub) => path.startsWith(sub));
   }
 
   // ── Desktop rail ─────────────────────────────────────────────────────────
@@ -61,7 +74,7 @@ export function NavRail() {
         <div className="flex flex-1 flex-col items-center gap-1">
           {unlockedZones.map((zone) => {
             const Icon = zone.icon;
-            const active = isActive(zone.path);
+            const active = isActive(zone.id, zone.path);
 
             return (
               <Tooltip key={zone.id} delayDuration={300}>

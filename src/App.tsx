@@ -83,42 +83,11 @@ const App = () => (
                     </ProtectedRoute>
                   } />
 
-                  {/* Learner routes — AppShell with breadcrumbs */}
-                  <Route path="/ideas" element={
-                    <ProtectedRoute requireOnboarding>
-                      <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
-                        { label: 'My Ideas' },
-                      ]}>
-                        <Ideas />
-                      </AppShell>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/policies" element={
-                    <ProtectedRoute requireOnboarding>
-                      <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
-                        { label: 'Bank Policies' },
-                      ]}>
-                        <Policies />
-                      </AppShell>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/policies/:id" element={
-                    <ProtectedRoute requireOnboarding>
-                      <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
-                        { label: 'Bank Policies', path: '/policies' },
-                        { label: 'Policy' },
-                      ]}>
-                        <PolicyDetail />
-                      </AppShell>
-                    </ProtectedRoute>
-                  } />
+                  {/* Profile zone sub-pages */}
                   <Route path="/settings" element={
                     <ProtectedRoute requireOnboarding>
                       <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
+                        { label: 'Profile', path: '/settings' },
                         { label: 'Settings' },
                       ]}>
                         <Settings />
@@ -128,17 +97,29 @@ const App = () => (
                   <Route path="/memories" element={
                     <ProtectedRoute requireOnboarding>
                       <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
-                        { label: 'AI Memories' },
+                        { label: 'Profile', path: '/settings' },
+                        { label: 'Memories' },
                       ]}>
                         <AIMemories />
+                      </AppShell>
+                    </ProtectedRoute>
+                  } />
+
+                  {/* Explore zone sub-pages */}
+                  <Route path="/ideas" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AppShell breadcrumbs={[
+                        { label: 'Explore', path: '/explore' },
+                        { label: 'My Ideas' },
+                      ]}>
+                        <Ideas />
                       </AppShell>
                     </ProtectedRoute>
                   } />
                   <Route path="/prompts" element={
                     <ProtectedRoute requireOnboarding>
                       <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
+                        { label: 'Explore', path: '/explore' },
                         { label: 'Prompt Library' },
                       ]}>
                         <PromptLibrary />
@@ -148,7 +129,7 @@ const App = () => (
                   <Route path="/electives" element={
                     <ProtectedRoute requireOnboarding>
                       <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
+                        { label: 'Explore', path: '/explore' },
                         { label: 'Elective Paths' },
                       ]}>
                         <Electives />
@@ -158,7 +139,7 @@ const App = () => (
                   <Route path="/certificates" element={
                     <ProtectedRoute requireOnboarding>
                       <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
+                        { label: 'Explore', path: '/explore' },
                         { label: 'Certificates' },
                       ]}>
                         <Certificates />
@@ -168,10 +149,33 @@ const App = () => (
                   <Route path="/journey" element={
                     <ProtectedRoute requireOnboarding>
                       <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
+                        { label: 'Explore', path: '/explore' },
                         { label: 'My AI Journey' },
                       ]}>
                         <AIJourney />
+                      </AppShell>
+                    </ProtectedRoute>
+                  } />
+
+                  {/* Org resources — eventually moves to Community zone */}
+                  <Route path="/policies" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AppShell breadcrumbs={[
+                        { label: 'Community', path: '/community' },
+                        { label: 'Org Resources' },
+                      ]}>
+                        <Policies />
+                      </AppShell>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/policies/:id" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AppShell breadcrumbs={[
+                        { label: 'Community', path: '/community' },
+                        { label: 'Org Resources', path: '/policies' },
+                        { label: 'Resource' },
+                      ]}>
+                        <PolicyDetail />
                       </AppShell>
                     </ProtectedRoute>
                   } />
