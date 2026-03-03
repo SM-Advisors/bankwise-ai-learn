@@ -8,7 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { ChevronRight, ChevronLeft, User, LayoutDashboard, ShieldCheck } from 'lucide-react';
+import { ChevronRight, ChevronLeft, User, LayoutDashboard, ShieldCheck, Settings, LogOut } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +37,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { unlockedZones } = useFeatureGates();
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
   const { isAdmin } = useUserRole();
 
   const initials = profile?.display_name
@@ -78,7 +78,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
       <nav
         aria-label="Main navigation"
         className={cn(
-          'fixed left-0 top-0 z-40 flex h-screen flex-col bg-primary transition-all duration-200 overflow-hidden',
+          'fixed left-0 top-0 z-40 flex h-screen flex-col bg-card border-r border-border transition-all duration-200 overflow-hidden',
           isExpanded ? 'w-60' : 'w-14'
         )}
       >
@@ -94,7 +94,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
             </button>
             <button
               onClick={onToggle}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-primary-foreground/60 hover:bg-white/10 hover:text-primary-foreground transition-all"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
               aria-label="Collapse menu"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -111,7 +111,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
             </button>
             <button
               onClick={onToggle}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-primary-foreground/60 hover:bg-white/10 hover:text-primary-foreground transition-all"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
               aria-label="Expand menu"
             >
               <ChevronRight className="h-4 w-4" />
@@ -136,7 +136,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
                     'flex items-center gap-3 rounded-lg px-2 py-2.5 text-left transition-all duration-150 w-full',
                     active
                       ? 'bg-accent/20 text-accent'
-                      : 'text-primary-foreground/70 hover:bg-white/10 hover:text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   )}
                 >
                   <Icon className="h-5 w-5 shrink-0" />
@@ -159,7 +159,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
                       'flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-150',
                       active
                         ? 'bg-accent/20 text-accent'
-                        : 'text-primary-foreground/60 hover:bg-white/10 hover:text-primary-foreground'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                     )}
                   >
                     <Icon className="h-5 w-5" />
@@ -175,13 +175,13 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
         </div>
 
         {/* ── User at bottom ───────────────────────────────────────────────── */}
-        <div className="border-t border-white/10 p-2">
+        <div className="border-t border-border p-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 aria-label="User menu"
                 className={cn(
-                  'flex items-center rounded-lg transition-all text-primary-foreground/60 hover:bg-white/10 hover:text-primary-foreground w-full',
+                  'flex items-center rounded-lg transition-all text-muted-foreground hover:bg-muted hover:text-foreground w-full',
                   isExpanded ? 'gap-3 px-2 py-2' : 'justify-center p-1'
                 )}
               >
@@ -190,7 +190,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
                 </div>
                 {isExpanded && (
                   <div className="overflow-hidden min-w-0">
-                    <div className="text-sm font-medium leading-tight truncate text-primary-foreground">
+                    <div className="text-sm font-medium leading-tight truncate text-foreground">
                       {profile?.display_name ?? 'User'}
                     </div>
                     <div className="text-[10px] opacity-60 leading-tight truncate">
@@ -204,6 +204,10 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
               <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
                 <User className="mr-2 h-4 w-4" />
                 My Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
               </DropdownMenuItem>
               {(isAdmin || profile?.is_super_admin) && (
                 <DropdownMenuSeparator />
@@ -220,6 +224,11 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
                   Super Admin
                 </DropdownMenuItem>
               )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive focus:text-destructive">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
