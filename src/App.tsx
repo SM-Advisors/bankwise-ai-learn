@@ -35,6 +35,8 @@ import Certificates from "./pages/Certificates";
 import AIJourney from "./pages/AIJourney";
 import NotFound from "./pages/NotFound";
 import ShellPreview from "./pages/ShellPreview";
+import Explore from "./pages/Explore";
+import CommunityZone from "./pages/CommunityZone";
 
 const queryClient = new QueryClient();
 
@@ -171,6 +173,20 @@ const App = () => (
                       ]}>
                         <AIJourney />
                       </AppShell>
+                    </ProtectedRoute>
+                  } />
+
+                  {/* Explore zone — hub for prompts, ideas, electives, journey */}
+                  <Route path="/explore" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Explore />
+                    </ProtectedRoute>
+                  } />
+
+                  {/* Community zone */}
+                  <Route path="/community" element={
+                    <ProtectedRoute requireOnboarding>
+                      <CommunityZone />
                     </ProtectedRoute>
                   } />
 

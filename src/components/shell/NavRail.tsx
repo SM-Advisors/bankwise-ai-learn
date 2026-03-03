@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useFeatureGates } from '@/hooks/useFeatureGates';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Tooltip,
   TooltipContent,
@@ -22,6 +23,17 @@ export function NavRail() {
   const navigate = useNavigate();
   const location = useLocation();
   const { unlockedZones } = useFeatureGates();
+  const { profile } = useAuth();
+
+  // Resolve the actual path to navigate to for each zone.
+  // The 'learn' zone goes to the user's current session, not always session 1.
+  function resolveZonePath(zoneId: string, defaultPath: string): string {
+    if (zoneId === 'learn') {
+      const session = Math.min(profile?.current_session || 1, 4);
+      return `/training/${session}`;
+    }
+    return defaultPath;
+  }
 
   function isActive(zonePath: string): boolean {
     // Home/dashboard exact match; others prefix match
@@ -55,7 +67,7 @@ export function NavRail() {
               <Tooltip key={zone.id} delayDuration={300}>
                 <TooltipTrigger asChild>
                   <button
-                    onClick={() => navigate(zone.path)}
+                    onClick={() => navigate(resolveZonePath(zone.id, zone.path))}
                     aria-label={zone.label}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
@@ -93,7 +105,7 @@ export function NavRail() {
         return (
           <button
             key={zone.id}
-            onClick={() => navigate(zone.path)}
+            onClick={() => navigate(resolveZonePath(zone.id, zone.path))}
             aria-label={zone.label}
             aria-current={active ? 'page' : undefined}
             className={cn(
