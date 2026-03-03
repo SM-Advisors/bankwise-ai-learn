@@ -131,24 +131,6 @@ export default function Certificates() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-xl font-display font-bold flex items-center gap-2">
-              <Award className="h-5 w-5 text-amber-600" />
-              My Certificates
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Completion certificates for each training session
-            </p>
-          </div>
-        </div>
-      </header>
 
       <div className="container mx-auto px-4 py-6">
         <div className="grid gap-6 md:grid-cols-2">
@@ -221,6 +203,5 @@ export default function Certificates() {
           })}
         </div>
       </div>
-    </div>
   );
 }

@@ -77,6 +77,9 @@
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 222 19% 23%;
     --sidebar-ring: 10 76% 50%;
+
+    /* Andrea Dock glow effect */
+    --andrea-glow: 0 0 16px hsl(10 76% 50% / 0.35);
   }
 
   .dark {
@@ -204,4 +207,9 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: var(--andrea-glow); }
+  50% { box-shadow: none; }
 }

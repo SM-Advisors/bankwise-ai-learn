@@ -73,16 +73,6 @@ export default function AIMemories() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate('/dashboard')}
-        className="mb-4 gap-2"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Dashboard
-      </Button>
-
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg">

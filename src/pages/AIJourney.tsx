@@ -159,24 +159,6 @@ export default function AIJourney() {
   const completedSessions = sessionIds.filter((sid) => !!prog[`session_${sid}_completed`]).length;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-xl font-display font-bold flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              My AI Journey
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Track your growth from AI beginner to AI-native professional
-            </p>
-          </div>
-        </div>
-      </header>
 
       <div className="container mx-auto px-4 py-6 space-y-6">
         {/* Overall Stats */}
@@ -463,6 +445,5 @@ export default function AIJourney() {
           </Card>
         </div>
       </div>
-    </div>
   );
 }

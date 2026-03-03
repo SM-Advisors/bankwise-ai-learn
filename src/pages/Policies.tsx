@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ProfileDropdown } from '@/components/ProfileDropdown';
 import {
   Loader2, ArrowLeft, Search, BookOpen, Shield, Lightbulb, FileText
 } from 'lucide-react';
@@ -42,19 +41,6 @@ export default function Policies() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Dashboard
-            </Button>
-          </div>
-          <ProfileDropdown />
-        </div>
-      </header>
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
@@ -141,6 +127,5 @@ export default function Policies() {
           </div>
         )}
       </div>
-    </div>
   );
 }
