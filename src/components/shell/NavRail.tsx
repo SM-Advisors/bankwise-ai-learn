@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useUserRole } from '@/hooks/useUserRole';
 import sparkLogo from '@/assets/SM ADVISORS SPARK_Merch_Transparent.svg';
-import smAdvisorsLogo from '@/assets/SM-ADVISORS-LOGO_Merch_Transparent.webp';
+import smAdvisorsLogo from '@/assets/sm-advisors-logo-transparent.png';
 
 // ─── NavRail ──────────────────────────────────────────────────────────────────
 //
@@ -101,13 +101,20 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
             </button>
           </div>
         ) : (
-          <div className="flex h-16 shrink-0 items-center justify-center bg-card border-b border-border">
+          <div className="flex h-16 shrink-0 flex-col items-center justify-center gap-1 bg-card border-b border-border">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="transition-opacity hover:opacity-80"
+              aria-label="Go to home"
+            >
+              <img src={sparkLogo} alt="SM Advisors" className="h-7 w-7 object-contain" />
+            </button>
             <button
               onClick={onToggle}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+              className="flex h-4 w-4 items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Expand menu"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3 w-3" />
             </button>
           </div>
         )}
