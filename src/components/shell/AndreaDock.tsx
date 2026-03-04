@@ -72,7 +72,7 @@ export const AndreaDock = forwardRef<AndreaDockHandle, AndreaDockProps>(
         { role: 'user', text: inputValue.trim() },
         {
           role: 'andrea',
-          text: "That's a great question. Full AI coaching will be available once the platform is connected. For now, keep exploring!",
+          text: "Great question! I can best help you during training sessions — head to the Learn zone and I'll guide you through your modules with real-time coaching and feedback.",
         },
       ]);
       setInputValue('');

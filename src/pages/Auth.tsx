@@ -31,7 +31,7 @@ export default function Auth() {
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberMe, setRememberMe] = useState(false);
   
   // Signup form state
   const [signupName, setSignupName] = useState('');
@@ -246,7 +246,7 @@ export default function Auth() {
                     Password reset email sent!
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Check your inbox for a link to reset your password.
+                    Check your inbox (and spam folder) for a link to reset your password. The link expires in 1 hour.
                   </p>
                 </div>
                 <Button 
@@ -403,7 +403,7 @@ export default function Auth() {
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    Your organization administrator will provide this code
+                    Your organization administrator will provide this code (e.g., BANKWISE-2024)
                   </p>
                 </div>
                 <div className="space-y-2">

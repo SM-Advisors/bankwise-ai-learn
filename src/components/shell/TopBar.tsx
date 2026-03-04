@@ -62,7 +62,7 @@ export function TopBar({ breadcrumbs = [], actions }: TopBarProps) {
             </BreadcrumbList>
           </Breadcrumb>
         ) : (
-          <span className="text-sm font-medium text-muted-foreground">SMILE</span>
+          <span className="text-sm font-medium text-muted-foreground">Home</span>
         )}
       </div>
 

@@ -14,7 +14,7 @@ import {
 } from '@/utils/computeProgress';
 import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';
 import type { SessionProgressData, SkillSignal } from '@/types/progress';
-import { CheckCircle, Play, Sparkles, Bot, Building2, Zap, Calendar, Clock, MapPin } from 'lucide-react';
+import { CheckCircle, Play, Sparkles, Bot, Building2, Zap, Calendar, Clock, MapPin, Lock, Users } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { useEvents, type Event } from '@/hooks/useEvents';
 import { EventModal, getEventTypeConfig } from '@/components/EventModal';
@@ -167,9 +167,21 @@ export default function Dashboard() {
           />
         )}
 
-        {upcomingEvents.length > 0 && (
-          <UpcomingEventsSection events={upcomingEvents} onEventClick={setSelectedEvent} />
+        {/* Community unlock hint */}
+        {!canAccessCommunity && homeState !== 'brand_new' && (
+          <div className="mt-5 flex items-center gap-3 px-4 py-3 rounded-lg border border-dashed border-muted-foreground/20">
+            <div className="p-1.5 rounded-md bg-muted shrink-0">
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-muted-foreground">Community Zone</p>
+              <p className="text-xs text-muted-foreground/70">Complete your first practice chat to unlock peer discussions and sharing.</p>
+            </div>
+            <Lock className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+          </div>
         )}
+
+        <UpcomingEventsSection events={upcomingEvents} onEventClick={setSelectedEvent} />
       </div>
       </div>
 
@@ -220,6 +232,9 @@ function BrandNewView({
             <Play className="h-4 w-4" />
             Begin Session 1
           </Button>
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            You can pause and resume anytime — your progress is saved automatically.
+          </p>
         </CardContent>
       </Card>
     </div>
@@ -280,6 +295,9 @@ function MidSessionView({
             <Play className="h-4 w-4" />
             Continue
           </Button>
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            Your progress is saved — pick up right where you left off.
+          </p>
         </CardContent>
       </Card>
     </div>
@@ -423,6 +441,11 @@ function UpcomingEventsSection({
         <Calendar className="h-4 w-4 text-muted-foreground" />
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Upcoming Events</h3>
       </div>
+      {events.length === 0 ? (
+        <div className="px-4 py-4 rounded-lg border border-dashed text-center">
+          <p className="text-xs text-muted-foreground">No upcoming events scheduled. Check back later.</p>
+        </div>
+      ) : (
       <div className="space-y-2">
         {events.map((event) => {
           const config = getEventTypeConfig(event.event_type);
@@ -456,6 +479,7 @@ function UpcomingEventsSection({
           );
         })}
       </div>
+      )}
     </div>
   );
 }

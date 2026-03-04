@@ -957,40 +957,52 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
       {/* Mobile mode tab bar (Learn / Practice / Coach) */}
       {isMobile && (
-        <div className="flex border-b bg-card shrink-0">
-          <button
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
-              mobileTab === 'practice' && workspaceMode === 'learn'
-                ? 'text-primary border-b-2 border-primary'
-                : 'text-muted-foreground'
-            }`}
-            onClick={() => { setMobileTab('practice'); setWorkspaceMode('learn'); }}
-          >
-            <BookOpen className="h-3.5 w-3.5" />
-            Learn
-          </button>
-          <button
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
-              mobileTab === 'practice' && workspaceMode === 'practice'
-                ? 'text-primary border-b-2 border-primary'
-                : 'text-muted-foreground'
-            }`}
-            onClick={() => { setMobileTab('practice'); setWorkspaceMode('practice'); }}
-          >
-            <MessageSquare className="h-3.5 w-3.5" />
-            Practice
-          </button>
-          <button
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
-              mobileTab === 'coach'
-                ? 'text-primary border-b-2 border-primary'
-                : 'text-muted-foreground'
-            }`}
-            onClick={() => setMobileTab('coach')}
-          >
-            <GraduationCap className="h-3.5 w-3.5" />
-            Coach
-          </button>
+        <div className="shrink-0">
+          <div className="flex border-b bg-card">
+            <button
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
+                mobileTab === 'practice' && workspaceMode === 'learn'
+                  ? 'text-primary border-b-2 border-primary bg-primary/5'
+                  : 'text-muted-foreground'
+              }`}
+              onClick={() => { setMobileTab('practice'); setWorkspaceMode('learn'); }}
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              Learn
+            </button>
+            <button
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
+                mobileTab === 'practice' && workspaceMode === 'practice'
+                  ? 'text-primary border-b-2 border-primary bg-primary/5'
+                  : 'text-muted-foreground'
+              }`}
+              onClick={() => { setMobileTab('practice'); setWorkspaceMode('practice'); }}
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              Practice
+            </button>
+            <button
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
+                mobileTab === 'coach'
+                  ? 'text-primary border-b-2 border-primary bg-primary/5'
+                  : 'text-muted-foreground'
+              }`}
+              onClick={() => setMobileTab('coach')}
+            >
+              <GraduationCap className="h-3.5 w-3.5" />
+              Coach
+            </button>
+          </div>
+          {/* Module completion hint */}
+          {selectedModule && (
+            <div className="px-3 py-1.5 bg-muted/30 border-b text-[10px] text-muted-foreground text-center">
+              {moduleEngagement[selectedModule.id]?.completed
+                ? '✓ Module complete'
+                : selectedModule.practiceType === 'sandbox'
+                ? 'Read content → practice in chat to complete'
+                : 'Read content → practice → submit to complete'}
+            </div>
+          )}
         </div>
       )}
 
