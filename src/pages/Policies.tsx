@@ -117,9 +117,7 @@ export default function Policies() {
                     )}
                   </CardHeader>
                   <CardContent>
-                    <Button variant="outline" size="sm" className="w-full">
-                      Read Policy
-                    </Button>
+                    <p className="text-xs text-muted-foreground">Click to read full resource</p>
                   </CardContent>
                 </Card>
               );

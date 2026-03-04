@@ -46,7 +46,7 @@ export function AdminAndreaFloat({ organizationId }: AdminAndreaFloatProps) {
       </Button>
 
       {/* C-Suite Advisor panel */}
-      <Card className="w-[480px] h-[700px] overflow-hidden shadow-2xl flex flex-col">
+      <Card className="w-[480px] h-[700px] overflow-hidden shadow-2xl flex flex-col [&>div]:h-full">
         <CSuiteAdvisorPanel organizationId={organizationId} />
       </Card>
     </div>

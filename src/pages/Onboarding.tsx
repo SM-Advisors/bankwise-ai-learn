@@ -13,6 +13,7 @@ import { ROLE_OPTIONS } from '@/data/intakeQuestions';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowRight, ArrowLeft, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useBlocker } from 'react-router-dom';
 
 // ── Consumer job chips ────────────────────────────────────────────────────────
 const CONSUMER_JOB_CHIPS = ['Retired', 'Student', 'Business Owner', 'Between Jobs', 'Other'];
@@ -203,6 +204,26 @@ export default function Onboarding() {
     }
   };
 
+  // Warn before leaving mid-onboarding (browser back, closing tab)
+  useEffect(() => {
+    if (step > 1 && step < TOTAL_STEPS) {
+      const handler = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+        e.returnValue = '';
+      };
+      window.addEventListener('beforeunload', handler);
+      return () => window.removeEventListener('beforeunload', handler);
+    }
+  }, [step]);
+
+  // Block in-app navigation if mid-onboarding
+  useBlocker(({ currentLocation, nextLocation }) => {
+    if (step > 1 && step < TOTAL_STEPS && currentLocation.pathname !== nextLocation.pathname) {
+      return !window.confirm('You have unsaved progress. Are you sure you want to leave?');
+    }
+    return false;
+  });
+
   if (loading || !orgTypeResolved) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -218,8 +239,12 @@ export default function Onboarding() {
     <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-xl mx-auto">
 
-        {/* Progress bar — no step count label (spec requirement) */}
+        {/* Progress bar with step counter */}
         <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-muted-foreground">Step {step} of {TOTAL_STEPS}</span>
+            <span className="text-xs text-muted-foreground">{Math.round(progressPercent)}%</span>
+          </div>
           <Progress value={progressPercent} className="h-1.5" />
         </div>
 
@@ -340,6 +365,12 @@ export default function Onboarding() {
                 <p className="text-xs text-muted-foreground">
                   No right or wrong answers — this helps Andrea understand where you're starting from.
                 </p>
+                {isScoringPrompt && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20 mt-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    <span className="text-sm text-primary font-medium">Analyzing your prompt...</span>
+                  </div>
+                )}
               </CardContent>
             </>
           )}
@@ -380,6 +411,9 @@ export default function Onboarding() {
                     </button>
                   ))}
                 </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  This affects how Andrea delivers content — not what you learn.
+                </p>
               </CardContent>
             </>
           )}

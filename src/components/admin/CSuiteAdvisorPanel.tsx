@@ -201,7 +201,7 @@ export function CSuiteAdvisorPanel({ organizationId }: CSuiteAdvisorPanelProps) 
   };
 
   return (
-    <Card className="flex flex-col h-[700px] overflow-hidden">
+    <Card className="flex flex-col h-full min-h-[500px] overflow-hidden">
       {/* Header — data-tour="andrea-kpi-bar" for tour targeting */}
       <div data-tour="andrea-kpi-bar" className="flex items-center gap-3 px-4 py-3 border-b bg-primary text-primary-foreground shrink-0">
         <img

@@ -16,6 +16,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useState } from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
 import sparkLogo from '@/assets/spark-icon.png';
 import smAdvisorsLogo from '@/assets/sm-advisors-logo-full.png';
@@ -39,6 +44,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
   const { unlockedZones } = useFeatureGates();
   const { profile, signOut } = useAuth();
   const { isAdmin } = useUserRole();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   const initials = profile?.display_name
     ? profile.display_name
@@ -208,7 +214,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
                 <User className="mr-2 h-4 w-4" />
                 My Profile
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
+              <DropdownMenuItem onClick={() => navigate('/profile?tab=settings')} className="cursor-pointer">
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
               </DropdownMenuItem>
@@ -228,12 +234,27 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive focus:text-destructive">
+              <DropdownMenuItem onClick={() => setShowLogoutDialog(true)} className="cursor-pointer text-destructive focus:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Sign out?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Any unsaved progress in your current session will be preserved, but you'll need to sign in again to continue.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={signOut}>Sign out</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </nav>
     );

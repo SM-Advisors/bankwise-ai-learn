@@ -4,11 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ProfileDropdown } from '@/components/ProfileDropdown';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
-  Loader2, ArrowLeft, BookOpen, Shield, Lightbulb, FileText, Calendar
+  Loader2, BookOpen, Shield, Lightbulb, FileText, Calendar
 } from 'lucide-react';
 
 const policyIconMap: Record<string, React.ElementType> = {
@@ -60,7 +59,7 @@ export default function PolicyDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center py-16">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -68,23 +67,12 @@ export default function PolicyDetail() {
 
   if (error || !policy) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b bg-card">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/policies')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Policies
-            </Button>
-            <ProfileDropdown />
-          </div>
-        </header>
-        <div className="container mx-auto px-4 py-12 text-center">
-          <FileText className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-muted-foreground">{error || 'Policy not found'}</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate('/policies')}>
-            Back to Policies
-          </Button>
-        </div>
+      <div className="container mx-auto px-4 py-12 text-center">
+        <FileText className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+        <p className="text-muted-foreground">{error || 'Policy not found'}</p>
+        <Button variant="outline" className="mt-4" onClick={() => navigate('/policies')}>
+          Back to Resources
+        </Button>
       </div>
     );
   }
@@ -92,51 +80,38 @@ export default function PolicyDetail() {
   const IconComponent = policyIconMap[policy.icon || ''] || FileText;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/policies')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Policies
-          </Button>
-          <ProfileDropdown />
-        </div>
-      </header>
-
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
-        <Card>
-          <CardHeader>
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-lg bg-primary/10">
-                <IconComponent className="h-6 w-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="secondary">{policy.policy_type}</Badge>
-                  {policy.updated_at && (
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      Updated {new Date(policy.updated_at).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
-                <CardTitle className="text-2xl">{policy.title}</CardTitle>
-                {policy.summary && (
-                  <p className="text-muted-foreground mt-2">{policy.summary}</p>
+    <div className="container mx-auto px-4 py-8 max-w-3xl">
+      <Card>
+        <CardHeader>
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-lg bg-primary/10">
+              <IconComponent className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="secondary">{policy.policy_type}</Badge>
+                {policy.updated_at && (
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    Updated {new Date(policy.updated_at).toLocaleDateString()}
+                  </span>
                 )}
               </div>
+              <CardTitle className="text-2xl">{policy.title}</CardTitle>
+              {policy.summary && (
+                <p className="text-muted-foreground mt-2">{policy.summary}</p>
+              )}
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="prose prose-sm max-w-none dark:prose-invert">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {policy.content}
-              </ReactMarkdown>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="prose prose-sm max-w-none dark:prose-invert">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {policy.content}
+            </ReactMarkdown>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -29,6 +29,7 @@ import { ExecutiveSubmissions } from '@/components/admin/ExecutiveSubmissions';
 import { CommunityReviewQueue } from '@/components/admin/CommunityReviewQueue';
 import { OrgResourcesManager } from '@/components/admin/OrgResourcesManager';
 import { AdminAndreaFloat } from '@/components/admin/AdminAndreaFloat';
+import { ExecutiveOverview } from '@/components/admin/ExecutiveOverview';
 import { HelpPanel } from '@/components/HelpPanel';
 import { useTour } from '@/hooks/useTour';
 import { ADMIN_STEPS } from '@/constants/tourSteps';
@@ -75,6 +76,7 @@ import {
   Upload,
   HelpCircle,
   Link2,
+  Activity,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -168,7 +170,7 @@ export default function AdminDashboard() {
   const { toast } = useToast();
 
   // ── Controlled tab state (needed for URL-param admin tour navigation) ───────
-  const [activeMainTab, setActiveMainTab] = useState('people');
+  const [activeMainTab, setActiveMainTab] = useState('overview');
 
   // ── Help panel state ─────────────────────────────────────────────────────────
   const [helpPanelOpen, setHelpPanelOpen] = useState(false);
@@ -603,8 +605,10 @@ export default function AdminDashboard() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Help panel modal */}
       <HelpPanel open={helpPanelOpen} onOpenChange={setHelpPanelOpen} />
-      {/* Floating Andrea C-Suite advisor bubble */}
-      <AdminAndreaFloat organizationId={effectiveOrgId} />
+      {/* Floating Andrea C-Suite advisor bubble — hidden on Overview (inline there) */}
+      {activeMainTab !== 'overview' && (
+        <AdminAndreaFloat organizationId={effectiveOrgId} />
+      )}
 
       {/* Org context banner for super admin drill-down */}
       {viewingOrgId && viewingOrgName && (
@@ -669,19 +673,23 @@ export default function AdminDashboard() {
         <p className="text-muted-foreground">
           {viewingOrgName
             ? `Managing users and content for ${viewingOrgName}`
-            : 'Manage users, view reports, review ideas, and administer training content'}
+            : 'Monitor adoption, review insights, and manage your AI training program'}
         </p>
       </div>
 
       <Tabs value={activeMainTab} onValueChange={setActiveMainTab} className="space-y-6">
         <TabsList className="inline-flex h-auto gap-1 bg-muted p-1">
+          <TabsTrigger value="overview" className="flex items-center gap-1.5 text-sm px-4 py-2">
+            <Activity className="h-4 w-4" />
+            Overview
+          </TabsTrigger>
           <TabsTrigger value="people" data-tour="admin-people-tab" className="flex items-center gap-1.5 text-sm px-4 py-2">
             <Users className="h-4 w-4" />
             People
           </TabsTrigger>
           <TabsTrigger value="analytics" data-tour="admin-analytics-tab" className="flex items-center gap-1.5 text-sm px-4 py-2">
             <BarChart3 className="h-4 w-4" />
-            Analytics
+            Reports
           </TabsTrigger>
           <TabsTrigger value="engagement" data-tour="admin-engagement-tab" className="flex items-center gap-1.5 text-sm px-4 py-2">
             <MessageSquare className="h-4 w-4" />
@@ -696,6 +704,14 @@ export default function AdminDashboard() {
             Config
           </TabsTrigger>
         </TabsList>
+
+        {/* ── OVERVIEW ── */}
+        <TabsContent value="overview" className="space-y-6">
+          <ExecutiveOverview
+            organizationId={effectiveOrgId}
+            onNavigateTab={setActiveMainTab}
+          />
+        </TabsContent>
 
         {/* ── PEOPLE ── */}
         <TabsContent value="people" className="space-y-6">
@@ -715,45 +731,32 @@ export default function AdminDashboard() {
           </Tabs>
         </TabsContent>
 
-        {/* ── ANALYTICS ── */}
+        {/* ── REPORTS ── */}
         <TabsContent value="analytics" className="space-y-6">
-          <Tabs defaultValue="reporting" className="space-y-4">
-            <TabsList className="bg-background border">
-              <TabsTrigger value="reporting" className="gap-1.5 text-xs"><BarChart3 className="h-3.5 w-3.5" />Reports</TabsTrigger>
-              <TabsTrigger value="csuite" className="gap-1.5 text-xs"><PieChartIcon className="h-3.5 w-3.5" />C-Suite</TabsTrigger>
-            </TabsList>
-            <TabsContent value="reporting"><ProgressDashboard /></TabsContent>
-            <TabsContent value="csuite"><CSuiteReports /></TabsContent>
-          </Tabs>
+          <CSuiteReports />
+          {/* Detailed learner-level progress table */}
+          <ProgressDashboard />
         </TabsContent>
 
         {/* ── ENGAGEMENT ── */}
         <TabsContent value="engagement" className="space-y-6">
-          <Tabs defaultValue="ideas" className="space-y-4">
-            <TabsList className="bg-background border">
-              <TabsTrigger value="ideas" className="gap-1.5 text-xs"><Lightbulb className="h-3.5 w-3.5" />Ideas</TabsTrigger>
-              <TabsTrigger value="submissions" className="gap-1.5 text-xs"><Building2 className="h-3.5 w-3.5" />Submissions</TabsTrigger>
-              <TabsTrigger value="community" className="gap-1.5 text-xs"><MessageSquare className="h-3.5 w-3.5" />Community</TabsTrigger>
-            </TabsList>
-            <TabsContent value="ideas"><IdeasInbox organizationId={effectiveOrgId} /></TabsContent>
-            <TabsContent value="submissions">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-primary" />
-                    Executive Submissions
-                  </CardTitle>
-                  <CardDescription>
-                    Review and manage ideas, friction points, and shared agents submitted to leadership
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ExecutiveSubmissions organizationId={effectiveOrgId} />
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="community"><CommunityReviewQueue organizationId={effectiveOrgId} /></TabsContent>
-          </Tabs>
+          {/* Ideas Pipeline — both user ideas and executive submissions in one view */}
+          <IdeasInbox organizationId={effectiveOrgId} />
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-primary" />
+                Executive Submissions
+              </CardTitle>
+              <CardDescription>
+                Ideas, friction points, and shared agents submitted to leadership
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ExecutiveSubmissions organizationId={effectiveOrgId} />
+            </CardContent>
+          </Card>
+          <CommunityReviewQueue organizationId={effectiveOrgId} />
         </TabsContent>
 
         {/* ── TRAINING ── */}

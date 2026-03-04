@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '@/components/shell';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
-  BookOpen, Lightbulb, Cpu, TrendingUp, Award, ChevronRight,
+  BookOpen, Lightbulb, Cpu, TrendingUp, Award, ChevronRight, Lock,
 } from 'lucide-react';
 
 // ─── Explore zone — feature hub ──────────────────────────────────────────────
@@ -37,6 +39,7 @@ const FEATURES = [
     path: '/electives',
     color: 'text-purple-600',
     bg: 'bg-purple-500/8',
+    requiresSession: 3,
   },
   {
     id: 'journey',
@@ -60,6 +63,13 @@ const FEATURES = [
 
 export default function Explore() {
   const navigate = useNavigate();
+  const { progress } = useAuth();
+  const prog = progress as unknown as Record<string, unknown> | null;
+
+  const isFeatureLocked = (feature: typeof FEATURES[number]) => {
+    if (!('requiresSession' in feature) || !feature.requiresSession) return false;
+    return !prog?.[`session_${feature.requiresSession}_completed`];
+  };
 
   return (
     <AppShell breadcrumbs={[{ label: 'Explore' }]}>
@@ -74,24 +84,33 @@ export default function Explore() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {FEATURES.map((feature) => {
             const Icon = feature.icon;
+            const locked = isFeatureLocked(feature);
             return (
               <Card
                 key={feature.id}
-                className="cursor-pointer hover:shadow-md transition-all hover:border-primary/30"
-                onClick={() => navigate(feature.path)}
+                className={`transition-all ${locked ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:shadow-md hover:border-primary/30'}`}
+                onClick={() => !locked && navigate(feature.path)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
-                    <div className={`p-2.5 rounded-lg ${feature.bg} ${feature.color} shrink-0`}>
-                      <Icon className="h-5 w-5" />
+                    <div className={`p-2.5 rounded-lg ${feature.bg} ${locked ? 'opacity-50' : feature.color} shrink-0`}>
+                      {locked ? <Lock className="h-5 w-5 text-muted-foreground" /> : <Icon className="h-5 w-5" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">{feature.title}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-sm">{feature.title}</p>
+                        {locked && 'requiresSession' in feature && (
+                          <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                            <Lock className="h-2.5 w-2.5 mr-1" />
+                            Complete Session {feature.requiresSession}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                         {feature.description}
                       </p>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                    {!locked && <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}
                   </div>
                 </CardContent>
               </Card>

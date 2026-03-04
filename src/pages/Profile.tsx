@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAIPreferences, useAIMemories } from '@/hooks/useAIPreferences';
 import { useSkillAssessment } from '@/hooks/useSkillAssessment';
@@ -129,7 +129,17 @@ export default function Profile() {
   const navigate = useNavigate();
   const { user, profile, progress, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<ProfileTab>('settings');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab') as ProfileTab | null;
+  const [activeTab, setActiveTab] = useState<ProfileTab>(
+    tabParam && ['settings', 'memories', 'journey'].includes(tabParam) ? tabParam : 'settings'
+  );
+
+  // Sync tab to URL for deep linking
+  const handleTabChange = (tab: ProfileTab) => {
+    setActiveTab(tab);
+    setSearchParams({ tab }, { replace: true });
+  };
 
   // ── Settings state ────────────────────────────────────────────────────────
   const { preferences, loading: prefLoading, savePreferences } = useAIPreferences();
@@ -292,9 +302,9 @@ export default function Profile() {
       {/* Sticky tab bar */}
       <div className="sticky top-0 z-20 border-b bg-card px-6">
         <div className="flex">
-          <TabBtn tab="settings" active={activeTab === 'settings'} icon={SettingsIcon} label="Settings" onClick={() => setActiveTab('settings')} />
-          <TabBtn tab="memories" active={activeTab === 'memories'} icon={Brain}        label="Memories" onClick={() => setActiveTab('memories')} />
-          <TabBtn tab="journey"  active={activeTab === 'journey'}  icon={TrendingUp}   label="Journey"  onClick={() => setActiveTab('journey')} />
+          <TabBtn tab="settings" active={activeTab === 'settings'} icon={SettingsIcon} label="Settings" onClick={() => handleTabChange('settings')} />
+          <TabBtn tab="memories" active={activeTab === 'memories'} icon={Brain}        label="Memories" onClick={() => handleTabChange('memories')} />
+          <TabBtn tab="journey"  active={activeTab === 'journey'}  icon={TrendingUp}   label="Journey"  onClick={() => handleTabChange('journey')} />
         </div>
       </div>
 
@@ -518,9 +528,27 @@ export default function Profile() {
                               <Button variant="ghost" size="sm" onClick={() => handleTogglePin(memory.id, true)} className="h-7 w-7 p-0" title="Unpin">
                                 <PinOff className="h-3.5 w-3.5" />
                               </Button>
-                              <Button variant="ghost" size="sm" onClick={() => handleDeleteMemory(memory.id)} className="h-7 w-7 p-0 text-destructive hover:text-destructive" title="Delete">
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive hover:text-destructive" title="Delete">
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete this memory?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Andrea will no longer reference this memory. This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteMemory(memory.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </div>
                           </div>
                         </CardContent>
@@ -554,9 +582,27 @@ export default function Profile() {
                               <Button variant="ghost" size="sm" onClick={() => handleTogglePin(memory.id, false)} className="h-7 w-7 p-0" title="Pin">
                                 <Pin className="h-3.5 w-3.5" />
                               </Button>
-                              <Button variant="ghost" size="sm" onClick={() => handleDeleteMemory(memory.id)} className="h-7 w-7 p-0 text-destructive hover:text-destructive" title="Delete">
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive hover:text-destructive" title="Delete">
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete this memory?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Andrea will no longer reference this memory. This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteMemory(memory.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </div>
                           </div>
                         </CardContent>

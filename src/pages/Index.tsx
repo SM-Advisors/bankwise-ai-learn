@@ -54,15 +54,17 @@ const Index = () => {
             Sign In
           </Button>
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/admin')}
-          className="gap-2"
-        >
-          <Settings className="h-4 w-4" />
-          Admin
-        </Button>
+        {profile?.is_admin && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/admin')}
+            className="gap-2"
+          >
+            <Settings className="h-4 w-4" />
+            Admin
+          </Button>
+        )}
       </div>
       
       <div className="container mx-auto px-4 py-16">

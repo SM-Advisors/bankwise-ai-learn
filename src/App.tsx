@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { TrainingProvider } from "@/contexts/TrainingContext";
 import { SessionProvider } from "@/contexts/SessionContext";
@@ -91,27 +91,10 @@ const App = () => (
                     </ProtectedRoute>
                   } />
 
-                  {/* Profile zone sub-pages */}
-                  <Route path="/settings" element={
-                    <ProtectedRoute requireOnboarding>
-                      <AppShell breadcrumbs={[
-                        { label: 'Profile', path: '/settings' },
-                        { label: 'Settings' },
-                      ]}>
-                        <Settings />
-                      </AppShell>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/memories" element={
-                    <ProtectedRoute requireOnboarding>
-                      <AppShell breadcrumbs={[
-                        { label: 'Profile', path: '/settings' },
-                        { label: 'Memories' },
-                      ]}>
-                        <AIMemories />
-                      </AppShell>
-                    </ProtectedRoute>
-                  } />
+                  {/* Profile zone sub-pages — redirect to Profile tabs */}
+                  <Route path="/settings" element={<Navigate to="/profile?tab=settings" replace />} />
+                  <Route path="/memories" element={<Navigate to="/profile?tab=memories" replace />} />
+                  <Route path="/journey" element={<Navigate to="/profile?tab=journey" replace />} />
 
                   {/* Explore zone sub-pages */}
                   <Route path="/ideas" element={
@@ -154,16 +137,7 @@ const App = () => (
                       </AppShell>
                     </ProtectedRoute>
                   } />
-                  <Route path="/journey" element={
-                    <ProtectedRoute requireOnboarding>
-                      <AppShell breadcrumbs={[
-                        { label: 'Explore', path: '/explore' },
-                        { label: 'My AI Journey' },
-                      ]}>
-                        <AIJourney />
-                      </AppShell>
-                    </ProtectedRoute>
-                  } />
+                  {/* /journey redirects handled above in profile zone */}
 
                   {/* Org resources — eventually moves to Community zone */}
                   <Route path="/policies" element={
