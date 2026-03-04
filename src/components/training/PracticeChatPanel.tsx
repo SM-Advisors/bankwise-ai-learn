@@ -290,8 +290,13 @@ export function PracticeChatPanel({
                   <ChevronDown className={`h-3.5 w-3.5 ml-auto transition-transform duration-200 ${scenarioOpen ? 'rotate-180' : ''}`} />
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <div className="mt-1 bg-card border border-border p-3 rounded-xl">
-                    <p className="text-xs whitespace-pre-wrap text-muted-foreground">{activeScenario}</p>
+                  <div className="mt-1 bg-card border border-border p-3 rounded-xl space-y-2">
+                    {(activeScenario.includes('\n\n')
+                      ? activeScenario.split('\n\n').map(p => p.trim()).filter(Boolean)
+                      : [activeScenario]
+                    ).map((para, idx) => (
+                      <p key={idx} className="text-xs whitespace-pre-wrap text-muted-foreground">{para}</p>
+                    ))}
                   </div>
                 </CollapsibleContent>
               </Collapsible>

@@ -1,3 +1,4 @@
+import { useState, useRef, useCallback } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,6 +7,27 @@ import {
   FileText, Lightbulb, Play, CheckCircle, Clock, Target, MessageSquare,
 } from 'lucide-react';
 import type { ModuleContent } from '@/data/trainingContent';
+
+// ─── Paragraph splitting helper ──────────────────────────────────────────────
+// Splits text on double-newlines first; if none, splits long text into
+// short paragraphs of 1-3 sentences each for better readability.
+function splitIntoParagraphs(text: string): string[] {
+  if (!text) return [];
+  // If the text already has paragraph breaks, use those
+  if (text.includes('\n\n')) {
+    return text.split('\n\n').map(p => p.trim()).filter(Boolean);
+  }
+  // Otherwise, split long single-paragraph text at sentence boundaries
+  // Only split if the text is more than ~2 sentences
+  const sentences = text.match(/[^.!?]+[.!?]+(?:\s|$)/g);
+  if (!sentences || sentences.length <= 3) return [text];
+  // Group into chunks of 2-3 sentences
+  const paragraphs: string[] = [];
+  for (let i = 0; i < sentences.length; i += 3) {
+    paragraphs.push(sentences.slice(i, i + 3).join('').trim());
+  }
+  return paragraphs;
+}
 
 // ─── ModuleContentPanel ───────────────────────────────────────────────────────
 //
@@ -19,6 +41,17 @@ interface ModuleContentPanelProps {
 }
 
 export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPanelProps) {
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const { scrollTop, scrollHeight, clientHeight } = el;
+    const maxScroll = scrollHeight - clientHeight;
+    setScrollProgress(maxScroll > 0 ? Math.round((scrollTop / maxScroll) * 100) : 0);
+  }, []);
+
   const typeConfig = {
     document: { icon: FileText, label: 'Reference', color: 'text-blue-600', bg: 'bg-blue-500/8' },
     example:  { icon: Lightbulb, label: 'Examples',  color: 'text-yellow-600', bg: 'bg-yellow-500/8' },
@@ -30,6 +63,8 @@ export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPan
 
   const cfg = typeConfig[module.type as keyof typeof typeConfig] ?? typeConfig.document;
   const TypeIcon = cfg.icon;
+
+  const overviewParagraphs = splitIntoParagraphs(module.content.overview);
 
   return (
     <div className="flex flex-col h-full border-r">
@@ -52,9 +87,17 @@ export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPan
         </div>
       </div>
 
+      {/* Scroll progress indicator */}
+      <div className="shrink-0 h-0.5 bg-muted">
+        <div
+          className="h-full bg-primary transition-all duration-150"
+          style={{ width: `${scrollProgress}%` }}
+        />
+      </div>
+
       {/* Scrollable content */}
-      <ScrollArea className="flex-1">
-        <div className="px-6 py-5 space-y-5">
+      <ScrollArea className="flex-1" ref={scrollContainerRef} onScrollCapture={handleScroll}>
+        <div className="px-6 py-5 space-y-6">
 
           {/* Learning outcome callout */}
           {module.learningOutcome && (
@@ -66,62 +109,7 @@ export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPan
             </div>
           )}
 
-          {/* Overview */}
-          <div>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              {module.content.overview}
-            </p>
-          </div>
-
-          {/* Steps (document / exercise) */}
-          {module.content.steps && module.content.steps.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold mb-3">Step-by-Step</h3>
-              <ol className="space-y-2.5">
-                {module.content.steps.map((step, idx) => (
-                  <li key={idx} className="flex items-start gap-3 text-sm">
-                    <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center shrink-0 mt-0.5 font-medium">
-                      {idx + 1}
-                    </span>
-                    <span className="leading-relaxed">{step}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
-
-          {/* Examples */}
-          {module.content.examples && module.content.examples.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold">
-                {module.type === 'example' ? 'Examples' : 'Example'}
-              </h3>
-              {module.content.examples.map((example, idx) => (
-                <Card key={idx} className="overflow-hidden">
-                  <div className="bg-muted/50 px-4 py-2.5 border-b text-sm font-medium">
-                    {example.title}
-                  </div>
-                  <CardContent className="pt-4 pb-4 space-y-3">
-                    {example.bad && (
-                      <div className="bg-destructive/5 border border-destructive/20 p-3 rounded-lg">
-                        <p className="text-xs font-medium text-destructive mb-1.5">Less effective</p>
-                        <p className="text-sm italic text-muted-foreground">"{example.bad}"</p>
-                      </div>
-                    )}
-                    <div className="bg-green-500/5 border border-green-500/20 p-3 rounded-lg">
-                      <p className="text-xs font-medium text-green-700 mb-1.5">More effective</p>
-                      <p className="text-sm whitespace-pre-wrap">"{example.good}"</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      <span className="font-medium">Why: </span>{example.explanation}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-
-          {/* Key points */}
+          {/* Key points — moved up for scanability */}
           {module.content.keyPoints && module.content.keyPoints.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
@@ -141,19 +129,89 @@ export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPan
             </div>
           )}
 
+          {/* ── Divider ── */}
+          <div className="border-t border-border/50" />
+
+          {/* Overview — split into short paragraphs */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold">Overview</h3>
+            {overviewParagraphs.map((para, idx) => (
+              <p key={idx} className="text-sm leading-relaxed text-muted-foreground">
+                {para}
+              </p>
+            ))}
+          </div>
+
+          {/* Steps (document / exercise) */}
+          {module.content.steps && module.content.steps.length > 0 && (
+            <>
+              <div className="border-t border-border/50" />
+              <div>
+                <h3 className="text-sm font-semibold mb-3">Step-by-Step</h3>
+                <ol className="space-y-2.5">
+                  {module.content.steps.map((step, idx) => (
+                    <li key={idx} className="flex items-start gap-3 text-sm">
+                      <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center shrink-0 mt-0.5 font-medium">
+                        {idx + 1}
+                      </span>
+                      <span className="leading-relaxed">{step}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </>
+          )}
+
+          {/* Examples */}
+          {module.content.examples && module.content.examples.length > 0 && (
+            <>
+              <div className="border-t border-border/50" />
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold">
+                  {module.type === 'example' ? 'Examples' : 'Example'}
+                </h3>
+                {module.content.examples.map((example, idx) => (
+                  <Card key={idx} className="overflow-hidden">
+                    <div className="bg-muted/50 px-4 py-2.5 border-b text-sm font-medium">
+                      {example.title}
+                    </div>
+                    <CardContent className="pt-4 pb-4 space-y-3">
+                      {example.bad && (
+                        <div className="bg-destructive/5 border border-destructive/20 p-3 rounded-lg">
+                          <p className="text-xs font-medium text-destructive mb-1.5">Less effective</p>
+                          <p className="text-sm italic text-muted-foreground">"{example.bad}"</p>
+                        </div>
+                      )}
+                      <div className="bg-green-500/5 border border-green-500/20 p-3 rounded-lg">
+                        <p className="text-xs font-medium text-green-700 mb-1.5">More effective</p>
+                        <p className="text-sm whitespace-pre-wrap">"{example.good}"</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        <span className="font-medium">Why: </span>{example.explanation}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </>
+          )}
+
           {/* Learning objectives */}
           {module.learningObjectives && module.learningObjectives.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold mb-3">Learning Objectives</h3>
-              <ul className="space-y-2">
-                {module.learningObjectives.map((obj, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <CheckCircle className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0" />
-                    <span className="leading-relaxed">{obj}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <>
+              <div className="border-t border-border/50" />
+              <div>
+                <h3 className="text-sm font-semibold mb-3">Learning Objectives</h3>
+                <ul className="space-y-2">
+                  {module.learningObjectives.map((obj, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <CheckCircle className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0" />
+                      <span className="leading-relaxed">{obj}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </>
           )}
 
           {/* Bottom spacer */}

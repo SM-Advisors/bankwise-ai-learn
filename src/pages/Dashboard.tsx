@@ -126,8 +126,8 @@ export default function Dashboard() {
 
   return (
     <AppShell breadcrumbs={[{ label: 'Home' }]}>
-      <div className="flex items-center justify-center w-full min-h-[calc(100vh-4rem)] px-4 py-10">
-      <div className="w-full max-w-2xl">
+      <div className="w-full px-4 py-10">
+      <div className="w-full max-w-5xl mx-auto">
         {homeState === 'brand_new' && (
           <BrandNewView
             name={profile.display_name || 'there'}

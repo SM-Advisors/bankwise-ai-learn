@@ -63,7 +63,7 @@ export default function Explore() {
 
   return (
     <AppShell breadcrumbs={[{ label: 'Explore' }]}>
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold mb-1">Explore</h1>
           <p className="text-sm text-muted-foreground">
@@ -71,7 +71,7 @@ export default function Explore() {
           </p>
         </div>
 
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {FEATURES.map((feature) => {
             const Icon = feature.icon;
             return (
