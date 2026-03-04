@@ -194,13 +194,11 @@ function BrandNewView({
     <div className="space-y-5">
       {/* Andrea greeting */}
       <div className="flex items-start gap-3">
-        <img src={andreaCoach} alt="Andrea" className="h-12 w-12 rounded-full object-cover shrink-0 border-2 border-accent/30" />
-        <div className="relative bg-white border border-accent/20 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
+        <img src={andreaCoach} alt="Andrea" className="h-12 w-12 rounded-full object-cover shrink-0" />
+        <div className="relative bg-muted/50 rounded-2xl rounded-tl-none px-4 py-3">
           <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-1">Andrea</p>
           <p className="text-sm text-foreground leading-relaxed">
-            Welcome, {name}. I'll be your AI coach throughout this journey. We'll start with the
-            fundamentals — once you've worked through Session 1, you'll have a real foundation for
-            everything that follows.
+            Hi, I'm Andrea. Click below to begin your AI Journey.
           </p>
         </div>
       </div>
@@ -248,10 +246,10 @@ function MidSessionView({
     <div className="space-y-5">
       {/* Andrea nudge */}
       <div className="flex items-start gap-3">
-        <img src={andreaCoach} alt="Andrea" className="h-12 w-12 rounded-full object-cover shrink-0 border-2 border-accent/30" />
-        <div className="relative bg-white border border-accent/20 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
+        <img src={andreaCoach} alt="Andrea" className="h-12 w-12 rounded-full object-cover shrink-0" />
+        <div className="relative bg-muted/50 rounded-2xl rounded-tl-none px-4 py-3">
           <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-1">Andrea</p>
-          <p className="text-sm text-foreground">Ready to pick up where you left off, {name}?</p>
+          <p className="text-sm text-foreground">Hi, I'm Andrea. Click below to continue your AI Journey.</p>
         </div>
       </div>
 
