@@ -1,24 +1,16 @@
 
 
-## Enable pg_cron Extension
+## The White Space Issue
 
-### What we'll do
-Run a single SQL migration to enable the `pg_cron` (and `pg_net`) extensions in your database. This is a prerequisite for setting up scheduled jobs like data retention crons.
+**Root cause:** In `TrainingWorkspace.tsx` (line 1006), the left content column is set to `w-[65%]` when the Andrea panel is expanded, and the `TrainerChatPanel` has a fixed width of `md:w-96` (384px). On wider screens, these two don't add up to 100% of the available space, leaving a visible gap on the right side.
 
-### Technical Details
+## Fix
 
-**Migration SQL:**
-```sql
-CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA pg_catalog;
-CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
-```
+Two changes needed:
 
-This enables:
-- **pg_cron** -- allows scheduling recurring SQL jobs (like a cron job inside your database)
-- **pg_net** -- allows making HTTP requests from within the database (needed if your cron jobs call edge functions)
+1. **`TrainerChatPanel.tsx` (line 212):** Change the expanded width from `w-full md:w-96` to `w-full md:w-[35%]` so it fills the remaining space as a percentage complement to the left column's 65%.
 
-### Steps
-1. Run the migration above to enable both extensions
-2. Once confirmed, you can then run your Data Retention Cron migration
+2. **`TrainingWorkspace.tsx` (line 998):** Ensure the parent flex container has no gap or extra space — it already uses `flex-1 flex overflow-hidden` which should be fine once the widths sum to 100%.
 
-No code file changes are needed -- this is purely a database-level change.
+This is a one-line CSS class change in each file. The panel will remain collapsible (to `w-12`) and the left column will still expand to `flex-1` when collapsed.
+
