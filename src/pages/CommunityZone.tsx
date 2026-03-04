@@ -9,7 +9,7 @@ import { CommunityFeed } from '@/components/CommunityFeed';
 export default function CommunityZone() {
   return (
     <AppShell breadcrumbs={[{ label: 'Community' }]}>
-      <div className="container mx-auto px-4 py-6 max-w-3xl">
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold mb-1">Community</h1>
           <p className="text-sm text-muted-foreground">

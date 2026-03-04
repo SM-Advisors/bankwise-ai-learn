@@ -917,15 +917,25 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
   ];
 
   const trainingActions = (
-    <ProgressStrip
-      modules={progressModules}
-      currentModuleId={selectedModule?.id}
-      onModuleClick={(id) => {
-        const mod = session.modules.find((m) => m.id === id);
-        if (mod) handleModuleSelect(mod);
-      }}
-      className="max-w-[480px]"
-    />
+    <div className="flex items-center gap-2">
+      <ProgressStrip
+        modules={progressModules}
+        currentModuleId={selectedModule?.id}
+        onModuleClick={(id) => {
+          const mod = session.modules.find((m) => m.id === id);
+          if (mod) handleModuleSelect(mod);
+        }}
+        className="max-w-[480px]"
+      />
+      <button
+        onClick={() => setIdeaModalOpen(true)}
+        className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors shrink-0"
+        aria-label="Submit an idea"
+      >
+        <Lightbulb className="h-3.5 w-3.5" />
+        Idea
+      </button>
+    </div>
   );
 
   return (
@@ -993,7 +1003,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
             data-tour="practice-area"
             className={`flex flex-col overflow-hidden ${
               workspaceMode === 'learn' && selectedModule && !isAgentModule && !isWorkflowModule && !isCapstoneModule
-                ? 'w-[65%]'
+                ? (rightCollapsed ? 'flex-1' : 'w-[65%]')
                 : 'flex-1'
             }`}
             ref={contentScrollRef}
@@ -1128,16 +1138,6 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         videoUrl={selectedModule?.videoUrl || 'https://youtu.be/xZ1FAm7IoA4'}
         title={selectedModule?.title || "Introduction to AI Prompting"}
       />
-
-      {/* Submit Idea floating button */}
-      <button
-        onClick={() => setIdeaModalOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
-        aria-label="Submit an idea"
-      >
-        <Lightbulb className="h-4 w-4" />
-        Submit Idea
-      </button>
 
       {/* Submit Idea dialog */}
       <Dialog open={ideaModalOpen} onOpenChange={setIdeaModalOpen}>

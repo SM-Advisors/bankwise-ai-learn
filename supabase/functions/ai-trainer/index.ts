@@ -105,7 +105,7 @@ ${(context.proficiencyLevel ?? 4) <= 2 ? '- Use simple language and avoid jargon
 2. Give specific, actionable feedback (not vague praise)
 3. If they're struggling, offer hints from the hints list
 4. Relate examples to their line of business (${context.lineOfBusiness?.replace('_', ' ') || 'banking'}) when possible
-5. Keep responses focused and practical (2-4 paragraphs typically)
+5. Use short paragraphs of 1-3 sentences each. Break after every 2-3 sentences for readability
 6. If they ask about compliance or security, emphasize following bank policies
 7. Use markdown formatting for clarity (bold, bullets, numbered lists)
 
