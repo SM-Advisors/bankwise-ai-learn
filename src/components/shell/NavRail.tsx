@@ -77,8 +77,11 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
     return (
       <nav
         aria-label="Main navigation"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onToggle();
+        }}
         className={cn(
-          'fixed left-0 top-0 z-40 flex h-screen flex-col bg-primary transition-all duration-200 overflow-hidden',
+          'fixed left-0 top-0 z-40 flex h-screen flex-col bg-primary transition-all duration-200 overflow-hidden cursor-pointer',
           isExpanded ? 'w-60' : 'w-14'
         )}
       >
@@ -120,7 +123,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
         )}
 
         {/* ── Zone items ──────────────────────────────────────────────────── */}
-        <div className={cn('flex flex-1 flex-col gap-1', isExpanded ? 'px-2' : 'items-center px-2')}>
+        <div onClick={(e) => { if (e.target === e.currentTarget) onToggle(); }} className={cn('flex flex-1 flex-col gap-1', isExpanded ? 'px-2' : 'items-center px-2')}>
           {unlockedZones.map((zone) => {
             const Icon = zone.icon;
             const active = isActive(zone.id, zone.path);
