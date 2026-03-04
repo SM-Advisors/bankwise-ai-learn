@@ -17,8 +17,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useUserRole } from '@/hooks/useUserRole';
-import sparkLogo from '@/assets/SM ADVISORS SPARK_Merch_Transparent.svg';
-import smAdvisorsLogo from '@/assets/sm-advisors-logo-transparent.png';
+import sparkLogo from '@/assets/spark-icon.png';
+import smAdvisorsLogo from '@/assets/sm-advisors-logo-full.png';
 
 // ─── NavRail ──────────────────────────────────────────────────────────────────
 //
