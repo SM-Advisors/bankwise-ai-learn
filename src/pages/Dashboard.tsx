@@ -185,9 +185,7 @@ export default function Dashboard() {
         {/* AI Brainstorm — Andrea-guided workflow analysis */}
         {homeState !== 'brand_new' && (
           <div className="mt-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <BrainstormPanel />
-            </div>
+            <BrainstormPanel />
           </div>
         )}
 

@@ -226,7 +226,7 @@ export function AgentStudioPanel({
             disabled={!hasPrompt}
             className="shrink-0"
           >
-            Submit for Review
+            Get Andrea's Feedback
           </Button>
         )}
       </div>

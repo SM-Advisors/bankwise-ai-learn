@@ -46,6 +46,7 @@ export default function ElectiveWorkspace() {
   const [isTrainerLoading, setIsTrainerLoading] = useState(false);
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
   const [moduleCompleted, setModuleCompleted] = useState(false);
+  const [lastGateMessage, setLastGateMessage] = useState<string | null>(null);
   const [contentModalOpen, setContentModalOpen] = useState(false);
   const [contentModalModule, setContentModalModule] = useState<ModuleContent | null>(null);
   const [policyModalOpen, setPolicyModalOpen] = useState(false);
@@ -171,6 +172,7 @@ export default function ElectiveWorkspace() {
       contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     }
     setModuleCompleted(selectedModule ? completedModules.has(selectedModule.id) : false);
+    setLastGateMessage(null);
   }, [selectedModule, completedModules]);
 
   if (loading || !profile) {
@@ -288,6 +290,7 @@ export default function ElectiveWorkspace() {
           body: {
             lessonId: syntheticSessionId,
             moduleId: selectedModule.id,
+            isGateModule: true,  // Always evaluate quality
             submission: conversationTranscript,
             rubric,
             learnerState: {
@@ -318,10 +321,14 @@ export default function ElectiveWorkspace() {
         shareSuggestion = replyData?.shareSuggestion;
       }
 
+      let gateResult: import('@/types/progress').GateResult | null = null;
       if (reviewResponse.status === 'fulfilled' && !reviewResponse.value.error) {
         const feedbackData = reviewResponse.value.data;
         if (feedbackData?.feedback) {
           structuredFeedback = feedbackData.feedback;
+        }
+        if (feedbackData?.gateResult) {
+          gateResult = feedbackData.gateResult;
         }
       }
 
@@ -359,19 +366,33 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
     await markSubmitted();
 
-    // Mark module completed in elective progress (Supabase)
-    setModuleCompleted(true);
-    const newCompletedModules = new Set(completedModules);
-    newCompletedModules.add(selectedModule.id);
-    setCompletedModules(newCompletedModules);
+    // Only mark completed if quality gate passed
+    const gatePassed = gateResult?.passed === true;
+
+    if (gatePassed) {
+      setModuleCompleted(true);
+      const newCompletedModules = new Set(completedModules);
+      newCompletedModules.add(selectedModule.id);
+      setCompletedModules(newCompletedModules);
+    }
+
+    // Store gate message for UI
+    if (gateResult && !gatePassed) {
+      setLastGateMessage(gateResult.gateMessage || 'Your submission needs more work. Check Andrea\'s feedback for details.');
+    } else {
+      setLastGateMessage(null);
+    }
 
     if (pathId) {
-      await markModuleComplete(pathId, selectedModule.id);
+      if (gatePassed) {
+        await markModuleComplete(pathId, selectedModule.id);
+      }
 
-      // Also store engagement data
+      // Store engagement data regardless
       const engagementData: Record<string, unknown> = {
         practiceMessageCount: activeMessages.filter((m) => m.role === 'user').length,
         submittedAt: new Date().toISOString(),
+        gatePassed,
       };
       if (structuredFeedback) {
         engagementData.lastFeedback = {
@@ -383,12 +404,14 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
       await updateModuleProgress(pathId, selectedModule.id, engagementData);
 
       // Signal: skill_applied — elective module completed
-      await emitSignal('skill_applied', {
-        path_id: pathId,
-        module_id: selectedModule.id,
-        module_title: selectedModule.title,
-        elective: true,
-      });
+      if (gatePassed) {
+        await emitSignal('skill_applied', {
+          path_id: pathId,
+          module_id: selectedModule.id,
+          module_title: selectedModule.title,
+          elective: true,
+        });
+      }
     }
   };
 
@@ -680,6 +703,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                 allowedModels={allowedModels}
                 selectedModel={preferredModel}
                 onModelChange={setPreferredModel}
+                gateMessage={lastGateMessage}
               />
             ) : null}
           </div>
@@ -748,7 +772,7 @@ function generateContextualResponse(
   const lowerInput = input.toLowerCase();
 
   if (lowerInput.includes('review') || lowerInput.includes('feedback')) {
-    return `I'd be happy to review your practice! Start a conversation with the AI in the center panel, then click "Submit for Review" when you're ready.
+    return `I'd be happy to give you feedback! Start a conversation with the AI in the center panel, then click "Get Andrea's Feedback" when you're ready.
 
 The current task is: **${module?.content.practiceTask.title}**
 
