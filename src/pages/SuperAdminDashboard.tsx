@@ -18,9 +18,10 @@ import {
 import {
   Building2, Users, TrendingUp, Award, ArrowLeft,
   Shield, Heart, BarChart3, ExternalLink, Loader2, MessageSquare, Download, Paperclip,
-  CircleDot, CheckCircle2, Eye
+  CircleDot, CheckCircle2, Eye, RotateCcw
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
+import { TrainingResetManager } from '@/components/admin/TrainingResetManager';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
