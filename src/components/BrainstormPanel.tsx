@@ -16,7 +16,7 @@ type Phase = 'input' | 'chat';
 type SubmitMode = null | 'ideas' | 'community' | 'csuite';
 type LocalMessage = { role: 'user' | 'assistant'; content: string };
 
-export function BrainstormPanel() {
+export function BrainstormPanel({ compact = false }: { compact?: boolean }) {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
