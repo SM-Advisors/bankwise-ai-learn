@@ -16,8 +16,6 @@ import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';
 import type { SessionProgressData, SkillSignal } from '@/types/progress';
 import { CheckCircle, Play, Sparkles, Bot, Building2, Zap, Lock, Users } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
-import { useEvents, type Event } from '@/hooks/useEvents';
-import { EventModal, getEventTypeConfig } from '@/components/EventModal';
 import { BrainstormPanel } from '@/components/BrainstormPanel';
 
 // ─── Session metadata ─────────────────────────────────────────────────────────
