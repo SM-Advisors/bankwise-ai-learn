@@ -533,6 +533,9 @@ export default function SuperAdminDashboard() {
               </CardContent>
             </Card>
           </TabsContent>
+          <TabsContent value="training-reset" className="mt-4">
+            <TrainingResetManager />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
