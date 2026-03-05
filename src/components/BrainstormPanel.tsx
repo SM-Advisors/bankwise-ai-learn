@@ -16,7 +16,7 @@ type Phase = 'input' | 'chat';
 type SubmitMode = null | 'ideas' | 'community' | 'csuite';
 type LocalMessage = { role: 'user' | 'assistant'; content: string };
 
-export function BrainstormPanel() {
+export function BrainstormPanel({ compact = false }: { compact?: boolean }) {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -332,22 +332,33 @@ Enterprise ($$$$$): Full RPA platforms (UiPath, Automation Anywhere), custom ven
 
   return (
     <>
-      {/* Trigger Card */}
-      <button
-        data-tour="brainstorm-btn"
-        onClick={handleOpen}
-        className="group relative flex flex-col items-center justify-center gap-2 w-full h-full min-h-[120px] rounded-xl border bg-card hover:shadow-md transition-all cursor-pointer p-3 text-center shadow-sm"
-      >
-        <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40 transition-colors">
-          <Lightbulb className="h-5 w-5 text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)] group-hover:drop-shadow-[0_0_10px_rgba(250,204,21,0.9)] group-hover:scale-110 transition-all" />
-        </div>
-        <div>
-          <p className="font-semibold text-foreground text-xs">AI Brainstorm</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug max-w-[120px] mx-auto">
-            Explore how AI can help with any task
-          </p>
-        </div>
-      </button>
+      {/* Trigger */}
+      {compact ? (
+        <button
+          data-tour="brainstorm-btn"
+          onClick={handleOpen}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-accent transition-colors cursor-pointer"
+        >
+          <Lightbulb className="h-4 w-4 text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)]" />
+          <span className="text-foreground">AI Brainstorm</span>
+        </button>
+      ) : (
+        <button
+          data-tour="brainstorm-btn"
+          onClick={handleOpen}
+          className="group relative flex flex-col items-center justify-center gap-2 w-full h-full min-h-[120px] rounded-xl border bg-card hover:shadow-md transition-all cursor-pointer p-3 text-center shadow-sm"
+        >
+          <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40 transition-colors">
+            <Lightbulb className="h-5 w-5 text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)] group-hover:drop-shadow-[0_0_10px_rgba(250,204,21,0.9)] group-hover:scale-110 transition-all" />
+          </div>
+          <div>
+            <p className="font-semibold text-foreground text-xs">AI Brainstorm</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug max-w-[120px] mx-auto">
+              Explore how AI can help with any task
+            </p>
+          </div>
+        </button>
+      )}
 
       {/* Brainstorm Sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
