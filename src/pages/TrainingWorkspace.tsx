@@ -29,14 +29,10 @@ import { useWorkspaceTour } from '@/hooks/useWorkspaceTour';
 import { AgentStudioPanel } from '@/components/agent-studio/AgentStudioPanel';
 import { WorkflowStudioPanel } from '@/components/workflow-studio/WorkflowStudioPanel';
 import { CapstonePanel } from '@/components/capstone/CapstonePanel';
+import { BrainstormPanel } from '@/components/BrainstormPanel';
 import type { CapstoneData } from '@/types/progress';
 import type { WorkflowData } from '@/types/workflow';
-import { Loader2, Bot, Building2, MessageSquare, GraduationCap, BookOpen, Lightbulb } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { useUserIdeas } from '@/hooks/useUserIdeas';
+import { Loader2, Bot, Building2, MessageSquare, GraduationCap, BookOpen } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AppShell, type BreadcrumbItem } from '@/components/shell';
 import { ProgressStrip, type ProgressModule } from '@/components/smile';
@@ -51,26 +47,6 @@ export default function TrainingWorkspace() {
   const { user, profile, progress, loading, markSessionCompleted, updateProgress, updateProfile } = useAuth();
   const { toast } = useToast();
   const contentScrollRef = useRef<HTMLDivElement>(null);
-  const { createIdea } = useUserIdeas();
-  const [ideaModalOpen, setIdeaModalOpen] = useState(false);
-  const [ideaTitle, setIdeaTitle] = useState('');
-  const [ideaDescription, setIdeaDescription] = useState('');
-  const [submittingIdea, setSubmittingIdea] = useState(false);
-
-  const handleSubmitIdea = async () => {
-    if (!ideaTitle.trim()) return;
-    setSubmittingIdea(true);
-    const result = await createIdea({ title: ideaTitle.trim(), description: ideaDescription.trim(), status: 'not_started' });
-    setSubmittingIdea(false);
-    if (result?.success) {
-      setIdeaModalOpen(false);
-      setIdeaTitle('');
-      setIdeaDescription('');
-      toast({ title: 'Idea submitted', description: 'Your idea has been sent to your training administrator.' });
-    } else {
-      toast({ title: 'Failed to submit', description: 'Please try again.', variant: 'destructive' });
-    }
-  };
 
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const [selectedModule, setSelectedModule] = useState<ModuleContent | null>(null);
@@ -927,14 +903,9 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         }}
         className="max-w-[480px]"
       />
-      <button
-        onClick={() => setIdeaModalOpen(true)}
-        className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors shrink-0"
-        aria-label="Submit an idea"
-      >
-        <Lightbulb className="h-3.5 w-3.5" />
-        Idea
-      </button>
+      <div className="w-[100px] shrink-0">
+        <BrainstormPanel />
+      </div>
     </div>
   );
 
@@ -1151,45 +1122,6 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         title={selectedModule?.title || "Introduction to AI Prompting"}
       />
 
-      {/* Submit Idea dialog */}
-      <Dialog open={ideaModalOpen} onOpenChange={setIdeaModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Lightbulb className="h-5 w-5 text-primary" />
-              Submit an Idea
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label htmlFor="idea-title">Title *</Label>
-              <Input
-                id="idea-title"
-                value={ideaTitle}
-                onChange={(e) => setIdeaTitle(e.target.value)}
-                placeholder="e.g. Use AI to automate credit memos"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="idea-desc">Description</Label>
-              <Textarea
-                id="idea-desc"
-                value={ideaDescription}
-                onChange={(e) => setIdeaDescription(e.target.value)}
-                placeholder="Describe the idea and how it could help your team..."
-                rows={4}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIdeaModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleSubmitIdea} disabled={!ideaTitle.trim() || submittingIdea}>
-              {submittingIdea ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Submit
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </AppShell>
   );
 }

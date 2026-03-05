@@ -18,6 +18,7 @@ import { CheckCircle, Play, Sparkles, Bot, Building2, Zap, Calendar, Clock, MapP
 import andreaCoach from '@/assets/andrea-coach.png';
 import { useEvents, type Event } from '@/hooks/useEvents';
 import { EventModal, getEventTypeConfig } from '@/components/EventModal';
+import { BrainstormPanel } from '@/components/BrainstormPanel';
 
 // ─── Session metadata ─────────────────────────────────────────────────────────
 
@@ -178,6 +179,15 @@ export default function Dashboard() {
               <p className="text-xs text-muted-foreground/70">Complete your first practice chat to unlock peer discussions and sharing.</p>
             </div>
             <Lock className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+          </div>
+        )}
+
+        {/* AI Brainstorm — Andrea-guided workflow analysis */}
+        {homeState !== 'brand_new' && (
+          <div className="mt-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <BrainstormPanel />
+            </div>
           </div>
         )}
 
