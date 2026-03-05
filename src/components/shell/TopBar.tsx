@@ -68,7 +68,7 @@ export function TopBar({ breadcrumbs = [], actions }: TopBarProps) {
 
       {/* Right: contextual actions */}
       {actions && (
-        <div className="flex items-center gap-3">
+        <div className="flex-1 flex items-center ml-4">
           {actions}
         </div>
       )}
