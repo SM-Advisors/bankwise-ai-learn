@@ -264,6 +264,7 @@ export default function ElectiveWorkspace() {
     };
 
     let structuredFeedback: Message['structuredFeedback'] | undefined;
+    let gateResult: import('@/types/progress').GateResult | null = null;
     try {
       const [trainerResponse, reviewResponse] = await Promise.allSettled([
         supabase.functions.invoke('trainer_chat', {
@@ -321,7 +322,6 @@ export default function ElectiveWorkspace() {
         shareSuggestion = replyData?.shareSuggestion;
       }
 
-      let gateResult: import('@/types/progress').GateResult | null = null;
       if (reviewResponse.status === 'fulfilled' && !reviewResponse.value.error) {
         const feedbackData = reviewResponse.value.data;
         if (feedbackData?.feedback) {
