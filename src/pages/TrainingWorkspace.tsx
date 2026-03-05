@@ -55,6 +55,7 @@ export default function TrainingWorkspace() {
   const [isTrainerLoading, setIsTrainerLoading] = useState(false);
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
   const [moduleCompleted, setModuleCompleted] = useState(false);
+  const [lastGateMessage, setLastGateMessage] = useState<string | null>(null);
   // 'learn' shows the content panel; 'practice' shows the chat
   const [workspaceMode, setWorkspaceMode] = useState<'learn' | 'practice'>('learn');
   const [videoModalOpen, setVideoModalOpen] = useState(false);
@@ -223,6 +224,7 @@ export default function TrainingWorkspace() {
       contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     }
     setModuleCompleted(selectedModule ? completedModules.has(selectedModule.id) : false);
+    setLastGateMessage(null);
   }, [selectedModule, completedModules]);
 
   // Load completed modules and engagement data from database progress
@@ -434,8 +436,9 @@ export default function TrainingWorkspace() {
   };
 
   // Submit the practice conversation to Andrea for review
-  const handleSubmitForReview = async () => {
-    if (!selectedModule || activeMessages.length === 0) return;
+  // Returns true if the quality gate passed, false otherwise
+  const handleSubmitForReview = async (): Promise<boolean> => {
+    if (!selectedModule || activeMessages.length === 0) return false;
 
     setIsTrainerLoading(true);
 
@@ -486,7 +489,7 @@ export default function TrainingWorkspace() {
           body: {
             lessonId: sessionId || '1',
             moduleId: selectedModule.id,
-            isGateModule: selectedModule.isGateModule === true,
+            isGateModule: true,  // Always evaluate quality — all modules require reasonable scores
             submission: conversationTranscript,
             rubric,
             // Pass agent template for modules 2-3 and 2-5 for agent-specific rubrics
@@ -579,16 +582,22 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
     // Mark conversation as submitted in database
     await markSubmitted();
 
-    // Determine if gate passed (for gate modules) or always pass (non-gate)
-    const isGate = selectedModule.isGateModule === true;
-    const gatePassed = !isGate || (gateResult?.passed === true);
+    // All modules now require reasonable quality to advance
+    const gatePassed = gateResult?.passed === true;
 
-    // Mark module as completed only if not gated or gate passed
+    // Mark module as completed only if quality gate passed
     const newCompletedModules = new Set(completedModules);
     if (gatePassed) {
       setModuleCompleted(true);
       newCompletedModules.add(selectedModule.id);
       setCompletedModules(newCompletedModules);
+    }
+
+    // Store the gate message for display in the UI
+    if (gateResult && !gatePassed) {
+      setLastGateMessage(gateResult.gateMessage || 'Your submission needs more work before you can move on. Check Andrea\'s feedback for details.');
+    } else {
+      setLastGateMessage(null);
     }
 
     if (sessionId) {
@@ -605,11 +614,10 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         practiceMessageCount: activeMessages.filter(m => m.role === 'user').length,
       };
 
-      if (isGate) {
-        engagementUpdates.gateAttempts = (prevEngagement.gateAttempts ?? 0) + 1;
-        engagementUpdates.gatePassed = gatePassed;
-        if (gateResult) engagementUpdates.lastGateResult = gateResult;
-      }
+      // Track gate attempts for all modules
+      engagementUpdates.gateAttempts = (prevEngagement.gateAttempts ?? 0) + 1;
+      engagementUpdates.gatePassed = gatePassed;
+      if (gateResult) engagementUpdates.lastGateResult = gateResult;
 
       if (structuredFeedback) {
         engagementUpdates.lastFeedback = {
@@ -640,16 +648,17 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         },
       } as any);
 
-      // Signal: skill_applied — module completed (gate passed or non-gate)
+      // Signal: skill_applied — module completed
       if (gatePassed) {
         await emitSignal('skill_applied', {
           session_id: sessionId,
           module_id: selectedModule.id,
           module_title: selectedModule.title,
-          gate_passed: isGate ? true : undefined,
         });
       }
     }
+
+    return gatePassed;
   };
 
   // Build agent context for Andrea when the user is working on their agent
@@ -971,7 +980,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                 ? '✓ Module complete'
                 : selectedModule.practiceType === 'sandbox'
                 ? 'Read content → practice in chat to complete'
-                : 'Read content → practice → submit to complete'}
+                : 'Read content → practice → get feedback to complete'}
             </div>
           )}
         </div>
@@ -1063,6 +1072,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                 allowedModels={allowedModels}
                 selectedModel={preferredModel}
                 onModelChange={setPreferredModel}
+                gateMessage={lastGateMessage}
               />
             ) : null}
           </div>
@@ -1135,7 +1145,7 @@ function generateContextualResponse(
   const lowerInput = input.toLowerCase();
 
   if (lowerInput.includes('review') || lowerInput.includes('feedback')) {
-    return `I'd be happy to review your practice! Start a conversation with the AI in the center panel, then click "Submit for Review" when you're ready.
+    return `I'd be happy to give you feedback! Start a conversation with the AI in the center panel, then click "Get Andrea's Feedback" when you're ready.
 
 The current task is: **${module?.content.practiceTask.title}**
 
@@ -1178,7 +1188,7 @@ Try sending one of these as a prompt in the center panel!`;
 **How this works:** Use the center panel to practice prompting a real AI. I'll watch your conversation and help you improve.
 
 You can ask me to:
-- Review your practice conversation
+- Give feedback on your practice conversation
 - Show examples relevant to your role
 - Explain concepts in more detail
 - Provide hints for the current task

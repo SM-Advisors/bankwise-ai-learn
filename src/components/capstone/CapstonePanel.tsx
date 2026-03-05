@@ -25,7 +25,7 @@ interface CapstonePanelProps {
   onSendPracticeMessage: (message: string) => void;
   practiceMessages: PracticeMessage[];
   isPracticeLoading: boolean;
-  onSubmitForReview: () => void;
+  onSubmitForReview: () => Promise<boolean>;
   isSubmitting?: boolean;
   departmentLabel?: string;
   userName?: string;
@@ -150,15 +150,20 @@ export function CapstonePanel({
       completedAt: new Date().toISOString(),
     });
 
-    // Trigger the review
-    onSubmitForReview();
+    // Trigger the review and wait for result
+    const passed = await onSubmitForReview();
 
-    // Show celebration
-    setShowCelebration(true);
-    setTimeout(() => {
-      setShowCelebration(false);
+    if (passed) {
+      // Show celebration only on good scores
+      setShowCelebration(true);
+      setTimeout(() => {
+        setShowCelebration(false);
+        setCurrentStep('complete');
+      }, 3000);
+    } else {
+      // Go to complete step but without celebration — Andrea's feedback will show what to improve
       setCurrentStep('complete');
-    }, 3000);
+    }
   };
 
   const reflectionsValid =

@@ -473,7 +473,7 @@ export function TrainerChatPanel({
                   </Avatar>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm text-muted-foreground">
-                    {activeQuickAction === 'review' ? 'Reviewing your work...' :
+                    {activeQuickAction === 'review' ? 'Preparing feedback...' :
                      activeQuickAction === 'hint' ? 'Preparing a hint...' :
                      'Thinking...'}
                   </span>
@@ -547,15 +547,15 @@ export function TrainerChatPanel({
                 size="sm"
                 className="text-xs h-7 gap-1.5 rounded-md"
                 disabled={isLoading}
-                aria-label="Ask Andrea to review your practice work"
-                onClick={() => handleQuickActionClick('Can you review my practice work?', 'review')}
+                aria-label="Ask Andrea for feedback on your practice work"
+                onClick={() => handleQuickActionClick('Can you give me feedback on my practice work?', 'review')}
               >
                 {activeQuickAction === 'review' && isLoading ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
                 ) : (
                   <CheckCircle2 className="h-3 w-3" />
                 )}
-                Review my work
+                Get feedback
               </Button>
               <Button
                 variant="outline"

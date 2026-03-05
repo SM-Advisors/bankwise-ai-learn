@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Loader2, Send, CheckCircle,
+  Loader2, Send, CheckCircle, AlertCircle,
   ChevronRight, ChevronDown, Bot, User, Mic, AudioLines, Plus, SlidersHorizontal,
-  MessageSquarePlus, History, Clock, ChevronUp, Sparkles,
+  MessageSquarePlus, History, Clock, ChevronUp, Sparkles, RotateCcw,
 } from 'lucide-react';
 import { type ModuleContent } from '@/data/trainingContent';
 import { getRoleScenario } from '@/data/roleScenarioBanks';
@@ -40,6 +40,7 @@ interface PracticeChatPanelProps {
   allowedModels?: string[];
   selectedModel?: string;
   onModelChange?: (modelId: string) => void;
+  gateMessage?: string | null;
 }
 
 export function PracticeChatPanel({
@@ -63,6 +64,7 @@ export function PracticeChatPanel({
   allowedModels = [],
   selectedModel,
   onModelChange,
+  gateMessage,
 }: PracticeChatPanelProps) {
   const [input, setInput] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -305,32 +307,48 @@ export function PracticeChatPanel({
             {/* Submitted indicator — inside chat */}
             {isSubmitted && (
               <div className="w-full">
-                <div className="p-4 bg-accent/10 border border-accent/20 rounded-2xl text-center">
-                  <div className="flex items-center justify-center gap-2 text-accent font-medium">
-                    <CheckCircle className="h-5 w-5" />
-                    Submitted for Review
+                {isCompleted ? (
+                  /* Passed — show celebration and advancement */
+                  <div className="p-4 bg-accent/10 border border-accent/20 rounded-2xl text-center">
+                    <div className="flex items-center justify-center gap-2 text-accent font-medium">
+                      <CheckCircle className="h-5 w-5" />
+                      Great work!
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Andrea has reviewed your conversation and you're ready to move on.
+                    </p>
+                    <div className="mt-3 flex items-center justify-center gap-2">
+                      {hasNextModule && onContinueToNext ? (
+                        <Button onClick={onContinueToNext} size="sm" className="gap-2 rounded-full">
+                          Continue to Next Module
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      ) : onCompleteSession ? (
+                        <Button onClick={onCompleteSession} size="sm" className="gap-2 rounded-full">
+                          Complete Session
+                          <CheckCircle className="h-4 w-4" />
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Andrea has reviewed this conversation. You can keep chatting or start a new one.
-                  </p>
-                  <div className="mt-3 flex items-center justify-center gap-2">
-                    <Button variant="outline" size="sm" onClick={onNewChat} className="gap-2 rounded-full">
-                      <MessageSquarePlus className="h-4 w-4" />
-                      New Chat
-                    </Button>
-                    {hasNextModule && onContinueToNext ? (
-                      <Button onClick={onContinueToNext} size="sm" className="gap-2 rounded-full">
-                        Continue to Next Module
-                        <ChevronRight className="h-4 w-4" />
+                ) : (
+                  /* Not yet passed — show feedback and encourage retry */
+                  <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-center">
+                    <div className="flex items-center justify-center gap-2 text-amber-600 dark:text-amber-400 font-medium">
+                      <AlertCircle className="h-5 w-5" />
+                      Almost there!
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {gateMessage || "Your conversation needs a bit more work before you can move on. Check Andrea's feedback in the coach panel for details."}
+                    </p>
+                    <div className="mt-3 flex items-center justify-center gap-2">
+                      <Button variant="outline" size="sm" onClick={onNewChat} className="gap-2 rounded-full">
+                        <RotateCcw className="h-4 w-4" />
+                        Try Again
                       </Button>
-                    ) : onCompleteSession ? (
-                      <Button onClick={onCompleteSession} size="sm" className="gap-2 rounded-full">
-                        Complete Session
-                        <CheckCircle className="h-4 w-4" />
-                      </Button>
-                    ) : null}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
@@ -341,14 +359,17 @@ export function PracticeChatPanel({
 
       {/* Welcome greeting — shown above input when no conversation has started */}
       {!hasConversation && !isSandbox && (
-        <div className="flex-1 flex items-center justify-center w-full max-w-2xl mx-auto px-4 text-center">
+        <div className="flex-1 flex flex-col items-center justify-center w-full max-w-2xl mx-auto px-4 text-center gap-3">
           <p className="text-3xl font-light text-muted-foreground">
             Welcome {displayName ? <span className="font-medium text-foreground">{displayName}</span> : 'there'} — let's get started.
+          </p>
+          <p className="text-sm text-muted-foreground/70">
+            Practice the task below, then submit your conversation to get feedback from Andrea.
           </p>
         </div>
       )}
 
-      {/* Submit for Review button — appears after 1+ exchanges, not yet submitted (hidden in sandbox) */}
+      {/* Get Andrea's Feedback button — appears after 1+ exchanges, not yet submitted (hidden in sandbox) */}
       {hasConversation && !isSubmitted && !isLoading && !isSandbox && (
         <div className="w-full max-w-2xl mx-auto px-4 pt-2">
           <button
@@ -356,7 +377,7 @@ export function PracticeChatPanel({
             className="w-full py-2 rounded-xl border border-accent/30 bg-accent/5 hover:bg-accent/10 text-accent text-xs font-medium transition-colors flex items-center justify-center gap-2"
           >
             <CheckCircle className="h-3.5 w-3.5" />
-            Submit Conversation for Andrea's Review
+            Get Andrea's Feedback
           </button>
         </div>
       )}
