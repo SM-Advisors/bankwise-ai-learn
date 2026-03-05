@@ -998,7 +998,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
             <div className="px-3 py-1.5 bg-muted/30 border-b text-[10px] text-muted-foreground text-center">
               {moduleEngagement[selectedModule.id]?.completed
                 ? '✓ Module complete'
-                : selectedModule.practiceType === 'sandbox'
+                : selectedModule.type === 'sandbox'
                 ? 'Read content → practice in chat to complete'
                 : 'Read content → practice → submit to complete'}
             </div>

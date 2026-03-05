@@ -54,7 +54,7 @@ const Index = () => {
             Sign In
           </Button>
         )}
-        {profile?.is_admin && (
+        {profile?.is_super_admin && (
           <Button
             variant="ghost"
             size="sm"
@@ -68,7 +68,7 @@ const Index = () => {
       </div>
       
       <div className="container mx-auto px-4 py-16">
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-xl mx-auto text-center">
           {/* Hero Section */}
           <div className="animate-fade-in mb-12">
             {/* SM Advisors Logo */}
