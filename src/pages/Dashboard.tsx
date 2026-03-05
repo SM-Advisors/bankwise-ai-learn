@@ -126,7 +126,7 @@ export default function Dashboard() {
     .slice(0, 4);
 
   return (
-    <AppShell breadcrumbs={[{ label: 'Home' }]}>
+    <AppShell breadcrumbs={[{ label: 'Home' }]} topBarActions={homeState !== 'brand_new' ? <BrainstormPanel compact /> : undefined}>
       <div className="w-full px-4 py-10">
       <div className="w-full max-w-5xl mx-auto">
         {homeState === 'brand_new' && (
