@@ -68,12 +68,6 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { profile, progress, loading } = useAuth();
   const { canAccessCommunity } = useFeatureGates();
-  const { events } = useEvents();
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-
-  const upcomingEvents = events
-    .filter((e) => new Date(e.scheduled_date) >= new Date())
-    .slice(0, 3);
 
   if (loading || !profile) {
     return (
