@@ -143,18 +143,27 @@ export default function Onboarding() {
         toast({ title: 'Keep going', description: 'Write a bit more to get a useful result', variant: 'destructive' });
         return;
       }
-      // Score silently before advancing
+      // Score prompt before advancing — retry once on failure
       setIsScoringPrompt(true);
-      try {
-        const res = await supabase.functions.invoke('intake-prompt-score', {
-          body: { prompt: userPrompt },
-        });
-        setPromptScore(res.data?.score ?? 0);
-      } catch {
-        setPromptScore(0); // fail silently — don't block onboarding
-      } finally {
-        setIsScoringPrompt(false);
+      let scored = false;
+      for (let attempt = 0; attempt < 2 && !scored; attempt++) {
+        try {
+          const res = await supabase.functions.invoke('intake-prompt-score', {
+            body: { prompt: userPrompt },
+          });
+          if (res.data?.score != null) {
+            setPromptScore(res.data.score);
+            scored = true;
+          }
+        } catch {
+          // retry once
+        }
       }
+      if (!scored) {
+        // Default to mid-range so users aren't unfairly placed at the lowest level
+        setPromptScore(5);
+      }
+      setIsScoringPrompt(false);
     }
 
     if (step === 4) {

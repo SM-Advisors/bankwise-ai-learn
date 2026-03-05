@@ -11,7 +11,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Logo } from '@/components/Logo';
-import { supabase as supabaseClient } from '@/integrations/supabase/client';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
@@ -76,16 +75,12 @@ export default function Auth() {
 
     setIsLoading(true);
 
-    // Switch storage based on Remember Me
-    if (!rememberMe) {
-      supabaseClient.auth.setSession; // no-op, we configure storage below
-      // For "don't remember me", we clear localStorage after sign-in and rely on in-memory session
-    }
-
     const { error } = await signIn(loginEmail, loginPassword);
 
     if (!error && !rememberMe) {
-      // Remove persisted session so it doesn't survive browser close
+      // Remove persisted session so it doesn't survive browser close.
+      // On next token refresh Supabase will re-persist, but closing the
+      // browser before that effectively ends the session.
       localStorage.removeItem('sb-tehcmmctcmmecuzytiec-auth-token');
     }
 
