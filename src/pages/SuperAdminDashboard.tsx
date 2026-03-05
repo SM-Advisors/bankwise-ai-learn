@@ -240,6 +240,10 @@ export default function SuperAdminDashboard() {
                 </Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="training-reset" className="gap-2">
+              <RotateCcw className="h-4 w-4" />
+              Training Reset
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="orgs" className="mt-4">
