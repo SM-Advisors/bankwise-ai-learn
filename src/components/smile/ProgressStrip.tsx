@@ -79,7 +79,7 @@ export function ProgressStrip({
                     : 'bg-transparent',
                 ],
                 mod.state === 'not_started' && 'bg-red-400/70',
-                isClickable && 'cursor-pointer hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                isClickable && 'cursor-pointer hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 !isClickable && 'cursor-default'
               )}
             >
