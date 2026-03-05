@@ -105,7 +105,7 @@ export function ProgressStrip({
                 <div
                   className={cn(
                     'h-px w-4',
-                    mod.state === 'completed' ? 'bg-accent' : 'bg-border'
+                    mod.state === 'completed' ? 'bg-green-500' : 'bg-border'
                   )}
                 />
               )}
