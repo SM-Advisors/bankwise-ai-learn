@@ -69,17 +69,17 @@ export function ProgressStrip({
                   ? 'px-3 py-1 text-xs font-medium'
                   : 'h-3 w-3',
                 mod.state === 'completed' && [
-                  'bg-accent',
-                  isCurrent && 'text-accent-foreground',
+                  'bg-green-500',
+                  isCurrent && 'text-white',
                 ],
                 mod.state === 'in_progress' && [
-                  'ring-2 ring-accent',
+                  'ring-2 ring-yellow-400',
                   isCurrent
-                    ? 'bg-accent/10 text-accent'
+                    ? 'bg-yellow-400/20 text-yellow-700 dark:text-yellow-300'
                     : 'bg-transparent',
                 ],
-                mod.state === 'not_started' && 'bg-muted',
-                isClickable && 'cursor-pointer hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                mod.state === 'not_started' && 'bg-red-400/70',
+                isClickable && 'cursor-pointer hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 !isClickable && 'cursor-default'
               )}
             >
@@ -87,9 +87,9 @@ export function ProgressStrip({
                 <span
                   className={cn(
                     'block h-3 w-3 rounded-full',
-                    mod.state === 'completed' && 'bg-accent',
-                    mod.state === 'in_progress' && 'bg-accent/50',
-                    mod.state === 'not_started' && 'bg-muted-foreground/30'
+                    mod.state === 'completed' && 'bg-green-500',
+                    mod.state === 'in_progress' && 'bg-yellow-400',
+                    mod.state === 'not_started' && 'bg-red-400/70'
                   )}
                 />
               )}
@@ -105,7 +105,7 @@ export function ProgressStrip({
                 <div
                   className={cn(
                     'h-px w-4',
-                    mod.state === 'completed' ? 'bg-accent' : 'bg-border'
+                    mod.state === 'completed' ? 'bg-green-500' : 'bg-border'
                   )}
                 />
               )}

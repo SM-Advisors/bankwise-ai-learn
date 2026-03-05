@@ -18,9 +18,10 @@ import {
 import {
   Building2, Users, TrendingUp, Award, ArrowLeft,
   Shield, Heart, BarChart3, ExternalLink, Loader2, MessageSquare, Download, Paperclip,
-  CircleDot, CheckCircle2, Eye
+  CircleDot, CheckCircle2, Eye, RotateCcw
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
+import { TrainingResetManager } from '@/components/admin/TrainingResetManager';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -238,6 +239,10 @@ export default function SuperAdminDashboard() {
                   {newCount}
                 </Badge>
               )}
+            </TabsTrigger>
+            <TabsTrigger value="training-reset" className="gap-2">
+              <RotateCcw className="h-4 w-4" />
+              Training Reset
             </TabsTrigger>
           </TabsList>
 
@@ -527,6 +532,9 @@ export default function SuperAdminDashboard() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+          <TabsContent value="training-reset" className="mt-4">
+            <TrainingResetManager />
           </TabsContent>
         </Tabs>
       </div>
