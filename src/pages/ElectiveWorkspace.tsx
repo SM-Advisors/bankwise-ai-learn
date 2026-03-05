@@ -264,6 +264,7 @@ export default function ElectiveWorkspace() {
     };
 
     let structuredFeedback: Message['structuredFeedback'] | undefined;
+    let gateResult: import('@/types/progress').GateResult | null = null;
     try {
       const [trainerResponse, reviewResponse] = await Promise.allSettled([
         supabase.functions.invoke('trainer_chat', {
