@@ -178,7 +178,7 @@ export default function Dashboard() {
       </div>
       </div>
 
-      <EventModal open={!!selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)} event={selectedEvent} />
+      
     </AppShell>
   );
 }
