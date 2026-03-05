@@ -87,9 +87,9 @@ export function ProgressStrip({
                 <span
                   className={cn(
                     'block h-3 w-3 rounded-full',
-                    mod.state === 'completed' && 'bg-accent',
-                    mod.state === 'in_progress' && 'bg-accent/50',
-                    mod.state === 'not_started' && 'bg-muted-foreground/30'
+                    mod.state === 'completed' && 'bg-green-500',
+                    mod.state === 'in_progress' && 'bg-yellow-400',
+                    mod.state === 'not_started' && 'bg-red-400/70'
                   )}
                 />
               )}
