@@ -182,14 +182,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* AI Brainstorm — Andrea-guided workflow analysis */}
-        {homeState !== 'brand_new' && (
-          <div className="mt-6">
-            <BrainstormPanel />
-          </div>
-        )}
-
-        <UpcomingEventsSection events={upcomingEvents} onEventClick={setSelectedEvent} />
+        {/* AI Brainstorm removed from here — now in top-right via AppShell headerRight */}
       </div>
       </div>
 
