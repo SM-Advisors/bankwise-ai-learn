@@ -54,7 +54,7 @@ const Index = () => {
             Sign In
           </Button>
         )}
-        {profile?.is_admin && (
+        {profile?.is_super_admin && (
           <Button
             variant="ghost"
             size="sm"
