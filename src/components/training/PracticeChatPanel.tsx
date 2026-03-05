@@ -4,11 +4,10 @@ import remarkGfm from 'remark-gfm';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import {
-  Loader2, Send, Lightbulb, AlertCircle, Target, CheckCircle,
+  Loader2, Send, CheckCircle,
   ChevronRight, ChevronDown, Bot, User, Mic, AudioLines, Plus, SlidersHorizontal,
-  MessageSquarePlus, History, Clock, Building2, ChevronUp, Sparkles,
+  MessageSquarePlus, History, Clock, ChevronUp, Sparkles,
 } from 'lucide-react';
 import { type ModuleContent } from '@/data/trainingContent';
 import { getRoleScenario } from '@/data/roleScenarioBanks';
@@ -66,8 +65,6 @@ export function PracticeChatPanel({
   onModelChange,
 }: PracticeChatPanelProps) {
   const [input, setInput] = useState('');
-  const [scenarioOpen, setScenarioOpen] = useState(false);
-  const [criteriaOpen, setCriteriaOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'work' | 'web'>('work');
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
@@ -173,21 +170,6 @@ export function PracticeChatPanel({
               Web
             </button>
           </div>
-          {isCompleted && (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-xs">
-              <CheckCircle className="h-3 w-3 text-emerald-600" />
-              <span className="text-emerald-700 font-medium">Complete</span>
-              {hasNextModule && onContinueToNext ? (
-                <button onClick={onContinueToNext} className="text-emerald-600 hover:text-emerald-800 font-medium flex items-center gap-0.5 ml-0.5">
-                  Next <ChevronRight className="h-3 w-3" />
-                </button>
-              ) : onCompleteSession ? (
-                <button onClick={onCompleteSession} className="text-emerald-600 hover:text-emerald-800 font-medium flex items-center gap-0.5 ml-0.5">
-                  Finish <CheckCircle className="h-3 w-3" />
-                </button>
-              ) : null}
-            </div>
-          )}
         </div>
 
         {/* Right: History dropdown */}
@@ -254,10 +236,9 @@ export function PracticeChatPanel({
         </div>
       </div>
 
-      {/* ── Persistent task info header — always visible above chat ── */}
-      <div className="w-full border-b border-border bg-muted/20 px-4 py-3 shrink-0">
-        {isSandbox ? (
-          /* Sandbox header */
+      {/* ── Sandbox-only header ── */}
+      {isSandbox && (
+        <div className="w-full border-b border-border bg-muted/20 px-4 py-3 shrink-0">
           <div className="max-w-2xl mx-auto flex items-center gap-2.5">
             <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-accent/10 shrink-0">
               <Sparkles className="h-4 w-4 text-accent" />
@@ -267,62 +248,8 @@ export function PracticeChatPanel({
               <p className="text-xs text-muted-foreground">Free exploration — no task, no submission. Try anything.</p>
             </div>
           </div>
-        ) : (
-          /* Standard module header */
-          <div className="max-w-2xl mx-auto space-y-2">
-            <div className="flex items-start gap-2 flex-wrap">
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold mb-0.5">Practice Task</p>
-                <h3 className="text-sm font-semibold text-foreground leading-snug">{module.content.practiceTask.title}</h3>
-              </div>
-              {departmentLabel && (
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-medium shrink-0">
-                  <Building2 className="h-3 w-3" />
-                  {departmentLabel}
-                </div>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Collapsible open={scenarioOpen} onOpenChange={setScenarioOpen} className="flex-1">
-                <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-2.5 py-1.5 rounded-lg hover:bg-muted">
-                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                  <span>View Scenario</span>
-                  <ChevronDown className={`h-3.5 w-3.5 ml-auto transition-transform duration-200 ${scenarioOpen ? 'rotate-180' : ''}`} />
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="mt-1 bg-card border border-border p-3 rounded-xl space-y-2">
-                    {(activeScenario.includes('\n\n')
-                      ? activeScenario.split('\n\n').map(p => p.trim()).filter(Boolean)
-                      : [activeScenario]
-                    ).map((para, idx) => (
-                      <p key={idx} className="text-xs whitespace-pre-wrap text-muted-foreground">{para}</p>
-                    ))}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-              {module.content.practiceTask.successCriteria.length > 0 && (
-                <Collapsible open={criteriaOpen} onOpenChange={setCriteriaOpen} className="flex-1">
-                  <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-2.5 py-1.5 rounded-lg hover:bg-muted">
-                    <Target className="h-3.5 w-3.5 text-accent shrink-0" />
-                    <span>Success Criteria</span>
-                    <ChevronDown className={`h-3.5 w-3.5 ml-auto transition-transform duration-200 ${criteriaOpen ? 'rotate-180' : ''}`} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <ul className="mt-1 space-y-1 px-2.5 pb-1.5">
-                      {module.content.practiceTask.successCriteria.map((criteria, idx) => (
-                        <li key={idx} className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                          <CheckCircle className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0 mt-0.5" />
-                          {criteria}
-                        </li>
-                      ))}
-                    </ul>
-                  </CollapsibleContent>
-                </Collapsible>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Empty spacer when no messages — keeps input at bottom (sandbox only; welcome greeting handles spacing in standard modules) */}
       {!hasConversation && isSandbox && <div className="flex-1" />}
@@ -520,30 +447,6 @@ export function PracticeChatPanel({
         </div>
       </div>
 
-      {/* Suggestion Cards */}
-      {!hasConversation && (
-        <div className="w-full max-w-2xl mx-auto px-4 pb-6 pt-3">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {activeHints.slice(0, 3).map((hint, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleHintClick(hint)}
-                className={`text-left p-3.5 rounded-xl border transition-all group ${
-                  isSandbox
-                    ? 'border-accent/20 bg-accent/5 hover:bg-accent/10 hover:border-accent/40'
-                    : 'border-border bg-card hover:bg-accent/5 hover:border-accent/30'
-                }`}
-              >
-                {isSandbox
-                  ? <Sparkles className="h-4 w-4 text-accent/60 mb-2 group-hover:text-accent transition-colors" />
-                  : <Lightbulb className="h-4 w-4 text-muted-foreground mb-2 group-hover:text-accent transition-colors" />
-                }
-                <p className="text-sm text-foreground line-clamp-2 leading-snug">{hint}</p>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
