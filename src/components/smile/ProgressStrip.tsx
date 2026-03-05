@@ -69,16 +69,16 @@ export function ProgressStrip({
                   ? 'px-3 py-1 text-xs font-medium'
                   : 'h-3 w-3',
                 mod.state === 'completed' && [
-                  'bg-accent',
-                  isCurrent && 'text-accent-foreground',
+                  'bg-green-500',
+                  isCurrent && 'text-white',
                 ],
                 mod.state === 'in_progress' && [
-                  'ring-2 ring-accent',
+                  'ring-2 ring-yellow-400',
                   isCurrent
-                    ? 'bg-accent/10 text-accent'
+                    ? 'bg-yellow-400/20 text-yellow-700 dark:text-yellow-300'
                     : 'bg-transparent',
                 ],
-                mod.state === 'not_started' && 'bg-muted',
+                mod.state === 'not_started' && 'bg-red-400/70',
                 isClickable && 'cursor-pointer hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent',
                 !isClickable && 'cursor-default'
               )}
