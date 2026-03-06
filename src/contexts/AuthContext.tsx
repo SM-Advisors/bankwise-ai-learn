@@ -239,9 +239,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
 
       // Create profile for the new user (with org assignment if provided)
+      // Important: set state directly to avoid race condition where
+      // onAuthStateChange fires fetchProfile before the rows exist.
       if (data.user) {
-        await createProfile(data.user.id, displayName, organizationId);
-        await createProgress(data.user.id);
+        const newProfile = await createProfile(data.user.id, displayName, organizationId);
+        const newProgress = await createProgress(data.user.id);
+        if (newProfile) setProfile(newProfile);
+        if (newProgress) setProgress(newProgress);
       }
 
       return { error: null };
