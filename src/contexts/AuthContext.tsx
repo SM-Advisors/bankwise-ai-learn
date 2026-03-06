@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import type { SessionProgressData } from '@/types/progress';
@@ -81,6 +81,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [progress, setProgress] = useState<TrainingProgress | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Flag to prevent onAuthStateChange from overwriting state during signup.
+  // signUp sets profile/progress directly; the auth listener must not race it.
+  const signupInProgressRef = useRef(false);
 
   // Super admin "view as org" state — persisted to sessionStorage
   const [viewAsOrg, setViewAsOrgState] = useState<ViewAsOrg | null>(() => {
@@ -188,11 +192,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Defer profile fetch with setTimeout to avoid deadlock
         if (session?.user) {
           setTimeout(async () => {
+            // During signup, signUp() sets profile/progress directly.
+            // Skip the fetch to avoid overwriting with null (row may not exist yet).
+            if (signupInProgressRef.current) {
+              setLoading(false);
+              return;
+            }
+
             const profileData = await fetchProfile(session.user.id);
-            setProfile(profileData);
-            
+            // Don't overwrite a valid profile with null — prevents brief null flash
+            // during signup race window. signOut() handles explicit null-out.
+            if (profileData) {
+              setProfile(profileData);
+            }
+
             const progressData = await fetchProgress(session.user.id);
-            setProgress(progressData);
+            if (progressData) {
+              setProgress(progressData);
+            }
 
             // Update last_login_at only on explicit sign-in (not token refreshes or page reloads)
             if (event === 'SIGNED_IN') {
@@ -201,7 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 .update({ last_login_at: new Date().toISOString() })
                 .eq('user_id', session.user.id);
             }
-            
+
             setLoading(false);
           }, 0);
         } else {
@@ -226,6 +243,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, displayName: string, organizationId?: string) => {
     try {
+      // Tell the auth-state listener to skip its fetch — we handle state directly.
+      signupInProgressRef.current = true;
+
       const redirectUrl = `${window.location.origin}/onboarding`;
 
       const { data, error } = await supabase.auth.signUp({
@@ -238,19 +258,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error;
 
-      // Create profile for the new user (with org assignment if provided)
-      // Important: set state directly to avoid race condition where
-      // onAuthStateChange fires fetchProfile before the rows exist.
+      // Create profile & progress rows, then set state directly.
+      // This avoids the race where onAuthStateChange's fetchProfile runs
+      // before the rows exist and overwrites state with null.
       if (data.user) {
         const newProfile = await createProfile(data.user.id, displayName, organizationId);
+        if (!newProfile) {
+          throw new Error('Failed to create user profile. Please try again.');
+        }
+        setProfile(newProfile);
+
         const newProgress = await createProgress(data.user.id);
-        if (newProfile) setProfile(newProfile);
-        if (newProgress) setProgress(newProgress);
+        if (!newProgress) {
+          throw new Error('Failed to initialize training progress. Please try again.');
+        }
+        setProgress(newProgress);
       }
 
+      setLoading(false);
       return { error: null };
     } catch (error) {
       return { error: error as Error };
+    } finally {
+      signupInProgressRef.current = false;
     }
   };
 
