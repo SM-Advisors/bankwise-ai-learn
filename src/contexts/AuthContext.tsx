@@ -188,9 +188,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         // Defer profile fetch with setTimeout to avoid deadlock
         if (session?.user) {
+          // Keep loading=true until profile is fetched.  On page load this is
+          // already true; on login, loading may be false from the initial no-op,
+          // which causes a render with user=truthy + profile=null + loading=false
+          // — downstream components (Auth, ProtectedRoute) navigate prematurely.
+          setLoading(true);
+
           setTimeout(async () => {
             // During signup, signUp() sets profile/progress directly.
             // Skip the fetch to avoid overwriting with null (row may not exist yet).
