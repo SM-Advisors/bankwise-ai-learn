@@ -42,10 +42,13 @@ export default function Auth() {
   // Forgot password state
   const [resetEmail, setResetEmail] = useState('');
 
-  // Redirect if already logged in
+  // Redirect if already logged in — wait for profile to load before deciding
+  // which page to send the user to.  Without the profile check, a brief window
+  // after signIn where user is set but profile is still null would always send
+  // users to /onboarding (even those who already completed it).
   useEffect(() => {
-    if (user && !loading) {
-      if (profile?.onboarding_completed) {
+    if (user && !loading && profile) {
+      if (profile.onboarding_completed) {
         navigate('/dashboard');
       } else {
         navigate('/onboarding');
@@ -53,7 +56,8 @@ export default function Auth() {
     }
   }, [user, profile, loading, navigate]);
 
-  if (user) {
+  // Show nothing while auth state is resolving (prevents flash of login form)
+  if (user || loading) {
     return null;
   }
 
