@@ -65,16 +65,24 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             {this.state.error && (
-              <div className="text-left p-4 bg-muted rounded-lg overflow-auto max-h-48">
-                <p className="text-sm font-mono text-destructive break-words">
-                  {this.state.error.toString()}
-                </p>
-                {this.state.errorInfo?.componentStack && (
-                  <pre className="text-[10px] font-mono text-muted-foreground mt-2 whitespace-pre-wrap break-words">
-                    {this.state.errorInfo.componentStack.slice(0, 500)}
+              <>
+                {/* Error message — prominent, always visible */}
+                <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
+                  <p className="text-sm font-mono font-semibold text-destructive break-all">
+                    {this.state.error.name}: {this.state.error.message}
+                  </p>
+                </div>
+
+                {/* Stack trace — scrollable detail box */}
+                <details className="text-left">
+                  <summary className="text-xs text-muted-foreground cursor-pointer">
+                    Stack trace
+                  </summary>
+                  <pre className="mt-2 p-3 bg-muted rounded-lg text-[10px] font-mono text-muted-foreground whitespace-pre-wrap break-all overflow-auto max-h-48">
+                    {this.state.error.stack}
                   </pre>
-                )}
-              </div>
+                </details>
+              </>
             )}
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center">

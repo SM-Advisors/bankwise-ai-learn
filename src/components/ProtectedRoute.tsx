@@ -53,7 +53,7 @@ export function ProtectedRoute({ children, requireOnboarding = false }: Protecte
   }
 
   // Don't render if onboarding is required but not completed
-  if (requireOnboarding && !profile.onboarding_completed) {
+  if (requireOnboarding && !profile?.onboarding_completed) {
     return null;
   }
 
