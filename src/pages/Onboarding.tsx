@@ -13,7 +13,6 @@ import { ROLE_OPTIONS } from '@/data/intakeQuestions';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowRight, ArrowLeft, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useBlocker } from 'react-router-dom';
 
 // ── Consumer job chips ────────────────────────────────────────────────────────
 const CONSUMER_JOB_CHIPS = ['Retired', 'Student', 'Business Owner', 'Between Jobs', 'Other'];
@@ -224,14 +223,6 @@ export default function Onboarding() {
       return () => window.removeEventListener('beforeunload', handler);
     }
   }, [step]);
-
-  // Block in-app navigation if mid-onboarding
-  useBlocker(({ currentLocation, nextLocation }) => {
-    if (step > 1 && step < TOTAL_STEPS && currentLocation.pathname !== nextLocation.pathname) {
-      return !window.confirm('You have unsaved progress. Are you sure you want to leave?');
-    }
-    return false;
-  });
 
   if (loading || !orgTypeResolved) {
     return (
