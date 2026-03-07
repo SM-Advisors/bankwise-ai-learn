@@ -13,6 +13,7 @@ import { BankPolicyModal } from '@/components/BankPolicyModal';
 import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { TrainerChatPanel } from '@/components/training/TrainerChatPanel';
 import { PracticeChatPanel } from '@/components/training/PracticeChatPanel';
+import { ModuleListSidebar } from '@/components/training/ModuleListSidebar';
 import { type Message, type BankPolicy } from '@/types/training';
 import type { SessionProgressData, ModuleEngagement } from '@/types/progress';
 import { DEFAULT_ENGAGEMENT } from '@/types/progress';
@@ -34,11 +35,9 @@ import { WorkflowStudioPanel } from '@/components/workflow-studio/WorkflowStudio
 import { CapstonePanel } from '@/components/capstone/CapstonePanel';
 import type { CapstoneData } from '@/types/progress';
 import type { WorkflowData } from '@/types/workflow';
-import { Loader2, Shield, Bot, Building2, MessageSquare, GraduationCap } from 'lucide-react';
+import { Loader2, ArrowLeft, Shield, Bot, Building2, BookOpen, MessageSquare, GraduationCap } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { AppShell, type BreadcrumbItem } from '@/components/shell';
-import { ProgressStrip, type ProgressModule } from '@/components/smile';
-import { useValueSignals } from '@/hooks/useValueSignals';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 
 export default function TrainingWorkspace() {
   const isMobile = useIsMobile();
@@ -48,6 +47,7 @@ export default function TrainingWorkspace() {
   const { toast } = useToast();
   const contentScrollRef = useRef<HTMLDivElement>(null);
 
+  const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const [selectedModule, setSelectedModule] = useState<ModuleContent | null>(null);
   const [trainerMessages, setTrainerMessages] = useState<Message[]>([]);
@@ -64,9 +64,9 @@ export default function TrainingWorkspace() {
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
   const [policyDropdownOpen, setPolicyDropdownOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<'practice' | 'coach'>('practice');
+  const [mobileModulesOpen, setMobileModulesOpen] = useState(false);
 
   const { policies } = useBankPolicies();
-  const { emitSignal } = useValueSignals();
   const { createMemory } = useAIMemories();
   const { pendingRequest, respondToLevelChange } = useSkillAssessment();
   const { activeAgent, draftAgent } = useUserAgents();
@@ -330,15 +330,6 @@ export default function TrainingWorkspace() {
         contentViewed: true,
         contentViewedAt: new Date().toISOString(),
       });
-
-      // Signal: use_case_identified — Session 3 with department set, first view of module
-      if (isSession3 && profile?.department) {
-        emitSignal('use_case_identified', {
-          session_id: sessionId,
-          module_id: module.id,
-          department: profile.department,
-        });
-      }
     }
   };
 
@@ -371,15 +362,6 @@ export default function TrainingWorkspace() {
             completedAt: new Date().toISOString(),
           } : {}),
         });
-
-        // Signal: workflow_built — sandbox module first message = workflow created
-        if (selectedModule.type === 'sandbox') {
-          emitSignal('workflow_built', {
-            session_id: sessionId,
-            module_id: selectedModule.id,
-            module_type: 'sandbox',
-          });
-        }
       }
     } else {
       // Append user message to existing conversation
@@ -644,16 +626,6 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           skillSignals: updatedSkillSignals,
         },
       } as any);
-
-      // Signal: skill_applied — module completed (gate passed or non-gate)
-      if (gatePassed) {
-        await emitSignal('skill_applied', {
-          session_id: sessionId,
-          module_id: selectedModule.id,
-          module_title: selectedModule.title,
-          gate_passed: isGate ? true : undefined,
-        });
-      }
     }
   };
 
@@ -881,89 +853,101 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
   // Determine if the active conversation has been submitted
   const isActiveConversationSubmitted = activeConversation?.is_submitted || false;
 
-  // ── ProgressStrip module mapper ───────────────────────────────────────────
-  const progressModules: ProgressModule[] = session.modules.map((m) => {
-    const eng = moduleEngagement[m.id];
-    const state: 'not_started' | 'in_progress' | 'completed' =
-      eng?.completed ? 'completed'
-      : (eng?.contentViewed || eng?.chatStarted) ? 'in_progress'
-      : 'not_started';
-    return { id: m.id, title: m.title, state };
-  });
-
-  // ── AppShell breadcrumbs & topBarActions ──────────────────────────────────
-  const breadcrumbs: BreadcrumbItem[] = [
-    { label: 'Home', path: '/dashboard' },
-    { label: `Session ${sessionId}: ${session.title}` },
-  ];
-
-  const trainingActions = (
-    <div className="flex items-center gap-3 min-w-0">
-      <ProgressStrip
-        modules={progressModules}
-        currentModuleId={selectedModule?.id}
-        onModuleClick={(id) => {
-          const mod = session.modules.find((m) => m.id === id);
-          if (mod) handleModuleSelect(mod);
-        }}
-        className="max-w-[480px]"
-      />
-      {policies.length > 0 && (
-        <div className="relative hidden md:block shrink-0">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={() => setPolicyDropdownOpen(!policyDropdownOpen)}
-            aria-expanded={policyDropdownOpen}
-            aria-haspopup="true"
-          >
-            <Shield className="h-4 w-4" />
-            Bank Policies
-          </Button>
-          {policyDropdownOpen && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setPolicyDropdownOpen(false)} />
-              <div className="absolute right-0 top-full mt-1 w-64 bg-popover border rounded-lg shadow-lg z-50">
-                <div className="p-2 space-y-1">
-                  {policies.map((policy) => (
-                    <button
-                      key={policy.id}
-                      className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
-                      onClick={() => {
-                        setSelectedPolicy(policy as BankPolicy);
-                        setPolicyModalOpen(true);
-                        setPolicyDropdownOpen(false);
-                      }}
-                    >
-                      <div className="font-medium">{policy.title}</div>
-                      <div className="text-xs text-muted-foreground line-clamp-1">
-                        {policy.summary || 'View policy details'}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-      <Badge variant="secondary" className="hidden md:inline-flex shrink-0">{profile.learning_style}</Badge>
-      <Badge variant="outline" className="hidden md:inline-flex shrink-0">Level {profile.ai_proficiency_level}</Badge>
-    </div>
-  );
-
   return (
-    <AppShell
-      breadcrumbs={breadcrumbs}
-      topBarActions={trainingActions}
-      contentClassName="flex flex-col overflow-hidden p-0"
-    >
+    <div className="h-screen flex flex-col bg-background">
       <BankPolicyModal
         open={policyModalOpen}
         onOpenChange={setPolicyModalOpen}
         policy={selectedPolicy}
       />
+
+      {/* Top Bar */}
+      <header className="border-b bg-card px-3 md:px-4 py-2 md:py-3 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2 md:gap-4 min-w-0">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="gap-1 md:gap-2 px-2 md:px-3 shrink-0">
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Dashboard</span>
+          </Button>
+          <div className="h-6 w-px bg-border hidden sm:block" />
+          <div className="min-w-0">
+            <h1 className="font-semibold text-sm md:text-base truncate">
+              <span className="hidden sm:inline">Session {sessionId}: </span>{session.title}
+            </h1>
+            <p className="text-xs text-muted-foreground hidden md:block">{session.description}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 md:gap-3 shrink-0">
+          {/* Mobile: modules button */}
+          {isMobile && (
+            <Sheet open={mobileModulesOpen} onOpenChange={setMobileModulesOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <BookOpen className="h-4 w-4" />
+                  <span className="text-xs">Modules</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 p-0">
+                <SheetTitle className="sr-only">Training Modules</SheetTitle>
+                <ModuleListSidebar
+                  collapsed={false}
+                  onToggleCollapse={() => setMobileModulesOpen(false)}
+                  modules={session.modules}
+                  selectedModule={selectedModule}
+                  completedModules={completedModules}
+                  moduleEngagement={moduleEngagement}
+                  onSelectModule={(module) => {
+                    handleModuleSelect(module);
+                    setMobileModulesOpen(false);
+                  }}
+                  onGateBypass={handleGateBypass}
+                />
+              </SheetContent>
+            </Sheet>
+          )}
+          {policies.length > 0 && (
+            <div className="relative hidden md:block">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => setPolicyDropdownOpen(!policyDropdownOpen)}
+                aria-expanded={policyDropdownOpen}
+                aria-haspopup="true"
+              >
+                <Shield className="h-4 w-4" />
+                Bank Policies
+              </Button>
+              {policyDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setPolicyDropdownOpen(false)} />
+                  <div className="absolute right-0 top-full mt-1 w-64 bg-popover border rounded-lg shadow-lg z-50">
+                    <div className="p-2 space-y-1">
+                      {policies.map((policy) => (
+                        <button
+                          key={policy.id}
+                          className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
+                          onClick={() => {
+                            setSelectedPolicy(policy as BankPolicy);
+                            setPolicyModalOpen(true);
+                            setPolicyDropdownOpen(false);
+                          }}
+                        >
+                          <div className="font-medium">{policy.title}</div>
+                          <div className="text-xs text-muted-foreground line-clamp-1">
+                            {policy.summary || 'View policy details'}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          <Badge variant="secondary" className="hidden md:inline-flex">{profile.learning_style}</Badge>
+          <Badge variant="outline" className="hidden md:inline-flex">Level {profile.ai_proficiency_level}</Badge>
+        </div>
+      </header>
 
       {/* Mobile tab bar */}
       {isMobile && (
@@ -995,6 +979,19 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
+        {/* Left Column - Training Modules (desktop only) */}
+        {!isMobile && (
+          <ModuleListSidebar
+            collapsed={leftCollapsed}
+            onToggleCollapse={() => setLeftCollapsed(!leftCollapsed)}
+            modules={session.modules}
+            selectedModule={selectedModule}
+            completedModules={completedModules}
+            moduleEngagement={moduleEngagement}
+            onSelectModule={handleModuleSelect}
+            onGateBypass={handleGateBypass}
+          />
+        )}
 
         {/* Middle Column - Practice Chat Area (shown on desktop always, on mobile when practice tab active) */}
         {(!isMobile || mobileTab === 'practice') && (
@@ -1128,7 +1125,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         videoUrl={selectedModule?.videoUrl || 'https://youtu.be/xZ1FAm7IoA4'}
         title={selectedModule?.title || "Introduction to AI Prompting"}
       />
-    </AppShell>
+    </div>
   );
 }
 

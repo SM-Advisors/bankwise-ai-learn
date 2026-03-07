@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 type ModuleState = 'not_started' | 'in_progress' | 'completed';
 
-export interface ProgressModule {
+interface ProgressModule {
   id: string;
   title: string;
   state: ModuleState;

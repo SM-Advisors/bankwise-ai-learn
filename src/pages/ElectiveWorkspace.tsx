@@ -11,6 +11,7 @@ import { BankPolicyModal } from '@/components/BankPolicyModal';
 import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { TrainerChatPanel } from '@/components/training/TrainerChatPanel';
 import { PracticeChatPanel } from '@/components/training/PracticeChatPanel';
+import { ModuleListSidebar } from '@/components/training/ModuleListSidebar';
 import { type Message, type BankPolicy } from '@/types/training';
 import type { ModuleEngagement } from '@/types/progress';
 import { DEFAULT_ENGAGEMENT } from '@/types/progress';
@@ -22,12 +23,10 @@ import { useUserPrompts } from '@/hooks/useUserPrompts';
 import { useOrgModelSettings } from '@/hooks/useOrgModelSettings';
 import { usePreferredModel } from '@/hooks/usePreferredModel';
 import {
-  Loader2, Shield, MessageSquare, GraduationCap, Sparkles,
+  Loader2, ArrowLeft, Shield, BookOpen, MessageSquare, GraduationCap, Sparkles,
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { AppShell, type BreadcrumbItem } from '@/components/shell';
-import { ProgressStrip, type ProgressModule } from '@/components/smile';
-import { useValueSignals } from '@/hooks/useValueSignals';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 
 export default function ElectiveWorkspace() {
   const isMobile = useIsMobile();
@@ -39,6 +38,7 @@ export default function ElectiveWorkspace() {
   const { toast } = useToast();
   const contentScrollRef = useRef<HTMLDivElement>(null);
 
+  const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const [selectedModule, setSelectedModule] = useState<ModuleContent | null>(null);
   const [trainerMessages, setTrainerMessages] = useState<Message[]>([]);
@@ -54,10 +54,10 @@ export default function ElectiveWorkspace() {
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
   const [policyDropdownOpen, setPolicyDropdownOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<'practice' | 'coach'>('practice');
+  const [mobileModulesOpen, setMobileModulesOpen] = useState(false);
   const [moduleEngagement, setModuleEngagement] = useState<Record<string, ModuleEngagement>>({});
 
   const { policies } = useBankPolicies();
-  const { emitSignal } = useValueSignals();
   const { createMemory } = useAIMemories();
   const { getPathProgress, markModuleComplete, updateModuleProgress } = useElectiveProgress();
   const { createPrompt } = useUserPrompts();
@@ -381,14 +381,6 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         };
       }
       await updateModuleProgress(pathId, selectedModule.id, engagementData);
-
-      // Signal: skill_applied — elective module completed
-      await emitSignal('skill_applied', {
-        path_id: pathId,
-        module_id: selectedModule.id,
-        module_title: selectedModule.title,
-        elective: true,
-      });
     }
   };
 
@@ -543,90 +535,98 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
     navigate('/electives');
   };
 
-  // ── ProgressStrip module mapper ───────────────────────────────────────────
-  const progressModules: ProgressModule[] = modules.map((m) => {
-    const eng = moduleEngagement[m.id];
-    const state: 'not_started' | 'in_progress' | 'completed' =
-      completedModules.has(m.id) ? 'completed'
-      : (eng?.contentViewed || eng?.chatStarted) ? 'in_progress'
-      : 'not_started';
-    return { id: m.id, title: m.title, state };
-  });
-
-  // ── AppShell breadcrumbs & topBarActions ──────────────────────────────────
-  const breadcrumbs: BreadcrumbItem[] = [
-    { label: 'Home', path: '/dashboard' },
-    { label: 'Electives', path: '/electives' },
-    { label: electivePath.title },
-  ];
-
-  const trainingActions = (
-    <div className="flex items-center gap-3 min-w-0">
-      <ProgressStrip
-        modules={progressModules}
-        currentModuleId={selectedModule?.id}
-        onModuleClick={(id) => {
-          const mod = modules.find((m) => m.id === id);
-          if (mod) handleModuleSelect(mod);
-        }}
-        className="max-w-[480px]"
-      />
-      {policies.length > 0 && (
-        <div className="relative hidden md:block shrink-0">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={() => setPolicyDropdownOpen(!policyDropdownOpen)}
-          >
-            <Shield className="h-4 w-4" />
-            Bank Policies
-          </Button>
-          {policyDropdownOpen && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setPolicyDropdownOpen(false)} />
-              <div className="absolute right-0 top-full mt-1 w-64 bg-popover border rounded-lg shadow-lg z-50">
-                <div className="p-2 space-y-1">
-                  {policies.map((policy) => (
-                    <button
-                      key={policy.id}
-                      className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
-                      onClick={() => {
-                        setSelectedPolicy(policy as BankPolicy);
-                        setPolicyModalOpen(true);
-                        setPolicyDropdownOpen(false);
-                      }}
-                    >
-                      <div className="font-medium">{policy.title}</div>
-                      <div className="text-xs text-muted-foreground line-clamp-1">
-                        {policy.summary || 'View policy details'}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-      <Badge variant="secondary" className="hidden md:inline-flex shrink-0 bg-purple-100 text-purple-700">
-        <Sparkles className="h-3 w-3 mr-1" />Elective
-      </Badge>
-      <Badge variant="outline" className="hidden md:inline-flex shrink-0">Level {profile.ai_proficiency_level}</Badge>
-    </div>
-  );
-
   return (
-    <AppShell
-      breadcrumbs={breadcrumbs}
-      topBarActions={trainingActions}
-      contentClassName="flex flex-col overflow-hidden p-0"
-    >
+    <div className="h-screen flex flex-col bg-background">
       <BankPolicyModal
         open={policyModalOpen}
         onOpenChange={setPolicyModalOpen}
         policy={selectedPolicy}
       />
+
+      {/* Top Bar */}
+      <header className="border-b bg-card px-3 md:px-4 py-2 md:py-3 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2 md:gap-4 min-w-0">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/electives')} className="gap-1 md:gap-2 px-2 md:px-3 shrink-0">
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Electives</span>
+          </Button>
+          <div className="h-6 w-px bg-border hidden sm:block" />
+          <div className="min-w-0">
+            <h1 className="font-semibold text-sm md:text-base truncate flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-purple-500 shrink-0" />
+              <span className="hidden sm:inline">{electivePath.title}: </span>{selectedModule?.title || 'Loading...'}
+            </h1>
+            <p className="text-xs text-muted-foreground hidden md:block">{electivePath.description}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 md:gap-3 shrink-0">
+          {isMobile && (
+            <Sheet open={mobileModulesOpen} onOpenChange={setMobileModulesOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <BookOpen className="h-4 w-4" />
+                  <span className="text-xs">Modules</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 p-0">
+                <SheetTitle className="sr-only">Elective Modules</SheetTitle>
+                <ModuleListSidebar
+                  collapsed={false}
+                  onToggleCollapse={() => setMobileModulesOpen(false)}
+                  modules={modules}
+                  selectedModule={selectedModule}
+                  completedModules={completedModules}
+                  moduleEngagement={moduleEngagement}
+                  onSelectModule={(module) => {
+                    handleModuleSelect(module);
+                    setMobileModulesOpen(false);
+                  }}
+                />
+              </SheetContent>
+            </Sheet>
+          )}
+          {policies.length > 0 && (
+            <div className="relative hidden md:block">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => setPolicyDropdownOpen(!policyDropdownOpen)}
+              >
+                <Shield className="h-4 w-4" />
+                Bank Policies
+              </Button>
+              {policyDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setPolicyDropdownOpen(false)} />
+                  <div className="absolute right-0 top-full mt-1 w-64 bg-popover border rounded-lg shadow-lg z-50">
+                    <div className="p-2 space-y-1">
+                      {policies.map((policy) => (
+                        <button
+                          key={policy.id}
+                          className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
+                          onClick={() => {
+                            setSelectedPolicy(policy as BankPolicy);
+                            setPolicyModalOpen(true);
+                            setPolicyDropdownOpen(false);
+                          }}
+                        >
+                          <div className="font-medium">{policy.title}</div>
+                          <div className="text-xs text-muted-foreground line-clamp-1">
+                            {policy.summary || 'View policy details'}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          <Badge variant="secondary" className="hidden md:inline-flex bg-purple-100 text-purple-700">Elective</Badge>
+          <Badge variant="outline" className="hidden md:inline-flex">Level {profile.ai_proficiency_level}</Badge>
+        </div>
+      </header>
 
       {/* Mobile tab bar */}
       {isMobile && (
@@ -658,6 +658,19 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
+        {/* Left Column - Module List (desktop only) */}
+        {!isMobile && (
+          <ModuleListSidebar
+            collapsed={leftCollapsed}
+            onToggleCollapse={() => setLeftCollapsed(!leftCollapsed)}
+            modules={modules}
+            selectedModule={selectedModule}
+            completedModules={completedModules}
+            moduleEngagement={moduleEngagement}
+            onSelectModule={handleModuleSelect}
+          />
+        )}
+
         {/* Middle Column - Practice Chat */}
         {(!isMobile || mobileTab === 'practice') && (
           <div className="flex-1 flex flex-col overflow-hidden" ref={contentScrollRef}>
@@ -735,7 +748,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         open={contentModalOpen}
         onOpenChange={setContentModalOpen}
       />
-    </AppShell>
+    </div>
   );
 }
 
