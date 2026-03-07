@@ -29,6 +29,8 @@ import { ExecutiveSubmissions } from '@/components/admin/ExecutiveSubmissions';
 import { CommunityReviewQueue } from '@/components/admin/CommunityReviewQueue';
 import { OrgResourcesManager } from '@/components/admin/OrgResourcesManager';
 import { AdminAndreaFloat } from '@/components/admin/AdminAndreaFloat';
+import { AndreaNotesPanel } from '@/components/admin/AndreaNotesPanel';
+import { useAdminAndreaNotes } from '@/hooks/useAdminAndreaChat';
 import { ExecutiveOverview } from '@/components/admin/ExecutiveOverview';
 import { HelpPanel } from '@/components/HelpPanel';
 import { useTour } from '@/hooks/useTour';
