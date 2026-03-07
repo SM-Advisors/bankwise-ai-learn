@@ -42,6 +42,7 @@ interface ModuleContentPanelProps {
 
 export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPanelProps) {
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [showExamples, setShowExamples] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = useCallback(() => {
