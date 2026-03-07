@@ -101,104 +101,102 @@ export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPan
       <ScrollArea className="flex-1" ref={scrollContainerRef} onScrollCapture={handleScroll}>
         <div className="px-6 py-5 space-y-6">
 
-          {/* Learning outcome callout */}
-          {module.learningOutcome && (
-            <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
-              <Target className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-              <p className="text-sm font-medium text-primary leading-snug">
-                {module.learningOutcome}
-              </p>
+          {!showExamples ? (
+            <>
+              {/* Learning outcome callout */}
+              {module.learningOutcome && (
+                <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+                  <Target className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <p className="text-sm font-medium text-primary leading-snug">
+                    {module.learningOutcome}
+                  </p>
+                </div>
+              )}
+
+              {/* Overview */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold">Overview</h3>
+                {overviewParagraphs.map((para, idx) => (
+                  <p key={idx} className="text-sm leading-relaxed text-muted-foreground">
+                    {para}
+                  </p>
+                ))}
+              </div>
+
+              {/* Key Points */}
+              {module.content.keyPoints && module.content.keyPoints.length > 0 && (
+                <>
+                  <div className="border-t border-border/50" />
+                  <div>
+                    <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary" />
+                      Key Points
+                    </h3>
+                    <ul className="space-y-2">
+                      {module.content.keyPoints.map((point, idx) => (
+                        <li key={idx} className="flex items-start gap-2.5 text-sm">
+                          <span className="h-4 w-4 rounded-full bg-primary/10 text-primary text-[10px] flex items-center justify-center shrink-0 mt-0.5 font-medium">
+                            {idx + 1}
+                          </span>
+                          <span className="leading-relaxed">{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </>
+              )}
+
+              {/* Steps */}
+              {module.content.steps && module.content.steps.length > 0 && (
+                <>
+                  <div className="border-t border-border/50" />
+                  <div>
+                    <h3 className="text-sm font-semibold mb-3">Step-by-Step</h3>
+                    <ol className="space-y-2.5">
+                      {module.content.steps.map((step, idx) => (
+                        <li key={idx} className="flex items-start gap-3 text-sm">
+                          <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center shrink-0 mt-0.5 font-medium">
+                            {idx + 1}
+                          </span>
+                          <span className="leading-relaxed">{step}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </>
+              )}
+            </>
+          ) : (
+            /* ── Examples-only view ── */
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold">
+                {module.type === 'example' ? 'Examples' : 'Example'}
+              </h3>
+              {module.content.examples!.map((example, idx) => (
+                <Card key={idx} className="overflow-hidden">
+                  <div className="bg-muted/50 px-4 py-2.5 border-b text-sm font-medium">
+                    {example.title}
+                  </div>
+                  <CardContent className="pt-4 pb-4 space-y-3">
+                    {example.bad && (
+                      <div className="bg-destructive/5 border border-destructive/20 p-3 rounded-lg">
+                        <p className="text-xs font-medium text-destructive mb-1.5">Less effective</p>
+                        <p className="text-sm italic text-muted-foreground">"{example.bad}"</p>
+                      </div>
+                    )}
+                    <div className="bg-green-500/5 border border-green-500/20 p-3 rounded-lg">
+                      <p className="text-xs font-medium text-green-700 mb-1.5">More effective</p>
+                      <p className="text-sm whitespace-pre-wrap">"{example.good}"</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      <span className="font-medium">Why: </span>{example.explanation}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
 
-          {/* Overview — shown first for context */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold">Overview</h3>
-            {overviewParagraphs.map((para, idx) => (
-              <p key={idx} className="text-sm leading-relaxed text-muted-foreground">
-                {para}
-              </p>
-            ))}
-          </div>
-
-          {/* Key Points */}
-          {module.content.keyPoints && module.content.keyPoints.length > 0 && (
-            <>
-              <div className="border-t border-border/50" />
-              <div>
-                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-primary" />
-                  Key Points
-                </h3>
-                <ul className="space-y-2">
-                  {module.content.keyPoints.map((point, idx) => (
-                    <li key={idx} className="flex items-start gap-2.5 text-sm">
-                      <span className="h-4 w-4 rounded-full bg-primary/10 text-primary text-[10px] flex items-center justify-center shrink-0 mt-0.5 font-medium">
-                        {idx + 1}
-                      </span>
-                      <span className="leading-relaxed">{point}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </>
-          )}
-
-          {/* Steps (document / exercise) */}
-          {module.content.steps && module.content.steps.length > 0 && (
-            <>
-              <div className="border-t border-border/50" />
-              <div>
-                <h3 className="text-sm font-semibold mb-3">Step-by-Step</h3>
-                <ol className="space-y-2.5">
-                  {module.content.steps.map((step, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-sm">
-                      <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center shrink-0 mt-0.5 font-medium">
-                        {idx + 1}
-                      </span>
-                      <span className="leading-relaxed">{step}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </>
-          )}
-
-          {/* Examples — shown only after user clicks "See Examples" */}
-          {hasExamples && showExamples && (
-            <>
-              <div className="border-t border-border/50" />
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold">
-                  {module.type === 'example' ? 'Examples' : 'Example'}
-                </h3>
-                {module.content.examples!.map((example, idx) => (
-                  <Card key={idx} className="overflow-hidden">
-                    <div className="bg-muted/50 px-4 py-2.5 border-b text-sm font-medium">
-                      {example.title}
-                    </div>
-                    <CardContent className="pt-4 pb-4 space-y-3">
-                      {example.bad && (
-                        <div className="bg-destructive/5 border border-destructive/20 p-3 rounded-lg">
-                          <p className="text-xs font-medium text-destructive mb-1.5">Less effective</p>
-                          <p className="text-sm italic text-muted-foreground">"{example.bad}"</p>
-                        </div>
-                      )}
-                      <div className="bg-green-500/5 border border-green-500/20 p-3 rounded-lg">
-                        <p className="text-xs font-medium text-green-700 mb-1.5">More effective</p>
-                        <p className="text-sm whitespace-pre-wrap">"{example.good}"</p>
-                      </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        <span className="font-medium">Why: </span>{example.explanation}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* Bottom spacer */}
           <div className="h-4" />
         </div>
       </ScrollArea>
