@@ -609,13 +609,12 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="flex h-full">
+      {/* Main content area */}
+      <div className={`flex-1 min-w-0 overflow-y-auto transition-all duration-200 ${andreaPaneOpen && activeMainTab !== 'overview' ? 'mr-0' : ''}`}>
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Help panel modal */}
       <HelpPanel open={helpPanelOpen} onOpenChange={setHelpPanelOpen} />
-      {/* Floating Andrea C-Suite advisor bubble — hidden on Overview (inline there) */}
-      {activeMainTab !== 'overview' && (
-        <AdminAndreaFloat organizationId={effectiveOrgId} />
-      )}
 
       {/* Org context banner for super admin drill-down */}
       {viewingOrgId && viewingOrgName && (
