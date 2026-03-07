@@ -116,7 +116,7 @@ export function ExecutiveOverview({ organizationId, onNavigateTab }: ExecutiveOv
       </div>
 
       {/* Headline KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 justify-items-center">
         <KPICard
           icon={Users}
           label="Enrolled"
