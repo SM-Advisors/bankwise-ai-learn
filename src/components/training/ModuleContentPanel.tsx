@@ -42,6 +42,7 @@ interface ModuleContentPanelProps {
 
 export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPanelProps) {
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [showExamples, setShowExamples] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = useCallback(() => {
@@ -64,6 +65,7 @@ export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPan
   const cfg = typeConfig[module.type as keyof typeof typeConfig] ?? typeConfig.document;
   const TypeIcon = cfg.icon;
 
+  const hasExamples = !!(module.content.examples && module.content.examples.length > 0);
   const overviewParagraphs = splitIntoParagraphs(module.content.overview);
 
   return (
@@ -109,30 +111,7 @@ export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPan
             </div>
           )}
 
-          {/* Key points — moved up for scanability */}
-          {module.content.keyPoints && module.content.keyPoints.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
-                Key Points
-              </h3>
-              <ul className="space-y-2">
-                {module.content.keyPoints.map((point, idx) => (
-                  <li key={idx} className="flex items-start gap-2.5 text-sm">
-                    <span className="h-4 w-4 rounded-full bg-primary/10 text-primary text-[10px] flex items-center justify-center shrink-0 mt-0.5 font-medium">
-                      {idx + 1}
-                    </span>
-                    <span className="leading-relaxed">{point}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* ── Divider ── */}
-          <div className="border-t border-border/50" />
-
-          {/* Overview — split into short paragraphs */}
+          {/* Overview — shown first for context */}
           <div className="space-y-3">
             <h3 className="text-sm font-semibold">Overview</h3>
             {overviewParagraphs.map((para, idx) => (
@@ -141,6 +120,29 @@ export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPan
               </p>
             ))}
           </div>
+
+          {/* Key Points */}
+          {module.content.keyPoints && module.content.keyPoints.length > 0 && (
+            <>
+              <div className="border-t border-border/50" />
+              <div>
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  Key Points
+                </h3>
+                <ul className="space-y-2">
+                  {module.content.keyPoints.map((point, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5 text-sm">
+                      <span className="h-4 w-4 rounded-full bg-primary/10 text-primary text-[10px] flex items-center justify-center shrink-0 mt-0.5 font-medium">
+                        {idx + 1}
+                      </span>
+                      <span className="leading-relaxed">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </>
+          )}
 
           {/* Steps (document / exercise) */}
           {module.content.steps && module.content.steps.length > 0 && (
@@ -162,15 +164,15 @@ export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPan
             </>
           )}
 
-          {/* Examples */}
-          {module.content.examples && module.content.examples.length > 0 && (
+          {/* Examples — shown only after user clicks "See Examples" */}
+          {hasExamples && showExamples && (
             <>
               <div className="border-t border-border/50" />
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold">
                   {module.type === 'example' ? 'Examples' : 'Example'}
                 </h3>
-                {module.content.examples.map((example, idx) => (
+                {module.content.examples!.map((example, idx) => (
                   <Card key={idx} className="overflow-hidden">
                     <div className="bg-muted/50 px-4 py-2.5 border-b text-sm font-medium">
                       {example.title}
@@ -196,35 +198,24 @@ export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPan
             </>
           )}
 
-          {/* Learning objectives */}
-          {module.learningObjectives && module.learningObjectives.length > 0 && (
-            <>
-              <div className="border-t border-border/50" />
-              <div>
-                <h3 className="text-sm font-semibold mb-3">Learning Objectives</h3>
-                <ul className="space-y-2">
-                  {module.learningObjectives.map((obj, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <CheckCircle className="h-3.5 w-3.5 text-green-500 mt-0.5 shrink-0" />
-                      <span className="leading-relaxed">{obj}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </>
-          )}
-
           {/* Bottom spacer */}
           <div className="h-4" />
         </div>
       </ScrollArea>
 
-      {/* Start practice CTA */}
+      {/* Progressive CTA: "See Examples" → "Start Practice" */}
       <div className="shrink-0 border-t bg-card px-6 py-4">
-        <Button className="w-full gap-2" onClick={onStartPractice}>
-          <MessageSquare className="h-4 w-4" />
-          Start Practice
-        </Button>
+        {hasExamples && !showExamples ? (
+          <Button className="w-full gap-2" variant="outline" onClick={() => setShowExamples(true)}>
+            <Lightbulb className="h-4 w-4" />
+            See Examples
+          </Button>
+        ) : (
+          <Button className="w-full gap-2" onClick={onStartPractice}>
+            <MessageSquare className="h-4 w-4" />
+            Start Practice
+          </Button>
+        )}
       </div>
     </div>
   );
