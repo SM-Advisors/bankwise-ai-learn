@@ -65,6 +65,7 @@ export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPan
   const cfg = typeConfig[module.type as keyof typeof typeConfig] ?? typeConfig.document;
   const TypeIcon = cfg.icon;
 
+  const hasExamples = !!(module.content.examples && module.content.examples.length > 0);
   const overviewParagraphs = splitIntoParagraphs(module.content.overview);
 
   return (
