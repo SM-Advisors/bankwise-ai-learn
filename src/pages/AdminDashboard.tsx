@@ -177,6 +177,11 @@ export default function AdminDashboard() {
   // ── Help panel state ─────────────────────────────────────────────────────────
   const [helpPanelOpen, setHelpPanelOpen] = useState(false);
 
+  // ── Andrea right-pane state ─────────────────────────────────────────────────
+  const [andreaPaneOpen, setAndreaPaneOpen] = useState(true);
+  const [andreaPaneTab, setAndreaPaneTab] = useState<'chat' | 'notes'>('chat');
+  const { addNote } = useAdminAndreaNotes(effectiveOrgId);
+
   // Admin tour — auto-trigger on first visit or ?tour=admin param
   const { isCompleted: adminTourDone, startTour: startAdminTour } = useTour('admin');
   const { policies, loading: policiesLoading, updatePolicy, createPolicy } = useAllBankPolicies();
