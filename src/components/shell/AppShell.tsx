@@ -34,7 +34,7 @@ export function AppShell({
   contentClassName,
 }: AppShellProps) {
   const isMobile = useIsMobile();
-  const [navExpanded, setNavExpanded] = useState(false);
+  const [navExpanded, setNavExpanded] = useState(!isMobile);
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">

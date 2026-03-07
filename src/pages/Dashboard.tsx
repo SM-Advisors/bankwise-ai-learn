@@ -118,8 +118,8 @@ export default function Dashboard() {
 
   return (
     <AppShell breadcrumbs={[{ label: 'Home' }]} topBarActions={homeState !== 'brand_new' ? <BrainstormPanel compact /> : undefined}>
-      <div className="w-full px-4 py-10">
-      <div className="w-full max-w-5xl mx-auto">
+      <div className="w-full px-4 py-10 flex-1 flex items-center justify-center">
+      <div className="w-full max-w-[60%] max-md:max-w-full">
         {homeState === 'brand_new' && (
           <BrandNewView
             name={profile.display_name || 'there'}
