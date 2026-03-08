@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark, BookOpen, Lightbulb, AlertTriangle, ArrowRight, CheckCircle2, ChevronDown, Target, Wrench, Zap, Share2, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { VoiceMicButton } from '@/components/VoiceMicButton';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { type Message } from '@/types/training';
 import { ShareDialog } from '@/components/ShareDialog';
@@ -611,15 +612,21 @@ export function TrainerChatPanel({
                 />
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-muted-foreground/50">Enter to send</span>
-                  <Button
-                    size="sm"
-                    onClick={() => { onSubmit(); setTimeout(() => inputRef.current?.focus(), 100); }}
-                    disabled={isLoading || !input.trim()}
-                    className="gap-1.5 h-7 text-xs rounded-md"
-                  >
-                    <Send className="h-3 w-3" />
-                    Send
-                  </Button>
+                  <div className="flex items-center gap-1.5">
+                    <VoiceMicButton
+                      onTranscript={(text) => onInputChange(input ? input + ' ' + text : text)}
+                      disabled={isLoading}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => { onSubmit(); setTimeout(() => inputRef.current?.focus(), 100); }}
+                      disabled={isLoading || !input.trim()}
+                      className="gap-1.5 h-7 text-xs rounded-md"
+                    >
+                      <Send className="h-3 w-3" />
+                      Send
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

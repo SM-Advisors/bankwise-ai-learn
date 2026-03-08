@@ -6,9 +6,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Loader2, Send, CheckCircle, AlertCircle,
-  ChevronRight, ChevronDown, Bot, User, Mic, AudioLines, Plus, SlidersHorizontal,
+  ChevronRight, ChevronDown, Bot, User, AudioLines, Plus, SlidersHorizontal,
   MessageSquarePlus, History, Clock, ChevronUp, Sparkles, RotateCcw,
 } from 'lucide-react';
+import { VoiceMicButton } from '@/components/VoiceMicButton';
 import { type ModuleContent } from '@/data/trainingContent';
 import { getRoleScenario } from '@/data/roleScenarioBanks';
 import { type PracticeConversation } from '@/hooks/usePracticeConversations';
@@ -441,9 +442,11 @@ export function PracticeChatPanel({
               )}
             </div>
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
-                <Mic className="h-5 w-5" />
-              </Button>
+              <VoiceMicButton
+                onTranscript={(text) => setInput((prev) => (prev ? prev + ' ' : '') + text)}
+                disabled={isLoading}
+                size="default"
+              />
               {input.trim() ? (
                 <Button
                   size="icon"

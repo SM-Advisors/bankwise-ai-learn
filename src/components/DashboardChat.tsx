@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { X, Send, Loader2, Clock, Plus } from 'lucide-react';
+import { VoiceMicButton } from '@/components/VoiceMicButton';
 import andreaCoach from '@/assets/andrea-coach.png';
 import andreaCoach2 from '@/assets/andrea-coach2.png';
 import { useDashboardConversations } from '@/hooks/useDashboardConversations';
@@ -373,6 +374,10 @@ export function DashboardChat({ profile, progress, forceOpen }: DashboardChatPro
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask Andrea anything..."
                   className="text-sm"
+                  disabled={isLoading}
+                />
+                <VoiceMicButton
+                  onTranscript={(text) => setInput((prev) => (prev ? prev + ' ' : '') + text)}
                   disabled={isLoading}
                 />
                 <Button
