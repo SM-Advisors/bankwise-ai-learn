@@ -52,8 +52,8 @@ export function useUserAgents() {
     if (!user?.id) return null;
 
     try {
-      const { data: result, error } = await supabase
-        .from('user_agents')
+      const { data: result, error } = await (supabase
+        .from('user_agents') as any)
         .insert({
           user_id: user.id,
           name: data?.name || 'My Agent',
