@@ -6,7 +6,7 @@ import { Home, BookOpen, Compass, Users, User, type LucideIcon } from 'lucide-re
 export type UnlockCondition =
   | 'always'
   | 'onboarding_completed'
-  | 'session_1_module_2_done'   // CLEAR Framework complete → unlocks Explore
+  | 'session_1_basic_interaction_done'  // Basic Interaction (1-3) complete → unlocks Explore
   | 'first_practice_done'       // Any practice chat started → unlocks Community
   | 'session_1_completed';      // Full session 1 done
 
@@ -45,7 +45,7 @@ export const LEARNER_ZONES: Zone[] = [
     label: 'Explore',
     description: 'Prompt library, ideas, electives',
     path: '/explore',
-    unlockedBy: 'session_1_module_2_done',
+    unlockedBy: 'session_1_basic_interaction_done',
   },
   {
     id: 'community',

@@ -44,6 +44,10 @@ export interface TrainingProgress {
   session_2_completed: boolean;
   session_2_progress: SessionProgressData;
   session_3_completed: boolean;
+  session_4_completed: boolean;
+  session_4_progress: SessionProgressData;
+  session_5_completed: boolean;
+  session_5_progress: SessionProgressData;
   session_3_progress: SessionProgressData;
 }
 
