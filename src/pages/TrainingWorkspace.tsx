@@ -10,7 +10,8 @@ import { ALL_SESSION_CONTENT, type ModuleContent } from '@/data/trainingContent'
 import { VideoModal } from '@/components/VideoModal';
 import { TrainerChatPanel } from '@/components/training/TrainerChatPanel';
 import { PracticeChatPanel } from '@/components/training/PracticeChatPanel';
-import { type Message } from '@/types/training';
+import { ModuleListSidebar } from '@/components/training/ModuleListSidebar';
+import { type Message, type BankPolicy } from '@/types/training';
 import type { SessionProgressData, ModuleEngagement } from '@/types/progress';
 import { DEFAULT_ENGAGEMENT } from '@/types/progress';
 import { deriveSkillSignals } from '@/utils/deriveSkillSignals';
@@ -32,8 +33,9 @@ import { CapstonePanel } from '@/components/capstone/CapstonePanel';
 import { BrainstormPanel } from '@/components/BrainstormPanel';
 import type { CapstoneData } from '@/types/progress';
 import type { WorkflowData } from '@/types/workflow';
-import { Loader2, Bot, Building2, MessageSquare, GraduationCap, BookOpen } from 'lucide-react';
+import { Loader2, ArrowLeft, Shield, Bot, Building2, BookOpen, MessageSquare, GraduationCap } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { AppShell, type BreadcrumbItem } from '@/components/shell';
 import { type ProgressModule } from '@/components/smile';
 import { useValueSignals } from '@/hooks/useValueSignals';
@@ -49,6 +51,7 @@ export default function TrainingWorkspace() {
   const { toast } = useToast();
   const contentScrollRef = useRef<HTMLDivElement>(null);
 
+  const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const [selectedModule, setSelectedModule] = useState<ModuleContent | null>(null);
   const [trainerMessages, setTrainerMessages] = useState<Message[]>([]);
@@ -63,6 +66,9 @@ export default function TrainingWorkspace() {
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
   const [mobileTab, setMobileTab] = useState<'practice' | 'coach'>('practice');
+  const [mobileModulesOpen, setMobileModulesOpen] = useState(false);
+
+  const { policies } = useBankPolicies();
   const { emitSignal } = useValueSignals();
   const { createMemory } = useAIMemories();
   const { pendingRequest, respondToLevelChange } = useSkillAssessment();
@@ -332,15 +338,6 @@ export default function TrainingWorkspace() {
         contentViewed: true,
         contentViewedAt: new Date().toISOString(),
       });
-
-      // Signal: use_case_identified — Session 3 with department set, first view of module
-      if (isSession3 && profile?.department) {
-        emitSignal('use_case_identified', {
-          session_id: sessionId,
-          module_id: module.id,
-          department: profile.department,
-        });
-      }
     }
   };
 
@@ -373,15 +370,6 @@ export default function TrainingWorkspace() {
             completedAt: new Date().toISOString(),
           } : {}),
         });
-
-        // Signal: workflow_built — sandbox module first message = workflow created
-        if (selectedModule.type === 'sandbox') {
-          emitSignal('workflow_built', {
-            session_id: sessionId,
-            module_id: selectedModule.id,
-            module_type: 'sandbox',
-          });
-        }
       }
     } else {
       // Append user message to existing conversation
@@ -987,6 +975,19 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
+        {/* Left Column - Training Modules (desktop only) */}
+        {!isMobile && (
+          <ModuleListSidebar
+            collapsed={leftCollapsed}
+            onToggleCollapse={() => setLeftCollapsed(!leftCollapsed)}
+            modules={session.modules}
+            selectedModule={selectedModule}
+            completedModules={completedModules}
+            moduleEngagement={moduleEngagement}
+            onSelectModule={handleModuleSelect}
+            onGateBypass={handleGateBypass}
+          />
+        )}
 
         {/* Left column — Learn Mode content (65%) or Practice Chat (flex-1) */}
         {(!isMobile || mobileTab === 'practice') && (
