@@ -74,7 +74,7 @@ interface AuthContextType {
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: Error | null }>;
   refreshProfile: () => Promise<void>;
   updateProgress: (updates: Partial<TrainingProgress>) => Promise<{ error: Error | null }>;
-  markSessionCompleted: (sessionNumber: 1 | 2 | 3) => Promise<{ error: Error | null }>;
+  markSessionCompleted: (sessionNumber: 1 | 2 | 3 | 4 | 5) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
