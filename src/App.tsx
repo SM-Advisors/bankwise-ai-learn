@@ -92,8 +92,8 @@ const App = () => (
                   } />
 
                   {/* Profile zone sub-pages — redirect to Profile tabs */}
-                  <Route path="/settings" element={<Navigate to="/profile?tab=settings" replace />} />
-                  <Route path="/memories" element={<Navigate to="/profile?tab=memories" replace />} />
+                  <Route path="/settings" element={<Navigate to="/profile?tab=personalization" replace />} />
+                  <Route path="/memories" element={<Navigate to="/profile?tab=personalization" replace />} />
                   <Route path="/journey" element={<Navigate to="/profile?tab=journey" replace />} />
 
                   {/* Explore zone sub-pages */}
