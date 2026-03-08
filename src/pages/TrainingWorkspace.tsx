@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth, type UserProfile, type TrainingProgress } from '@/contexts/AuthContext';
+import { useAuth, type UserProfile } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -10,7 +10,8 @@ import { ALL_SESSION_CONTENT, type ModuleContent } from '@/data/trainingContent'
 import { VideoModal } from '@/components/VideoModal';
 import { TrainerChatPanel } from '@/components/training/TrainerChatPanel';
 import { PracticeChatPanel } from '@/components/training/PracticeChatPanel';
-import { type Message } from '@/types/training';
+import { ModuleListSidebar } from '@/components/training/ModuleListSidebar';
+import { type Message, type BankPolicy } from '@/types/training';
 import type { SessionProgressData, ModuleEngagement } from '@/types/progress';
 import { DEFAULT_ENGAGEMENT } from '@/types/progress';
 import { deriveSkillSignals } from '@/utils/deriveSkillSignals';
@@ -32,12 +33,14 @@ import { CapstonePanel } from '@/components/capstone/CapstonePanel';
 import { BrainstormPanel } from '@/components/BrainstormPanel';
 import type { CapstoneData } from '@/types/progress';
 import type { WorkflowData } from '@/types/workflow';
-import { Loader2, Bot, Building2, MessageSquare, GraduationCap, BookOpen } from 'lucide-react';
+import { Loader2, ArrowLeft, Shield, Bot, Building2, BookOpen, MessageSquare, GraduationCap } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { AppShell, type BreadcrumbItem } from '@/components/shell';
-import { ProgressStrip, type ProgressModule } from '@/components/smile';
+import { type ProgressModule } from '@/components/smile';
 import { useValueSignals } from '@/hooks/useValueSignals';
 import { ModuleContentPanel } from '@/components/training/ModuleContentPanel';
+import { PersonalizationPractice } from '@/components/training/PersonalizationPractice';
 import { SessionSwitcher } from '@/components/training/SessionSwitcher';
 
 export default function TrainingWorkspace() {
@@ -48,6 +51,7 @@ export default function TrainingWorkspace() {
   const { toast } = useToast();
   const contentScrollRef = useRef<HTMLDivElement>(null);
 
+  const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const [selectedModule, setSelectedModule] = useState<ModuleContent | null>(null);
   const [trainerMessages, setTrainerMessages] = useState<Message[]>([]);
@@ -62,6 +66,9 @@ export default function TrainingWorkspace() {
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
   const [mobileTab, setMobileTab] = useState<'practice' | 'coach'>('practice');
+  const [mobileModulesOpen, setMobileModulesOpen] = useState(false);
+
+  const { policies } = useBankPolicies();
   const { emitSignal } = useValueSignals();
   const { createMemory } = useAIMemories();
   const { pendingRequest, respondToLevelChange } = useSkillAssessment();
@@ -88,6 +95,7 @@ export default function TrainingWorkspace() {
   // Determine if current module is an Agent Studio module
   // Agent Studio modules: Session 3, Modules 3-3 through 3-7 (Build Agent, Knowledge, Files, Tools, Capstone)
   const isAgentModule = sessionId === '3' && ['3-3', '3-4', '3-5', '3-6', '3-7'].includes(selectedModule?.id ?? '');
+  const isPersonalizationModule = sessionId === '1' && selectedModule?.id === '1-1';
 
   // For Session 3: determine special module types
   const isSession3 = sessionId === '3';
@@ -116,14 +124,12 @@ export default function TrainingWorkspace() {
     const progressKey = 'session_3_progress' as const;
     const currentProgress = (progress?.[progressKey] as SessionProgressData) || { completedModules: Array.from(completedModules) };
     const existing = currentProgress.capstoneData || { selectedOption: '' };
-    const progressUpdate: Partial<TrainingProgress> = {
+    await updateProgress({
       [progressKey]: {
         ...currentProgress,
         capstoneData: { ...existing, ...updates },
       },
-    };
-
-    await updateProgress(progressUpdate);
+    } as any);
   };
 
   // Module engagement tracking state
@@ -265,11 +271,9 @@ export default function TrainingWorkspace() {
     // Update local state immediately for responsive UI
     setModuleEngagement(engagement);
 
-    const progressUpdate: Partial<TrainingProgress> = {
+    await updateProgress({
       [progressKey]: { ...currentProgress, moduleEngagement: engagement },
-    };
-
-    await updateProgress(progressUpdate);
+    } as any);
   };
 
   // Manually bypass a gate module (user dismisses the gate requirement)
@@ -292,15 +296,13 @@ export default function TrainingWorkspace() {
     };
     setModuleEngagement(engagement);
 
-    const progressUpdate: Partial<TrainingProgress> = {
+    await updateProgress({
       [progressKey]: {
         ...currentProgress,
         completedModules: Array.from(newCompletedModules),
         moduleEngagement: engagement,
       },
-    };
-
-    await updateProgress(progressUpdate);
+    } as any);
   };
 
   if (loading || !profile) {
@@ -336,15 +338,6 @@ export default function TrainingWorkspace() {
         contentViewed: true,
         contentViewedAt: new Date().toISOString(),
       });
-
-      // Signal: use_case_identified — Session 3 with department set, first view of module
-      if (isSession3 && profile?.department) {
-        emitSignal('use_case_identified', {
-          session_id: sessionId,
-          module_id: module.id,
-          department: profile.department,
-        });
-      }
     }
   };
 
@@ -377,15 +370,6 @@ export default function TrainingWorkspace() {
             completedAt: new Date().toISOString(),
           } : {}),
         });
-
-        // Signal: workflow_built — sandbox module first message = workflow created
-        if (selectedModule.type === 'sandbox') {
-          emitSignal('workflow_built', {
-            session_id: sessionId,
-            module_id: selectedModule.id,
-            module_type: 'sandbox',
-          });
-        }
       }
     } else {
       // Append user message to existing conversation
@@ -422,7 +406,7 @@ export default function TrainingWorkspace() {
           // Department context for bankers; interests for F&F users
           jobRole: profile?.job_role,
           departmentLob: profile?.department,
-          interests: profile?.interests || undefined,
+          interests: (profile as any)?.interests || undefined,
         },
       });
 
@@ -649,15 +633,13 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
       setModuleEngagement(engagement);
 
-      const progressUpdate: Partial<TrainingProgress> = {
+      await updateProgress({
         [progressKey]: {
           completedModules: Array.from(newCompletedModules),
           moduleEngagement: engagement,
           skillSignals: updatedSkillSignals,
         },
-      };
-
-      await updateProgress(progressUpdate);
+      } as any);
 
       // Signal: skill_applied — module completed
       if (gatePassed) {
@@ -689,8 +671,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
     trigger: draftWorkflow.workflow_data?.trigger || '',
     steps: draftWorkflow.workflow_data?.steps || [],
     finalOutput: draftWorkflow.workflow_data?.finalOutput || '',
-    stepCount: draftWorkflow.workflow_data?.steps?.filter((s: { name?: string }) => s.name?.trim()).length || 0,
-    checkpointCount: draftWorkflow.workflow_data?.steps?.filter((s: { humanReview?: boolean; name?: string }) => s.humanReview && s.name?.trim()).length || 0,
+    stepCount: draftWorkflow.workflow_data?.steps?.filter((s: any) => s.name?.trim()).length || 0,
+    checkpointCount: draftWorkflow.workflow_data?.steps?.filter((s: any) => s.humanReview && s.name?.trim()).length || 0,
   } : undefined;
 
   const handleTrainerSubmit = async () => {
@@ -850,24 +832,21 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
   const handleAcceptLevelChange = async (proposedLevel: string) => {
     const newProficiency = LEVEL_TO_PROFICIENCY[proposedLevel];
-    const promises: Promise<unknown>[] = [];
+    const promises: Promise<any>[] = [];
     if (newProficiency !== undefined) {
       promises.push(updateProfile({ ai_proficiency_level: newProficiency }));
     }
     // Use cached pendingRequest; if missing (e.g. expired before user clicked), fetch fresh
     let requestId = pendingRequest?.id;
     if (!requestId && user?.id) {
-      const { data } = await supabase
-        .from('level_change_requests' as never)
+      const { data } = await (supabase
+        .from('level_change_requests' as any)
         .select('id')
         .eq('user_id', user.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
-        .limit(1);
-
-      if (Array.isArray(data) && data.length > 0) {
-        requestId = (data[0] as { id?: string }).id;
-      }
+        .limit(1) as any);
+      requestId = data?.[0]?.id;
     }
     if (requestId) {
       promises.push(respondToLevelChange(requestId, true));
@@ -916,19 +895,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
   ];
 
   const trainingActions = (
-    <div className="flex items-center w-full">
-      {/* Center: module progress */}
-      <div className="flex-1 flex justify-center">
-        <ProgressStrip
-          modules={progressModules}
-          currentModuleId={selectedModule?.id}
-          onModuleClick={(id) => {
-            const mod = session.modules.find((m) => m.id === id);
-            if (mod) handleModuleSelect(mod);
-          }}
-          className="max-w-[480px]"
-        />
-      </div>
+    <div className="flex items-center w-full justify-end">
       {/* Right: brainstorm button */}
       <div className="shrink-0">
         <BrainstormPanel compact />
@@ -948,8 +915,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         currentSession={profile?.current_session ?? 1}
         completedSessions={{
           1: !!progress?.session_1_completed,
-          4: !!progress?.session_4_completed,
-          5: !!progress?.session_5_completed,
+          4: !!(progress as any)?.session_4_completed,
+          5: !!(progress as any)?.session_5_completed,
           2: !!progress?.session_2_completed,
           3: !!progress?.session_3_completed,
         }}
@@ -1008,6 +975,19 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
+        {/* Left Column - Training Modules (desktop only) */}
+        {!isMobile && (
+          <ModuleListSidebar
+            collapsed={leftCollapsed}
+            onToggleCollapse={() => setLeftCollapsed(!leftCollapsed)}
+            modules={session.modules}
+            selectedModule={selectedModule}
+            completedModules={completedModules}
+            moduleEngagement={moduleEngagement}
+            onSelectModule={handleModuleSelect}
+            onGateBypass={handleGateBypass}
+          />
+        )}
 
         {/* Left column — Learn Mode content (65%) or Practice Chat (flex-1) */}
         {(!isMobile || mobileTab === 'practice') && (
@@ -1069,6 +1049,59 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                 departmentLabel={departmentLabel || undefined}
                 userName={profile?.display_name || undefined}
                 bankName={profile?.employer_name || undefined}
+              />
+            ) : selectedModule && isPersonalizationModule && workspaceMode === 'practice' ? (
+              <PersonalizationPractice
+                onSaved={(prefs) => {
+                  // Send Andrea a message about the personalization for feedback
+                  const feedbackPrompt = `The user just completed their personalization setup. Here are their choices:\n\n- **Tone:** ${prefs.tone}\n- **Verbosity:** ${prefs.verbosity}\n- **Formatting:** ${prefs.formatting_preference}\n- **Role Context:** ${prefs.role_context || '(not set)'}\n- **Custom Instructions:** ${prefs.additional_instructions || '(not set)'}\n\nPlease provide structured, specific feedback on their personalization choices. Focus on the Role Context and Custom Instructions fields — are they specific enough? If they're well-crafted, congratulate them. If they could be improved, give concrete suggestions based on their role/department. Do NOT be generic.`;
+                  setTrainerInput(feedbackPrompt);
+                  // Auto-send to Andrea
+                  const userMsg: Message = { role: 'user', content: 'I just saved my personalization — can you review my setup?' };
+                  const apiMsg: Message = { role: 'user', content: feedbackPrompt };
+                  setTrainerMessages(prev => [...prev, userMsg]);
+                  setIsTrainerLoading(true);
+                  setTrainerInput('');
+                  supabase.functions.invoke('trainer_chat', {
+                    body: {
+                      lessonId: '1',
+                      moduleId: '1-1',
+                      sessionNumber: 1,
+                      messages: [...trainerMessages, apiMsg],
+                      learnerState: {
+                        currentCardTitle: selectedModule?.title,
+                        learningObjectives: selectedModule?.learningObjectives,
+                        learningOutcome: selectedModule?.learningOutcome,
+                        completedModules: Array.from(completedModules),
+                        displayName: profile?.display_name || undefined,
+                        jobRole: profile?.job_role || undefined,
+                        departmentLob: profile?.department || undefined,
+                      },
+                    },
+                  }).then(response => {
+                    const replyData = response.data;
+                    const replyText = replyData?.reply || 'Great job setting up your personalization!';
+                    setTrainerMessages(prev => [...prev, {
+                      role: 'assistant',
+                      content: replyText,
+                      suggestedPrompts: replyData?.suggestedPrompts || [],
+                      coachingAction: replyData?.coachingAction || 'celebrate',
+                    }]);
+                    setSuggestedPrompts(replyData?.suggestedPrompts || []);
+                  }).catch(() => {
+                    setTrainerMessages(prev => [...prev, {
+                      role: 'assistant',
+                      content: 'Great job completing your personalization! Your settings have been saved.',
+                    }]);
+                  }).finally(() => setIsTrainerLoading(false));
+
+                  // Mark module engagement
+                  trackModuleEngagement('1-1', {
+                    chatStarted: true,
+                    completed: true,
+                    completedAt: new Date().toISOString(),
+                  });
+                }}
               />
             ) : selectedModule ? (
               <PracticeChatPanel

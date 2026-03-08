@@ -65,21 +65,27 @@ export const SESSION_1_CONTENT: SessionContent = {
         'Set basic preferences for tone, output style, and level of detail',
         'Observe how personalized context changes a response compared to a generic one',
       ],
-      learningOutcome: 'After this module, you can configure an AI system to reflect your professional context so that every response feels relevant to your actual work.',
+      learningOutcome: 'After this module, you will know how to personalize an AI system to reflect your individual context, so that every response feels relevant to your actual work.',
       content: {
-        overview: 'Before you interact with AI, you teach it who you are. Once personalization is done, the first output you get back feels like it was written for someone in your role — not a generic answer for anyone. That relevance is what makes AI feel useful from the very first interaction.',
+        overview: 'Before you interact with AI, you should teach it who you are. Once personalization is done, the first output you get back feels like it was written for you — not a generic, Google-type response for the masses. That personal touch is what makes AI feel useful from the very first interaction.',
         keyPoints: [
-          'The system adapts to you — your job is to teach it who you are',
+          'The AI tool adapts to you — your job is to teach it who you are',
           'Setting your role and department changes the language, examples, and assumptions in every response',
           'Personalization is not a one-time setup — you can refine it as you learn what works',
-          'A personalized system feels like a colleague who knows your context; a generic one feels like a search engine',
+          'A personalized system feels like a colleague who knows who you are; a generic one feels like a search engine',
         ],
         examples: [
           {
-            title: 'Generic vs. Personalized Response',
-            bad: 'User asks: "Help me write a summary of this quarter\'s performance."\n\nAI responds with a generic business summary template using placeholder language that could apply to any industry.',
-            good: 'Same question, but the system knows the user is a Commercial Lending Officer at a community bank.\n\nAI responds with a summary referencing loan portfolio growth, credit quality metrics, and CRE concentration ratios — using language the user would actually put in front of their credit committee.',
-            explanation: 'The personalized version requires zero extra effort from the user. The difference is entirely in the context the system already has. This is why personalization comes first.',
+            title: 'Role Context — Poor vs. Well-Crafted',
+            bad: '"I work at a bank."',
+            good: '"I\'m a credit analyst who reviews commercial loan applications for a $2B community bank. I evaluate financials for CRE, C&I, and construction loans, and present findings to our credit committee."',
+            explanation: 'The specific version gives Andrea enough context to tailor every response — she\'ll reference the right regulatory frameworks, use appropriate terminology, and frame advice for your actual workflow.',
+          },
+          {
+            title: 'Custom Instructions — Poor vs. Well-Crafted',
+            bad: '"Be helpful."',
+            good: '"Always relate examples to banking and lending. When explaining complex concepts, use analogies. Include regulatory references (OCC, FDIC) when relevant. Format action items as numbered lists."',
+            explanation: 'Generic instructions add nothing — the AI is already trying to be helpful. Specific instructions shape how Andrea communicates, what she references, and how she structures output for your daily work.',
           },
         ],
         practiceTask: {

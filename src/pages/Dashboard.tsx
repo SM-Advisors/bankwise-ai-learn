@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,8 @@ import type { SessionProgressData, SkillSignal } from '@/types/progress';
 import { CheckCircle, Play, Sparkles, Bot, Building2, Zap, Lock, Users, Wrench } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { BrainstormPanel } from '@/components/BrainstormPanel';
+import { useTour } from '@/hooks/useTour';
+import { DASHBOARD_STEPS } from '@/constants/tourSteps';
 
 // ─── Session metadata ─────────────────────────────────────────────────────────
 
@@ -74,6 +77,15 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { profile, progress, loading } = useAuth();
   const { canAccessCommunity } = useFeatureGates();
+  const { isCompleted: tourDone, startTour } = useTour('dashboard');
+
+  // Auto-trigger dashboard tour on first visit
+  useEffect(() => {
+    if (!loading && profile && !tourDone) {
+      const timeout = setTimeout(() => startTour(DASHBOARD_STEPS), 800);
+      return () => clearTimeout(timeout);
+    }
+  }, [loading, profile, tourDone]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading || !profile) {
     return (
@@ -124,7 +136,7 @@ export default function Dashboard() {
     .slice(0, 4);
 
   return (
-    <AppShell breadcrumbs={[{ label: 'Home' }]} topBarActions={homeState !== 'brand_new' ? <BrainstormPanel compact /> : undefined}>
+    <AppShell breadcrumbs={[{ label: 'Home' }]} topBarActions={<BrainstormPanel compact />}>
       <div className="w-full px-4 py-10 flex-1 flex items-center justify-center">
       <div className="w-full max-w-[60%] max-md:max-w-full">
         {homeState === 'brand_new' && (
