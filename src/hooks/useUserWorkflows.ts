@@ -19,7 +19,7 @@ export function useUserWorkflows() {
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
       if (error) throw error;
-      setWorkflows((data || []) as UserWorkflow[]);
+      setWorkflows((data || []) as unknown as UserWorkflow[]);
     } catch (err) {
       console.error('Error fetching workflows:', err);
     } finally {
