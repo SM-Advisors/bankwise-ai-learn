@@ -387,7 +387,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const markSessionCompleted = async (sessionNumber: 1 | 2 | 3) => {
+  const markSessionCompleted = async (sessionNumber: 1 | 2 | 3 | 4 | 5) => {
     if (!user) return { error: new Error('Not authenticated') };
 
     const completedKey = `session_${sessionNumber}_completed` as const;
