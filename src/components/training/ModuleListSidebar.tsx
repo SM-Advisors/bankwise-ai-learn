@@ -71,9 +71,10 @@ const getStateLabel = (state: ModuleState, engagement?: ModuleEngagement): { tex
   switch (state) {
     case 'content_viewed':
       return { text: 'Viewed', className: 'text-blue-400' };
-    case 'practicing':
+    case 'practicing': {
       const count = engagement?.practiceMessageCount || 0;
       return { text: count > 0 ? `${count} msgs` : 'Started', className: 'text-amber-500' };
+    }
     case 'submitted':
       return { text: 'Reviewed', className: 'text-orange-500' };
     default:

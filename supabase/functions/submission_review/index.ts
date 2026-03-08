@@ -44,6 +44,13 @@ interface LessonChunk {
   metadata: Record<string, unknown>;
 }
 
+interface GateResult {
+  passed: boolean;
+  criteriaMetCount: number;
+  criteriaTotalCount: number;
+  gateMessage: string;
+}
+
 interface FeedbackResponse {
   feedback: {
     summary: string;
@@ -52,6 +59,7 @@ interface FeedbackResponse {
     fixes: string[];
     next_steps: string[];
   };
+  gateResult?: GateResult;
 }
 
 // Normalize learning style from DB to standard format
@@ -160,7 +168,7 @@ async function generateQueryEmbedding(text: string): Promise<number[] | null> {
 
 // Retrieve lesson content chunks from database (vector similarity with sequential fallback)
 async function retrieveLessonContext(
-  supabase: any,
+  supabase: ReturnType<typeof createClient>,
   params: { lessonId: string; moduleId?: string; query: string; topK?: number }
 ): Promise<LessonChunk[]> {
   const { lessonId, moduleId, query: ragQuery, topK = 6 } = params;
@@ -813,7 +821,7 @@ GATE EVALUATION RULES:
             user_id: userId,
             session_id: lessonId || "unknown",
             module_id: moduleId || null,
-            attempt_number: (learnerState as any)?.attemptNumber || 1,
+            attempt_number: learnerState?.attemptNumber || 1,
             scores: feedbackData.feedback,
             summary: feedbackData.feedback.summary || "",
           })
@@ -825,8 +833,8 @@ GATE EVALUATION RULES:
       JSON.stringify({
         ...feedbackData,
         // Pass through gateResult if present (gate modules only)
-        ...(isGateModule && (feedbackData as any).gateResult
-          ? { gateResult: (feedbackData as any).gateResult }
+        ...(isGateModule && feedbackData.gateResult
+          ? { gateResult: feedbackData.gateResult }
           : {}),
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
