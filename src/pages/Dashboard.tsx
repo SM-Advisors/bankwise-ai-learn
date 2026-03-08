@@ -16,6 +16,8 @@ import type { SessionProgressData, SkillSignal } from '@/types/progress';
 import { CheckCircle, Play, Sparkles, Bot, Building2, Zap, Lock, Users, Wrench } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { BrainstormPanel } from '@/components/BrainstormPanel';
+import { useTour } from '@/hooks/useTour';
+import { DASHBOARD_STEPS } from '@/constants/tourSteps';
 
 // ─── Session metadata ─────────────────────────────────────────────────────────
 
