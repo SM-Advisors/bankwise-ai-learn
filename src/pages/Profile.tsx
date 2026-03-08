@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, LearningStyleType } from '@/contexts/AuthContext';
 import { useAIPreferences, useAIMemories } from '@/hooks/useAIPreferences';
 import { useSkillAssessment } from '@/hooks/useSkillAssessment';
 import { useUserIdeas, IdeaStatus } from '@/hooks/useUserIdeas';
@@ -29,10 +29,11 @@ import {
   Brain, Save, Loader2, Trash2, Pin, PinOff, Plus, BookOpen,
   TrendingUp, Target, CheckCircle, Sparkles, Bot, Building2,
   Zap, Award, ArrowRight, Sliders, Lightbulb, Clock, CalendarClock,
-  Pencil, Play, Eye,
+  Pencil, Play, Eye, User, RefreshCw, Shield,
 } from 'lucide-react';
 import { IdeaPreviewDialog } from '@/components/IdeaPreviewDialog';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
+import { ROLE_OPTIONS } from '@/data/intakeQuestions';
 import {
   computeOverallProgress, computeSessionProgress,
   getCompletedModuleCount, getSessionModuleTotal,
@@ -40,7 +41,7 @@ import {
 import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';
 import type { SessionProgressData, SkillSignal } from '@/types/progress';
 
-// ─── Option lists (Personalization tab) ──────────────────────────────────────
+// ─── Option lists (Personalization subtab) ───────────────────────────────────
 
 const TONE_OPTIONS = [
   { value: 'professional', label: 'Professional', description: 'Formal and business-appropriate' },
@@ -58,6 +59,13 @@ const FORMAT_OPTIONS = [
   { value: 'bullets',    label: 'Bullet Points', description: 'Lists and bullet points' },
   { value: 'paragraphs', label: 'Paragraphs',    description: 'Flowing text' },
   { value: 'mixed',      label: 'Mixed',         description: 'Combination of formats' },
+];
+
+const LEARNING_STYLE_OPTIONS: { value: LearningStyleType; label: string; desc: string }[] = [
+  { value: 'example-based',     label: 'Show me examples',  desc: 'See what good looks like before I try' },
+  { value: 'explanation-based',  label: 'Explain it first', desc: 'Walk me through the concepts' },
+  { value: 'hands-on',           label: 'Let me try it',    desc: 'I learn by doing and experimenting' },
+  { value: 'logic-based',        label: 'Show me the why',  desc: 'I need to understand how it works' },
 ];
 
 // ─── Display maps ────────────────────────────────────────────────────────────
@@ -104,9 +112,17 @@ const IDEA_STATUS_CONFIG: Record<IdeaStatus, { label: string; icon: React.Elemen
   future: { label: 'Future Project', icon: CalendarClock, variant: 'default' },
 };
 
+const PLACEMENT_LABELS: Record<number, string> = {
+  1: 'Observer',
+  2: 'Learner',
+  3: 'Practitioner',
+  4: 'Champion',
+};
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type ProfileTab = 'personalization' | 'journey';
+type ProfileTab = 'my-profile' | 'personalization' | 'journey';
+type PersonalizationSubtab = 'preferences' | 'data-privacy' | 'memories';
 type JourneySubtab = 'progress' | 'skills' | 'ideas';
 
 // ─── Tab button ──────────────────────────────────────────────────────────────
@@ -150,12 +166,12 @@ function SubTabBtn({ active, label, onClick }: { active: boolean; label: string;
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, profile, progress, loading: authLoading } = useAuth();
+  const { user, profile, progress, loading: authLoading, updateProfile } = useAuth();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab') as ProfileTab | null;
   const [activeTab, setActiveTab] = useState<ProfileTab>(
-    tabParam && ['personalization', 'journey'].includes(tabParam) ? tabParam : 'personalization'
+    tabParam && ['my-profile', 'personalization', 'journey'].includes(tabParam) ? tabParam : 'my-profile'
   );
   // Support legacy ?tab=settings and ?tab=memories
   useEffect(() => {
@@ -165,11 +181,36 @@ export default function Profile() {
     }
   }, [tabParam]);
 
+  const [personalizationSubtab, setPersonalizationSubtab] = useState<PersonalizationSubtab>('preferences');
   const [journeySubtab, setJourneySubtab] = useState<JourneySubtab>('progress');
 
   const handleTabChange = (tab: ProfileTab) => {
     setActiveTab(tab);
     setSearchParams({ tab }, { replace: true });
+  };
+
+  // ── My Profile state ────────────────────────────────────────────────────
+  const [changingStyle, setChangingStyle] = useState(false);
+  const [selectedStyle, setSelectedStyle] = useState<LearningStyleType | null>(null);
+  const [savingStyle, setSavingStyle] = useState(false);
+
+  const handleSaveLearningStyle = async () => {
+    if (!selectedStyle || !user) return;
+    setSavingStyle(true);
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ learning_style: selectedStyle })
+      .eq('user_id', user.id);
+    if (!error) {
+      toast({ title: 'Learning style updated', description: 'Your training will adapt to your new preference.' });
+      setChangingStyle(false);
+      setSelectedStyle(null);
+      // Force profile refresh
+      window.location.reload();
+    } else {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    }
+    setSavingStyle(false);
   };
 
   // ── Personalization state ─────────────────────────────────────────────────
@@ -223,7 +264,7 @@ export default function Profile() {
     toast({ title: 'Conversations deleted', description: 'Your conversation history has been permanently deleted.' });
   };
 
-  // ── Memories state (shown at bottom of Personalization) ───────────────────
+  // ── Memories state ───────────────────────────────────────────────────────
   const { memories, loading: memLoading, createMemory, togglePin, deleteMemory } = useAIMemories();
   const { skillSummary, loading: skillLoading } = useSkillAssessment();
   const [isCreating, setIsCreating] = useState(false);
@@ -318,6 +359,11 @@ export default function Profile() {
   const totalModules = sessionIds.reduce((sum, sid) => sum + getSessionModuleTotal(sid), 0);
   const completedSessions = sessionIds.filter((sid) => !!prog[`session_${sid}_completed`]).length;
 
+  // ── Derived profile info ──────────────────────────────────────────────────
+  const roleOption = ROLE_OPTIONS.find((r) => r.key === profile?.intake_role_key);
+  const roleLabel = roleOption?.label || profile?.job_role || 'Not set';
+  const levelLabel = PLACEMENT_LABELS[profile?.ai_proficiency_level || 1] || 'Observer';
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -325,107 +371,237 @@ export default function Profile() {
       {/* Sticky tab bar */}
       <div className="sticky top-0 z-20 border-b bg-card px-6">
         <div className="flex">
+          <TabBtn active={activeTab === 'my-profile'} icon={User} label="My Profile" onClick={() => handleTabChange('my-profile')} />
           <TabBtn active={activeTab === 'personalization'} icon={Sliders} label="Personalization" onClick={() => handleTabChange('personalization')} />
           <TabBtn active={activeTab === 'journey'} icon={TrendingUp} label="Journey" onClick={() => handleTabChange('journey')} />
         </div>
       </div>
 
+      {/* ── My Profile tab ─────────────────────────────────────────────────── */}
+      {activeTab === 'my-profile' && (
+        <div className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
+          {/* User info card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <User className="h-5 w-5 text-primary" />
+                Profile Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Name</label>
+                  <p className="text-sm font-medium mt-1">{profile?.display_name || 'Not set'}</p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Organization</label>
+                  <p className="text-sm font-medium mt-1">{profile?.employer_name || 'Not set'}</p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Role</label>
+                  <p className="text-sm font-medium mt-1">{roleLabel}</p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Department</label>
+                  <p className="text-sm font-medium mt-1">{profile?.department || 'Not set'}</p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">AI Proficiency Level</label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="secondary">Level {profile?.ai_proficiency_level || 1}</Badge>
+                    <span className="text-sm text-muted-foreground">{levelLabel}</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Learning Style</label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="outline" className="capitalize">{profile?.learning_style || 'Not set'}</Badge>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Learning Style change */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Change Learning Style</CardTitle>
+              <CardDescription>Update how training content is delivered to you. This does not affect your progress.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {!changingStyle ? (
+                <Button variant="outline" className="gap-2" onClick={() => { setChangingStyle(true); setSelectedStyle(profile?.learning_style as LearningStyleType || null); }}>
+                  <RefreshCw className="h-4 w-4" />
+                  Change Learning Style
+                </Button>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {LEARNING_STYLE_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setSelectedStyle(opt.value)}
+                        className={`p-3 rounded-lg border text-left transition-colors ${
+                          selectedStyle === opt.value
+                            ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                            : 'border-border hover:bg-muted'
+                        }`}
+                      >
+                        <div className="font-medium text-sm">{opt.label}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">{opt.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleSaveLearningStyle} disabled={savingStyle || !selectedStyle} className="gap-2">
+                      {savingStyle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      Save
+                    </Button>
+                    <Button variant="outline" onClick={() => { setChangingStyle(false); setSelectedStyle(null); }}>Cancel</Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Retake Intake */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Retake Intake Assessment</CardTitle>
+              <CardDescription>
+                Retake the intake form to update your AI proficiency level and role preferences. Your training progress will not be affected.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="gap-2" onClick={() => navigate('/onboarding?retake=true')}>
+                <RefreshCw className="h-4 w-4" />
+                Retake Intake Form
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* ── Personalization tab ────────────────────────────────────────────── */}
       {activeTab === 'personalization' && (
-        <div className="container mx-auto px-4 py-8 max-w-3xl">
-          {prefLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : (
+        <div className="container mx-auto px-4 py-6 max-w-3xl">
+          {/* Subtabs */}
+          <div className="flex gap-2 mb-6">
+            <SubTabBtn active={personalizationSubtab === 'preferences'} label="Personalization" onClick={() => setPersonalizationSubtab('preferences')} />
+            <SubTabBtn active={personalizationSubtab === 'data-privacy'} label="Data & Privacy" onClick={() => setPersonalizationSubtab('data-privacy')} />
+            <SubTabBtn active={personalizationSubtab === 'memories'} label="Memories" onClick={() => setPersonalizationSubtab('memories')} />
+          </div>
+
+          {/* ── Preferences subtab ─────────────────────────────────────────── */}
+          {personalizationSubtab === 'preferences' && (
+            <>
+              {prefLoading ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Tone */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Brain className="h-5 w-5 text-primary" />
+                        Response Tone
+                      </CardTitle>
+                      <CardDescription>How should Andrea talk to you?</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {TONE_OPTIONS.map((opt) => (
+                          <button key={opt.value} onClick={() => setTone(opt.value)}
+                            className={`p-3 rounded-lg border text-left transition-colors ${tone === opt.value ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border hover:bg-muted'}`}>
+                            <div className="font-medium text-sm">{opt.label}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">{opt.description}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Verbosity */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Response Length</CardTitle>
+                      <CardDescription>How detailed should responses be?</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {VERBOSITY_OPTIONS.map((opt) => (
+                          <button key={opt.value} onClick={() => setVerbosity(opt.value)}
+                            className={`p-3 rounded-lg border text-left transition-colors ${verbosity === opt.value ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border hover:bg-muted'}`}>
+                            <div className="font-medium text-sm">{opt.label}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">{opt.description}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Formatting */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Formatting Style</CardTitle>
+                      <CardDescription>How should Andrea format responses?</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {FORMAT_OPTIONS.map((opt) => (
+                          <button key={opt.value} onClick={() => setFormatting(opt.value)}
+                            className={`p-3 rounded-lg border text-left transition-colors ${formatting === opt.value ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border hover:bg-muted'}`}>
+                            <div className="font-medium text-sm">{opt.label}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">{opt.description}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Role Context */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Your Role Context</CardTitle>
+                      <CardDescription>Tell Andrea about your specific role so she can tailor responses</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Textarea value={roleContext} onChange={(e) => setRoleContext(e.target.value)}
+                        placeholder="e.g., I'm a credit analyst who reviews commercial loan applications."
+                        className="min-h-[100px]" />
+                    </CardContent>
+                  </Card>
+
+                  {/* Custom Instructions */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Custom Instructions</CardTitle>
+                      <CardDescription>Any other preferences for how Andrea should assist you</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Textarea value={customInstructions} onChange={(e) => setCustomInstructions(e.target.value)}
+                        placeholder="e.g., Always relate examples to banking. Use analogies when explaining complex concepts."
+                        className="min-h-[100px]" />
+                    </CardContent>
+                  </Card>
+
+                  <div className="flex justify-end">
+                    <Button onClick={handleSavePreferences} disabled={saving} className="gap-2">
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      Save Preferences
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ── Data & Privacy subtab ──────────────────────────────────────── */}
+          {personalizationSubtab === 'data-privacy' && (
             <div className="space-y-6">
-              {/* Tone */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Brain className="h-5 w-5 text-primary" />
-                    Response Tone
-                  </CardTitle>
-                  <CardDescription>How should Andrea talk to you?</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {TONE_OPTIONS.map((opt) => (
-                      <button key={opt.value} onClick={() => setTone(opt.value)}
-                        className={`p-3 rounded-lg border text-left transition-colors ${tone === opt.value ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border hover:bg-muted'}`}>
-                        <div className="font-medium text-sm">{opt.label}</div>
-                        <div className="text-xs text-muted-foreground mt-0.5">{opt.description}</div>
-                      </button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Verbosity */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Response Length</CardTitle>
-                  <CardDescription>How detailed should responses be?</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {VERBOSITY_OPTIONS.map((opt) => (
-                      <button key={opt.value} onClick={() => setVerbosity(opt.value)}
-                        className={`p-3 rounded-lg border text-left transition-colors ${verbosity === opt.value ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border hover:bg-muted'}`}>
-                        <div className="font-medium text-sm">{opt.label}</div>
-                        <div className="text-xs text-muted-foreground mt-0.5">{opt.description}</div>
-                      </button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Formatting */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Formatting Style</CardTitle>
-                  <CardDescription>How should Andrea format responses?</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {FORMAT_OPTIONS.map((opt) => (
-                      <button key={opt.value} onClick={() => setFormatting(opt.value)}
-                        className={`p-3 rounded-lg border text-left transition-colors ${formatting === opt.value ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border hover:bg-muted'}`}>
-                        <div className="font-medium text-sm">{opt.label}</div>
-                        <div className="text-xs text-muted-foreground mt-0.5">{opt.description}</div>
-                      </button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Role Context */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Your Role Context</CardTitle>
-                  <CardDescription>Tell Andrea about your specific role so she can tailor responses</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Textarea value={roleContext} onChange={(e) => setRoleContext(e.target.value)}
-                    placeholder="e.g., I'm a credit analyst who reviews commercial loan applications."
-                    className="min-h-[100px]" />
-                </CardContent>
-              </Card>
-
-              {/* Custom Instructions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Custom Instructions</CardTitle>
-                  <CardDescription>Any other preferences for how Andrea should assist you</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Textarea value={customInstructions} onChange={(e) => setCustomInstructions(e.target.value)}
-                    placeholder="e.g., Always relate examples to banking. Use analogies when explaining complex concepts."
-                    className="min-h-[100px]" />
-                </CardContent>
-              </Card>
-
-              {/* Data & Privacy */}
               <Card className="border-destructive/20">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2 text-destructive">
@@ -433,7 +609,7 @@ export default function Profile() {
                     Data & Privacy
                   </CardTitle>
                   <CardDescription>
-                    Permanently delete your conversation history with Andrea and the practice AI.
+                    Permanently delete your conversation history with Andrea and the practice AI. This cannot be undone.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -461,199 +637,149 @@ export default function Profile() {
                   </AlertDialog>
                 </CardContent>
               </Card>
+            </div>
+          )}
 
-              {/* Profile summary */}
-              <Card className="bg-muted/30">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
-                      <span className="font-medium text-foreground">Current profile:</span>{' '}
-                      {profile?.display_name} &middot; {profile?.job_role} &middot; Level {profile?.ai_proficiency_level}
-                    </div>
-                    <Badge variant="secondary">{profile?.learning_style}</Badge>
+          {/* ── Memories subtab ────────────────────────────────────────────── */}
+          {personalizationSubtab === 'memories' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Brain className="h-6 w-6 text-primary" />
                   </div>
-                </CardContent>
-              </Card>
-
-              <div className="flex justify-end">
-                <Button onClick={handleSavePreferences} disabled={saving} className="gap-2">
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  Save Preferences
+                  <div>
+                    <h2 className="text-xl font-bold">{memories.length} AI Memories</h2>
+                    <p className="text-sm text-muted-foreground">Important insights Andrea remembers about you</p>
+                  </div>
+                </div>
+                <Button onClick={() => setIsCreating(true)} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  New Memory
                 </Button>
               </div>
 
-              {/* ── Memories section (end of Personalization) ──────────────── */}
-              <div className="border-t pt-8 mt-4">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Brain className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold">AI Memories</h2>
-                      <p className="text-sm text-muted-foreground">Important insights Andrea remembers about you</p>
-                    </div>
-                  </div>
-                  <Button onClick={() => setIsCreating(true)} className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    New Memory
-                  </Button>
+              {memLoading ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
-
-                {memLoading ? (
-                  <div className="flex items-center justify-center py-16">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  </div>
-                ) : memories.length === 0 ? (
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center py-8">
-                        <BookOpen className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-                        <h3 className="font-medium mb-1">No memories yet</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Save important insights from your training sessions.
-                        </p>
-                        <Button variant="outline" onClick={() => setIsCreating(true)} className="gap-2">
-                          <Plus className="h-4 w-4" />
-                          Add Your First Memory
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="space-y-6">
-                    {pinnedMemories.length > 0 && (
-                      <div>
-                        <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
-                          <Pin className="h-3.5 w-3.5" /> Pinned ({pinnedMemories.length})
-                        </h3>
-                        <div className="space-y-3">
-                          {pinnedMemories.map((memory) => (
-                            <Card key={memory.id} className="border-primary/30 bg-primary/5">
-                              <CardContent className="pt-4 pb-3">
-                                <div className="flex items-start justify-between gap-3">
-                                  <div className="flex-1">
-                                    <p className="text-sm">{memory.content}</p>
-                                    <div className="flex items-center gap-2 mt-2">
-                                      {memory.source && <Badge variant="outline" className="text-xs">{memory.source.replace('_', ' ')}</Badge>}
-                                      {memory.context && <Badge variant="secondary" className="text-xs">{memory.context}</Badge>}
-                                      <span className="text-xs text-muted-foreground">{new Date(memory.created_at).toLocaleDateString()}</span>
-                                    </div>
-                                  </div>
-                                  <div className="flex gap-1 shrink-0">
-                                    <Button variant="ghost" size="sm" onClick={() => handleTogglePin(memory.id, true)} className="h-7 w-7 p-0" title="Unpin">
-                                      <PinOff className="h-3.5 w-3.5" />
-                                    </Button>
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive hover:text-destructive" title="Delete">
-                                          <Trash2 className="h-3.5 w-3.5" />
-                                        </Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                          <AlertDialogTitle>Delete this memory?</AlertDialogTitle>
-                                          <AlertDialogDescription>Andrea will no longer reference this memory.</AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                          <AlertDialogAction onClick={() => handleDeleteMemory(memory.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
+              ) : memories.length === 0 ? (
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center py-8">
+                      <BookOpen className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                      <h3 className="font-medium mb-1">No memories yet</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Save important insights from your training sessions.
+                      </p>
+                      <Button variant="outline" onClick={() => setIsCreating(true)} className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        Add Your First Memory
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-6">
+                  {pinnedMemories.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+                        <Pin className="h-3.5 w-3.5" /> Pinned ({pinnedMemories.length})
+                      </h3>
+                      <div className="space-y-3">
+                        {pinnedMemories.map((memory) => (
+                          <Card key={memory.id} className="border-primary/30 bg-primary/5">
+                            <CardContent className="pt-4 pb-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1">
+                                  <p className="text-sm">{memory.content}</p>
+                                  <div className="flex items-center gap-2 mt-2">
+                                    {memory.source && <Badge variant="outline" className="text-xs">{memory.source.replace('_', ' ')}</Badge>}
+                                    {memory.context && <Badge variant="secondary" className="text-xs">{memory.context}</Badge>}
+                                    <span className="text-xs text-muted-foreground">{new Date(memory.created_at).toLocaleDateString()}</span>
                                   </div>
                                 </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {unpinnedMemories.length > 0 && (
-                      <div>
-                        {pinnedMemories.length > 0 && (
-                          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">
-                            Other Memories ({unpinnedMemories.length})
-                          </h3>
-                        )}
-                        <div className="space-y-3">
-                          {unpinnedMemories.map((memory) => (
-                            <Card key={memory.id}>
-                              <CardContent className="pt-4 pb-3">
-                                <div className="flex items-start justify-between gap-3">
-                                  <div className="flex-1">
-                                    <p className="text-sm">{memory.content}</p>
-                                    <div className="flex items-center gap-2 mt-2">
-                                      {memory.source && <Badge variant="outline" className="text-xs">{memory.source.replace('_', ' ')}</Badge>}
-                                      {memory.context && <Badge variant="secondary" className="text-xs">{memory.context}</Badge>}
-                                      <span className="text-xs text-muted-foreground">{new Date(memory.created_at).toLocaleDateString()}</span>
-                                    </div>
-                                  </div>
-                                  <div className="flex gap-1 shrink-0">
-                                    <Button variant="ghost" size="sm" onClick={() => handleTogglePin(memory.id, false)} className="h-7 w-7 p-0" title="Pin">
-                                      <Pin className="h-3.5 w-3.5" />
-                                    </Button>
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive hover:text-destructive" title="Delete">
-                                          <Trash2 className="h-3.5 w-3.5" />
-                                        </Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                          <AlertDialogTitle>Delete this memory?</AlertDialogTitle>
-                                          <AlertDialogDescription>Andrea will no longer reference this memory.</AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                          <AlertDialogAction onClick={() => handleDeleteMemory(memory.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
-                                  </div>
+                                <div className="flex gap-1 shrink-0">
+                                  <Button variant="ghost" size="sm" onClick={() => handleTogglePin(memory.id, true)} className="h-7 w-7 p-0" title="Unpin">
+                                    <PinOff className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive hover:text-destructive" title="Delete">
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Delete this memory?</AlertDialogTitle>
+                                        <AlertDialogDescription>Andrea will no longer reference this memory.</AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteMemory(memory.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
                                 </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Skill observations */}
-                {!skillLoading && skillSummary.length > 0 && (
-                  <div className="mt-8">
-                    <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
-                      <TrendingUp className="h-3.5 w-3.5" />
-                      Skill Progress ({skillSummary.length} skills observed)
-                    </h3>
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base">Andrea's Observations</CardTitle>
-                        <CardDescription className="text-xs">
-                          Skills Andrea has assessed based on your practice work.
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex flex-wrap gap-2">
-                          {skillSummary.map(({ skill, level }) => {
-                            const cfg = LEVEL_CONFIG[level] || LEVEL_CONFIG.emerging;
-                            return (
-                              <div key={skill} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${cfg.className}`}>
-                                <span>{SKILL_DISPLAY[skill] || skill}</span>
-                                <span className="opacity-60">·</span>
-                                <span className="opacity-80">{cfg.label}</span>
                               </div>
-                            );
-                          })}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {unpinnedMemories.length > 0 && (
+                    <div>
+                      {pinnedMemories.length > 0 && (
+                        <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">
+                          Other Memories ({unpinnedMemories.length})
+                        </h3>
+                      )}
+                      <div className="space-y-3">
+                        {unpinnedMemories.map((memory) => (
+                          <Card key={memory.id}>
+                            <CardContent className="pt-4 pb-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1">
+                                  <p className="text-sm">{memory.content}</p>
+                                  <div className="flex items-center gap-2 mt-2">
+                                    {memory.source && <Badge variant="outline" className="text-xs">{memory.source.replace('_', ' ')}</Badge>}
+                                    {memory.context && <Badge variant="secondary" className="text-xs">{memory.context}</Badge>}
+                                    <span className="text-xs text-muted-foreground">{new Date(memory.created_at).toLocaleDateString()}</span>
+                                  </div>
+                                </div>
+                                <div className="flex gap-1 shrink-0">
+                                  <Button variant="ghost" size="sm" onClick={() => handleTogglePin(memory.id, false)} className="h-7 w-7 p-0" title="Pin">
+                                    <Pin className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive hover:text-destructive" title="Delete">
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Delete this memory?</AlertDialogTitle>
+                                        <AlertDialogDescription>Andrea will no longer reference this memory.</AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteMemory(memory.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
