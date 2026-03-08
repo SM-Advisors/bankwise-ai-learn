@@ -22,6 +22,13 @@ interface IdeasInboxProps {
   organizationId?: string | null;
 }
 
+interface IdeaRow {
+  title: string | null;
+  description: string | null;
+  status: string | null;
+  created_at: string | null;
+}
+
 export function IdeasInbox({ organizationId }: IdeasInboxProps) {
   const { ideas, loading, updateIdeaStatus } = useAllIdeas(organizationId);
   const { toast } = useToast();
@@ -33,7 +40,7 @@ export function IdeasInbox({ organizationId }: IdeasInboxProps) {
       `Ideas Inbox Export — ${date}`,
       '',
       '"Title","Description","Status","Created"',
-      ...ideas.map((idea: any) =>
+      ...(ideas as IdeaRow[]).map((idea) =>
         `"${(idea.title ?? '').replace(/"/g, '""')}","${(idea.description ?? '').replace(/"/g, '""')}","${STATUS_BADGE[idea.status]?.label ?? idea.status ?? ''}","${idea.created_at ? new Date(idea.created_at).toLocaleDateString() : ''}"`
       ),
     ];
