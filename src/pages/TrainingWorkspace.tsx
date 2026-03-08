@@ -326,6 +326,12 @@ export default function TrainingWorkspace() {
   }
 
   const handleModuleSelect = (module: ModuleContent) => {
+    // Reset Andrea conversation when switching to a different module
+    if (module.id !== selectedModule?.id) {
+      setTrainerMessages([]);
+      hasGreetedRef.current = false;
+    }
+
     setSelectedModule(module);
     if (module.type === 'video') {
       setVideoModalOpen(true);
@@ -340,6 +346,39 @@ export default function TrainingWorkspace() {
         contentViewedAt: new Date().toISOString(),
       });
     }
+  };
+
+  // When the user clicks "Start Practice", switch to practice mode and show
+  // exercise instructions from Andrea in the coaching panel.
+  const handleStartPractice = () => {
+    setWorkspaceMode('practice');
+
+    if (!selectedModule) return;
+
+    const task = selectedModule.content.practiceTask;
+    const lob = profile?.department;
+    const resolvedScenario =
+      (task.departmentScenarios && lob && task.departmentScenarios[lob]?.scenario)
+        ? task.departmentScenarios[lob].scenario
+        : task.scenario;
+
+    const instructionContent = [
+      `Time to practice! Here's your task:`,
+      ``,
+      `**${task.title}**`,
+      ``,
+      task.instructions,
+      ``,
+      `**Your scenario:**`,
+      resolvedScenario,
+      ``,
+      `Give it a try in the chat. When you're ready, submit your conversation and I'll give you feedback.`,
+    ].join('\n');
+
+    setTrainerMessages(prev => [...prev, {
+      role: 'assistant' as const,
+      content: instructionContent,
+    }]);
   };
 
   // Handle sending a message in the practice chat (center panel)
@@ -1028,7 +1067,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
             {workspaceMode === 'learn' && selectedModule && !isAgentModule && !isWorkflowModule && !isCapstoneModule ? (
               <ModuleContentPanel
                 module={selectedModule}
-                onStartPractice={() => setWorkspaceMode('practice')}
+                onStartPractice={handleStartPractice}
               />
             ) : selectedModule && isAgentModule ? (
               <AgentStudioPanel module={selectedModule} />
