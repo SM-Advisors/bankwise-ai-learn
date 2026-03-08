@@ -14,13 +14,19 @@ export interface ElectiveProgressRecord {
   updated_at: string;
 }
 
+const getElectiveStoragePrefix = (userId: string) => `bankwise_elective_${userId}_`;
+
 export function useElectiveProgress() {
   const { user } = useAuth();
   const [records, setRecords] = useState<ElectiveProgressRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchProgress = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setRecords([]);
+      setLoading(false);
+      return;
+    }
     try {
       const { data, error } = await supabase
         .from('elective_progress' as any)
@@ -33,9 +39,10 @@ export function useElectiveProgress() {
     } catch {
       // Fallback: read from localStorage
       const allRecords: ElectiveProgressRecord[] = [];
+      const prefix = getElectiveStoragePrefix(user.id);
       for (const key of Object.keys(localStorage)) {
-        if (key.startsWith('bankwise_elective_')) {
-          const pathId = key.replace('bankwise_elective_', '');
+        if (key.startsWith(prefix)) {
+          const pathId = key.replace(prefix, '');
           try {
             const moduleMap = JSON.parse(localStorage.getItem(key) || '{}') as Record<string, boolean>;
             for (const [moduleId, completed] of Object.entries(moduleMap)) {
@@ -93,7 +100,7 @@ export function useElectiveProgress() {
       await fetchProgress();
     } catch {
       // Fallback: save to localStorage
-      const key = `bankwise_elective_${pathId}`;
+      const key = `${getElectiveStoragePrefix(user.id)}${pathId}`;
       const current = JSON.parse(localStorage.getItem(key) || '{}');
       current[moduleId] = true;
       localStorage.setItem(key, JSON.stringify(current));

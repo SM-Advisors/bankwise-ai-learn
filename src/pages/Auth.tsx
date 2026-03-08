@@ -19,7 +19,7 @@ const nameSchema = z.string().min(2, 'Name must be at least 2 characters').max(1
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { signIn, signUp, user, profile, loading } = useAuth();
+  const { signIn, signUp, signOut, user, profile, loading } = useAuth();
   const { toast } = useToast();
   
   const [isLoading, setIsLoading] = useState(false);
@@ -42,6 +42,25 @@ export default function Auth() {
   // Forgot password state
   const [resetEmail, setResetEmail] = useState('');
 
+  const clearSupabaseAuthStorage = () => {
+    const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+    try {
+      const projectRef = url ? new URL(url).hostname.split('.')[0] : null;
+      if (projectRef) {
+        localStorage.removeItem(`sb-${projectRef}-auth-token`);
+        return;
+      }
+    } catch {
+      // Fall back to best-effort cleanup below
+    }
+
+    for (const key of Object.keys(localStorage)) {
+      if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+        localStorage.removeItem(key);
+      }
+    }
+  };
+
   // Redirect if already logged in — wait for profile to load before deciding
   // which page to send the user to.  Without the profile check, a brief window
   // after signIn where user is set but profile is still null would always send
@@ -57,9 +76,30 @@ export default function Auth() {
   }, [user, profile, loading, navigate]);
 
   // Show nothing while auth state is resolving (prevents flash of login form)
-  if (user || loading) {
+  if (loading) {
     return null;
   }
+
+  if (user && !profile) {
+    return (
+      <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-display">We’re finishing your setup</CardTitle>
+            <CardDescription>
+              Your account is signed in, but your profile is not ready yet.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button className="w-full" onClick={() => window.location.reload()}>Try Again</Button>
+            <Button variant="outline" className="w-full" onClick={() => signOut()}>Sign Out</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (user) return null;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +125,7 @@ export default function Auth() {
       // Remove persisted session so it doesn't survive browser close.
       // On next token refresh Supabase will re-persist, but closing the
       // browser before that effectively ends the session.
-      localStorage.removeItem('sb-tehcmmctcmmecuzytiec-auth-token');
+      clearSupabaseAuthStorage();
     }
 
     setIsLoading(false);
