@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { X, Send, Loader2, Clock, Plus } from 'lucide-react';
+import { VoiceMicButton } from '@/components/VoiceMicButton';
 import andreaCoach from '@/assets/andrea-coach.png';
 import andreaCoach2 from '@/assets/andrea-coach2.png';
 import { useDashboardConversations } from '@/hooks/useDashboardConversations';
