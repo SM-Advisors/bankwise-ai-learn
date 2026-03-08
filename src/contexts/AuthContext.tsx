@@ -74,7 +74,7 @@ interface AuthContextType {
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: Error | null }>;
   refreshProfile: () => Promise<void>;
   updateProgress: (updates: Partial<TrainingProgress>) => Promise<{ error: Error | null }>;
-  markSessionCompleted: (sessionNumber: 1 | 2 | 3) => Promise<{ error: Error | null }>;
+  markSessionCompleted: (sessionNumber: 1 | 2 | 3 | 4 | 5) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -175,7 +175,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session_2_progress: {},
         session_3_completed: false,
         session_3_progress: {},
-      })
+        session_4_completed: false,
+        session_4_progress: {},
+        session_5_completed: false,
+        session_5_progress: {},
+      } as any)
       .select()
       .single();
 
@@ -383,7 +387,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const markSessionCompleted = async (sessionNumber: 1 | 2 | 3) => {
+  const markSessionCompleted = async (sessionNumber: 1 | 2 | 3 | 4 | 5) => {
     if (!user) return { error: new Error('Not authenticated') };
 
     const completedKey = `session_${sessionNumber}_completed` as const;
