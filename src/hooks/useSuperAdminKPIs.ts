@@ -45,7 +45,7 @@ export function useSuperAdminKPIs() {
         const { data: orgsData, error: orgsErr } = await supabase
           .from('organizations')
           .select('id, name, slug, audience_type, industry, created_at')
-          .order('created_at', { ascending: false }) as any;
+          .order('created_at', { ascending: false });
 
         if (orgsErr) throw orgsErr;
 
@@ -53,26 +53,26 @@ export function useSuperAdminKPIs() {
         const { data: profiles, error: profilesErr } = await supabase
           .from('user_profiles')
           .select('organization_id, ai_proficiency_level, is_active')
-          .eq('onboarding_completed', true) as any;
+          .eq('onboarding_completed', true);
 
         if (profilesErr) throw profilesErr;
 
         // Fetch training progress
         const { data: progressRows, error: progressErr } = await supabase
           .from('training_progress')
-          .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed') as any;
+          .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed');
 
         if (progressErr) throw progressErr;
 
         // Map user_id -> profile for join
         const { data: allProfiles, error: allProfilesErr } = await supabase
           .from('user_profiles')
-          .select('user_id, organization_id, ai_proficiency_level') as any;
+          .select('user_id, organization_id, ai_proficiency_level');
 
         if (allProfilesErr) throw allProfilesErr;
 
         const profileByUserId = new Map<string, any>(
-          (allProfiles || []).map((p: any) => [p.user_id, p])
+          (allProfiles || []).map((p) => [p.user_id, p])
         );
 
         // Build per-org stats
@@ -136,27 +136,27 @@ export function useSuperAdminKPIs() {
 
         // Platform-wide KPIs
         const totalUsers = (profiles || []).length;
-        const activeUsers = (profiles || []).filter((p: any) => p.is_active !== false).length;
+        const activeUsers = (profiles || []).filter((p) => p.is_active !== false).length;
         const allScores = (profiles || [])
-          .map((p: any) => p.ai_proficiency_level)
-          .filter((v: any) => v != null);
+          .map((p) => p.ai_proficiency_level)
+          .filter((v) => v != null);
 
         // Get org types for user breakdown
         const { data: orgTypeProfiles } = await supabase
           .from('user_profiles')
           .select('organization_id')
-          .eq('onboarding_completed', true) as any;
+          .eq('onboarding_completed', true);
 
         const ffOrgIds = new Set(
-          (orgsData || []).filter((o: any) => o.audience_type === 'consumer').map((o: any) => o.id)
+          (orgsData || []).filter((o) => o.audience_type === 'consumer').map((o) => o.id)
         );
-        const ffCount = (orgTypeProfiles || []).filter((p: any) => ffOrgIds.has(p.organization_id)).length;
+        const ffCount = (orgTypeProfiles || []).filter((p) => ffOrgIds.has(p.organization_id)).length;
 
-        const s1Total = (progressRows || []).filter((r: any) => r.session_1_completed).length;
-        const s2Total = (progressRows || []).filter((r: any) => r.session_2_completed).length;
-        const s3Total = (progressRows || []).filter((r: any) => r.session_3_completed).length;
-        const s4Total = (progressRows || []).filter((r: any) => r.session_4_completed).length;
-        const s5Total = (progressRows || []).filter((r: any) => r.session_5_completed).length;
+        const s1Total = (progressRows || []).filter((r) => r.session_1_completed).length;
+        const s2Total = (progressRows || []).filter((r) => r.session_2_completed).length;
+        const s3Total = (progressRows || []).filter((r) => r.session_3_completed).length;
+        const s4Total = (progressRows || []).filter((r) => r.session_4_completed).length;
+        const s5Total = (progressRows || []).filter((r) => r.session_5_completed).length;
         const progressTotal = (progressRows || []).length;
 
         setPlatform({
@@ -174,7 +174,7 @@ export function useSuperAdminKPIs() {
           ff_user_count: ffCount,
           bank_user_count: totalUsers - ffCount,
         });
-      } catch (err: any) {
+      } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);

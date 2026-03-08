@@ -14,20 +14,20 @@ export function useOrgModelSettings(): OrgModelSettings {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!user?.id || !(profile as any)?.organization_id) {
+    if (!user?.id || !profile?.organization_id) {
       setAllowedModels([DEFAULT_MODEL]);
       setIsLoading(false);
       return;
     }
 
-    const orgId = (profile as any).organization_id as string;
+    const orgId = profile.organization_id as string;
 
     (supabase
-      .from('organizations' as any)
+      .from('organizations')
       .select('allowed_models')
       .eq('id', orgId)
-      .single() as any)
-      .then(({ data, error }: { data: any; error: any }) => {
+      .single())
+      .then(({ data, error }) => {
         if (error || !data) {
           setAllowedModels([DEFAULT_MODEL]);
         } else {
@@ -39,7 +39,7 @@ export function useOrgModelSettings(): OrgModelSettings {
         }
         setIsLoading(false);
       });
-  }, [user?.id, (profile as any)?.organization_id]);
+  }, [user?.id, profile?.organization_id]);
 
   return { allowedModels, isLoading };
 }

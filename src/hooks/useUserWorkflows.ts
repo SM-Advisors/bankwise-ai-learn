@@ -13,11 +13,11 @@ export function useUserWorkflows() {
     if (!user?.id) return;
     setIsLoading(true);
     try {
-      const { data, error } = await (supabase
-        .from('user_workflows' as any)
+      const { data, error } = await supabase
+        .from('user_workflows')
         .select('*')
         .eq('user_id', user.id)
-        .order('updated_at', { ascending: false }) as any);
+        .order('updated_at', { ascending: false });
       if (error) throw error;
       setWorkflows((data || []) as UserWorkflow[]);
     } catch (err) {
@@ -34,8 +34,8 @@ export function useUserWorkflows() {
   const createWorkflow = useCallback(async (data?: Partial<UserWorkflow>): Promise<string | null> => {
     if (!user?.id) return null;
     try {
-      const { data: result, error } = await (supabase
-        .from('user_workflows' as any)
+      const { data: result, error } = await supabase
+        .from('user_workflows')
         .insert({
           user_id: user.id,
           name: data?.name || 'My Workflow',
@@ -43,12 +43,12 @@ export function useUserWorkflows() {
           status: 'draft',
           workflow_data: data?.workflow_data || EMPTY_WORKFLOW,
           module_id: '3-3',
-        } as any)
+        })
         .select('id')
-        .single() as any);
+        .single();
       if (error) throw error;
       await fetchWorkflows();
-      return (result as any)?.id || null;
+      return result?.id || null;
     } catch (err) {
       console.error('Error creating workflow:', err);
       return null;
@@ -62,11 +62,11 @@ export function useUserWorkflows() {
     if (!user?.id) return;
     setWorkflows(prev => prev.map(w => w.id === id ? { ...w, ...updates, updated_at: new Date().toISOString() } : w));
     try {
-      const { error } = await (supabase
-        .from('user_workflows' as any)
-        .update(updates as any)
+      const { error } = await supabase
+        .from('user_workflows')
+        .updateupdates
         .eq('id', id)
-        .eq('user_id', user.id) as any);
+        .eq('user_id', user.id);
       if (error) throw error;
     } catch (err) {
       console.error('Error updating workflow:', err);

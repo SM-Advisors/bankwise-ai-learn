@@ -40,7 +40,7 @@ export default function TopicSelection() {
 
   const handleBackToDepartments = () => {
     setStep('department');
-    setDepartment(null as any);
+    setDepartment(null);
   };
 
   if (!state.learningStyle) return null;

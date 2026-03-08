@@ -101,10 +101,14 @@ export default function Dashboard() {
 
   function getSessionProgressData(sessionId: number): SessionProgressData | null {
     if (!progress) return null;
-    return ((progress as any)[`session_${sessionId}_progress`] as SessionProgressData) || null;
+    const key = `session_${sessionId}_progress` as keyof typeof progress;
+    return (progress[key] as SessionProgressData) || null;
   }
 
-  const sessionCompleted = (id: number) => !!(progress as any)?.[`session_${id}_completed`];
+  const sessionCompleted = (id: number) => {
+    const key = `session_${id}_completed` as keyof typeof progress;
+    return !!progress?.[key];
+  };
 
   const currentSession = Math.min(profile.current_session || 1, 5);
   const currentSessionData = getSessionProgressData(currentSession);

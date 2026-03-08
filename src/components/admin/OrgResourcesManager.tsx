@@ -139,8 +139,8 @@ export function OrgResourcesManager({ organizationId }: OrgResourcesManagerProps
           toast({ title: 'Error', description: result.error, variant: 'destructive' });
         }
       }
-    } catch (e: any) {
-      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    } catch (e) {
+      toast({ title: 'Error', description: e instanceof Error ? e.message : 'An error occurred', variant: 'destructive' });
     }
     setSaving(false);
   };
@@ -154,8 +154,8 @@ export function OrgResourcesManager({ organizationId }: OrgResourcesManagerProps
       } else {
         toast({ title: 'Error', description: result.error, variant: 'destructive' });
       }
-    } catch (e: any) {
-      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    } catch (e) {
+      toast({ title: 'Error', description: e instanceof Error ? e.message : 'An error occurred', variant: 'destructive' });
     }
     setDeletingId(null);
   };

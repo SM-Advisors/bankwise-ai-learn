@@ -19,10 +19,10 @@ export function useValueSignals() {
     try {
       await supabase.from('value_signals').insert({
         user_id: user.id,
-        org_id: (profile as any)?.organization_id ?? null,
+        org_id: profile?.organization_id ?? null,
         signal_type: signalType,
-        signal_data: signalData as any,
-      } as any);
+        signal_data: signalData,
+      });
     } catch (err) {
       // Non-blocking — signal failure must never disrupt the learning flow
       console.warn('[value_signals] insert failed silently:', err);

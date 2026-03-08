@@ -64,12 +64,12 @@ export function TrainingResetManager() {
         .order('display_name', { ascending: true });
 
       // Fetch org names
-      const { data: orgs } = await (supabase
-        .from('organizations' as any)
-        .select('id, name') as any);
+      const { data: orgs } = await supabase
+        .from('organizations')
+        .select('id, name');
 
       const orgMap: Record<string, string> = {};
-      (orgs || []).forEach((o: any) => { orgMap[o.id] = o.name; });
+      (orgs || []).forEach((o) => { orgMap[o.id] = o.name; });
 
       // Fetch training progress
       const { data: progress } = await supabase
@@ -77,9 +77,9 @@ export function TrainingResetManager() {
         .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed');
 
       const progressMap: Record<string, any> = {};
-      (progress || []).forEach((p: any) => { progressMap[p.user_id] = p; });
+      (progress || []).forEach((p) => { progressMap[p.user_id] = p; });
 
-      const mapped: UserRow[] = (profiles || []).map((p: any) => ({
+      const mapped: UserRow[] = (profiles || []).map((p) => ({
         user_id: p.user_id,
         display_name: p.display_name,
         organization_id: p.organization_id,
@@ -95,14 +95,14 @@ export function TrainingResetManager() {
 
       // Fetch active snapshots (not reversed, not expired)
       const { data: snaps } = await (supabase
-        .from('training_reset_snapshots' as any)
+        .from('training_reset_snapshots')
         .select('id, user_id, reset_at, reversed_at, expires_at')
         .is('reversed_at', null)
         .gte('expires_at', new Date().toISOString())
-        .order('reset_at', { ascending: false }) as any);
+        .order('reset_at', { ascending: false }));
 
-      const snapsWithNames: ResetSnapshot[] = (snaps || []).map((s: any) => {
-        const profile = (profiles || []).find((p: any) => p.user_id === s.user_id);
+      const snapsWithNames: ResetSnapshot[] = (snaps || []).map((s) => {
+        const profile = (profiles || []).find((p) => p.user_id === s.user_id);
         return { ...s, display_name: profile?.display_name || 'Unknown' };
       });
 
@@ -134,11 +134,11 @@ export function TrainingResetManager() {
       };
 
       // 2. Save snapshot
-      await (supabase.from('training_reset_snapshots' as any).insert({
+      await supabase.from('training_reset_snapshots').insert({
         user_id: resetTarget.user_id,
         reset_by: user.id,
         snapshot_data: snapshotData,
-      }) as any);
+      });
 
       // 3. Reset training_progress
       if (currentProgress) {
@@ -167,7 +167,7 @@ export function TrainingResetManager() {
       setResetTarget(null);
       setConfirmName('');
       await fetchData();
-    } catch (err: any) {
+    } catch (err) {
       toast.error('Failed to reset training: ' + err.message);
     } finally {
       setResetting(false);
@@ -179,15 +179,15 @@ export function TrainingResetManager() {
     setReversing(true);
     try {
       // 1. Get snapshot data
-      const { data: snap } = await (supabase
-        .from('training_reset_snapshots' as any)
+      const { data: snap } = await supabase
+        .from('training_reset_snapshots')
         .select('snapshot_data')
         .eq('id', reverseTarget.id)
-        .single() as any);
+        .single();
 
       if (!snap) throw new Error('Snapshot not found');
 
-      const snapshotData = snap.snapshot_data as any;
+      const snapshotData = snap.snapshot_data;
 
       // 2. Restore training_progress
       if (snapshotData.training_progress && Object.keys(snapshotData.training_progress).length > 0) {
@@ -217,14 +217,14 @@ export function TrainingResetManager() {
 
       // 4. Mark snapshot as reversed
       await (supabase
-        .from('training_reset_snapshots' as any)
+        .from('training_reset_snapshots')
         .update({ reversed_at: new Date().toISOString() })
-        .eq('id', reverseTarget.id) as any);
+        .eq('id', reverseTarget.id));
 
       toast.success(`Training restored for ${reverseTarget.display_name}`);
       setReverseTarget(null);
       await fetchData();
-    } catch (err: any) {
+    } catch (err) {
       toast.error('Failed to reverse reset: ' + err.message);
     } finally {
       setReversing(false);

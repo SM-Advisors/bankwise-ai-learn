@@ -46,7 +46,7 @@ interface TrainingContextType {
   state: TrainingState;
   submitAnswer: (answer: QuestionnaireAnswer) => void;
   completeQuestionnaire: () => void;
-  setDepartment: (dept: Department) => void;
+  setDepartment: (dept: Department | null) => void;
   setTopic: (topic: string) => void;
   setLesson: (lesson: LessonPlan | null) => void;
   setIsGeneratingLesson: (isGenerating: boolean) => void;
@@ -109,7 +109,7 @@ export function TrainingProvider({ children }: { children: ReactNode }) {
     }));
   };
 
-  const setDepartment = (dept: Department) => {
+  const setDepartment = (dept: Department | null) => {
     setState((prev) => ({
       ...prev,
       selectedDepartment: dept,

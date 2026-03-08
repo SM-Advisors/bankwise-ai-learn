@@ -180,7 +180,7 @@ export default function Auth() {
 
     // Validate registration code BEFORE creating the account
     const { data: codeResult, error: codeError } = await supabase.rpc(
-      'validate_registration_code' as any,
+      'validate_registration_code',
       { input_code: signupCode }
     );
 

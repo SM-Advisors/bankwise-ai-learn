@@ -125,7 +125,7 @@ Return ONLY valid JSON with no extra text:
 
       } else if (submitMode === 'csuite') {
         const { error } = await (supabase
-          .from('user_ideas' as any)
+          .from('user_ideas')
           .insert({
             user_id: user.id,
             title: submitTitle.trim(),
@@ -134,7 +134,7 @@ Return ONLY valid JSON with no extra text:
             category: 'csuite_submission',
             submitter_name: profile?.display_name || null,
             submitter_department: profile?.department || null,
-          }) as any);
+          }));
         if (error) throw error;
         toast({ title: 'Sent to C-Suite', description: 'Your idea is now in the Innovation Pipeline.' });
       }
@@ -260,7 +260,7 @@ Enterprise ($$$$$): Full RPA platforms (UiPath, Automation Anywhere), custom ven
 - Do not volunteer cost specifics beyond the $ scale above — costs vary too much by usage.
 - CRITICAL OVERRIDE: Do NOT mirror prompt quality. A short or vague opening from the user is exactly why the discovery phase exists — always engage fully regardless of how brief their message is.`;
 
-      const isFF = !(profile?.department) && !!(profile as any)?.interests?.length;
+      const isFF = !(profile?.department) && !!profile?.interests?.length;
 
       const { data, error } = await supabase.functions.invoke('ai-practice', {
         body: {
@@ -270,7 +270,7 @@ Enterprise ($$$$$): Full RPA platforms (UiPath, Automation Anywhere), custom ven
           messages: [...history, userMsg],
           bankRole: profile?.job_role || undefined,
           lineOfBusiness: isFF ? undefined : (profile?.department || undefined),
-          interests: (profile as any)?.interests || undefined,
+          interests: profile?.interests || undefined,
         },
       });
 

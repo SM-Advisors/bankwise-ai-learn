@@ -30,7 +30,7 @@ export function useDepartments() {
     setLoading(true);
     setError(null);
     const { data, error: fetchError } = await supabase
-      .from('departments' as any)
+      .from('departments')
       .select('*')
       .eq('is_active', true)
       .order('display_order', { ascending: true });
@@ -40,7 +40,7 @@ export function useDepartments() {
       setError(fetchError.message);
       setDepartments([]);
     } else {
-      setDepartments((data as any[]) || []);
+      setDepartments(data || []);
     }
     setLoading(false);
   }, []);
@@ -87,7 +87,7 @@ export function useDepartmentRoles(departmentId: string | null) {
     }
     setLoading(true);
     const { data, error } = await supabase
-      .from('department_roles' as any)
+      .from('department_roles')
       .select('*')
       .eq('department_id', departmentId)
       .eq('is_active', true)
@@ -97,7 +97,7 @@ export function useDepartmentRoles(departmentId: string | null) {
       console.error('Error fetching department roles:', error);
       setRoles([]);
     } else {
-      setRoles((data as any[]) || []);
+      setRoles(data || []);
     }
     setLoading(false);
   }, [departmentId]);
@@ -116,7 +116,7 @@ export function useAllDepartments() {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from('departments' as any)
+      .from('departments')
       .select('*')
       .order('display_order', { ascending: true });
 
@@ -124,7 +124,7 @@ export function useAllDepartments() {
       console.error('Error fetching all departments:', error);
       setDepartments([]);
     } else {
-      setDepartments((data as any[]) || []);
+      setDepartments(data || []);
     }
     setLoading(false);
   }, []);
@@ -135,8 +135,8 @@ export function useAllDepartments() {
 
   const createDepartment = async (dept: Partial<Department>) => {
     const { data, error } = await supabase
-      .from('departments' as any)
-      .insert(dept as any)
+      .from('departments')
+      .insertdept
       .select()
       .single();
     if (error) throw error;
@@ -146,15 +146,15 @@ export function useAllDepartments() {
 
   const updateDepartment = async (id: string, updates: Partial<Department>) => {
     const { error } = await supabase
-      .from('departments' as any)
-      .update(updates as any)
+      .from('departments')
+      .updateupdates
       .eq('id', id);
     if (error) throw error;
     await fetchAll();
   };
 
   const toggleDepartment = async (id: string, isActive: boolean) => {
-    await updateDepartment(id, { is_active: isActive } as any);
+    await updateDepartment(id, { is_active: isActive });
   };
 
   return {

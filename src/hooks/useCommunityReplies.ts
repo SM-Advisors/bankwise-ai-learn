@@ -24,11 +24,11 @@ export function useCommunityReplies(topicId: string | null) {
     }
     try {
       setLoading(true);
-      const { data, error: fetchError } = await (supabase
-        .from('community_replies' as any)
+      const { data, error: fetchError } = await supabase
+        .from('community_replies')
         .select('*')
         .eq('topic_id', topicId)
-        .order('created_at', { ascending: true }) as any);
+        .order('created_at', { ascending: true });
 
       if (fetchError) throw fetchError;
       setReplies(data || []);
@@ -49,15 +49,15 @@ export function useCommunityReplies(topicId: string | null) {
       const firstName = (profile?.display_name || 'Anonymous').split(' ')[0];
       const role = profile?.job_role || null;
 
-      const { error: insertError } = await (supabase
-        .from('community_replies' as any)
+      const { error: insertError } = await supabase
+        .from('community_replies')
         .insert({
           topic_id: topicId,
           user_id: user.id,
           author_name: firstName,
           author_role: role,
           body,
-        }) as any);
+        });
 
       if (insertError) throw insertError;
       await fetchReplies();
@@ -70,10 +70,10 @@ export function useCommunityReplies(topicId: string | null) {
 
   const deleteReply = async (id: string) => {
     try {
-      const { error: deleteError } = await (supabase
-        .from('community_replies' as any)
+      const { error: deleteError } = await supabase
+        .from('community_replies')
         .delete()
-        .eq('id', id) as any);
+        .eq('id', id);
 
       if (deleteError) throw deleteError;
       await fetchReplies();

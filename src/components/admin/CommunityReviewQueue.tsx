@@ -34,22 +34,22 @@ export function CommunityReviewQueue({ organizationId }: CommunityReviewQueuePro
     // Get org user_ids for filtering if org-scoped
     let orgUserIds: Set<string> | null = null;
     if (organizationId) {
-      const { data: profiles } = await (supabase
-        .from('user_profiles' as any)
+      const { data: profiles } = await supabase
+        .from('user_profiles')
         .select('user_id')
-        .eq('organization_id', organizationId) as any);
-      orgUserIds = new Set((profiles || []).map((p: any) => p.user_id));
+        .eq('organization_id', organizationId);
+      orgUserIds = new Set((profiles || []).map((p) => p.user_id));
     }
 
-    const { data, error } = await (supabase
-      .from('community_topics' as any)
+    const { data, error } = await supabase
+      .from('community_topics')
       .select('id, user_id, author_name, author_role, title, body, category, created_at')
       .eq('status', 'pending')
-      .order('created_at', { ascending: true }) as any);
+      .order('created_at', { ascending: true });
 
     if (!error) {
       const filtered = orgUserIds
-        ? (data || []).filter((t: any) => orgUserIds!.has(t.user_id))
+        ? (data || []).filter((t) => orgUserIds!.has(t.user_id))
         : (data || []);
       setTopics(filtered);
     }
@@ -60,10 +60,10 @@ export function CommunityReviewQueue({ organizationId }: CommunityReviewQueuePro
 
   const handleAction = async (id: string, action: 'approved' | 'rejected') => {
     setActioningId(id);
-    const { error } = await (supabase
-      .from('community_topics' as any)
+    const { error } = await supabase
+      .from('community_topics')
       .update({ status: action })
-      .eq('id', id) as any);
+      .eq('id', id);
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {

@@ -49,10 +49,10 @@ export default function SuperAdminDashboard() {
     async function fetchFeedback() {
       setFeedbackLoading(true);
       try {
-        const { data, error: fbError } = await (supabase
-          .from('user_feedback' as any)
+        const { data, error: fbError } = await supabase
+          .from('user_feedback')
           .select('id, user_name, message, file_name, file_type, file_data, created_at, status')
-          .order('created_at', { ascending: false }) as any);
+          .order('created_at', { ascending: false });
         if (!fbError && data) setFeedbackItems(data as FeedbackItem[]);
       } catch (_) {
         // silently ignore — table may not exist yet
@@ -66,10 +66,10 @@ export default function SuperAdminDashboard() {
   const toggleFeedbackStatus = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'new' ? 'resolved' : 'new';
     setFeedbackItems(prev => prev.map(item => item.id === id ? { ...item, status: newStatus as 'new' | 'resolved' } : item));
-    await (supabase
-      .from('user_feedback' as any)
+    await supabase
+      .from('user_feedback')
       .update({ status: newStatus })
-      .eq('id', id) as any);
+      .eq('id', id);
   };
 
   const newCount = feedbackItems.filter(f => f.status === 'new').length;

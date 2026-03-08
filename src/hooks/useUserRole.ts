@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import type { Tables } from '@/integrations/supabase/types';
 
 export type AppRole = 'admin' | 'user';
+
+export type UserWithRole = Tables<'user_profiles'> & {
+  progress: Tables<'training_progress'> | undefined;
+  role: AppRole;
+};
 
 export function useUserRole() {
   const { user } = useAuth();
@@ -33,7 +39,7 @@ export function useUserRole() {
           .eq('user_id', user.id);
 
         if (directData && directData.length > 0) {
-          const hasAdmin = directData.some((r: any) => r.role === 'admin');
+          const hasAdmin = directData.some((r) => r.role === 'admin');
           setRole(hasAdmin ? 'admin' : (directData[0].role as AppRole));
         } else {
           setRole('user');
@@ -51,7 +57,7 @@ export function useUserRole() {
 }
 
 export function useAllUsersWithRoles(organizationId?: string | null) {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<UserWithRole[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchUsers = async () => {
@@ -77,7 +83,7 @@ export function useAllUsersWithRoles(organizationId?: string | null) {
 
     // Build list of user IDs from already-fetched org-scoped profiles so the
     // subsequent queries are explicitly filtered (defense-in-depth beyond RLS).
-    const profileUserIds = (profiles || []).map((p: any) => p.user_id);
+    const profileUserIds = (profiles || []).map((p) => p.user_id);
     // Use a dummy ID when the list is empty to avoid fetching ALL rows.
     const safeIds = profileUserIds.length > 0
       ? profileUserIds
@@ -122,7 +128,7 @@ export function useAllUsersWithRoles(organizationId?: string | null) {
     fetchUsers();
   }, [organizationId]);
 
-  const updateUserProfile = async (userId: string, updates: Record<string, any>) => {
+  const updateUserProfile = async (userId: string, updates: Record<string, unknown>) => {
     const { error } = await supabase
       .from('user_profiles')
       .update(updates)
@@ -179,9 +185,9 @@ export function useAllUsersWithRoles(organizationId?: string | null) {
       if (data?.error) throw new Error(data.error);
       await fetchUsers();
       return { success: true };
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error deleting user:', err);
-      return { success: false, error: err.message };
+      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
     }
   };
 

@@ -262,7 +262,7 @@ export function CSuiteReports() {
                   <XAxis type="number" domain={[0, Math.max(kpis.totalEnrolled, 1)]} />
                   <YAxis type="category" dataKey="label" width={180} tick={{ fontSize: 13 }} />
                   <Tooltip
-                    formatter={(value: number, _name: string, props: any) =>
+                    formatter={(value: number, _name: string, props: { payload: { total: number; rate: number } }) =>
                       [`${value} / ${props.payload.total} (${props.payload.rate}%)`, 'Completed']
                     }
                   />

@@ -42,7 +42,7 @@ export function useAdminAndreaChat(organizationId: string | null) {
         .limit(1)
         .single();
 
-      if (data && Array.isArray(data.messages) && (data.messages as any[]).length > 0) {
+      if (data && Array.isArray(data.messages) && (data.messages).length > 0) {
         setConversationId(data.id);
         setMessages(data.messages as LocalMessage[]);
       }
@@ -61,7 +61,7 @@ export function useAdminAndreaChat(organizationId: string | null) {
       const payload = {
         user_id: user.id,
         organization_id: organizationId,
-        messages: messages as any,
+        messages: messages,
         title: messages.find(m => m.role === 'user')?.content.slice(0, 60) || 'New Conversation',
         updated_at: new Date().toISOString(),
       };

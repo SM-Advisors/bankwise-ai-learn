@@ -85,7 +85,7 @@ export function FeedbackModal({ open, onOpenChange }: FeedbackModalProps) {
       const userName = profile?.display_name || user.email || 'Unknown';
 
       const { error } = await (supabase
-        .from('user_feedback' as any)
+        .from('user_feedback')
         .insert({
           user_id: user.id,
           user_name: userName,
@@ -93,7 +93,7 @@ export function FeedbackModal({ open, onOpenChange }: FeedbackModalProps) {
           file_name: fileName,
           file_type: fileType,
           file_data: fileData,
-        }) as any);
+        }));
 
       if (error) throw error;
 

@@ -25,12 +25,12 @@ export function useOrgResources(organizationId: string | null = null) {
     }
 
     setLoading(true);
-    const { data, error } = await (supabase
-      .from('org_resources' as any)
+    const { data, error } = await supabase
+      .from('org_resources')
       .select('*')
       .eq('organization_id', organizationId)
       .order('display_order', { ascending: true })
-      .order('created_at', { ascending: true }) as any);
+      .order('created_at', { ascending: true });
 
     if (error) {
       console.error('[useOrgResources] Error fetching resources:', error);
@@ -47,9 +47,9 @@ export function useOrgResources(organizationId: string | null = null) {
     resource: Omit<OrgResource, 'id' | 'created_at' | 'organization_id'>,
   ) => {
     if (!organizationId) return { success: false, error: 'No organization' };
-    const { error } = await (supabase
-      .from('org_resources' as any)
-      .insert({ ...resource, organization_id: organizationId }) as any);
+    const { error } = await supabase
+      .from('org_resources')
+      .insert({ ...resource, organization_id: organizationId });
 
     if (error) {
       console.error('[useOrgResources] Error adding resource:', error);
@@ -61,9 +61,9 @@ export function useOrgResources(organizationId: string | null = null) {
 
   const updateResource = async (id: string, updates: Partial<OrgResource>) => {
     const { error } = await (supabase
-      .from('org_resources' as any)
+      .from('org_resources')
       .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id) as any);
+      .eq('id', id));
 
     if (error) {
       console.error('[useOrgResources] Error updating resource:', error);
@@ -74,10 +74,10 @@ export function useOrgResources(organizationId: string | null = null) {
   };
 
   const deleteResource = async (id: string) => {
-    const { error } = await (supabase
-      .from('org_resources' as any)
+    const { error } = await supabase
+      .from('org_resources')
       .delete()
-      .eq('id', id) as any);
+      .eq('id', id);
 
     if (error) {
       console.error('[useOrgResources] Error deleting resource:', error);

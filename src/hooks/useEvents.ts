@@ -27,11 +27,11 @@ export function useEvents() {
 
   const fetchEvents = async () => {
     setLoading(true);
-    const { data, error } = await (supabase
-      .from('events' as any)
+    const { data, error } = await supabase
+      .from('events')
       .select('*')
       .eq('is_active', true)
-      .order('scheduled_date', { ascending: true }) as any);
+      .order('scheduled_date', { ascending: true });
 
     if (error) {
       console.error('Error fetching events:', error);
@@ -55,10 +55,10 @@ export function useAllEvents() {
 
   const fetchEvents = async () => {
     setLoading(true);
-    const { data, error } = await (supabase
-      .from('events' as any)
+    const { data, error } = await supabase
+      .from('events')
       .select('*')
-      .order('scheduled_date', { ascending: true }) as any);
+      .order('scheduled_date', { ascending: true });
 
     if (error) {
       console.error('Error fetching events:', error);
@@ -73,11 +73,11 @@ export function useAllEvents() {
   }, []);
 
   const createEvent = async (event: EventInsert) => {
-    const { data, error } = await (supabase
-      .from('events' as any)
+    const { data, error } = await supabase
+      .from('events')
       .insert(event)
       .select()
-      .single() as any);
+      .single();
 
     if (error) {
       return { success: false, error: error.message };
@@ -87,10 +87,10 @@ export function useAllEvents() {
   };
 
   const updateEvent = async (id: string, updates: EventUpdate) => {
-    const { error } = await (supabase
-      .from('events' as any)
+    const { error } = await supabase
+      .from('events')
       .update(updates)
-      .eq('id', id) as any);
+      .eq('id', id);
 
     if (error) {
       return { success: false, error: error.message };
@@ -100,10 +100,10 @@ export function useAllEvents() {
   };
 
   const deleteEvent = async (id: string) => {
-    const { error } = await (supabase
-      .from('events' as any)
+    const { error } = await supabase
+      .from('events')
       .delete()
-      .eq('id', id) as any);
+      .eq('id', id);
 
     if (error) {
       return { success: false, error: error.message };

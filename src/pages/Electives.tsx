@@ -38,7 +38,7 @@ export default function Electives() {
   if (progress?.session_1_completed) completedSessions.add(1);
   if (progress?.session_2_completed) completedSessions.add(2);
   if (progress?.session_3_completed) completedSessions.add(3);
-  if ((progress as any)?.session_4_completed) completedSessions.add(4);
+  if (progress?.session_4_completed) completedSessions.add(4);
 
   const isPathUnlocked = (path: ElectivePath) => {
     // Parse prerequisite: "Session 3" → check session 3 completed
