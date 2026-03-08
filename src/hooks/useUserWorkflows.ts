@@ -34,8 +34,8 @@ export function useUserWorkflows() {
   const createWorkflow = useCallback(async (data?: Partial<UserWorkflow>): Promise<string | null> => {
     if (!user?.id) return null;
     try {
-      const { data: result, error } = await supabase
-        .from('user_workflows')
+      const { data: result, error } = await (supabase
+        .from('user_workflows') as any)
         .insert({
           user_id: user.id,
           name: data?.name || 'My Workflow',
