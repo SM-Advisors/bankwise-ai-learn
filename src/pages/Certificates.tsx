@@ -1,34 +1,43 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Award, Lock, Printer, Loader2 } from 'lucide-react';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog';
+import { Award, Lock, Printer, Loader2, Eye } from 'lucide-react';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
 import type { SessionProgressData } from '@/types/progress';
 
 const SESSION_LABELS: Record<number, { title: string; skills: string[] }> = {
   1: {
-    title: 'AI Foundations & Prompting',
-    skills: ['CLEAR Framework', 'Prompt Engineering', 'Data Security', 'VERIFY Checklist'],
+    title: 'Foundation & Early Wins',
+    skills: ['Basic Interaction', 'Flipped Interaction Pattern', 'Iteration', 'Self-Review Loops'],
   },
   2: {
-    title: 'Building Your AI Agent',
-    skills: ['Agent Architecture', 'Template Building', 'Tool Integration', 'Living Agent'],
+    title: 'Structured Interaction, Models & Tools',
+    skills: ['CLEAR Framework', 'Output Templating', 'Multi-Shot Prompting', 'Chain-of-Thought', 'Model & Tool Selection'],
   },
   3: {
-    title: 'Role-Specific Training',
-    skills: ['Department Use Cases', 'Compliance Integration', 'Workflow Design', 'Advanced Techniques'],
+    title: 'Agents',
+    skills: ['Four Levels of Agents', 'Agent Building', 'Knowledge & Files', 'Tool Access'],
   },
   4: {
-    title: 'AI-Native Integration',
-    skills: ['AI Audit', 'Team Conventions', 'ROI Measurement', 'Integration Planning'],
+    title: 'Functional Agents',
+    skills: ['AI in Spreadsheets', 'AI in Presentations', 'AI in Email', 'Workflow Integration'],
+  },
+  5: {
+    title: 'Build Your Frankenstein',
+    skills: ['Stack Mapping', 'Workflow Design', 'Prototype Building', 'Presentation & Reflection'],
   },
 };
 
 export default function Certificates() {
   const navigate = useNavigate();
   const { profile, progress, loading } = useAuth();
+  const [previewSession, setPreviewSession] = useState<number | null>(null);
 
   if (loading || !profile) {
     return (
@@ -131,7 +140,7 @@ export default function Certificates() {
   };
 
   return (
-
+    <>
       <div className="container mx-auto px-4 py-6">
         <div className="grid gap-6 md:grid-cols-2">
           {sessionIds.map((sessionId) => {
@@ -172,7 +181,7 @@ export default function Certificates() {
                   <CardDescription>
                     {isCompleted && completedAt
                       ? `Completed ${new Date(completedAt).toLocaleDateString()}`
-                      : 'Complete all modules and capstone to earn this certificate'}
+                      : `Complete all ${ALL_SESSION_CONTENT[sessionId]?.modules?.length || ''} modules in Session ${sessionId} to earn this certificate`}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -188,10 +197,16 @@ export default function Certificates() {
                   </div>
 
                   {isCompleted ? (
-                    <Button className="w-full gap-2" onClick={() => handlePrint(sessionId)}>
-                      <Printer className="h-4 w-4" />
-                      Print / Save as PDF
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="flex-1 gap-2" onClick={() => setPreviewSession(sessionId)}>
+                        <Eye className="h-4 w-4" />
+                        Preview
+                      </Button>
+                      <Button className="flex-1 gap-2" onClick={() => handlePrint(sessionId)}>
+                        <Printer className="h-4 w-4" />
+                        Print / PDF
+                      </Button>
+                    </div>
                   ) : (
                     <Button className="w-full gap-2" variant="outline" onClick={() => navigate(`/training/${sessionId}`)}>
                       Go to Session {sessionId}
@@ -203,5 +218,53 @@ export default function Certificates() {
           })}
         </div>
       </div>
+
+      {/* Certificate Preview Dialog */}
+      <Dialog open={previewSession !== null} onOpenChange={(open) => !open && setPreviewSession(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Certificate Preview</DialogTitle>
+          </DialogHeader>
+          {previewSession && (() => {
+            const label = SESSION_LABELS[previewSession];
+            const data = getSessionProgressData(previewSession);
+            const completedAt = data?.capstoneData?.completedAt || new Date().toISOString();
+            const userName = profile.display_name || 'Learner';
+            const bankName = profile.employer_name || '';
+            const formattedDate = new Date(completedAt).toLocaleDateString('en-US', {
+              year: 'numeric', month: 'long', day: 'numeric',
+            });
+            return (
+              <div className="border-2 border-amber-500/50 rounded-lg p-6 bg-gradient-to-b from-amber-50/50 to-white dark:from-amber-950/10 dark:to-background">
+                <div className="text-center space-y-3">
+                  <Award className="h-10 w-10 text-amber-600 mx-auto" />
+                  <h3 className="text-sm font-semibold uppercase tracking-[3px] text-foreground">Certificate of Completion</h3>
+                  <p className="text-xs text-muted-foreground">SMILE AI Training Program — Session {previewSession}</p>
+                  <div className="py-3">
+                    <p className="text-xs text-muted-foreground">This certificate is proudly presented to</p>
+                    <p className="text-2xl font-bold text-foreground mt-1 border-b-2 border-amber-500 inline-block pb-1">{userName}</p>
+                    {bankName && <p className="text-sm text-muted-foreground mt-1">{bankName}</p>}
+                  </div>
+                  <p className="font-semibold text-foreground">Session {previewSession}: {label?.title}</p>
+                  <div className="flex flex-wrap justify-center gap-1.5 mt-2">
+                    {label?.skills.map((s) => (
+                      <Badge key={s} variant="outline" className="text-[10px] border-amber-500/30 text-amber-700 dark:text-amber-400">{s}</Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground pt-2">Completed: {formattedDate}</p>
+                </div>
+              </div>
+            );
+          })()}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPreviewSession(null)}>Close</Button>
+            <Button className="gap-2" onClick={() => { handlePrint(previewSession!); setPreviewSession(null); }}>
+              <Printer className="h-4 w-4" />
+              Print / Save as PDF
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Send, Lightbulb, CheckCircle, ChevronRight, Plus, SlidersHorizontal, Mic, AudioLines } from 'lucide-react';
+import { Loader2, Send, Plus, SlidersHorizontal, Mic, AudioLines } from 'lucide-react';
 import { type ModuleContent } from '@/data/trainingContent';
 
 interface PracticeTaskCardProps {
@@ -28,14 +28,6 @@ export function PracticeTaskCard({
   hasNextModule,
 }: PracticeTaskCardProps) {
   const [activeTab, setActiveTab] = useState<'work' | 'web'>('work');
-
-  const handleHintClick = (hint: string) => {
-    if (practiceInput.trim()) {
-      onPracticeInputChange(practiceInput + '\n' + hint);
-    } else {
-      onPracticeInputChange(hint);
-    }
-  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
@@ -80,33 +72,6 @@ export function PracticeTaskCard({
           Welcome, how can I help?
         </h2>
 
-        {/* Completion Banner */}
-        {isCompleted && (
-          <div className="w-full max-w-lg mt-6">
-            <div className="p-4 bg-accent/10 border border-accent/20 rounded-2xl text-center">
-              <div className="flex items-center justify-center gap-2 text-accent font-medium">
-                <CheckCircle className="h-5 w-5" />
-                Practice Submitted!
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Check Andrea's feedback on the right panel →
-              </p>
-              <div className="mt-3">
-                {hasNextModule && onContinueToNext ? (
-                  <Button onClick={onContinueToNext} className="gap-2 rounded-full">
-                    Continue to Next Module
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                ) : onCompleteSession ? (
-                  <Button onClick={onCompleteSession} className="gap-2 rounded-full">
-                    Complete Session
-                    <CheckCircle className="h-4 w-4" />
-                  </Button>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Copilot-Style Composer Bar */}
@@ -163,29 +128,6 @@ export function PracticeTaskCard({
         </div>
       </div>
 
-      {/* Suggestion Cards */}
-      <div className="w-full max-w-2xl mx-auto px-4 pb-6 pt-3">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {module.content.practiceTask.hints.slice(0, 3).map((hint, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleHintClick(hint)}
-              className="text-left p-4 rounded-xl border border-border bg-card hover:bg-muted/50 hover:border-border transition-all group shadow-sm"
-            >
-              <Lightbulb className="h-5 w-5 text-muted-foreground mb-2 group-hover:text-accent transition-colors" />
-              <p className="text-sm font-medium text-foreground line-clamp-2">{hint}</p>
-              <p className="text-xs text-muted-foreground mt-1">Try this approach</p>
-            </button>
-          ))}
-        </div>
-        {module.content.practiceTask.hints.length > 3 && (
-          <div className="text-center mt-3">
-            <button className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              See more ↓
-            </button>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

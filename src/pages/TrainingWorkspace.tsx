@@ -7,10 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ALL_SESSION_CONTENT, type ModuleContent } from '@/data/trainingContent';
-import { ModuleContentModal } from '@/components/ModuleContentModal';
 import { VideoModal } from '@/components/VideoModal';
-import { BankPolicyModal } from '@/components/BankPolicyModal';
-import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { TrainerChatPanel } from '@/components/training/TrainerChatPanel';
 import { PracticeChatPanel } from '@/components/training/PracticeChatPanel';
 import { ModuleListSidebar } from '@/components/training/ModuleListSidebar';
@@ -33,11 +30,18 @@ import { useWorkspaceTour } from '@/hooks/useWorkspaceTour';
 import { AgentStudioPanel } from '@/components/agent-studio/AgentStudioPanel';
 import { WorkflowStudioPanel } from '@/components/workflow-studio/WorkflowStudioPanel';
 import { CapstonePanel } from '@/components/capstone/CapstonePanel';
+import { BrainstormPanel } from '@/components/BrainstormPanel';
 import type { CapstoneData } from '@/types/progress';
 import type { WorkflowData } from '@/types/workflow';
 import { Loader2, ArrowLeft, Shield, Bot, Building2, BookOpen, MessageSquare, GraduationCap } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
+import { AppShell, type BreadcrumbItem } from '@/components/shell';
+import { type ProgressModule } from '@/components/smile';
+import { useValueSignals } from '@/hooks/useValueSignals';
+import { ModuleContentPanel } from '@/components/training/ModuleContentPanel';
+import { PersonalizationPractice } from '@/components/training/PersonalizationPractice';
+import { SessionSwitcher } from '@/components/training/SessionSwitcher';
 
 export default function TrainingWorkspace() {
   const isMobile = useIsMobile();
@@ -55,18 +59,17 @@ export default function TrainingWorkspace() {
   const [isTrainerLoading, setIsTrainerLoading] = useState(false);
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
   const [moduleCompleted, setModuleCompleted] = useState(false);
-  const [contentModalOpen, setContentModalOpen] = useState(false);
-  const [contentModalModule, setContentModalModule] = useState<ModuleContent | null>(null);
+  const [lastGateMessage, setLastGateMessage] = useState<string | null>(null);
+  // 'learn' shows the content panel; 'practice' shows the chat
+  const [workspaceMode, setWorkspaceMode] = useState<'learn' | 'practice'>('learn');
   const [videoModalOpen, setVideoModalOpen] = useState(false);
-  const [policyModalOpen, setPolicyModalOpen] = useState(false);
-  const [selectedPolicy, setSelectedPolicy] = useState<BankPolicy | null>(null);
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
-  const [policyDropdownOpen, setPolicyDropdownOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<'practice' | 'coach'>('practice');
   const [mobileModulesOpen, setMobileModulesOpen] = useState(false);
 
   const { policies } = useBankPolicies();
+  const { emitSignal } = useValueSignals();
   const { createMemory } = useAIMemories();
   const { pendingRequest, respondToLevelChange } = useSkillAssessment();
   const { activeAgent, draftAgent } = useUserAgents();
@@ -90,12 +93,16 @@ export default function TrainingWorkspace() {
   })();
 
   // Determine if current module is an Agent Studio module
-  const isAgentModule = sessionId === '2' && (selectedModule?.id === '2-3' || selectedModule?.id === '2-6');
+  // Agent Studio modules: Session 3, Modules 3-3 through 3-7 (Build Agent, Knowledge, Files, Tools, Capstone)
+  const isAgentModule = sessionId === '3' && ['3-3', '3-4', '3-5', '3-6', '3-7'].includes(selectedModule?.id ?? '');
+  const isPersonalizationModule = sessionId === '1' && selectedModule?.id === '1-1';
 
   // For Session 3: determine special module types
   const isSession3 = sessionId === '3';
-  const isWorkflowModule = isSession3 && selectedModule?.id === '3-3';
-  const isCapstoneModule = isSession3 && selectedModule?.id === '3-5';
+  // Workflow Studio moved to Session 5 Module 2 (Build Your Frankenstein)
+  const isSession5 = sessionId === '5';
+  const isWorkflowModule = isSession5 && selectedModule?.id === '5-2';
+  const isCapstoneModule = isSession3 && selectedModule?.id === '3-7';
   const deployedAgent = activeAgent;
 
   // Department info for Session 3
@@ -210,14 +217,15 @@ export default function TrainingWorkspace() {
 
   useEffect(() => {
     if (session?.modules?.length && !selectedModule) {
-      const firstModule = session.modules[0];
-      setSelectedModule(firstModule);
-      // Auto-open video modal for video-type modules (like Introduction)
-      if (firstModule.type === 'video') {
+      // Prefer the next unfinished module; fall back to the first module.
+      const nextModule =
+        session.modules.find((m) => !completedModules.has(m.id)) ?? session.modules[0];
+      setSelectedModule(nextModule);
+      if (nextModule.type === 'video') {
         setVideoModalOpen(true);
       }
     }
-  }, [session, selectedModule]);
+  }, [session, selectedModule, completedModules]);
 
   // Reset when module changes
   const prevModuleRef = useRef<string | null>(null);
@@ -227,6 +235,7 @@ export default function TrainingWorkspace() {
       contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     }
     setModuleCompleted(selectedModule ? completedModules.has(selectedModule.id) : false);
+    setLastGateMessage(null);
   }, [selectedModule, completedModules]);
 
   // Load completed modules and engagement data from database progress
@@ -320,8 +329,7 @@ export default function TrainingWorkspace() {
     if (module.type === 'video') {
       setVideoModalOpen(true);
     } else {
-      setContentModalModule(module);
-      setContentModalOpen(true);
+      setWorkspaceMode('learn');
     }
 
     // Track content viewed engagement
@@ -421,8 +429,9 @@ export default function TrainingWorkspace() {
   };
 
   // Submit the practice conversation to Andrea for review
-  const handleSubmitForReview = async () => {
-    if (!selectedModule || activeMessages.length === 0) return;
+  // Returns true if the quality gate passed, false otherwise
+  const handleSubmitForReview = async (): Promise<boolean> => {
+    if (!selectedModule || activeMessages.length === 0) return false;
 
     setIsTrainerLoading(true);
 
@@ -473,7 +482,7 @@ export default function TrainingWorkspace() {
           body: {
             lessonId: sessionId || '1',
             moduleId: selectedModule.id,
-            isGateModule: selectedModule.isGateModule === true,
+            isGateModule: true,  // Always evaluate quality — all modules require reasonable scores
             submission: conversationTranscript,
             rubric,
             // Pass agent template for modules 2-3 and 2-5 for agent-specific rubrics
@@ -566,16 +575,22 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
     // Mark conversation as submitted in database
     await markSubmitted();
 
-    // Determine if gate passed (for gate modules) or always pass (non-gate)
-    const isGate = selectedModule.isGateModule === true;
-    const gatePassed = !isGate || (gateResult?.passed === true);
+    // All modules now require reasonable quality to advance
+    const gatePassed = gateResult?.passed === true;
 
-    // Mark module as completed only if not gated or gate passed
+    // Mark module as completed only if quality gate passed
     const newCompletedModules = new Set(completedModules);
     if (gatePassed) {
       setModuleCompleted(true);
       newCompletedModules.add(selectedModule.id);
       setCompletedModules(newCompletedModules);
+    }
+
+    // Store the gate message for display in the UI
+    if (gateResult && !gatePassed) {
+      setLastGateMessage(gateResult.gateMessage || 'Your submission needs more work before you can move on. Check Andrea\'s feedback for details.');
+    } else {
+      setLastGateMessage(null);
     }
 
     if (sessionId) {
@@ -592,11 +607,10 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         practiceMessageCount: activeMessages.filter(m => m.role === 'user').length,
       };
 
-      if (isGate) {
-        engagementUpdates.gateAttempts = (prevEngagement.gateAttempts ?? 0) + 1;
-        engagementUpdates.gatePassed = gatePassed;
-        if (gateResult) engagementUpdates.lastGateResult = gateResult;
-      }
+      // Track gate attempts for all modules
+      engagementUpdates.gateAttempts = (prevEngagement.gateAttempts ?? 0) + 1;
+      engagementUpdates.gatePassed = gatePassed;
+      if (gateResult) engagementUpdates.lastGateResult = gateResult;
 
       if (structuredFeedback) {
         engagementUpdates.lastFeedback = {
@@ -626,7 +640,18 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           skillSignals: updatedSkillSignals,
         },
       } as any);
+
+      // Signal: skill_applied — module completed
+      if (gatePassed) {
+        await emitSignal('skill_applied', {
+          session_id: sessionId,
+          module_id: selectedModule.id,
+          module_title: selectedModule.title,
+        });
+      }
     }
+
+    return gatePassed;
   };
 
   // Build agent context for Andrea when the user is working on their agent
@@ -853,127 +878,98 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
   // Determine if the active conversation has been submitted
   const isActiveConversationSubmitted = activeConversation?.is_submitted || false;
 
+  // ── ProgressStrip module mapper ───────────────────────────────────────────
+  const progressModules: ProgressModule[] = session.modules.map((m) => {
+    const eng = moduleEngagement[m.id];
+    const state: 'not_started' | 'in_progress' | 'completed' =
+      eng?.completed ? 'completed'
+      : (eng?.contentViewed || eng?.chatStarted) ? 'in_progress'
+      : 'not_started';
+    return { id: m.id, title: m.title, state };
+  });
+
+  // ── AppShell breadcrumbs & topBarActions ──────────────────────────────────
+  const breadcrumbs: BreadcrumbItem[] = [
+    { label: 'Home', path: '/dashboard' },
+    { label: `Session ${sessionId}: ${session.title}` },
+  ];
+
+  const trainingActions = (
+    <div className="flex items-center w-full justify-end">
+      {/* Right: brainstorm button */}
+      <div className="shrink-0">
+        <BrainstormPanel compact />
+      </div>
+    </div>
+  );
+
   return (
-    <div className="h-screen flex flex-col bg-background">
-      <BankPolicyModal
-        open={policyModalOpen}
-        onOpenChange={setPolicyModalOpen}
-        policy={selectedPolicy}
+    <AppShell
+      breadcrumbs={breadcrumbs}
+      topBarActions={trainingActions}
+      contentClassName="flex flex-col overflow-hidden p-0"
+    >
+      {/* Session switcher — navigate between sessions 1–4 */}
+      <SessionSwitcher
+        activeSession={parseInt(sessionId || '1')}
+        currentSession={profile?.current_session ?? 1}
+        completedSessions={{
+          1: !!progress?.session_1_completed,
+          4: !!(progress as any)?.session_4_completed,
+          5: !!(progress as any)?.session_5_completed,
+          2: !!progress?.session_2_completed,
+          3: !!progress?.session_3_completed,
+        }}
       />
 
-      {/* Top Bar */}
-      <header className="border-b bg-card px-3 md:px-4 py-2 md:py-3 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2 md:gap-4 min-w-0">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="gap-1 md:gap-2 px-2 md:px-3 shrink-0">
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Dashboard</span>
-          </Button>
-          <div className="h-6 w-px bg-border hidden sm:block" />
-          <div className="min-w-0">
-            <h1 className="font-semibold text-sm md:text-base truncate">
-              <span className="hidden sm:inline">Session {sessionId}: </span>{session.title}
-            </h1>
-            <p className="text-xs text-muted-foreground hidden md:block">{session.description}</p>
+      {/* Mobile mode tab bar (Learn / Practice / Coach) */}
+      {isMobile && (
+        <div className="shrink-0">
+          <div className="flex border-b bg-card">
+            <button
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
+                mobileTab === 'practice' && workspaceMode === 'learn'
+                  ? 'text-primary border-b-2 border-primary bg-primary/5'
+                  : 'text-muted-foreground'
+              }`}
+              onClick={() => { setMobileTab('practice'); setWorkspaceMode('learn'); }}
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              Learn
+            </button>
+            <button
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
+                mobileTab === 'practice' && workspaceMode === 'practice'
+                  ? 'text-primary border-b-2 border-primary bg-primary/5'
+                  : 'text-muted-foreground'
+              }`}
+              onClick={() => { setMobileTab('practice'); setWorkspaceMode('practice'); }}
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              Practice
+            </button>
+            <button
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
+                mobileTab === 'coach'
+                  ? 'text-primary border-b-2 border-primary bg-primary/5'
+                  : 'text-muted-foreground'
+              }`}
+              onClick={() => setMobileTab('coach')}
+            >
+              <GraduationCap className="h-3.5 w-3.5" />
+              Coach
+            </button>
           </div>
-        </div>
-        <div className="flex items-center gap-2 md:gap-3 shrink-0">
-          {/* Mobile: modules button */}
-          {isMobile && (
-            <Sheet open={mobileModulesOpen} onOpenChange={setMobileModulesOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1.5">
-                  <BookOpen className="h-4 w-4" />
-                  <span className="text-xs">Modules</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-80 p-0">
-                <SheetTitle className="sr-only">Training Modules</SheetTitle>
-                <ModuleListSidebar
-                  collapsed={false}
-                  onToggleCollapse={() => setMobileModulesOpen(false)}
-                  modules={session.modules}
-                  selectedModule={selectedModule}
-                  completedModules={completedModules}
-                  moduleEngagement={moduleEngagement}
-                  onSelectModule={(module) => {
-                    handleModuleSelect(module);
-                    setMobileModulesOpen(false);
-                  }}
-                  onGateBypass={handleGateBypass}
-                />
-              </SheetContent>
-            </Sheet>
-          )}
-          {policies.length > 0 && (
-            <div className="relative hidden md:block">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={() => setPolicyDropdownOpen(!policyDropdownOpen)}
-                aria-expanded={policyDropdownOpen}
-                aria-haspopup="true"
-              >
-                <Shield className="h-4 w-4" />
-                Bank Policies
-              </Button>
-              {policyDropdownOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setPolicyDropdownOpen(false)} />
-                  <div className="absolute right-0 top-full mt-1 w-64 bg-popover border rounded-lg shadow-lg z-50">
-                    <div className="p-2 space-y-1">
-                      {policies.map((policy) => (
-                        <button
-                          key={policy.id}
-                          className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
-                          onClick={() => {
-                            setSelectedPolicy(policy as BankPolicy);
-                            setPolicyModalOpen(true);
-                            setPolicyDropdownOpen(false);
-                          }}
-                        >
-                          <div className="font-medium">{policy.title}</div>
-                          <div className="text-xs text-muted-foreground line-clamp-1">
-                            {policy.summary || 'View policy details'}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
+          {/* Module completion hint */}
+          {selectedModule && (
+            <div className="px-3 py-1.5 bg-muted/30 border-b text-[10px] text-muted-foreground text-center">
+              {moduleEngagement[selectedModule.id]?.completed
+                ? '✓ Module complete'
+                : selectedModule.type === 'sandbox'
+                ? 'Read content → practice in chat to complete'
+                : 'Read content → practice → get feedback to complete'}
             </div>
           )}
-          <Badge variant="secondary" className="hidden md:inline-flex">{profile.learning_style}</Badge>
-          <Badge variant="outline" className="hidden md:inline-flex">Level {profile.ai_proficiency_level}</Badge>
-        </div>
-      </header>
-
-      {/* Mobile tab bar */}
-      {isMobile && (
-        <div className="flex border-b bg-card shrink-0">
-          <button
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
-              mobileTab === 'practice'
-                ? 'text-primary border-b-2 border-primary'
-                : 'text-muted-foreground'
-            }`}
-            onClick={() => setMobileTab('practice')}
-          >
-            <MessageSquare className="h-3.5 w-3.5" />
-            Practice
-          </button>
-          <button
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors ${
-              mobileTab === 'coach'
-                ? 'text-primary border-b-2 border-primary'
-                : 'text-muted-foreground'
-            }`}
-            onClick={() => setMobileTab('coach')}
-          >
-            <GraduationCap className="h-3.5 w-3.5" />
-            Coach
-          </button>
         </div>
       )}
 
@@ -993,9 +989,17 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           />
         )}
 
-        {/* Middle Column - Practice Chat Area (shown on desktop always, on mobile when practice tab active) */}
+        {/* Left column — Learn Mode content (65%) or Practice Chat (flex-1) */}
         {(!isMobile || mobileTab === 'practice') && (
-          <div data-tour="practice-area" className="flex-1 flex flex-col overflow-hidden" ref={contentScrollRef}>
+          <div
+            data-tour="practice-area"
+            className={`flex flex-col overflow-hidden ${
+              workspaceMode === 'learn' && selectedModule && !isAgentModule && !isWorkflowModule && !isCapstoneModule
+                ? (rightCollapsed ? 'flex-1' : 'w-[65%]')
+                : 'flex-1'
+            }`}
+            ref={contentScrollRef}
+          >
             {/* Session 3 deployed agent banner */}
             {isSession3 && deployedAgent && selectedModule && !isWorkflowModule && !isCapstoneModule && (
               <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 border-b border-primary/10">
@@ -1019,7 +1023,13 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
               </div>
             )}
 
-            {selectedModule && isAgentModule ? (
+            {/* Learn Mode: show content panel inline */}
+            {workspaceMode === 'learn' && selectedModule && !isAgentModule && !isWorkflowModule && !isCapstoneModule ? (
+              <ModuleContentPanel
+                module={selectedModule}
+                onStartPractice={() => setWorkspaceMode('practice')}
+              />
+            ) : selectedModule && isAgentModule ? (
               <AgentStudioPanel module={selectedModule} />
             ) : selectedModule && isWorkflowModule ? (
               <WorkflowStudioPanel
@@ -1039,6 +1049,59 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                 departmentLabel={departmentLabel || undefined}
                 userName={profile?.display_name || undefined}
                 bankName={profile?.employer_name || undefined}
+              />
+            ) : selectedModule && isPersonalizationModule && workspaceMode === 'practice' ? (
+              <PersonalizationPractice
+                onSaved={(prefs) => {
+                  // Send Andrea a message about the personalization for feedback
+                  const feedbackPrompt = `The user just completed their personalization setup. Here are their choices:\n\n- **Tone:** ${prefs.tone}\n- **Verbosity:** ${prefs.verbosity}\n- **Formatting:** ${prefs.formatting_preference}\n- **Role Context:** ${prefs.role_context || '(not set)'}\n- **Custom Instructions:** ${prefs.additional_instructions || '(not set)'}\n\nPlease provide structured, specific feedback on their personalization choices. Focus on the Role Context and Custom Instructions fields — are they specific enough? If they're well-crafted, congratulate them. If they could be improved, give concrete suggestions based on their role/department. Do NOT be generic.`;
+                  setTrainerInput(feedbackPrompt);
+                  // Auto-send to Andrea
+                  const userMsg: Message = { role: 'user', content: 'I just saved my personalization — can you review my setup?' };
+                  const apiMsg: Message = { role: 'user', content: feedbackPrompt };
+                  setTrainerMessages(prev => [...prev, userMsg]);
+                  setIsTrainerLoading(true);
+                  setTrainerInput('');
+                  supabase.functions.invoke('trainer_chat', {
+                    body: {
+                      lessonId: '1',
+                      moduleId: '1-1',
+                      sessionNumber: 1,
+                      messages: [...trainerMessages, apiMsg],
+                      learnerState: {
+                        currentCardTitle: selectedModule?.title,
+                        learningObjectives: selectedModule?.learningObjectives,
+                        learningOutcome: selectedModule?.learningOutcome,
+                        completedModules: Array.from(completedModules),
+                        displayName: profile?.display_name || undefined,
+                        jobRole: profile?.job_role || undefined,
+                        departmentLob: profile?.department || undefined,
+                      },
+                    },
+                  }).then(response => {
+                    const replyData = response.data;
+                    const replyText = replyData?.reply || 'Great job setting up your personalization!';
+                    setTrainerMessages(prev => [...prev, {
+                      role: 'assistant',
+                      content: replyText,
+                      suggestedPrompts: replyData?.suggestedPrompts || [],
+                      coachingAction: replyData?.coachingAction || 'celebrate',
+                    }]);
+                    setSuggestedPrompts(replyData?.suggestedPrompts || []);
+                  }).catch(() => {
+                    setTrainerMessages(prev => [...prev, {
+                      role: 'assistant',
+                      content: 'Great job completing your personalization! Your settings have been saved.',
+                    }]);
+                  }).finally(() => setIsTrainerLoading(false));
+
+                  // Mark module engagement
+                  trackModuleEngagement('1-1', {
+                    chatStarted: true,
+                    completed: true,
+                    completedAt: new Date().toISOString(),
+                  });
+                }}
               />
             ) : selectedModule ? (
               <PracticeChatPanel
@@ -1062,6 +1125,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                 allowedModels={allowedModels}
                 selectedModel={preferredModel}
                 onModelChange={setPreferredModel}
+                gateMessage={lastGateMessage}
               />
             ) : null}
           </div>
@@ -1113,11 +1177,6 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
       </div>
 
       {/* Modals */}
-      <ModuleContentModal
-        module={contentModalModule}
-        open={contentModalOpen}
-        onOpenChange={setContentModalOpen}
-      />
 
       <VideoModal
         open={videoModalOpen}
@@ -1125,7 +1184,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         videoUrl={selectedModule?.videoUrl || 'https://youtu.be/xZ1FAm7IoA4'}
         title={selectedModule?.title || "Introduction to AI Prompting"}
       />
-    </div>
+
+    </AppShell>
   );
 }
 
@@ -1138,7 +1198,7 @@ function generateContextualResponse(
   const lowerInput = input.toLowerCase();
 
   if (lowerInput.includes('review') || lowerInput.includes('feedback')) {
-    return `I'd be happy to review your practice! Start a conversation with the AI in the center panel, then click "Submit for Review" when you're ready.
+    return `I'd be happy to give you feedback! Start a conversation with the AI in the center panel, then click "Get Andrea's Feedback" when you're ready.
 
 The current task is: **${module?.content.practiceTask.title}**
 
@@ -1181,7 +1241,7 @@ Try sending one of these as a prompt in the center panel!`;
 **How this works:** Use the center panel to practice prompting a real AI. I'll watch your conversation and help you improve.
 
 You can ask me to:
-- Review your practice conversation
+- Give feedback on your practice conversation
 - Show examples relevant to your role
 - Explain concepts in more detail
 - Provide hints for the current task

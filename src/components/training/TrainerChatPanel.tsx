@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, Send, ChevronLeft, ChevronRight, Copy, Check, Bookmark, BookOpen, Lightbulb, AlertTriangle, ArrowRight, CheckCircle2, ChevronDown, Target, Wrench, Zap, Share2, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { VoiceMicButton } from '@/components/VoiceMicButton';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { type Message } from '@/types/training';
 import { ShareDialog } from '@/components/ShareDialog';
@@ -209,7 +210,7 @@ export function TrainerChatPanel({
   <>
     <aside
       data-tour="andrea-panel"
-      className={`border-l bg-card transition-all duration-300 flex flex-col ${collapsed ? 'w-12' : 'w-full md:w-96'}`}
+      className={`border-l bg-card transition-all duration-300 flex flex-col ${collapsed ? 'w-12' : 'w-full md:w-[35%]'}`}
       aria-label="AI Training Coach panel"
     >
       <div className="p-3 border-b flex items-center justify-between shrink-0">
@@ -473,7 +474,7 @@ export function TrainerChatPanel({
                   </Avatar>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm text-muted-foreground">
-                    {activeQuickAction === 'review' ? 'Reviewing your work...' :
+                    {activeQuickAction === 'review' ? 'Preparing feedback...' :
                      activeQuickAction === 'hint' ? 'Preparing a hint...' :
                      'Thinking...'}
                   </span>
@@ -547,15 +548,15 @@ export function TrainerChatPanel({
                 size="sm"
                 className="text-xs h-7 gap-1.5 rounded-md"
                 disabled={isLoading}
-                aria-label="Ask Andrea to review your practice work"
-                onClick={() => handleQuickActionClick('Can you review my practice work?', 'review')}
+                aria-label="Ask Andrea for feedback on your practice work"
+                onClick={() => handleQuickActionClick('Can you give me feedback on my practice work?', 'review')}
               >
                 {activeQuickAction === 'review' && isLoading ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
                 ) : (
                   <CheckCircle2 className="h-3 w-3" />
                 )}
-                Review my work
+                Get feedback
               </Button>
               <Button
                 variant="outline"
@@ -593,32 +594,39 @@ export function TrainerChatPanel({
           {/* Composer - pinned to bottom */}
           <div className="p-3 border-t shrink-0">
             <div className="flex gap-2 items-end">
-              <div className="shrink-0">
-                <Avatar className="h-16 w-16 border-2 border-primary/20 shadow-sm">
-                  <AvatarImage src={andreaCoach} alt="Andrea" className="object-cover" />
-                  <AvatarFallback className="text-sm">A</AvatarFallback>
-                </Avatar>
-              </div>
               <div className="flex-1 flex flex-col gap-1.5">
                 <Textarea
                   ref={inputRef}
                   value={input}
-                  onChange={(e) => onInputChange(e.target.value)}
+                  onChange={(e) => {
+                    onInputChange(e.target.value);
+                    // Auto-grow
+                    const el = e.target;
+                    el.style.height = 'auto';
+                    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+                  }}
                   placeholder="Ask Andrea for help..."
-                  className="min-h-[40px] max-h-[100px] resize-none text-sm rounded-xl"
+                  className="min-h-[40px] resize-none text-sm rounded-xl overflow-hidden"
+                  style={{ height: '40px' }}
                   onKeyDown={handleKeyDown}
                 />
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-muted-foreground/50">Enter to send</span>
-                  <Button
-                    size="sm"
-                    onClick={() => { onSubmit(); setTimeout(() => inputRef.current?.focus(), 100); }}
-                    disabled={isLoading || !input.trim()}
-                    className="gap-1.5 h-7 text-xs rounded-md"
-                  >
-                    <Send className="h-3 w-3" />
-                    Send
-                  </Button>
+                  <div className="flex items-center gap-1.5">
+                    <VoiceMicButton
+                      onTranscript={(text) => onInputChange(input ? input + ' ' + text : text)}
+                      disabled={isLoading}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => { onSubmit(); setTimeout(() => inputRef.current?.focus(), 100); }}
+                      disabled={isLoading || !input.trim()}
+                      className="gap-1.5 h-7 text-xs rounded-md"
+                    >
+                      <Send className="h-3 w-3" />
+                      Send
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

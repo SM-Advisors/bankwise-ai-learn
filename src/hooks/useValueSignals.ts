@@ -21,8 +21,8 @@ export function useValueSignals() {
         user_id: user.id,
         org_id: (profile as any)?.organization_id ?? null,
         signal_type: signalType,
-        signal_data: signalData,
-      });
+        signal_data: signalData as any,
+      } as any);
     } catch (err) {
       // Non-blocking — signal failure must never disrupt the learning flow
       console.warn('[value_signals] insert failed silently:', err);

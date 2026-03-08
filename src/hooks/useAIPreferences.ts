@@ -40,7 +40,11 @@ export function useAIPreferences() {
   const [loading, setLoading] = useState(true);
 
   const fetchPreferences = async () => {
-    if (!user) return;
+    if (!user) {
+      setPreferences(null);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const { data, error } = await (supabase
@@ -61,18 +65,16 @@ export function useAIPreferences() {
   const savePreferences = async (updates: Partial<Omit<AIPreferences, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => {
     if (!user) return { success: false, error: 'Not authenticated' };
     try {
-      if (preferences) {
-        const { error } = await (supabase
-          .from('ai_user_preferences' as any)
-          .update({ ...updates, updated_at: new Date().toISOString() })
-          .eq('user_id', user.id) as any);
-        if (error) throw error;
-      } else {
-        const { error } = await (supabase
-          .from('ai_user_preferences' as any)
-          .insert({ ...DEFAULT_PREFERENCES, ...updates, user_id: user.id }) as any);
-        if (error) throw error;
-      }
+      const payload = {
+        ...DEFAULT_PREFERENCES,
+        ...updates,
+        user_id: user.id,
+        updated_at: new Date().toISOString(),
+      };
+      const { error } = await (supabase
+        .from('ai_user_preferences' as any)
+        .upsert(payload, { onConflict: 'user_id' }) as any);
+      if (error) throw error;
       await fetchPreferences();
       return { success: true };
     } catch (err) {
@@ -94,7 +96,11 @@ export function useAIMemories() {
   const [loading, setLoading] = useState(true);
 
   const fetchMemories = async () => {
-    if (!user) return;
+    if (!user) {
+      setMemories([]);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const { data, error } = await (supabase

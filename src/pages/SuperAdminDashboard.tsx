@@ -18,9 +18,10 @@ import {
 import {
   Building2, Users, TrendingUp, Award, ArrowLeft,
   Shield, Heart, BarChart3, ExternalLink, Loader2, MessageSquare, Download, Paperclip,
-  CircleDot, CheckCircle2, Eye
+  CircleDot, CheckCircle2, Eye, RotateCcw
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
+import { TrainingResetManager } from '@/components/admin/TrainingResetManager';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -197,7 +198,7 @@ export default function SuperAdminDashboard() {
                   </div>
                   <div className="text-2xl font-bold">{platform.s1_completion_rate}%</div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    S2: {platform.s2_completion_rate}% · S3: {platform.s3_completion_rate}%
+                    S2: {platform.s2_completion_rate}% · S3: {platform.s3_completion_rate}% · S4: {platform.s4_completion_rate}% · S5: {platform.s5_completion_rate}%
                   </div>
                 </CardContent>
               </Card>
@@ -239,6 +240,10 @@ export default function SuperAdminDashboard() {
                 </Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="training-reset" className="gap-2">
+              <RotateCcw className="h-4 w-4" />
+              Training Reset
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="orgs" className="mt-4">
@@ -257,6 +262,8 @@ export default function SuperAdminDashboard() {
                       <TableHead className="text-right">S1</TableHead>
                       <TableHead className="text-right">S2</TableHead>
                       <TableHead className="text-right">S3</TableHead>
+                      <TableHead className="text-right">S4</TableHead>
+                      <TableHead className="text-right">S5</TableHead>
                       <TableHead className="text-right">Avg Proficiency</TableHead>
                       <TableHead />
                     </TableRow>
@@ -293,6 +300,16 @@ export default function SuperAdminDashboard() {
                         <TableCell className="text-right">
                           {org.user_count > 0
                             ? `${Math.round((org.s3_completed / org.user_count) * 100)}%`
+                            : '—'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {org.user_count > 0
+                            ? `${Math.round((org.s4_completed / org.user_count) * 100)}%`
+                            : '—'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {org.user_count > 0
+                            ? `${Math.round((org.s5_completed / org.user_count) * 100)}%`
                             : '—'}
                         </TableCell>
                         <TableCell className="text-right">
@@ -354,9 +371,11 @@ export default function SuperAdminDashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {platform && [
-                  { label: 'Session 1 — AI Foundations', rate: platform.s1_completion_rate },
-                  { label: 'Session 2 — AI Applications', rate: platform.s2_completion_rate },
-                  { label: 'Session 3 — AI Leadership', rate: platform.s3_completion_rate },
+                  { label: 'Session 1 — Foundation', rate: platform.s1_completion_rate },
+                  { label: 'Session 2 — Structured Interaction', rate: platform.s2_completion_rate },
+                  { label: 'Session 3 — Agents', rate: platform.s3_completion_rate },
+                  { label: 'Session 4 — Functional Agents', rate: platform.s4_completion_rate },
+                  { label: 'Session 5 — Frankenstein', rate: platform.s5_completion_rate },
                 ].map((item) => (
                   <div key={item.label}>
                     <div className="flex justify-between text-sm mb-1">
@@ -390,6 +409,8 @@ export default function SuperAdminDashboard() {
                           { label: 'S1', completed: org.s1_completed },
                           { label: 'S2', completed: org.s2_completed },
                           { label: 'S3', completed: org.s3_completed },
+                          { label: 'S4', completed: org.s4_completed },
+                          { label: 'S5', completed: org.s5_completed },
                         ].map((s) => (
                           <div key={s.label} className="flex items-center gap-2">
                             <span className="text-xs text-muted-foreground w-6">{s.label}</span>
@@ -527,6 +548,9 @@ export default function SuperAdminDashboard() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+          <TabsContent value="training-reset" className="mt-4">
+            <TrainingResetManager />
           </TabsContent>
         </Tabs>
       </div>

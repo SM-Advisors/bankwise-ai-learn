@@ -30,10 +30,14 @@ serve(async (req) => {
   // ── Auth ────────────────────────────────────────────────────────────────────
   const authHeader = req.headers.get("Authorization");
   const token = authHeader?.replace("Bearer ", "");
-  const supabaseAdmin = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  );
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+  const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: authHeader ? { Authorization: authHeader } : {} },
+  });
 
   let userId: string | null = null;
   if (token) {
@@ -49,8 +53,8 @@ serve(async (req) => {
 
   // ── Rate limit (low limits — generation is expensive) ──────────────────────
   const rateCheck = await checkRateLimit(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    supabaseUrl,
+    supabaseServiceKey,
     userId,
     "generate-idea-preview",
     { perMinute: 3, perDay: 30 },
@@ -73,19 +77,67 @@ serve(async (req) => {
       );
     }
 
+    // ── Authorization checks ──────────────────────────────────────────────────
+    if (targetTable === "user_ideas") {
+      const { data: ownIdea, error: ownIdeaError } = await supabaseUser
+        .from("user_ideas")
+        .select("id, user_id")
+        .eq("id", ideaId)
+        .maybeSingle();
+
+      if (ownIdeaError || !ownIdea || ownIdea.user_id !== userId) {
+        return new Response(
+          JSON.stringify({ error: "Forbidden" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    } else {
+      const { data: roleRows, error: roleError } = await supabaseUser
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
+
+      const isAdmin = !roleError && (roleRows || []).some((row) => row.role === "admin" || row.role === "super_admin");
+      if (!isAdmin) {
+        return new Response(
+          JSON.stringify({ error: "Forbidden" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const { data: existsRow, error: existsError } = await supabaseUser
+        .from("executive_submissions")
+        .select("id")
+        .eq("id", ideaId)
+        .maybeSingle();
+
+      if (existsError || !existsRow) {
+        return new Response(
+          JSON.stringify({ error: "Not found" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
+    const updateByScope = (values: Record<string, unknown>) => {
+      let query = supabaseAdmin
+        .from(targetTable)
+        .update(values)
+        .eq("id", ideaId);
+
+      if (targetTable === "user_ideas") {
+        query = query.eq("user_id", userId);
+      }
+      return query;
+    };
+
     // ── Mark as generating ──────────────────────────────────────────────────
-    await supabaseAdmin
-      .from(targetTable)
-      .update({ preview_status: "generating" })
-      .eq("id", ideaId);
+    await updateByScope({ preview_status: "generating" });
 
     // ── Call Lovable AI Gateway ────────────────────────────────────────────
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
-      await supabaseAdmin
-        .from(targetTable)
-        .update({ preview_status: "failed" })
-        .eq("id", ideaId);
+      await updateByScope({ preview_status: "failed" });
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
@@ -110,10 +162,7 @@ serve(async (req) => {
     if (!res.ok) {
       const errText = await res.text();
       console.error("AI Gateway error:", res.status, errText);
-      await supabaseAdmin
-        .from(targetTable)
-        .update({ preview_status: "failed" })
-        .eq("id", ideaId);
+      await updateByScope({ preview_status: "failed" });
 
       if (res.status === 429) {
         return new Response(
@@ -138,10 +187,7 @@ serve(async (req) => {
     // Validate it looks like HTML
     if (!html.includes("<!DOCTYPE html>") && !html.includes("<html")) {
       console.error("Generated content does not appear to be valid HTML");
-      await supabaseAdmin
-        .from(targetTable)
-        .update({ preview_status: "failed" })
-        .eq("id", ideaId);
+      await updateByScope({ preview_status: "failed" });
       return new Response(
         JSON.stringify({ error: "Generation produced invalid output. Please try again." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -155,14 +201,11 @@ serve(async (req) => {
     );
 
     // ── Save to DB ──────────────────────────────────────────────────────────
-    await supabaseAdmin
-      .from(targetTable)
-      .update({
-        preview_html: html,
-        preview_status: "generated",
-        preview_generated_at: new Date().toISOString(),
-      })
-      .eq("id", ideaId);
+    await updateByScope({
+      preview_html: html,
+      preview_status: "generated",
+      preview_generated_at: new Date().toISOString(),
+    });
 
     return new Response(
       JSON.stringify({ success: true, html }),

@@ -41,9 +41,9 @@ export function useFeatureGates() {
       case 'onboarding_completed':
         return profile?.onboarding_completed ?? false;
 
-      case 'session_1_module_2_done':
-        // Module 1-2 is the CLEAR Framework module — gates Explore zone
-        return hasCompletedModule(session1Progress, '1-2');
+      case 'session_1_basic_interaction_done':
+        // Module 1-3 is Basic Interaction — gates Explore zone
+        return hasCompletedModule(session1Progress, '1-3');
 
       case 'first_practice_done':
         // Any practice chat started in session 1 — gates Community zone
@@ -67,7 +67,7 @@ export function useFeatureGates() {
     unlockedZones,
     // Named helpers for common checks
     canAccessLearn: isUnlocked('onboarding_completed'),
-    canAccessExplore: isUnlocked('session_1_module_2_done'),
+    canAccessExplore: isUnlocked('session_1_basic_interaction_done'),
     canAccessCommunity: isUnlocked('first_practice_done'),
     canAccessProfile: isUnlocked('onboarding_completed'),
   };

@@ -31,9 +31,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-hero relative">
+    <div className="h-screen overflow-hidden gradient-hero relative flex flex-col">
       {/* Top Navigation */}
-      <div className="absolute top-4 right-4 flex items-center gap-2">
+      <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
         {user ? (
           <Button
             variant="outline"
@@ -54,35 +54,33 @@ const Index = () => {
             Sign In
           </Button>
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/admin')}
-          className="gap-2"
-        >
-          <Settings className="h-4 w-4" />
-          Admin
-        </Button>
+        {profile?.is_super_admin && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/admin')}
+            className="gap-2"
+          >
+            <Settings className="h-4 w-4" />
+            Admin
+          </Button>
+        )}
       </div>
       
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-3xl mx-auto text-center">
+      <div className="flex-1 flex items-center justify-center px-4">
+        <div className="max-w-xl mx-auto text-center w-full">
           {/* Hero Section */}
-          <div className="animate-fade-in mb-12">
-            {/* SM Advisors Logo */}
-            <div className="flex justify-center mb-8">
+          <div className="animate-fade-in mb-6">
+            <div className="flex justify-center mb-4">
               <Logo variant="full" size="lg" />
             </div>
 
-
-
-
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
+            <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3 leading-tight">
               Transform Your Team with{' '}
               <span className="text-accent">AI Enablement</span>
             </h1>
 
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <p className="text-base md:text-lg text-muted-foreground mb-5 max-w-2xl mx-auto">
               Personalized learning experiences tailored to your role and interaction preferences.
               Practical, job-ready AI skills for your organization.
             </p>
@@ -90,7 +88,7 @@ const Index = () => {
             <Button
               size="lg"
               onClick={handleStartJourney}
-              className="text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all"
+              className="text-base px-6 py-5 rounded-xl shadow-lg hover:shadow-xl transition-all"
             >
               {user ? 'Continue Learning' : 'Start Your Learning Journey'}
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -98,51 +96,51 @@ const Index = () => {
           </div>
 
           {/* Features Grid */}
-          <div className="grid md:grid-cols-3 gap-6 mt-16 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-            <div className="bg-card rounded-xl border shadow-sm p-6 text-left">
-              <div className="p-3 rounded-lg bg-secondary inline-block mb-4">
-                <BookOpen className="h-6 w-6 text-primary" />
+          <div className="grid md:grid-cols-3 gap-4 mt-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <div className="bg-card rounded-xl border shadow-sm p-4 text-left">
+              <div className="p-2 rounded-lg bg-secondary inline-block mb-2">
+                <BookOpen className="h-5 w-5 text-primary" />
               </div>
-              <h3 className="font-semibold text-lg mb-2">Adaptive Delivery</h3>
-              <p className="text-muted-foreground text-sm">
+              <h3 className="font-semibold text-sm mb-1">Adaptive Delivery</h3>
+              <p className="text-muted-foreground text-xs">
                 Lessons adapted to your interaction preference—examples first, step-by-step, hands-on, or logic-based.
               </p>
             </div>
 
-            <div className="bg-card rounded-xl border shadow-sm p-6 text-left">
-              <div className="p-1.5 rounded-lg bg-secondary inline-block mb-4">
-                <Avatar className="h-10 w-10">
+            <div className="bg-card rounded-xl border shadow-sm p-4 text-left">
+              <div className="p-1 rounded-lg bg-secondary inline-block mb-2">
+                <Avatar className="h-8 w-8">
                   <AvatarImage src={andreaCoach} alt="Andrea - AI Coach" className="object-cover" />
                   <AvatarFallback>A</AvatarFallback>
                 </Avatar>
               </div>
-              <h3 className="font-semibold text-lg mb-2">Role-Specific Training</h3>
-              <p className="text-muted-foreground text-sm">
-                Content designed for Accounting, Credit, and Executive banking professionals.
+              <h3 className="font-semibold text-sm mb-1">Personalized Training</h3>
+              <p className="text-muted-foreground text-xs">
+                Content tailored to your role, department, and professional context from day one.
               </p>
             </div>
 
-            <div className="bg-card rounded-xl border shadow-sm p-6 text-left">
-              <div className="p-3 rounded-lg bg-secondary inline-block mb-4">
-                <ClipboardCheck className="h-6 w-6 text-primary" />
+            <div className="bg-card rounded-xl border shadow-sm p-4 text-left">
+              <div className="p-2 rounded-lg bg-secondary inline-block mb-2">
+                <ClipboardCheck className="h-5 w-5 text-primary" />
               </div>
-              <h3 className="font-semibold text-lg mb-2">Practical Outputs</h3>
-              <p className="text-muted-foreground text-sm">
+              <h3 className="font-semibold text-sm mb-1">Practical Outputs</h3>
+              <p className="text-muted-foreground text-xs">
                 Create real work artifacts—credit memos, analyses, and reports you can use immediately.
               </p>
             </div>
           </div>
 
           {/* Compliance Note */}
-          <div className="mt-12 p-6 bg-card rounded-xl border text-left animate-slide-up" style={{ animationDelay: '0.4s' }}>
-            <div className="flex items-start gap-4">
-              <div className="p-2 rounded-lg bg-accent/10">
-                <ShieldCheck className="h-5 w-5 text-accent" />
+          <div className="mt-4 p-4 bg-card rounded-xl border text-left animate-slide-up" style={{ animationDelay: '0.4s' }}>
+            <div className="flex items-start gap-3">
+              <div className="p-1.5 rounded-lg bg-accent/10">
+                <ShieldCheck className="h-4 w-4 text-accent" />
               </div>
               <div>
-                <h4 className="font-semibold text-foreground mb-1">Same Standards, Different Delivery</h4>
-                <p className="text-sm text-muted-foreground">
-                  Your interaction preferences change how training is delivered, not what is taught. All learners are trained to the same behaviors, compliance requirements, and success criteria. Preferences are situational and may be adjusted based on demonstrated judgment.
+                <h4 className="font-semibold text-sm text-foreground mb-0.5">Same Standards, Different Delivery</h4>
+                <p className="text-xs text-muted-foreground">
+                  Your interaction preferences change how training is delivered, not what is taught. All learners are trained to the same behaviors, compliance requirements, and success criteria.
                 </p>
               </div>
             </div>

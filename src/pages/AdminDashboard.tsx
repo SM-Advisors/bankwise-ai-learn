@@ -29,6 +29,9 @@ import { ExecutiveSubmissions } from '@/components/admin/ExecutiveSubmissions';
 import { CommunityReviewQueue } from '@/components/admin/CommunityReviewQueue';
 import { OrgResourcesManager } from '@/components/admin/OrgResourcesManager';
 import { AdminAndreaFloat } from '@/components/admin/AdminAndreaFloat';
+import { AndreaNotesPanel } from '@/components/admin/AndreaNotesPanel';
+import { useAdminAndreaNotes } from '@/hooks/useAdminAndreaChat';
+import { ExecutiveOverview } from '@/components/admin/ExecutiveOverview';
 import { HelpPanel } from '@/components/HelpPanel';
 import { useTour } from '@/hooks/useTour';
 import { ADMIN_STEPS } from '@/constants/tourSteps';
@@ -75,6 +78,7 @@ import {
   Upload,
   HelpCircle,
   Link2,
+  Activity,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -109,50 +113,50 @@ const moduleTypeIcon: Record<string, React.ElementType> = {
 const CORE_PROGRAMS = [
   {
     id: 1,
-    title: 'AI Prompting & Personalization',
-    description: 'Foundation training for effective AI communication. All users start here to master prompting fundamentals, context setting, and personalization techniques.',
+    title: 'Foundation & Early Wins',
+    description: 'Start with personalization, learn basic AI interaction, get your first real win, then build iteration and self-review skills.',
     icon: Sparkles,
     stage: 'Stage 1 - Foundation',
-    modules: ALL_SESSION_CONTENT[1]?.modules.length || 5,
+    modules: ALL_SESSION_CONTENT[1]?.modules.length || 7,
     estimatedTime: '2-3 hours',
     prerequisites: 'None - starting point for all users',
     outcomes: [
-      'Master the CLEAR prompting framework',
-      'Write effective prompts for banking tasks',
-      'Set appropriate context for AI interactions',
-      'Handle sensitive data appropriately',
+      'Have productive AI conversations from day one',
+      'Use the Flipped Interaction Pattern and Outline Expander',
+      'Iterate on AI output for better results',
+      'Apply self-review loops to build critical thinking',
     ],
   },
   {
     id: 2,
-    title: 'Building Your AI Agent',
-    description: 'Create a customized AI assistant tailored to your line of business. Learn agent architecture, custom instructions, and tool integration.',
+    title: 'Structured Interaction, Models & Tools',
+    description: 'Add structure with the CLEAR Framework, master output templating, multi-shot prompting, model selection, chain-of-thought reasoning, and tool selection.',
     icon: Bot,
-    stage: 'Stage 2 - Customization',
-    modules: ALL_SESSION_CONTENT[2]?.modules.length || 5,
+    stage: 'Stage 2 - Structure',
+    modules: ALL_SESSION_CONTENT[2]?.modules.length || 7,
     estimatedTime: '3-4 hours',
-    prerequisites: 'Complete Session 1: AI Prompting & Personalization',
+    prerequisites: 'Complete Session 1: Foundation & Early Wins',
     outcomes: [
-      'Understand AI agent architecture',
-      'Create custom agent instructions',
-      'Configure agent for your specific role',
-      'Test and refine agent behavior',
+      'Apply the CLEAR Framework for precision tasks',
+      'Use multi-shot prompting and chain-of-thought reasoning',
+      'Select the right model and tools for each task',
+      'Template output formats for consistent results',
     ],
   },
   {
     id: 3,
-    title: 'Department-Specific Training',
-    description: 'Deep dive into AI applications specific to your line of business. Includes Accounting & Finance, Credit Administration, and Executive & Leadership tracks.',
+    title: 'Agents',
+    description: 'Understand why agents exist, learn the Four Levels, and build your own agent from instructions through knowledge, files, and tool access.',
     icon: Building2,
-    stage: 'Stage 3 - Specialization',
-    modules: ALL_SESSION_CONTENT[3]?.modules.length || 5,
+    stage: 'Stage 3 - Agents',
+    modules: ALL_SESSION_CONTENT[3]?.modules.length || 7,
     estimatedTime: '4-6 hours',
-    prerequisites: 'Complete Session 2: Building Your AI Agent',
+    prerequisites: 'Complete Session 2: Structured Interaction, Models & Tools',
     outcomes: [
-      'Apply AI to department-specific workflows',
-      'Ensure compliance in AI usage',
-      'Master advanced prompting techniques',
-      'Complete real-world capstone project',
+      'Understand the Four Levels of AI agents',
+      'Build a basic agent with instructions and constraints',
+      'Add knowledge, files, and tool access to agents',
+      'Test and deploy a production-quality agent',
     ],
   },
 ];
@@ -168,10 +172,15 @@ export default function AdminDashboard() {
   const { toast } = useToast();
 
   // ── Controlled tab state (needed for URL-param admin tour navigation) ───────
-  const [activeMainTab, setActiveMainTab] = useState('people');
+  const [activeMainTab, setActiveMainTab] = useState('overview');
 
   // ── Help panel state ─────────────────────────────────────────────────────────
   const [helpPanelOpen, setHelpPanelOpen] = useState(false);
+
+  // ── Andrea right-pane state ─────────────────────────────────────────────────
+  const [andreaPaneOpen, setAndreaPaneOpen] = useState(true);
+  const [andreaPaneTab, setAndreaPaneTab] = useState<'chat' | 'notes'>('chat');
+  const { addNote } = useAdminAndreaNotes(effectiveOrgId);
 
   // Admin tour — auto-trigger on first visit or ?tour=admin param
   const { isCompleted: adminTourDone, startTour: startAdminTour } = useTour('admin');
@@ -600,11 +609,12 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="flex h-full">
+      {/* Main content area */}
+      <div className={`flex-1 min-w-0 overflow-y-auto transition-all duration-200 ${andreaPaneOpen && activeMainTab !== 'overview' ? 'mr-0' : ''}`}>
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Help panel modal */}
       <HelpPanel open={helpPanelOpen} onOpenChange={setHelpPanelOpen} />
-      {/* Floating Andrea C-Suite advisor bubble */}
-      <AdminAndreaFloat organizationId={effectiveOrgId} />
 
       {/* Org context banner for super admin drill-down */}
       {viewingOrgId && viewingOrgName && (
@@ -669,19 +679,23 @@ export default function AdminDashboard() {
         <p className="text-muted-foreground">
           {viewingOrgName
             ? `Managing users and content for ${viewingOrgName}`
-            : 'Manage users, view reports, review ideas, and administer training content'}
+            : 'Monitor adoption, review insights, and manage your AI training program'}
         </p>
       </div>
 
       <Tabs value={activeMainTab} onValueChange={setActiveMainTab} className="space-y-6">
         <TabsList className="inline-flex h-auto gap-1 bg-muted p-1">
+          <TabsTrigger value="overview" className="flex items-center gap-1.5 text-sm px-4 py-2">
+            <Activity className="h-4 w-4" />
+            Overview
+          </TabsTrigger>
           <TabsTrigger value="people" data-tour="admin-people-tab" className="flex items-center gap-1.5 text-sm px-4 py-2">
             <Users className="h-4 w-4" />
             People
           </TabsTrigger>
           <TabsTrigger value="analytics" data-tour="admin-analytics-tab" className="flex items-center gap-1.5 text-sm px-4 py-2">
             <BarChart3 className="h-4 w-4" />
-            Analytics
+            Reports
           </TabsTrigger>
           <TabsTrigger value="engagement" data-tour="admin-engagement-tab" className="flex items-center gap-1.5 text-sm px-4 py-2">
             <MessageSquare className="h-4 w-4" />
@@ -696,6 +710,14 @@ export default function AdminDashboard() {
             Config
           </TabsTrigger>
         </TabsList>
+
+        {/* ── OVERVIEW ── */}
+        <TabsContent value="overview" className="space-y-6">
+          <ExecutiveOverview
+            organizationId={effectiveOrgId}
+            onNavigateTab={setActiveMainTab}
+          />
+        </TabsContent>
 
         {/* ── PEOPLE ── */}
         <TabsContent value="people" className="space-y-6">
@@ -715,45 +737,32 @@ export default function AdminDashboard() {
           </Tabs>
         </TabsContent>
 
-        {/* ── ANALYTICS ── */}
+        {/* ── REPORTS ── */}
         <TabsContent value="analytics" className="space-y-6">
-          <Tabs defaultValue="reporting" className="space-y-4">
-            <TabsList className="bg-background border">
-              <TabsTrigger value="reporting" className="gap-1.5 text-xs"><BarChart3 className="h-3.5 w-3.5" />Reports</TabsTrigger>
-              <TabsTrigger value="csuite" className="gap-1.5 text-xs"><PieChartIcon className="h-3.5 w-3.5" />C-Suite</TabsTrigger>
-            </TabsList>
-            <TabsContent value="reporting"><ProgressDashboard /></TabsContent>
-            <TabsContent value="csuite"><CSuiteReports /></TabsContent>
-          </Tabs>
+          <CSuiteReports />
+          {/* Detailed learner-level progress table */}
+          <ProgressDashboard />
         </TabsContent>
 
         {/* ── ENGAGEMENT ── */}
         <TabsContent value="engagement" className="space-y-6">
-          <Tabs defaultValue="ideas" className="space-y-4">
-            <TabsList className="bg-background border">
-              <TabsTrigger value="ideas" className="gap-1.5 text-xs"><Lightbulb className="h-3.5 w-3.5" />Ideas</TabsTrigger>
-              <TabsTrigger value="submissions" className="gap-1.5 text-xs"><Building2 className="h-3.5 w-3.5" />Submissions</TabsTrigger>
-              <TabsTrigger value="community" className="gap-1.5 text-xs"><MessageSquare className="h-3.5 w-3.5" />Community</TabsTrigger>
-            </TabsList>
-            <TabsContent value="ideas"><IdeasInbox organizationId={effectiveOrgId} /></TabsContent>
-            <TabsContent value="submissions">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-primary" />
-                    Executive Submissions
-                  </CardTitle>
-                  <CardDescription>
-                    Review and manage ideas, friction points, and shared agents submitted to leadership
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ExecutiveSubmissions organizationId={effectiveOrgId} />
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="community"><CommunityReviewQueue organizationId={effectiveOrgId} /></TabsContent>
-          </Tabs>
+          {/* Ideas Pipeline — both user ideas and executive submissions in one view */}
+          <IdeasInbox organizationId={effectiveOrgId} />
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-primary" />
+                Executive Submissions
+              </CardTitle>
+              <CardDescription>
+                Ideas, friction points, and shared agents submitted to leadership
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ExecutiveSubmissions organizationId={effectiveOrgId} />
+            </CardContent>
+          </Card>
+          <CommunityReviewQueue organizationId={effectiveOrgId} />
         </TabsContent>
 
         {/* ── TRAINING ── */}
@@ -933,24 +942,24 @@ export default function AdminDashboard() {
                     AI Training Program Overview
                   </CardTitle>
                   <CardDescription>
-                    Three-stage progressive training: Foundation → Customization → Specialization
+                    Three-stage progressive training: Foundation → Structured Interaction → Agents
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-center gap-2 mb-8 flex-wrap">
                     <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
                       <Sparkles className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium text-blue-600">Stage 1: Prompting</span>
+                      <span className="font-medium text-blue-600">Stage 1: Foundation</span>
                     </div>
                     <div className="text-muted-foreground">→</div>
                     <div className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 rounded-lg border border-purple-500/20">
                       <Bot className="h-4 w-4 text-purple-600" />
-                      <span className="font-medium text-purple-600">Stage 2: Agent Building</span>
+                      <span className="font-medium text-purple-600">Stage 2: Structured Interaction</span>
                     </div>
                     <div className="text-muted-foreground">→</div>
                     <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-lg border border-green-500/20">
                       <Building2 className="h-4 w-4 text-green-600" />
-                      <span className="font-medium text-green-600">Stage 3: Specialization</span>
+                      <span className="font-medium text-green-600">Stage 3: Agents</span>
                     </div>
                   </div>
 
@@ -1616,6 +1625,75 @@ export default function AdminDashboard() {
           </Tabs>
         </TabsContent>
       </Tabs>
+    </div>
+    </div>
+
+      {/* Andrea right pane — visible on non-overview tabs */}
+      {activeMainTab !== 'overview' && (
+        <>
+          {/* Toggle button */}
+          {!andreaPaneOpen && (
+            <button
+              onClick={() => setAndreaPaneOpen(true)}
+              className="fixed right-0 top-1/2 -translate-y-1/2 z-50 bg-primary text-primary-foreground px-1.5 py-4 rounded-l-lg shadow-lg hover:bg-primary/90 transition-colors"
+              title="Open Andrea"
+            >
+              <span className="text-xs [writing-mode:vertical-lr] rotate-180 font-medium">Andrea</span>
+            </button>
+          )}
+
+          {andreaPaneOpen && (
+            <div className="w-[420px] shrink-0 border-l border-border bg-background flex flex-col h-full">
+              {/* Pane header with tabs */}
+              <div className="flex items-center border-b px-3 py-2 gap-2 shrink-0">
+                <div className="flex gap-1 flex-1">
+                  <button
+                    onClick={() => setAndreaPaneTab('chat')}
+                    className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${
+                      andreaPaneTab === 'chat'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:bg-muted'
+                    }`}
+                  >
+                    Chat
+                  </button>
+                  <button
+                    onClick={() => setAndreaPaneTab('notes')}
+                    className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${
+                      andreaPaneTab === 'notes'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:bg-muted'
+                    }`}
+                  >
+                    Notes
+                  </button>
+                </div>
+                <button
+                  onClick={() => setAndreaPaneOpen(false)}
+                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                  title="Collapse Andrea pane"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Pane content */}
+              <div className="flex-1 overflow-hidden">
+                {andreaPaneTab === 'chat' ? (
+                  <CSuiteAdvisorPanel
+                    organizationId={effectiveOrgId}
+                    onSummarize={(summary) => addNote(summary)}
+                  />
+                ) : (
+                  <div className="p-4 overflow-y-auto h-full">
+                    <AndreaNotesPanel organizationId={effectiveOrgId} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

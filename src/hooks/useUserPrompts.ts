@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 export interface UserPrompt {
   id: string;
@@ -17,14 +16,19 @@ export interface UserPrompt {
   updated_at: string;
 }
 
+const getPromptStorageKey = (userId: string) => `bankwise_prompt_library_${userId}`;
+
 export function useUserPrompts() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [prompts, setPrompts] = useState<UserPrompt[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchPrompts = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setPrompts([]);
+      setLoading(false);
+      return;
+    }
     try {
       const { data, error } = await supabase
         .from('user_prompts' as any)
@@ -36,7 +40,7 @@ export function useUserPrompts() {
       setPrompts((data as unknown as UserPrompt[]) || []);
     } catch (err) {
       // Fallback to localStorage if table doesn't exist yet
-      const stored = localStorage.getItem('bankwise_prompt_library');
+      const stored = localStorage.getItem(getPromptStorageKey(user.id)) || localStorage.getItem('bankwise_prompt_library');
       if (stored) {
         try {
           const local = JSON.parse(stored) as UserPrompt[];
@@ -92,7 +96,7 @@ export function useUserPrompts() {
       };
       const updated = [newPrompt, ...prompts];
       setPrompts(updated);
-      localStorage.setItem('bankwise_prompt_library', JSON.stringify(updated));
+      localStorage.setItem(getPromptStorageKey(user.id), JSON.stringify(updated));
       return newPrompt.id;
     }
   }, [user?.id, fetchPrompts, prompts]);
@@ -112,7 +116,7 @@ export function useUserPrompts() {
       // Fallback: update localStorage
       const updated = prompts.map((p) => (p.id === id ? { ...p, ...updates } : p));
       setPrompts(updated);
-      localStorage.setItem('bankwise_prompt_library', JSON.stringify(updated));
+      localStorage.setItem(getPromptStorageKey(user.id), JSON.stringify(updated));
     }
   }, [user?.id, fetchPrompts, prompts]);
 
@@ -131,7 +135,7 @@ export function useUserPrompts() {
       // Fallback: remove from localStorage
       const updated = prompts.filter((p) => p.id !== id);
       setPrompts(updated);
-      localStorage.setItem('bankwise_prompt_library', JSON.stringify(updated));
+      localStorage.setItem(getPromptStorageKey(user.id), JSON.stringify(updated));
     }
   }, [user?.id, fetchPrompts, prompts]);
 

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Lightbulb, Send, Loader2, Sparkles, Bookmark, Users, TrendingUp, X, Check, Brain } from 'lucide-react';
+import { VoiceMicButton } from '@/components/VoiceMicButton';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -16,7 +17,7 @@ type Phase = 'input' | 'chat';
 type SubmitMode = null | 'ideas' | 'community' | 'csuite';
 type LocalMessage = { role: 'user' | 'assistant'; content: string };
 
-export function BrainstormPanel() {
+export function BrainstormPanel({ compact = false }: { compact?: boolean }) {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -190,41 +191,65 @@ WEAK signals (honest redirect needed): primarily relationship or trust work, eth
 
 If the workflow has weak signals: say so clearly and redirect to the part that IS a strong candidate. Example: "The final approval call itself isn't a great AI candidate — that needs human judgment and an audit trail. But the prep work leading up to it? That's where I'd focus."
 
-━━━ PHASE 3 — THREE OPTIONS ━━━
-Present exactly three options. Always include one Option 1 the user can start TODAY with just a subscription (no new tools). Tier up from there.
+━━━ PHASE 3 — AUTOMATION LAYERS ━━━
+Analyze the workflow at THREE layers of automation depth. Present all three layers.
 
-Use this exact format (plain text, use emojis for tier label):
+LAYER 1 — STEP-LEVEL AUTOMATION
+Identify individual steps in the flow where AI can replace or assist manual work. For each step:
+- Name the step
+- What AI does (one sentence)
+- ROI tag: High ROI, Medium ROI, or Low ROI
+- AI capability type (e.g., Document Classification, Intelligent Data Matching, Process Mining, Automated Data Entry, Anomaly Detection, NLP Extraction, Predictive Routing)
+- One sentence on efficiency or quality impact
 
-🟢 Option 1 — [Short descriptive name]  [$]
-[What AI does in this option — one sentence. What changes for the user.]
-Tool: [Specific tool name — never say "an AI tool", name it]
-Effort: [Who does this and roughly how long — one sentence]
+LAYER 2 — CHUNK AUTOMATION
+Identify groups of 2-4 consecutive steps that could be automated as a single workflow. For each chunk:
+- Name the chunk (e.g., "Payment Identification & Matching")
+- Which steps it combines
+- What the automated chunk does end-to-end (one sentence)
+- What human involvement remains (one sentence)
+- ROI tag
 
-🟡 Option 2 — [Short descriptive name]  [$$]
-[What this adds that Option 1 cannot do — one sentence]
-Tool: [Specific tool name]
-Effort: [Who does this and how long]
+LAYER 3 — FULL-FLOW AUTOMATION
+Assess whether the entire process could be automated end-to-end. Be honest:
+- Is full automation feasible? Why or why not?
+- What would the human role become? (reviewer, exception-handler, auditor)
+- What are the risks of full automation in this context?
+- ROI tag
 
-🔴 Option 3 — [Short descriptive name]  [$$$–$$$$]
-[What this unlocks — one sentence. Usually automation or system integration.]
-Tool: [Specific tool name]
-Effort: [Be honest about whether this needs a developer or IT team]
+━━━ PHASE 4 — PRACTICAL EXAMPLE ━━━
+After presenting the three layers, show ONE concrete example of how automation would work in practice for the most impactful chunk or step. Walk through the actual flow:
+- What triggers it
+- What the AI does at each point (be specific — "AI reads the wire memo field and extracts the reference number" not "AI processes the data")
+- Where humans intervene
+- What the output looks like
+Make this feel like a real design walkthrough, not abstract description.
 
-$ COST SCALE:
-Assign $ signs based on the realistic ongoing cost of the specific solution you are recommending — not by which option number it is. A sophisticated Option 3 built on open-source or low-cost APIs might be $ or $$. A simple Option 1 that requires a paid enterprise license might be $$$. Price the actual solution.
-$     = effectively free or under ~$25/mo total
-$$    = ~$25–$200/mo
-$$$   = ~$200–$2,000/mo
-$$$$  = $2,000+/mo, or modest one-time dev cost with low ongoing cost
-$$$$$ = enterprise-scale (reserve for truly large deployments)
-When the upfront build cost and ongoing cost are very different (e.g., $5,000 to build, $50/mo to run), note both briefly.
+━━━ PHASE 5 — PRICING EXPECTATIONS ━━━
+For each layer (step-level, chunk, full-flow), assign a pricing tier:
+
+$ = Under ~$25/mo. Off-the-shelf AI subscription, no custom build. (e.g., Claude Pro, ChatGPT Plus, Copilot)
+$$ = ~$25–$200/mo. No-code automation connecting existing tools. (e.g., Zapier, Make, Power Automate, n8n)
+$$$ = ~$200–$2,000/mo. Custom integrations, API usage, or lightweight dev work. (e.g., Anthropic API, OpenAI API, LangChain, Dify)
+$$$$ = ~$2,000–$10,000/mo or one-time build of $10K–$50K. Requires developer resources and system integration. (e.g., Azure OpenAI + custom middleware, AWS Bedrock pipelines)
+$$$$$ = $10,000+/mo or $50K+ build. Enterprise-grade, multi-system integration with security, compliance, and scale requirements. (e.g., full RPA + AI orchestration, vendor-built solutions)
+
+PRICING DETERMINATION: Assign pricing based on these factors:
+- Number of systems that need integration (more systems = higher tier)
+- Whether custom code is required vs. off-the-shelf tools
+- Data volume and processing frequency
+- Compliance and security requirements (banking/regulated = higher tier)
+- Whether it needs ongoing developer maintenance
+
+When upfront build cost and ongoing cost differ significantly (e.g., $20K to build, $200/mo to run), note both.
+
+After presenting all layers and pricing, end with: "Which layer feels like the right starting point for your team — or should we dig deeper into a specific part?"
 
 TOOL SHORTLIST BY TIER:
 Prompt-only ($): Claude Pro, ChatGPT Plus, Claude Projects, Custom GPTs, Microsoft Copilot (for M365 orgs), Gemini for Workspace (for Google orgs)
 No-code automation ($$): Zapier, Make (formerly Integromat), n8n, Power Automate, Dify
 Developer/API ($$$–$$$$): Anthropic API, OpenAI API, LangChain, LlamaIndex, Azure OpenAI, AWS Bedrock, Pinecone (vector DB for document search)
-
-After presenting options, end with: "Which of these feels closest to where you'd want to start — or is the gap somewhere different?"
+Enterprise ($$$$$): Full RPA platforms (UiPath, Automation Anywhere), custom vendor solutions, enterprise AI orchestration
 
 ━━━ VOICE & BEHAVIOR RULES ━━━
 - One question per response. Never stack two questions in one message.
@@ -308,22 +333,33 @@ After presenting options, end with: "Which of these feels closest to where you'd
 
   return (
     <>
-      {/* Trigger Card */}
-      <button
-        data-tour="brainstorm-btn"
-        onClick={handleOpen}
-        className="group relative flex flex-col items-center justify-center gap-2 w-full h-full min-h-[120px] rounded-xl border bg-card hover:shadow-md transition-all cursor-pointer p-3 text-center shadow-sm"
-      >
-        <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40 transition-colors">
-          <Lightbulb className="h-5 w-5 text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)] group-hover:drop-shadow-[0_0_10px_rgba(250,204,21,0.9)] group-hover:scale-110 transition-all" />
-        </div>
-        <div>
-          <p className="font-semibold text-foreground text-xs">AI Brainstorm</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug max-w-[120px] mx-auto">
-            Explore how AI can help with any task
-          </p>
-        </div>
-      </button>
+      {/* Trigger */}
+      {compact ? (
+        <button
+          data-tour="brainstorm-btn"
+          onClick={handleOpen}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-accent transition-colors cursor-pointer"
+        >
+          <Lightbulb className="h-4 w-4 text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)]" />
+          <span className="text-foreground">AI Brainstorm</span>
+        </button>
+      ) : (
+        <button
+          data-tour="brainstorm-btn"
+          onClick={handleOpen}
+          className="group relative flex flex-col items-center justify-center gap-2 w-full h-full min-h-[120px] rounded-xl border bg-card hover:shadow-md transition-all cursor-pointer p-3 text-center shadow-sm"
+        >
+          <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-800/40 transition-colors">
+            <Lightbulb className="h-5 w-5 text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.7)] group-hover:drop-shadow-[0_0_10px_rgba(250,204,21,0.9)] group-hover:scale-110 transition-all" />
+          </div>
+          <div>
+            <p className="font-semibold text-foreground text-xs">AI Brainstorm</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug max-w-[120px] mx-auto">
+              Explore how AI can help with any task
+            </p>
+          </div>
+        </button>
+      )}
 
       {/* Brainstorm Sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
@@ -506,14 +542,20 @@ After presenting options, end with: "Which of these feels closest to where you'd
                       }
                     }}
                   />
-                  <Button
-                    size="icon"
-                    onClick={handleChatSend}
-                    disabled={!chatInput.trim() || isLoading}
-                    className="shrink-0 self-end h-9 w-9"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
+                  <div className="flex flex-col gap-1 self-end">
+                    <VoiceMicButton
+                      onTranscript={(text) => setChatInput((prev) => (prev ? prev + ' ' : '') + text)}
+                      disabled={isLoading}
+                    />
+                    <Button
+                      size="icon"
+                      onClick={handleChatSend}
+                      disabled={!chatInput.trim() || isLoading}
+                      className="shrink-0 h-9 w-9"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               )}
             </>

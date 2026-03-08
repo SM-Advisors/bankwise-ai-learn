@@ -27,6 +27,9 @@ import {
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
+import { AppShell, type BreadcrumbItem } from '@/components/shell';
+import { type ProgressModule } from '@/components/smile';
+import { useValueSignals } from '@/hooks/useValueSignals';
 
 export default function ElectiveWorkspace() {
   const isMobile = useIsMobile();
@@ -46,6 +49,7 @@ export default function ElectiveWorkspace() {
   const [isTrainerLoading, setIsTrainerLoading] = useState(false);
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
   const [moduleCompleted, setModuleCompleted] = useState(false);
+  const [lastGateMessage, setLastGateMessage] = useState<string | null>(null);
   const [contentModalOpen, setContentModalOpen] = useState(false);
   const [contentModalModule, setContentModalModule] = useState<ModuleContent | null>(null);
   const [policyModalOpen, setPolicyModalOpen] = useState(false);
@@ -61,6 +65,7 @@ export default function ElectiveWorkspace() {
   const { createMemory } = useAIMemories();
   const { getPathProgress, markModuleComplete, updateModuleProgress } = useElectiveProgress();
   const { createPrompt } = useUserPrompts();
+  const { emitSignal } = useValueSignals();
 
   // Find the elective path and module
   const electivePath = ELECTIVE_PATHS.find((p) => p.id === pathId);
@@ -171,6 +176,7 @@ export default function ElectiveWorkspace() {
       contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     }
     setModuleCompleted(selectedModule ? completedModules.has(selectedModule.id) : false);
+    setLastGateMessage(null);
   }, [selectedModule, completedModules]);
 
   if (loading || !profile) {
@@ -262,6 +268,7 @@ export default function ElectiveWorkspace() {
     };
 
     let structuredFeedback: Message['structuredFeedback'] | undefined;
+    let gateResult: import('@/types/progress').GateResult | null = null;
     try {
       const [trainerResponse, reviewResponse] = await Promise.allSettled([
         supabase.functions.invoke('trainer_chat', {
@@ -288,6 +295,7 @@ export default function ElectiveWorkspace() {
           body: {
             lessonId: syntheticSessionId,
             moduleId: selectedModule.id,
+            isGateModule: true,  // Always evaluate quality
             submission: conversationTranscript,
             rubric,
             learnerState: {
@@ -322,6 +330,9 @@ export default function ElectiveWorkspace() {
         const feedbackData = reviewResponse.value.data;
         if (feedbackData?.feedback) {
           structuredFeedback = feedbackData.feedback;
+        }
+        if (feedbackData?.gateResult) {
+          gateResult = feedbackData.gateResult;
         }
       }
 
@@ -359,19 +370,33 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
     await markSubmitted();
 
-    // Mark module completed in elective progress (Supabase)
-    setModuleCompleted(true);
-    const newCompletedModules = new Set(completedModules);
-    newCompletedModules.add(selectedModule.id);
-    setCompletedModules(newCompletedModules);
+    // Only mark completed if quality gate passed
+    const gatePassed = gateResult?.passed === true;
+
+    if (gatePassed) {
+      setModuleCompleted(true);
+      const newCompletedModules = new Set(completedModules);
+      newCompletedModules.add(selectedModule.id);
+      setCompletedModules(newCompletedModules);
+    }
+
+    // Store gate message for UI
+    if (gateResult && !gatePassed) {
+      setLastGateMessage(gateResult.gateMessage || 'Your submission needs more work. Check Andrea\'s feedback for details.');
+    } else {
+      setLastGateMessage(null);
+    }
 
     if (pathId) {
-      await markModuleComplete(pathId, selectedModule.id);
+      if (gatePassed) {
+        await markModuleComplete(pathId, selectedModule.id);
+      }
 
-      // Also store engagement data
+      // Store engagement data regardless
       const engagementData: Record<string, unknown> = {
         practiceMessageCount: activeMessages.filter((m) => m.role === 'user').length,
         submittedAt: new Date().toISOString(),
+        gatePassed,
       };
       if (structuredFeedback) {
         engagementData.lastFeedback = {
@@ -381,6 +406,16 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         };
       }
       await updateModuleProgress(pathId, selectedModule.id, engagementData);
+
+      // Signal: skill_applied — elective module completed
+      if (gatePassed) {
+        await emitSignal('skill_applied', {
+          path_id: pathId,
+          module_id: selectedModule.id,
+          module_title: selectedModule.title,
+          elective: true,
+        });
+      }
     }
   };
 
@@ -534,6 +569,70 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
     });
     navigate('/electives');
   };
+
+  // ── ProgressStrip module mapper ───────────────────────────────────────────
+  const progressModules: ProgressModule[] = modules.map((m) => {
+    const eng = moduleEngagement[m.id];
+    const state: 'not_started' | 'in_progress' | 'completed' =
+      completedModules.has(m.id) ? 'completed'
+      : (eng?.contentViewed || eng?.chatStarted) ? 'in_progress'
+      : 'not_started';
+    return { id: m.id, title: m.title, state };
+  });
+
+  // ── AppShell breadcrumbs & topBarActions ──────────────────────────────────
+  const breadcrumbs: BreadcrumbItem[] = [
+    { label: 'Home', path: '/dashboard' },
+    { label: 'Electives', path: '/electives' },
+    { label: electivePath.title },
+  ];
+
+  const trainingActions = (
+    <div className="flex items-center gap-3 min-w-0">
+      {policies.length > 0 && (
+        <div className="relative hidden md:block shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => setPolicyDropdownOpen(!policyDropdownOpen)}
+          >
+            <Shield className="h-4 w-4" />
+            Bank Policies
+          </Button>
+          {policyDropdownOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setPolicyDropdownOpen(false)} />
+              <div className="absolute right-0 top-full mt-1 w-64 bg-popover border rounded-lg shadow-lg z-50">
+                <div className="p-2 space-y-1">
+                  {policies.map((policy) => (
+                    <button
+                      key={policy.id}
+                      className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
+                      onClick={() => {
+                        setSelectedPolicy(policy as BankPolicy);
+                        setPolicyModalOpen(true);
+                        setPolicyDropdownOpen(false);
+                      }}
+                    >
+                      <div className="font-medium">{policy.title}</div>
+                      <div className="text-xs text-muted-foreground line-clamp-1">
+                        {policy.summary || 'View policy details'}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+      <Badge variant="secondary" className="hidden md:inline-flex shrink-0 bg-purple-100 text-purple-700">
+        <Sparkles className="h-3 w-3 mr-1" />Elective
+      </Badge>
+      <Badge variant="outline" className="hidden md:inline-flex shrink-0">Level {profile.ai_proficiency_level}</Badge>
+    </div>
+  );
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -693,6 +792,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                 allowedModels={allowedModels}
                 selectedModel={preferredModel}
                 onModelChange={setPreferredModel}
+                gateMessage={lastGateMessage}
               />
             ) : null}
           </div>
@@ -761,7 +861,7 @@ function generateContextualResponse(
   const lowerInput = input.toLowerCase();
 
   if (lowerInput.includes('review') || lowerInput.includes('feedback')) {
-    return `I'd be happy to review your practice! Start a conversation with the AI in the center panel, then click "Submit for Review" when you're ready.
+    return `I'd be happy to give you feedback! Start a conversation with the AI in the center panel, then click "Get Andrea's Feedback" when you're ready.
 
 The current task is: **${module?.content.practiceTask.title}**
 

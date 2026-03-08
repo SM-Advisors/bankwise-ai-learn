@@ -35,7 +35,6 @@ interface SubmissionReviewRequest {
     attemptNumber?: number;
     progressSummary?: string;
   };
-  userId?: string; // Optional fallback if auth not available
 }
 
 interface LessonChunk {
@@ -251,7 +250,7 @@ serve(async (req) => {
     }
 
     const requestBody: SubmissionReviewRequest = await req.json();
-    const { lessonId, moduleId, isGateModule, submission, rubric, agentTemplate, workflowData, departmentContext, learnerState, userId: bodyUserId } = requestBody;
+    const { lessonId, moduleId, isGateModule, submission, rubric, agentTemplate, workflowData, departmentContext, learnerState } = requestBody;
 
     if (!lessonId || !submission) {
       return new Response(
@@ -269,7 +268,7 @@ serve(async (req) => {
       global: { headers: authHeader ? { Authorization: authHeader } : {} },
     });
 
-    // Get user ID from auth (preferred) or body (fallback)
+    // Get authenticated user ID
     let userId: string | null = null;
 
     if (authHeader?.startsWith("Bearer ")) {
@@ -279,8 +278,11 @@ serve(async (req) => {
       }
     }
 
-    if (!userId && bodyUserId) {
-      userId = bodyUserId;
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Rate limiting
@@ -370,74 +372,141 @@ ${contextSection}
 
 ${policiesSection}
 
-${moduleId === "1-5" ? `## MODULE 1-5 RUBRIC: VERIFYING AI OUTPUT
-This submission tests the learner's ability to identify AI hallucinations and apply the VERIFY checklist.
+${moduleId === "1-5" ? `## MODULE 1-5 RUBRIC: ITERATION
+This submission tests the learner's ability to treat AI output as a starting draft and refine it through directed iteration rather than accepting or rejecting the first result.
 
 3-LEVEL RUBRIC:
 | Criterion | Developing | Proficient | Advanced |
 |-----------|-----------|-----------|---------|
-| Error Detection | Identifies 0-1 of 3 errors | Identifies 2 of 3 errors | Identifies all 3 errors |
-| Error Categorization | Does not categorize error types | Correctly categorizes most errors | Correctly categorizes all errors (fabricated number, invented citation, logic error) |
-| Verification Steps | Vague ("check it") | Describes a specific verification step for each error | Maps each error to a specific VERIFY letter with concrete source to check |
+| Iteration Count | Single attempt only | 2 clear iterations with identifiable changes | 3+ iterations with a stated reason for each change |
+| Change Specificity | Vague changes ("make it better") | Each follow-up identifies a specific gap in the previous output | Each change targets a specific element (tone, length, format, detail level) with explicit direction |
+| Output Improvement | Output is not meaningfully better | Each iteration produces a measurable improvement | Final output is clearly superior to the first — and the learner can explain why |
+| Diagnosis Skill | No diagnosis of what was wrong | Identifies the issue before asking for a fix | Diagnoses the root cause, not just a symptom (e.g., "the framing was wrong, not just the length") |
 
 EVALUATION FOCUS:
-- Did the learner identify the fabricated DSCR ratio?
-- Did the learner catch the invented OCC Bulletin 2025-03 citation?
-- Did the learner spot the incorrect Debt-to-Equity formula (Revenue/Equity instead of Debt/Equity)?
-- Are verification steps specific (e.g., "look up OCC Bulletin 2025-03") not generic ("review for accuracy")?` : moduleId === "1-6" ? `## MODULE 1-6 RUBRIC: SESSION 1 CAPSTONE
-This is the Session 1 Capstone. Evaluate using the 3-level rubric across all Session 1 skills.
+- Does the submission show at least 2 distinct iterations, not just one prompt and one result?
+- Does each iteration build on the previous one — or is the learner starting over?
+- Is the learner diagnosing and directing, or just hoping the next attempt is better?
+- Does the final output look like it was refined through deliberate effort?` : moduleId === "1-6" ? `## MODULE 1-6 RUBRIC: SELF-REVIEW LOOPS
+This submission tests the learner's ability to build a two-prompt generate-then-critique workflow.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Two-Prompt Structure | Single prompt only | Clear generate + critique-revise sequence | Structured workflow with explicit handoff between generation and review |
+| Checklist Quality | Fewer than 3 criteria | 5+ specific criteria relevant to the deliverable | Criteria use measurable ratings (Fully Met / Partially Met / Missing) |
+| Criteria Specificity | Generic ("is it good?") | Criteria tied to the specific deliverable type | Criteria differentiate between formatting, accuracy, and completeness dimensions |
+| Combined Coverage | Only checks formatting | Covers formatting and some content quality | Self-review covers formatting, completeness, tone, and flags factual items for human verification |
+
+EVALUATION FOCUS:
+- Does the learner actually prompt the AI to critique and revise its own output — not just ask a follow-up?
+- Is the review checklist specific to the deliverable type (not generic)?
+- Does the final output reflect the review — is it actually improved?
+- Does the learner understand what AI can self-check vs. what requires human verification?` : moduleId === "1-7" ? `## MODULE 1-7 RUBRIC: SESSION 1 SANDBOX (CAPSTONE)
+This is the Session 1 Sandbox. Evaluate the learner's independent application of Session 1 techniques to a real work task — no guided steps, no scaffolding.
 
 3-LEVEL RUBRIC:
 | Criterion | Weight | Developing | Proficient | Advanced |
 |-----------|--------|-----------|-----------|---------|
-| CLEAR Framework | 25% | 1-3 elements present | All 5 present | All 5 with depth + banking specificity |
-| Iteration | 20% | 1 version only | 2 iterations with identifiable changes | 3+ iterations with improvement rationale |
-| VERIFY Application | 25% | Generic "I would check it" | 2+ specific items to verify | Maps specific output elements to VERIFY steps with sources |
-| Data Security | 15% | No mention of constraints | Constraints present | Proactive synthetic data + security context |
-| Banking Quality | 15% | Generic business prompt | Banking terminology correct | Production-quality, usable in real work |
+| Real Work Application | 25% | Hypothetical or practice scenario | An actual work task they could use today | A task they have actually used AI for, with authentic context |
+| Iteration | 25% | 1 version only | 2 iterations with identifiable changes | 3+ iterations with stated reasons for each refinement |
+| Self-Review | 25% | No review applied | Critiqued the output before finalizing | Used a specific checklist or criterion set to improve the output |
+| Output Quality | 25% | Generic or AI-flavored text | Usable in their actual work context | Production-quality — could be sent, saved, or acted on immediately |
 
 EVALUATION FOCUS:
-- Does the prompt use all CLEAR letters with banking-specific content?
-- Are there at least 2 iterations showing concrete improvements?
-- Does the VERIFY reflection identify specific items (ratios, citations, logic) to check?
-- Is all customer data anonymized?
-- Would this prompt produce output usable in a real banking context?` : moduleId === "2-1" ? `## MODULE 2-1 RUBRIC: FROM PROMPTS TO AGENTS (BRIDGE)
-This submission tests the learner's ability to map CLEAR framework elements to agent architecture sections.
+- Is this a real work task, not a training exercise invented for the assignment?
+- Are there at least 2 iterations showing directed improvement?
+- Did the learner apply any form of self-review before submitting?
+- Would the final output hold up in a real professional context?` : moduleId === "2-1" ? `## MODULE 2-1 RUBRIC: STRUCTURED PROMPTING (CLEAR FRAMEWORK)
+This submission tests the learner's ability to apply the CLEAR Framework to write a precise, structured prompt for a specific, high-stakes, or complex task.
+
+CLEAR Framework: Context → Length/Format → Examples → Audience → Requirements
 
 3-LEVEL RUBRIC:
 | Criterion | Developing | Proficient | Advanced |
 |-----------|-----------|-----------|---------|
-| CLEAR-to-Agent Mapping | Maps 0-2 sections | Maps 4 of 5 sections correctly | Maps all 5 with detailed explanations |
-| Agent vs Prompt Decision | No rationale provided | Provides a clear rationale | Rationale includes frequency, compliance, and team benefit analysis |
-| Conceptual Understanding | Confuses prompts and agents | Correctly distinguishes persistent vs one-off | Articulates continuum with nuanced examples |
+| Context (C) | Missing or generic ("I work in finance") | Specific role, department, and task established | Context explains the situation, constraints, and why the task matters |
+| Length/Format (L) | No format specified | Output format and approximate length defined | Format specification includes structure, sections, and constraints on what to exclude |
+| Examples (E) | No examples provided | 1 relevant example showing the desired style/format | Examples demonstrate both what to include AND what to avoid |
+| Audience (A) | No audience specified | Audience identified (e.g., "branch manager") | Audience specification includes knowledge level, decision role, and what they need to act |
+| Requirements (R) | No explicit requirements | 2+ requirements listed | Requirements are specific, testable, and ranked by priority |
+| Banking Relevance | Generic business prompt | Banking task with appropriate terminology | Real task from their actual work — usable without modification |
 
 EVALUATION FOCUS:
-- Does the learner correctly map Context → Identity, Requirements → Task List, Length/Format → Output Rules, etc.?
-- Is their agent-vs-prompt decision justified with specific reasons (frequency, compliance, sharing)?
-- Do they demonstrate understanding that agent architecture is persistent CLEAR?` : moduleId === "2-5" ? `## MODULE 2-5 RUBRIC: YOUR LIVING AGENT
-This submission tests the learner's ability to plan agent iteration, sharing, and measurement.
+- Are all 5 CLEAR elements present — Context, Length/Format, Examples, Audience, Requirements?
+- Are elements banking-specific, not generic placeholders?
+- Does the prompt produce a different (better) output than a casual ask would?
+- Are requirements specific enough that the learner could tell if they were met?` : moduleId === "2-3" ? `## MODULE 2-3 RUBRIC: MULTI-SHOT PROMPTING
+This submission tests the learner's ability to use examples to teach an AI consistent output patterns.
 
 3-LEVEL RUBRIC:
 | Criterion | Developing | Proficient | Advanced |
 |-----------|-----------|-----------|---------|
-| Monitoring Plan | Vague ("see how it goes") | 2+ specific behaviors to watch | Specific behaviors tied to expected failure modes |
-| Iteration Strategy | No guard rail identified | Names a specific guard rail to add | Guard rail tied to realistic edge case with alternative response |
-| Effectiveness Measurement | No metric defined | One task with time estimate | Task with time-before, time-after, and quality indicator |
-| Sharing Strategy | Not addressed | Identifies a colleague | Identifies colleague, what to customize, and what stays universal |
+| Example Count & Consistency | Fewer than 3 examples or inconsistent format | 3 examples with consistent structure across all | 3+ examples that demonstrate both invariants and meaningful variation |
+| Format Invariants | No identifiable pattern | Clear structural pattern repeats across examples | Pattern is explicit with annotation of what must stay constant |
+| Compliance/Quality Element | No quality element present | At least 1 quality or compliance element appears in all examples | Elements are varied but consistently present across examples |
+| Annotations | No annotations | Annotations explain why each example was selected | Annotations highlight what the AI should learn from each example |
+| Request Specificity | Vague request for "more like this" | Request is specific and different from the examples | Request tests whether the AI learned the pattern, not just repeated it |
 
 EVALUATION FOCUS:
-- Are monitoring targets specific to their agent's role and task list?
-- Is the expected guard rail based on a realistic edge case for their department?
-- Does the effectiveness metric include both time savings and quality indicators?
-- Would their sharing plan actually work for a colleague?` : moduleId === "2-3" && agentTemplate ? `## AGENT TEMPLATE RUBRIC (MODULE 2-3)
-This submission is an AI agent template from the Agent Studio. Evaluate template COMPLETENESS and QUALITY, not prompt technique.
+- Do the examples teach a reusable pattern, not just provide templates?
+- Is there enough variation to prevent overfitting to one scenario?
+- Does the new request test pattern recognition — not just produce another copy of the examples?` : moduleId === "2-5" ? `## MODULE 2-5 RUBRIC: CHAIN-OF-THOUGHT MASTERY
+This submission tests the learner's ability to design multi-step reasoning prompts that produce auditable, traceable analysis.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Step Structure | Fewer than 3 steps, loosely connected | 5 structured steps with clear instructions for each | Steps build logically with explicit dependencies between them |
+| Cross-Referencing | Steps are independent silos | Later steps reference outputs from earlier steps | Each step cites specific upstream data it depends on |
+| Individual Evaluation | Elements treated as a single block | Each element evaluated individually before cross-analysis | Individual evaluations include thresholds and contextual interpretation |
+| Confidence & Justification | No confidence indicator | Final assessment includes a confidence level | Confidence level includes justification tied to evidence quality |
+| Auditability | Could not trace reasoning | Major conclusions traceable to source steps | Examiner could trace each conclusion to its specific source |
+
+EVALUATION FOCUS:
+- Does the prompt force sequential reasoning rather than a single-pass summary?
+- Are step dependencies explicit (e.g., "Using the analysis from Step 2, evaluate...")?
+- Would someone else be able to audit the chain of reasoning?
+- Does the final output look different from what a single-step prompt would produce?` : moduleId === "2-6" ? `## MODULE 2-6 RUBRIC: TOOL SELECTION
+This submission tests the learner's ability to identify when an AI tool is the right choice for a task — and how to interrogate a new tool using the same criteria.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Task Analysis | Chooses tool without analyzing the task | Analyzes the task against tool capabilities | Analysis includes task type, frequency, risk level, and compliance sensitivity |
+| Data Privacy Assessment | Not addressed | Notes whether the task involves sensitive data | Identifies specific data types and checks tool's data handling policy |
+| Fit vs. Gap Identification | Lists only benefits | Identifies at least 1 gap or limitation | Gaps are ranked by severity with a mitigation or workaround for each |
+| Custom vs. Built-In Distinction | Confused about the difference | Correctly distinguishes when a custom agent (Session 3) would be better | Explains the threshold: when built-in tools are sufficient vs. when to build |
+| Decision Quality | Vague conclusion | Clear approve/skip/investigate decision with rationale | Decision includes conditions: approved for X tasks, not for Y, with review protocol |
+
+EVALUATION FOCUS:
+- Does the analysis start with the task, not the tool?
+- Is data privacy assessed before capabilities — or as an afterthought?
+- Is the final decision specific enough to act on (not just "it looks useful")?
+- Does the learner understand the difference between functional agents and custom agents?` : moduleId === "2-7" ? `## MODULE 2-7 RUBRIC: SESSION 2 SANDBOX (CAPSTONE)
+This is the Session 2 Sandbox. Evaluate independent application of Session 2 techniques to a real work task — structured prompting, output templating, multi-shot, chain-of-thought, or tool selection.
+
+3-LEVEL RUBRIC:
+| Criterion | Weight | Developing | Proficient | Advanced |
+|-----------|--------|-----------|-----------|---------|
+| Real Work Application | 25% | Hypothetical scenario | A real task from their actual work | A task they have iterated on, with authentic professional context |
+| Technique Application | 35% | Session 1 techniques only | At least 1 Session 2 technique applied correctly | 2+ Session 2 techniques applied intentionally with rationale for each |
+| Output Quality | 25% | AI-flavored generic text | Usable output for their actual work | Production-quality output — specific, professional, ready to use |
+| Reflection | 15% | No reflection | Names the technique(s) they used | Explains WHY each technique choice improved the output |
+
+EVALUATION FOCUS:
+- Is this a real work task that would benefit from the structured techniques in Session 2?
+- Is at least one Session 2 technique applied correctly (not just mentioned)?
+- Does the output reflect the technique — not just a well-worded prompt?
+- Can the learner articulate which technique they used and why it helped?` : moduleId === "3-3" && agentTemplate ? `## MODULE 3-3 RUBRIC: BUILD A BASIC AGENT
+This submission is a Level 2 AI agent configured for a specific task. Evaluate COMPLETENESS and QUALITY of the agent configuration — not prompt technique.
 
 SCORING WEIGHTS:
-- Identity (20%): Clear role, department, audience, and purpose defined
+- Identity (20%): Clear role, scope, audience, and purpose defined
 - Task List (25%): At least 2 specific tasks with formats and constraints
 - Output Rules (15%): At least 2 formatting/behavior rules defined
-- Guard Rails (25%): At least 2 guard rails with alternative responses + 1 prompt injection defense
-- Compliance Anchors (15%): At least 1 exact phrase that must appear in outputs
+- Guard Rails (25%): At least 2 guard rails with alternative responses + 1 out-of-scope defense
+- Compliance Anchors (15%): At least 1 compliance or quality anchor that must appear in outputs
 
 AGENT TEMPLATE DATA:
 ${agentTemplate.identity ? `Identity: "${agentTemplate.identity}"` : "Identity: MISSING"}
@@ -447,21 +516,67 @@ Guard Rails: ${agentTemplate.guardRails?.filter(g => g.rule.trim()).length || 0}
 Compliance Anchors: ${agentTemplate.complianceAnchors?.filter(a => a.trim()).length || 0} defined
 
 EVALUATION FOCUS:
-- Are the tasks specific to a banking function (not generic)?
-- Do guard rails cover common edge cases (personal advice, legal questions, off-topic)?
-- Are compliance anchors real regulatory phrases (FDCPA, TILA, ECOA disclosures)?
-- Is the identity specific enough to produce consistent behavior?
-- Would this template produce a useful, safe AI agent for banking?` : moduleId === "2-6" && agentTemplate ? `## SESSION 2 CAPSTONE RUBRIC (MODULE 2-6)
-This is the Session 2 Capstone. Evaluate the complete agent including template, testing, and Living Agent Plan.
+- Is the agent configured for a specific, real task — not a generic "helpful assistant"?
+- Are the tasks written as instructions the agent can actually follow?
+- Do guard rails cover realistic out-of-scope requests for this agent's role?
+- Is the identity specific enough to produce consistent, role-appropriate behavior?
+- Would this agent be useful in real work without significant manual oversight?` : moduleId === "3-4" ? `## MODULE 3-4 RUBRIC: ADD KNOWLEDGE
+This submission tests the learner's ability to give an agent domain knowledge that makes it a genuine specialist.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Knowledge Source Selection | Generic or irrelevant source | Relevant document or reference for the agent's role | Source directly addresses the task types the agent handles |
+| Knowledge Integration | Source added without instructions for use | Agent told when to reference the knowledge | Agent told which tasks require the knowledge, which don't, and how to cite it |
+| Specialist vs. Generalist Gap | Knowledge doesn't change the agent's behavior | Knowledge enables answers the agent couldn't give before | Knowledge closes a specific gap identified in the baseline agent |
+| Accuracy & Hallucination Risk | No instructions to stay within the source | Agent told to limit answers to what's in the source | Agent told to acknowledge when a question is outside the knowledge base |
+
+EVALUATION FOCUS:
+- Does the knowledge source actually match the agent's tasks?
+- Would the agent behave differently with vs. without this knowledge?
+- Is the agent instructed to stay within what the knowledge source covers?
+- Does the knowledge make the agent more useful — or just more confident?` : moduleId === "3-5" ? `## MODULE 3-5 RUBRIC: ADD FILES
+This submission tests the learner's ability to extend an agent with file-processing capability.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| File Type Specification | No file types specified | Specific file types defined (PDF, CSV, DOCX, etc.) | File types include handling instructions for each format |
+| Processing Instructions | Vague ("process the file") | Clear instructions for what to extract or analyze | Instructions include output structure for each file type |
+| Guard Rails for Files | No file-specific guard rails | Agent told what to do if a file is unreadable | Agent told what to do if a file is the wrong type, too large, or contains unexpected content |
+| Privacy & Data Handling | No data handling instructions | Agent told not to store or repeat sensitive data | Specific data types identified with handling instructions (anonymize, flag, skip) |
+| Output Quality | Unstructured dump of file content | Structured output tied to the agent's specific task | Output format matches what the task requires — summary, extraction, analysis, or comparison |
+
+EVALUATION FOCUS:
+- Is the agent told specifically what to do with files — not just that it can accept them?
+- Are guard rails in place for file edge cases (wrong format, missing data, PII)?
+- Does the output format match what the learner actually needs from the file?` : moduleId === "3-6" ? `## MODULE 3-6 RUBRIC: ADD TOOL ACCESS
+This submission tests the learner's ability to transition an agent from Level 2 (advisor) to Level 3 (executor) by connecting it to tools.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Tool Selection Rationale | Tool added without justification | Tool is appropriate for the agent's task | Tool is the minimal escalation — avoids adding capability not needed |
+| Level 2 vs. Level 3 Distinction | Confused about the difference | Correctly identifies when tool access changes the agent's behavior | Explains specific tasks that are now possible at Level 3 that were not at Level 2 |
+| Human Oversight Design | No review checkpoints | At least 1 human review point before consequential action | Review checkpoints are specific: what is reviewed, by whom, and when |
+| Failure & Fallback | No failure handling | Agent told what to do if a tool call fails | Agent has fallback behavior for each tool — degrade gracefully, not fail silently |
+| Scope Discipline | Tool access is open-ended | Tool access is scoped to specific tasks | Tool access is the minimum required — explicit about what the tool cannot be used for |
+
+EVALUATION FOCUS:
+- Does the tool access serve the agent's specific task — or is it scope creep?
+- Are human review checkpoints designed for the highest-risk actions?
+- Would the agent fail gracefully if a tool is unavailable?
+- Is this genuinely a Level 3 agent — or still essentially a Level 2 with an unused tool?` : moduleId === "3-7" && agentTemplate ? `## MODULE 3-7 RUBRIC: SESSION 3 SANDBOX (AGENT CAPSTONE)
+This is the Session 3 Sandbox / Capstone — the learner's final agent for actual use. Evaluate as a real deliverable, not a practice exercise.
 
 3-LEVEL RUBRIC:
 | Criterion | Weight | Developing | Proficient | Advanced |
 |-----------|--------|-----------|-----------|---------|
-| Identity | 15% | Generic role | Banking-specific role with audience | Detailed persona with departmental context |
-| Task List | 20% | 1 vague task | 2+ specific banking tasks | 3+ tasks with format, constraint, and edge case handling |
-| Guard Rails | 25% | 0-1 generic rails | 2+ rails with alternatives | 3+ rails including injection defense + compliance redirect |
-| Testing | 25% | 1 test type only | All 3 types attempted | All 3 with thoughtful scenarios + gap analysis |
-| Living Agent Plan | 15% | Not provided | Generic plan | Specific monitoring criteria + first iteration target |
+| Identity | 15% | Generic role | Role-specific with clear audience and purpose | Detailed persona with task scope, tone, and output style defined |
+| Task List | 20% | 1 vague task | 2+ specific, actionable tasks | 3+ tasks with format, constraint, and edge case handling |
+| Guard Rails | 25% | 0-1 generic rails | 2+ rails with specific alternatives | 3+ rails covering out-of-scope, sensitive topics, and compliance edge cases |
+| Knowledge/Files/Tools | 20% | Not used | Agent has at least 1 extension (knowledge, files, or tools) | Extensions are purposeful — each one closes a specific gap |
+| Real-Work Readiness | 20% | Practice scenario | Agent could be used for real tasks | Agent is configured for work the learner actually does — and they plan to use it |
 
 AGENT TEMPLATE DATA:
 ${agentTemplate.identity ? `Identity: "${agentTemplate.identity}"` : "Identity: MISSING"}
@@ -471,12 +586,83 @@ Guard Rails: ${agentTemplate.guardRails?.filter(g => g.rule.trim()).length || 0}
 Compliance Anchors: ${agentTemplate.complianceAnchors?.filter(a => a.trim()).length || 0} defined
 
 EVALUATION FOCUS:
-- Does the agent template cover all 5 sections with banking-specific content?
-- Are all 3 test types present (standard, edge case, out-of-scope)?
-- Does the Living Agent Plan include specific monitoring criteria (not just "see how it goes")?
-- Does the plan name a specific guard rail they expect to add and why?
-- Would this agent be shareable with a colleague in the same role?` : moduleId === "3-3" && workflowData ? `## WORKFLOW RUBRIC
-This submission is an AI workflow from the Workflow Studio. Evaluate workflow COMPLETENESS and QUALITY.
+- Is this an agent the learner actually plans to use — not just a training exercise?
+- Does the agent template reflect Session 3 skills (identity, tasks, guard rails, optional extensions)?
+- Are guard rails specific to the agent's role and realistic edge cases?
+- Would a colleague be able to use this agent for the same tasks?` : moduleId === "4-1" ? `## MODULE 4-1 RUBRIC: WHAT ARE FUNCTIONAL AGENTS?
+This submission tests the learner's ability to identify functional agents in tools they already use and assess when to use them vs. building a custom agent.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Tool Identification | Identifies AI features without calling them agents | Correctly identifies 2+ functional agents in existing tools | Identifies functional agents with specific capability descriptions and use cases |
+| Custom vs. Functional Distinction | Confused about the difference | Correctly distinguishes when to use each type | Explains the decision threshold: task specificity, frequency, compliance sensitivity |
+| Use Case Relevance | Hypothetical use cases | Use cases from their actual daily work | Use cases ranked by effort-to-value ratio with implementation readiness |
+| Limitation Awareness | Lists only benefits | Identifies at least 1 meaningful limitation | Limitations include data privacy considerations and what functional agents cannot do |
+
+EVALUATION FOCUS:
+- Does the learner correctly name specific functional agents (not generic "AI features")?
+- Is the custom vs. functional distinction correctly applied to their actual work context?
+- Are limitations specific — not just "it might make mistakes"?` : moduleId === "4-2" ? `## MODULE 4-2 RUBRIC: AI IN YOUR SPREADSHEET
+This submission tests the learner's ability to use AI features in their spreadsheet tool to accelerate data work.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Task Selection | Generic or hypothetical data task | A real data task from their actual work | A data task that was previously slow, error-prone, or avoided |
+| AI Feature Application | Describes the feature without using it | Documents a specific AI feature used for a specific task | Documents the before/after with a clear description of what the AI did vs. what they reviewed |
+| Output Verification | No verification described | Notes that output should be checked | Identifies specific values or patterns that require manual verification |
+| Reusability | One-time use | Describes how to repeat the same task | Creates a reusable pattern or formula they can apply to future similar data |
+
+EVALUATION FOCUS:
+- Is this a real data task, not a demo or constructed example?
+- Is the AI feature applied to a task where it provides genuine value?
+- Does the learner verify critical outputs — not just trust the AI result?
+- Would they be able to repeat this workflow without step-by-step guidance?` : moduleId === "4-3" ? `## MODULE 4-3 RUBRIC: AI IN YOUR PRESENTATIONS
+This submission tests the learner's ability to use AI features in their presentation tool to accelerate slide creation and improve quality.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Task Selection | Generic slide content | A real presentation task from their work | A presentation that was actually needed — or one they are working on now |
+| AI Feature Application | Describes the feature in theory | Applies AI to a specific slide or section | Applies AI to multiple stages (structure, content, visual, speaker notes) |
+| Voice & Brand Preservation | No mention of review or editing | Notes that AI-generated content was reviewed | Identifies specific edits made to align AI output with their voice and brand |
+| Time/Quality Assessment | No comparison | Notes it was faster or higher quality | Honest comparison: faster AND what they had to fix before it was usable |
+
+EVALUATION FOCUS:
+- Was the AI applied to a real presentation need?
+- Did the learner review and edit the AI output — or just accept it?
+- Is there evidence that the final output was usable in a professional context?` : moduleId === "4-4" ? `## MODULE 4-4 RUBRIC: AI IN YOUR INBOX
+This submission tests the learner's ability to use AI features in their email client for routine communications while maintaining professional voice.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Task Selection | Generic email scenarios | A real email task from their work (drafting, summarizing, or triaging) | A task where AI handling would save meaningful time — and they applied it |
+| AI Feature Application | Describes the feature without using it | Documents a specific feature applied to a specific email task | Documents multiple task types: drafting, summarizing, and identifying action items |
+| Voice Preservation | No mention of editing | Notes that the draft was edited for voice | Identifies specific AI-generated phrases they changed to match their professional style |
+| Compliance & Sensitivity | No mention of sensitive content | Notes what NOT to use AI for in their email context | Specific exclusions: client data, regulatory communications, sensitive internal topics |
+
+EVALUATION FOCUS:
+- Is this a real email task from their actual work?
+- Did they edit the AI output to match their voice — or send it unedited?
+- Do they understand what email tasks should NOT be delegated to AI?` : moduleId === "4-5" ? `## MODULE 4-5 RUBRIC: SESSION 4 SANDBOX (FUNCTIONAL AGENTS)
+This is the Session 4 Sandbox. Evaluate the learner's practical integration of functional agents into their daily workflow.
+
+3-LEVEL RUBRIC:
+| Criterion | Weight | Developing | Proficient | Advanced |
+|-----------|--------|-----------|-----------|---------|
+| Tool Selection | 25% | Identifies tools without clear rationale | Selects the 1-2 functional agents most relevant to their work | Ranks agents by time savings and selects based on real task frequency |
+| Integration Plan | 30% | Vague intention to use AI tools | Specific plan for which tasks each agent handles | Plan includes what they will stop doing manually, what they will verify, and a 1-week trial |
+| Limitation Awareness | 20% | Only benefits identified | At least 1 meaningful limitation per tool acknowledged | Clear boundary: which tasks stay manual and why |
+| Reflection on Custom vs. Functional | 25% | Not addressed | Identifies at least 1 task where a custom agent (Session 3) would be better | Articulates the threshold: complexity, specificity, or frequency that tips toward custom |
+
+EVALUATION FOCUS:
+- Are the selected tools actually used in the learner's daily work?
+- Is the integration plan specific enough to execute without additional guidance?
+- Does the learner understand the boundary between functional and custom agents?
+- Is there honest acknowledgment of what AI tools cannot do for this person's specific work?` : moduleId === "5-2" && workflowData ? `## MODULE 5-2 RUBRIC: DESIGN YOUR WORKFLOW
+This submission is a multi-step AI workflow. Evaluate COMPLETENESS and QUALITY of the workflow design.
 
 SCORING WEIGHTS:
 - Trigger (15%): Clear, specific event that starts the workflow
@@ -492,298 +678,11 @@ Review Checkpoints: ${workflowData.steps?.filter(s => s.humanReview && s.name).l
 Final Output: ${workflowData.finalOutput || "MISSING"}
 
 EVALUATION FOCUS:
-- Is the trigger specific to a real banking event (not generic)?
+- Is the trigger specific to a real event in the learner's work?
 - Do steps alternate between AI work and human review — not all AI in sequence?
 - Are prompt templates specific enough to use immediately?
 - Would this workflow be reusable by a colleague without additional explanation?
-- Does the workflow respect compliance requirements (review before external output)?` : moduleId === "3-5" ? `## CAPSTONE RUBRIC
-This is the Session 3 Capstone submission. Evaluate against ALL training objectives from Sessions 1-3.
-
-3-LEVEL RUBRIC:
-| Criterion | Weight | Developing | Proficient | Advanced |
-|-----------|--------|-----------|-----------|---------|
-| CLEAR Framework | 20% | 1-3 elements | All 5 present | All 5 with depth + banking specificity |
-| Advanced Technique | 20% | No technique applied | 1 technique applied correctly | Technique deeply embedded with justification |
-| Compliance Awareness | 20% | No mention | Data handling and decision boundaries addressed | Full compliance checklist applied with documentation |
-| Department Relevance | 20% | Generic business task | Banking-specific task | Role-specific task with realistic scenario |
-| Reflection Quality | 20% | No reflection or generic | Identifies a strength and limitation | Honest assessment with specific next steps |
-
-EVALUATION FOCUS:
-- Does this look like real work, not a hypothetical exercise?
-- Are there 3+ prompts showing iteration and refinement?
-- Is all customer data properly anonymized?
-- Would the final output be usable in a real banking context?
-- Is the reflection honest about what AI did well and where it fell short?
-- Has the learner applied VERIFY to their output?` : moduleId === "4-1" ? `## MODULE 4-1 RUBRIC: YOUR AI AUDIT
-This submission tests the learner's ability to audit their work week using the AI Eligibility Matrix.
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Task Identification | Fewer than 5 tasks, mostly generic | 8+ specific tasks from actual work | 10+ tasks with frequency and time estimates |
-| Matrix Categorization | Tasks placed without justification | Each task categorized with brief rationale | Categories include frequency, suitability analysis, and compliance considerations |
-| AUTOMATE Plans | No agent/workflow described | Top 3 AUTOMATE tasks have agent descriptions | AUTOMATE tasks include detailed workflow with review checkpoints |
-| SKIP Recognition | No SKIP tasks identified | 1+ SKIP task with reasoning | SKIP tasks demonstrate nuanced understanding of AI limitations |
-
-EVALUATION FOCUS:
-- Are tasks from their actual work, not hypothetical banking activities?
-- Does the matrix categorization reflect genuine task analysis?
-- Do AUTOMATE plans reference skills from Sessions 2-3 (agents, workflows)?
-- Is the SKIP reasoning honest and specific?` : moduleId === "4-2" ? `## MODULE 4-2 RUBRIC: TEAM AI CONVENTIONS
-This submission tests the learner's ability to draft practical team AI standards.
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Coverage | Fewer than 3 of 5 areas addressed | All 5 areas covered | All 5 with department-specific details |
-| Naming Convention | Vague ("name them clearly") | Specific pattern with example | Pattern with version control and ownership |
-| Compliance Review | Not addressed | Regular cadence defined | Regular + triggered reviews with responsible parties |
-| Documentation Standard | Generic | Specific AI-assisted marking language | Marking + audit trail + VERIFY documentation |
-| Implementability | Theoretical | Could be implemented this week | Manager-ready with approval path |
-
-EVALUATION FOCUS:
-- Is the naming convention specific enough to use immediately?
-- Does the compliance review include both regular and triggered cadences?
-- Is the documentation standard specific language, not a vague principle?
-- Could their manager approve this document as-is?` : moduleId === "4-3" ? `## MODULE 4-3 RUBRIC: MEASURING AI ROI
-This submission tests the learner's ability to quantify AI impact with honest measurement.
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Task Selection | Hypothetical task | Real task they have used AI for | Task with multiple data points over time |
-| Time Measurement | No specific numbers | Before and after estimates | Timed measurements with methodology |
-| Quality Assessment | Not addressed | One quality improvement noted | Multiple quality dimensions with examples |
-| Honesty | Only positives | Acknowledges at least one limitation | Includes errors caught, limitations, and honest assessment |
-| Recommendation | Vague | Specific and actionable | Includes expansion plan with projected ROI |
-
-EVALUATION FOCUS:
-- Is this a real task they have actually used AI for?
-- Are time estimates reasonable and honest?
-- Does the quality assessment go beyond "it's faster"?
-- Is the manager recommendation specific enough to act on?` : moduleId === "4-4" ? `## MODULE 4-4 RUBRIC: AI TOOL LANDSCAPE
-This submission tests the learner's ability to evaluate AI tools using the 6-point checklist.
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Checklist Coverage | Fewer than 4 of 6 criteria addressed | All 6 criteria addressed | All 6 with specific evidence or research notes |
-| Data Privacy Assessment | Vague ("seems secure") | Specific retention/training policy noted | Full privacy analysis with gaps identified |
-| Output Quality Testing | No banking-specific test | Tested with 1 banking scenario | Tested with 3+ scenarios with quality ratings |
-| Gap Identification | No concerns noted | 1+ concern identified | Concerns ranked by severity with mitigation paths |
-| Recommendation Quality | Vague or missing | Clear approve/reject with rationale | Phased recommendation with deployment plan |
-
-EVALUATION FOCUS:
-- Does the evaluation address the data privacy question first (dealbreaker criterion)?
-- Is the output quality assessment based on actual banking tasks, not generic demos?
-- Are gaps and concerns honest and specific?
-- Is the recommendation actionable by IT or compliance?` : moduleId === "4-5" ? `## MODULE 4-5 RUBRIC: AI INTEGRATION PLAN (SESSION 4 CAPSTONE)
-This is the Session 4 Capstone — the culmination of the entire SMILE curriculum. Evaluate as a real deliverable.
-
-3-LEVEL RUBRIC:
-| Criterion | Weight | Developing | Proficient | Advanced |
-|-----------|--------|-----------|-----------|---------|
-| Task Prioritization | 20% | Generic list | Mapped to AI Eligibility Matrix | Prioritized with time savings estimates |
-| Agent/Workflow Inventory | 20% | References exist | Describes capabilities and gaps | Includes iteration plans and sharing strategy |
-| ROI Baseline | 20% | No measurement | One task measured | Multiple tasks with quantified savings |
-| Team Conventions | 20% | Not addressed | Basic standards described | Complete, department-specific standards |
-| Implementation Plan | 20% | Vague timeline | 30-day plan with milestones | Weekly milestones with accountability measures |
-
-EVALUATION FOCUS:
-- Does the plan reference actual work from Sessions 2-3 (specific agents, workflows)?
-- Are ROI figures grounded in real measurement, not estimates?
-- Is the 30-day timeline specific (weekly milestones with concrete deliverables)?
-- Would a manager approve this plan and allocate resources?
-- Does the plan include what they chose NOT to automate (SKIP tasks)?
-- Is this a 1-page document, not a meandering essay?` : moduleId === "E1-1" ? `## MODULE E1-1 RUBRIC: CHAIN-OF-THOUGHT MASTERY
-This submission tests the learner's ability to design multi-step reasoning prompts that produce auditable analysis.
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Step Structure | Fewer than 3 steps, loosely connected | 5 structured steps with clear instructions for each | Steps build logically with explicit dependencies between them |
-| Cross-Referencing | Steps are independent silos | Later steps reference outputs from earlier steps | Each step cites specific upstream data it depends on |
-| Individual Evaluation | Ratios treated as a single block | Each ratio evaluated individually before cross-analysis | Individual evaluations include thresholds and contextual interpretation |
-| Confidence & Justification | No confidence indicator | Final assessment includes a confidence level | Confidence level includes justification tied to evidence quality |
-| Auditability | Could not trace reasoning | Major conclusions traceable to source steps | Examiner could trace each conclusion to its specific source |
-
-EVALUATION FOCUS:
-- Does the prompt force sequential reasoning rather than a single-pass summary?
-- Are step dependencies explicit (e.g., "Using the DSCR from Step 2, evaluate...")?
-- Would an examiner be able to audit the chain of reasoning?` : moduleId === "E1-2" ? `## MODULE E1-2 RUBRIC: MULTI-SHOT PROMPTING
-This submission tests the learner's ability to use examples to teach an AI consistent output patterns.
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Example Count & Consistency | Fewer than 3 examples or inconsistent format | 3 examples with consistent structure across all | 3+ examples that demonstrate both invariants and meaningful variation |
-| Format Invariants | No identifiable pattern | Clear structural pattern repeats across examples | Pattern is explicit with annotation of what must stay constant |
-| Compliance Element | No compliance element | At least 1 compliance element appears in all examples | Compliance elements are varied but consistently present |
-| Annotations | No annotations | Annotations explain why each example was selected | Annotations highlight what the AI should learn from each example |
-| Request Specificity | Vague request for "more like this" | Request is specific and different from the examples | Request tests whether the AI learned the pattern, not just repeated it |
-
-EVALUATION FOCUS:
-- Do the examples teach a reusable pattern, not just provide templates?
-- Is there enough variation to prevent overfitting to one scenario?
-- Does the compliance element demonstrate how to embed regulatory language naturally?` : moduleId === "E1-3" ? `## MODULE E1-3 RUBRIC: SELF-REVIEW LOOPS
-This submission tests the learner's ability to build a two-prompt generate-then-critique workflow.
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Two-Prompt Structure | Single prompt only | Clear generate + critique-revise sequence | Structured workflow with explicit handoff between generation and review |
-| Checklist Quality | Fewer than 3 criteria | 5+ specific criteria relevant to the deliverable | Criteria use measurable ratings (Fully Met / Partially Met / Missing) |
-| Criteria Specificity | Generic ("is it good?") | Criteria tied to the specific deliverable type | Criteria differentiate between formatting, accuracy, and compliance dimensions |
-| VERIFY Integration | No mention of VERIFY | Identifies items that require VERIFY beyond self-review | Maps self-review vs. VERIFY responsibilities clearly |
-| Combined Coverage | Only checks formatting | Covers formatting and some content | Self-review + VERIFY together cover formatting, factual accuracy, and compliance |
-
-EVALUATION FOCUS:
-- Does the self-review checklist catch what AI can check (format, completeness, tone)?
-- Does the VERIFY layer catch what only humans can check (factual accuracy, regulatory correctness)?
-- Is the combined approach more thorough than either technique alone?` : moduleId === "E2-1" ? `## MODULE E2-1 RUBRIC: DOCUMENT ANALYSIS WITH AI
-This submission tests the learner's ability to design structured prompts for extracting data from banking documents.
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Sanitization First | No sanitization step | Sanitization instructions included as the first step | Specific PII types identified with redaction approach |
-| Field Extraction | Vague ("extract the data") | Specifies exact fields to extract with clear definitions | Fields include data types, expected ranges, and edge case handling |
-| Output Structure | Unstructured text output | Structured output (table or schema) specified | Output includes field names, types, and validation rules |
-| Validation Rules | No validation | At least 2 validation rules for unusual values | Validation rules include cross-field checks and range alerts |
-| VERIFY Application | Not mentioned | Notes that VERIFY must be applied to extracted numbers | Specific VERIFY steps for each critical field identified |
-
-EVALUATION FOCUS:
-- Is sanitization truly the FIRST step, not an afterthought?
-- Are extracted fields specific enough to populate a form or database without human interpretation?
-- Would the validation rules catch the most common extraction errors?` : moduleId === "E2-2" ? `## MODULE E2-2 RUBRIC: MEETING INTELLIGENCE
-This submission tests the learner's ability to design AI-assisted meeting summary templates for banking contexts.
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Meeting-Type Specificity | Generic summary template | Structure matches the specific meeting type (credit committee, ALCO, board, etc.) | Template adapts to meeting dynamics (decision items, risk flags, regulatory items) |
-| Action Items | Vague action list | Action items include owner, deadline, and categorization | Action items include priority, dependencies, and follow-up cadence |
-| Compliance Flagging | No compliance awareness | Identifies sensitive content types for this meeting type | Flags specific regulatory triggers (e.g., fair lending discussion, SAR mention) |
-| Reusability | Single-use template | Template is parameterized for different instances | Template includes configuration options for different meeting sizes/formats |
-| Review Requirement | Not addressed | Notes that AI summary must be reviewed before distribution | Specifies who reviews, what they check, and distribution protocol |
-
-EVALUATION FOCUS:
-- Is this template designed for a specific banking meeting type, not a generic meeting?
-- Would action items be actionable without re-watching the meeting?
-- Does the compliance flag catch the content types that matter for this meeting type?` : moduleId === "E2-3" ? `## MODULE E2-3 RUBRIC: DATA VISUALIZATION WITH AI
-This submission tests the learner's ability to prepare data narratives for executive presentation using AI.
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Data Completeness | Missing key metrics | All required metrics included with correct values | Metrics include context (period, comparison basis, trend direction) |
-| Audience Specification | No audience mentioned | Specifies the audience (executive committee, board, etc.) | Tailors language and detail level to the specific audience |
-| Output Structure | Unstructured narrative | Requests structured output (summary, metric commentary, questions) | Output sections map to presentation flow with transition logic |
-| Presentation Readiness | Requires significant editing | Output would be presentation-ready for executives | Includes speaking notes, anticipated questions, and backup data references |
-| VERIFY Application | Not mentioned | Notes that VERIFY should check calculations | Specific calculation verification steps identified for each metric |
-
-EVALUATION FOCUS:
-- Are all metrics included with accurate values and proper context?
-- Would the output slide into an executive presentation without reformatting?
-- Are the anticipated questions realistic for the audience?` : moduleId === "E3-1" ? `## MODULE E3-1 RUBRIC: AI CHAMPION PLAYBOOK
-This submission tests the learner's ability to build a compelling internal AI adoption pitch.
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Problem Statement | Generic AI benefit claims | References real tasks from the learner's actual work | Quantifies the current pain (time, rework, inconsistency) |
-| Solution Description | Vague ("use AI for X") | Specific AI application with implementation approach | Solution maps to specific agents, workflows, or prompt strategies from training |
-| Evidence & ROI | No supporting evidence | Specific ROI measurements from their own experience | Multiple data points with conservative and optimistic projections |
-| The Ask | Vague or unreasonable | Specific and reasonable request | Phased ask with quick wins and measurable milestones |
-| Professional Tone | Casual or overly technical | Appropriate for a department head | Anticipates objections and addresses them proactively |
-
-EVALUATION FOCUS:
-- Does the problem statement reference the learner's actual work, not hypothetical scenarios?
-- Is the ROI measurement based on real data, not wishful estimates?
-- Would a department head actually approve this ask?` : moduleId === "E3-2" ? `## MODULE E3-2 RUBRIC: AI GOVERNANCE FOR BANKING
-This submission tests the learner's ability to draft a department-level AI governance framework.
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Section Coverage | Fewer than 4 of 6 sections | All 6 sections addressed | All 6 with department-specific content and examples |
-| Approved Use Cases | Generic AI uses | Specific to the learner's department | Includes conditions, guardrails, and review requirements per use case |
-| Prohibited Use Cases | Not addressed or generic | Identifies real risks for the department | Explains WHY each is prohibited with regulatory or risk rationale |
-| Data Handling Rules | Generic data rules | References specific data types handled by the department | Includes classification levels, handling procedures, and escalation paths |
-| Audit Readiness | Not auditable | Documentation requirements specified | Requirements are practical, auditor-ready, and include retention periods |
-| Implementability | Theoretical framework | Could be implemented this quarter | Ready for compliance review with approval workflow included |
-
-EVALUATION FOCUS:
-- Are approved and prohibited use cases specific to the department (not generic)?
-- Would an examiner accept the documentation requirements?
-- Is the framework practical enough to implement this quarter?` : moduleId === "E3-3" ? `## MODULE E3-3 RUBRIC: SCALING AI ACROSS THE BANK
-This submission tests the learner's ability to design a cross-departmental AI rollout plan.
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Department Selection | Random or unexplained | Two departments identified with rationale for selection | Selection based on readiness assessment and strategic alignment |
-| Phase Structure | Vague timeline | Each 30-day phase has specific activities | Phases include dependencies, decision gates, and fallback plans |
-| Measurement Plan | No metrics | Pilot phase includes measurement plan | Metrics include leading and lagging indicators with targets |
-| Template Sharing | Not addressed | Expansion includes template sharing | Sharing plan includes customization guide and onboarding workflow |
-| Executive Report | Not included or vague | Includes quantitative metrics | Executive report template with actual data from pilot phase |
-| Feasibility | Unrealistic scope | Realistic for the bank size and resources | Accounts for change management, training load, and competing priorities |
-
-EVALUATION FOCUS:
-- Is the department selection justified by readiness and strategic value?
-- Are 30-day phases specific enough to execute without additional planning?
-- Would the executive report satisfy a CEO or board committee?` : moduleId === "E4-1" ? `## MODULE E4-1 RUBRIC: AI & FAIR LENDING (SPECIALIST)
-This is a specialist-depth module. Evaluate for regulatory precision — learners should cite specific ECOA provisions and apply the Griggs disparate impact framework.
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Proxy Variable Identification | Identifies 0-1 proxy variables | Identifies at least 3 proxy variable risks with ECOA protected class mapping | Maps each proxy to a specific ECOA category (15 U.S.C. §1691) with correlation mechanism |
-| Disparate Impact Analysis | Not applied | Applies Part 1 of Griggs test (disproportionate effect) | Applies all 3 parts (adverse effect → business necessity → less discriminatory alternative) |
-| Prompt Rewrite | Minor or no changes | Rewritten prompt preserves analysis without proxy variables | Rewrite replaces proxy variables with credit fundamentals (cash flow, collateral, capacity) and annotates each change |
-| CRA Awareness | No CRA connection | Recognizes geographic weighting creates redlining risk | Connects prompt design to CRA assessment area obligations with specific examples |
-| Documentation & Escalation | Not addressed | Notes fair lending review should be documented | Specifies escalation threshold, documentation format, retention, and responsible parties |
-
-EVALUATION FOCUS:
-- Does the learner cite ECOA (15 U.S.C. §1691) or Reg B (12 CFR §1002) specifically — not just "fair lending laws"?
-- Is the Griggs disparate impact test applied correctly (not just mentioned)?
-- Is the rewritten prompt still analytically useful after removing proxy variables — using credit fundamentals, not sterile non-analysis?
-- Would a fair lending examiner accept the documentation and escalation approach?` : moduleId === "E4-2" ? `## MODULE E4-2 RUBRIC: AI AUDIT READINESS (SPECIALIST)
-This is a specialist-depth module. Evaluate for FFIEC alignment and the three lines of defense framework (OCC 2014-1).
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Log Template Design | Missing columns or unclear | Clear column definitions with examples | Includes model risk flag (SR 11-7), retention guidance, and FFIEC IT governance alignment |
-| Example Row | Missing or generic | Realistic example with banking-relevant data | Includes both a standard use and a model-risk-flagged use case |
-| Prompt Summary Guidance | Full prompt text or nothing | 1-2 sentence summary guidance specified | Summary guidance includes what to include, exclude, PII handling, and auditor-readability test |
-| Disposition Categories | Vague or overlapping | Clear and mutually exclusive categories | Categories include workflow status with review chain (draft → reviewed → approved → published → archived) |
-| Three Lines of Defense | Not referenced | Examiner answers reference own documentation (Line 1) | All 5 answers map to the three lines: what Line 1 owns, what Line 2 provides, what Line 3 audits |
-| Examiner Preparedness | Fewer than 3 questions | All 5 examiner questions answered | Responses are confident, cite specific practices, and anticipate follow-up questions |
-
-EVALUATION FOCUS:
-- Does the log template include a model risk flag for outputs that influence credit decisions (per SR 11-7 / OCC 2011-12)?
-- Are examiner answers framed with the three lines of defense — or just first-person responses?
-- Would this log template survive an FFIEC examiner's scrutiny without supplemental explanation?` : moduleId === "E4-3" ? `## MODULE E4-3 RUBRIC: VENDOR AI RISK ASSESSMENT (SPECIALIST)
-This is a specialist-depth module. Evaluate for OCC 2023-17 life cycle alignment and Interagency Guidance compliance.
-
-3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Life Cycle Coverage | Fewer than 3 phases | All 5 OCC 2023-17 phases addressed | All 5 with risk-commensurate depth and regulatory citations |
-| Critical Activity Designation | Not addressed | Designates activity with basic justification | Justification cites specific criteria (customer data, credit decisions, examiner-facing output) |
-| Data Handling & Due Diligence | Generic privacy questions | Specific questions answered honestly | Includes data residency, training data policy, subprocessor chain, and encryption standards |
-| Contract Provisions | Generic terms | At least 3 provisions from Interagency Guidance cited | Provisions include regulatory examination access, breach notification, and termination data handling |
-| Ongoing Monitoring & Termination | Not addressed | Monitoring plan described | Monitoring includes performance metrics, financial condition review, and data exit strategy |
-| Practical Evaluation | No testing described | Banking-specific test scenarios described | Tests include compliance-critical edge cases with documented results as due diligence evidence |
-| Recommendation Quality | Vague or missing | Clear recommendation with supporting rationale | Phased recommendation with conditions, monitoring plan, and risk-commensurate rationale |
-
-EVALUATION FOCUS:
-- Does the assessment follow the OCC 2023-17 life cycle (planning → due diligence → contract → monitoring → termination)?
-- Is the critical activity designation justified — or just assumed?
-- Are contract provisions from the Interagency Guidance (June 2023), not generic terms?
-- Does the termination plan address data return/destruction specifically?
-- Would this assessment satisfy an OCC examiner reviewing the bank's third-party risk management program?` : `## RUBRIC
+- Does the workflow include a review checkpoint before any output leaves the team?` : `## RUBRIC
 ${rubric ? (typeof rubric === "string" ? rubric : JSON.stringify(rubric, null, 2)) : "Evaluate based on clarity, specificity, context, and appropriateness for banking use cases."}`}
 
 ${departmentContext?.lineOfBusiness ? `## DEPARTMENT CONTEXT

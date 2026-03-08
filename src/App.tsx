@@ -2,13 +2,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { TrainingProvider } from "@/contexts/TrainingContext";
 import { SessionProvider } from "@/contexts/SessionContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { FeedbackButton } from "@/components/FeedbackButton";
 import { ViewAsBanner } from "@/components/ViewAsBanner";
 import { AppShell } from "@/components/shell";
 
@@ -34,8 +33,11 @@ import Electives from "./pages/Electives";
 import ElectiveWorkspace from "./pages/ElectiveWorkspace";
 import Certificates from "./pages/Certificates";
 import AIJourney from "./pages/AIJourney";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import ShellPreview from "./pages/ShellPreview";
+import Explore from "./pages/Explore";
+import CommunityZone from "./pages/CommunityZone";
 
 const queryClient = new QueryClient();
 
@@ -50,7 +52,6 @@ const App = () => (
             <BrowserRouter>
               <SessionProvider>
                 <ViewAsBanner />
-                <FeedbackButton />
                 <Routes>
                   {/* Public routes */}
                   <Route path="/" element={<Index />} />
@@ -83,62 +84,34 @@ const App = () => (
                     </ProtectedRoute>
                   } />
 
-                  {/* Learner routes — AppShell with breadcrumbs */}
+                  {/* Profile zone hub */}
+                  <Route path="/profile" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Profile />
+                    </ProtectedRoute>
+                  } />
+
+                  {/* Profile zone sub-pages — redirect to Profile tabs */}
+                  <Route path="/settings" element={<Navigate to="/profile?tab=personalization" replace />} />
+                  <Route path="/memories" element={<Navigate to="/profile?tab=personalization" replace />} />
+                  <Route path="/journey" element={<Navigate to="/profile?tab=journey" replace />} />
+                  <Route path="/my-profile" element={<Navigate to="/profile?tab=my-profile" replace />} />
+
+                  {/* Explore zone sub-pages */}
                   <Route path="/ideas" element={
                     <ProtectedRoute requireOnboarding>
                       <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
+                        { label: 'Explore', path: '/explore' },
                         { label: 'My Ideas' },
                       ]}>
                         <Ideas />
                       </AppShell>
                     </ProtectedRoute>
                   } />
-                  <Route path="/policies" element={
-                    <ProtectedRoute requireOnboarding>
-                      <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
-                        { label: 'Bank Policies' },
-                      ]}>
-                        <Policies />
-                      </AppShell>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/policies/:id" element={
-                    <ProtectedRoute requireOnboarding>
-                      <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
-                        { label: 'Bank Policies', path: '/policies' },
-                        { label: 'Policy' },
-                      ]}>
-                        <PolicyDetail />
-                      </AppShell>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/settings" element={
-                    <ProtectedRoute requireOnboarding>
-                      <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
-                        { label: 'Settings' },
-                      ]}>
-                        <Settings />
-                      </AppShell>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/memories" element={
-                    <ProtectedRoute requireOnboarding>
-                      <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
-                        { label: 'AI Memories' },
-                      ]}>
-                        <AIMemories />
-                      </AppShell>
-                    </ProtectedRoute>
-                  } />
                   <Route path="/prompts" element={
                     <ProtectedRoute requireOnboarding>
                       <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
+                        { label: 'Explore', path: '/explore' },
                         { label: 'Prompt Library' },
                       ]}>
                         <PromptLibrary />
@@ -148,7 +121,7 @@ const App = () => (
                   <Route path="/electives" element={
                     <ProtectedRoute requireOnboarding>
                       <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
+                        { label: 'Explore', path: '/explore' },
                         { label: 'Elective Paths' },
                       ]}>
                         <Electives />
@@ -158,21 +131,49 @@ const App = () => (
                   <Route path="/certificates" element={
                     <ProtectedRoute requireOnboarding>
                       <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
+                        { label: 'Explore', path: '/explore' },
                         { label: 'Certificates' },
                       ]}>
                         <Certificates />
                       </AppShell>
                     </ProtectedRoute>
                   } />
-                  <Route path="/journey" element={
+                  {/* /journey redirects handled above in profile zone */}
+
+                  {/* Org resources — eventually moves to Community zone */}
+                  <Route path="/policies" element={
                     <ProtectedRoute requireOnboarding>
                       <AppShell breadcrumbs={[
-                        { label: 'Home', path: '/dashboard' },
-                        { label: 'My AI Journey' },
+                        { label: 'Community', path: '/community' },
+                        { label: 'Org Resources' },
                       ]}>
-                        <AIJourney />
+                        <Policies />
                       </AppShell>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/policies/:id" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AppShell breadcrumbs={[
+                        { label: 'Community', path: '/community' },
+                        { label: 'Org Resources', path: '/policies' },
+                        { label: 'Resource' },
+                      ]}>
+                        <PolicyDetail />
+                      </AppShell>
+                    </ProtectedRoute>
+                  } />
+
+                  {/* Explore zone — hub for prompts, ideas, electives, journey */}
+                  <Route path="/explore" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Explore />
+                    </ProtectedRoute>
+                  } />
+
+                  {/* Community zone */}
+                  <Route path="/community" element={
+                    <ProtectedRoute requireOnboarding>
+                      <CommunityZone />
                     </ProtectedRoute>
                   } />
 

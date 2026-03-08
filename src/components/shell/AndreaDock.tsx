@@ -25,6 +25,8 @@ export interface AndreaDockHandle {
 
 interface AndreaDockProps {
   initialState?: DockState;
+  /** Called when user clicks X on the attentive bubble (dismisses without engaging) */
+  onDismiss?: () => void;
 }
 
 // ─── AndreaDock ───────────────────────────────────────────────────────────────
@@ -38,7 +40,7 @@ interface AndreaDockProps {
 // Phase 0: UI shell only. No real AI calls. Chat is connected in Phase 2.
 
 export const AndreaDock = forwardRef<AndreaDockHandle, AndreaDockProps>(
-  ({ initialState = 'resting' }, ref) => {
+  ({ initialState = 'resting', onDismiss }, ref) => {
     const { profile } = useAuth();
     const [state, setState] = useState<DockState>(initialState);
     const [previewText, setPreviewText] = useState('');
@@ -70,7 +72,7 @@ export const AndreaDock = forwardRef<AndreaDockHandle, AndreaDockProps>(
         { role: 'user', text: inputValue.trim() },
         {
           role: 'andrea',
-          text: "That's a great question. Full AI coaching will be available once the platform is connected. For now, keep exploring!",
+          text: "Great question! I can best help you during training sessions — head to the Learn zone and I'll guide you through your modules with real-time coaching and feedback.",
         },
       ]);
       setInputValue('');
@@ -85,7 +87,7 @@ export const AndreaDock = forwardRef<AndreaDockHandle, AndreaDockProps>(
             <div className="animate-fade-in mb-1 flex items-center gap-1 rounded-full bg-card px-3 py-1.5 shadow-elevated text-sm font-medium border border-border">
               {previewText}
               <button
-                onClick={() => setState('resting')}
+                onClick={() => { setState('resting'); onDismiss?.(); }}
                 className="ml-1 text-muted-foreground hover:text-foreground"
                 aria-label="Dismiss"
               >

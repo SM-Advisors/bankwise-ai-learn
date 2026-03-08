@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { X, Send, Loader2, Clock, Plus } from 'lucide-react';
+import { VoiceMicButton } from '@/components/VoiceMicButton';
 import andreaCoach from '@/assets/andrea-coach.png';
 import andreaCoach2 from '@/assets/andrea-coach2.png';
 import { useDashboardConversations } from '@/hooks/useDashboardConversations';
@@ -116,15 +117,17 @@ export function DashboardChat({ profile, progress, forceOpen }: DashboardChatPro
 
   const buildLearnerState = () => {
     const completedModules: string[] = [];
-    if (progress?.session_1_completed) completedModules.push('Session 1: AI Prompting & Personalization');
-    if (progress?.session_2_completed) completedModules.push('Session 2: Building Your AI Agent');
-    if (progress?.session_3_completed) completedModules.push('Session 3: Role-Specific Training');
+    if (progress?.session_1_completed) completedModules.push('Session 1: Foundation & Early Wins');
+    if (progress?.session_2_completed) completedModules.push('Session 2: Structured Interaction, Models & Tools');
+    if (progress?.session_3_completed) completedModules.push('Session 3: Agents');
+    if ((progress as any)?.session_4_completed) completedModules.push('Session 4: Functional Agents');
+    if ((progress as any)?.session_5_completed) completedModules.push('Session 5: Build Your Frankenstein');
 
-    let progressSummary = `${completedModules.length}/3 sessions completed`;
+    let progressSummary = `${completedModules.length}/5 sessions completed`;
     if (completedModules.length === 0) {
       progressSummary = 'Just getting started - no sessions completed yet';
-    } else if (completedModules.length === 3) {
-      progressSummary = 'All 3 sessions completed!';
+    } else if (completedModules.length === 5) {
+      progressSummary = 'All 5 sessions completed!';
     }
 
     return {
@@ -371,6 +374,10 @@ export function DashboardChat({ profile, progress, forceOpen }: DashboardChatPro
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask Andrea anything..."
                   className="text-sm"
+                  disabled={isLoading}
+                />
+                <VoiceMicButton
+                  onTranscript={(text) => setInput((prev) => (prev ? prev + ' ' : '') + text)}
                   disabled={isLoading}
                 />
                 <Button

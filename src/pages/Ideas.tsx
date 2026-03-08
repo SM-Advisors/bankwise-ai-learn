@@ -26,6 +26,10 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
   Lightbulb, ArrowLeft, Plus, Loader2, Trash2, Pencil,
   Clock, BookOpen, CalendarClock, Play, Eye
 } from 'lucide-react';
@@ -131,7 +135,7 @@ export default function Ideas() {
   };
 
   return (
-
+    <>
       <div className="container mx-auto px-4 py-8">
         {/* Summary + Add Button */}
         <div className="flex items-center justify-between mb-6">
@@ -302,14 +306,31 @@ export default function Ideas() {
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => handleDelete(idea.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete this idea?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently remove "{idea.title}". This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(idea.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
                   </CardContent>
@@ -333,5 +354,6 @@ export default function Ideas() {
           isGenerating={generatingId === previewIdea.id}
         />
       )}
+    </>
   );
 }

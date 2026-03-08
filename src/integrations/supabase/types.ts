@@ -14,6 +14,76 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_andrea_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          messages: Json
+          organization_id: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          messages?: Json
+          organization_id?: string | null
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          messages?: Json
+          organization_id?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_andrea_conversations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_andrea_notes: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string | null
+          summary: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          summary: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          summary?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_andrea_notes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_test_conversations: {
         Row: {
           agent_id: string
@@ -124,6 +194,36 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           verbosity?: string | null
+        }
+        Relationships: []
+      }
+      andrea_trigger_log: {
+        Row: {
+          dismissed: boolean
+          engaged: boolean
+          id: string
+          surfaced_at: string
+          trigger_context: Json
+          trigger_type: string
+          user_id: string
+        }
+        Insert: {
+          dismissed?: boolean
+          engaged?: boolean
+          id?: string
+          surfaced_at?: string
+          trigger_context?: Json
+          trigger_type: string
+          user_id: string
+        }
+        Update: {
+          dismissed?: boolean
+          engaged?: boolean
+          id?: string
+          surfaced_at?: string
+          trigger_context?: Json
+          trigger_type?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1138,6 +1238,8 @@ export type Database = {
           session_3_progress: Json | null
           session_4_completed: boolean | null
           session_4_progress: Json | null
+          session_5_completed: boolean | null
+          session_5_progress: Json | null
           updated_at: string | null
           user_id: string
         }
@@ -1152,6 +1254,8 @@ export type Database = {
           session_3_progress?: Json | null
           session_4_completed?: boolean | null
           session_4_progress?: Json | null
+          session_5_completed?: boolean | null
+          session_5_progress?: Json | null
           updated_at?: string | null
           user_id: string
         }
@@ -1166,7 +1270,39 @@ export type Database = {
           session_3_progress?: Json | null
           session_4_completed?: boolean | null
           session_4_progress?: Json | null
+          session_5_completed?: boolean | null
+          session_5_progress?: Json | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      training_reset_snapshots: {
+        Row: {
+          expires_at: string
+          id: string
+          reset_at: string
+          reset_by: string
+          reversed_at: string | null
+          snapshot_data: Json
+          user_id: string
+        }
+        Insert: {
+          expires_at?: string
+          id?: string
+          reset_at?: string
+          reset_by: string
+          reversed_at?: string | null
+          snapshot_data?: Json
+          user_id: string
+        }
+        Update: {
+          expires_at?: string
+          id?: string
+          reset_at?: string
+          reset_by?: string
+          reversed_at?: string | null
+          snapshot_data?: Json
           user_id?: string
         }
         Relationships: []
@@ -1564,6 +1700,41 @@ export type Database = {
           workflow_data?: Json
         }
         Relationships: []
+      }
+      value_signals: {
+        Row: {
+          created_at: string
+          id: string
+          org_id: string | null
+          signal_data: Json
+          signal_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          org_id?: string | null
+          signal_data?: Json
+          signal_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          org_id?: string | null
+          signal_data?: Json
+          signal_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "value_signals_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

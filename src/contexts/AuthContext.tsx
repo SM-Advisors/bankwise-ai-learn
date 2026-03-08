@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import type { SessionProgressData } from '@/types/progress';
@@ -44,6 +44,10 @@ export interface TrainingProgress {
   session_2_completed: boolean;
   session_2_progress: SessionProgressData;
   session_3_completed: boolean;
+  session_4_completed: boolean;
+  session_4_progress: SessionProgressData;
+  session_5_completed: boolean;
+  session_5_progress: SessionProgressData;
   session_3_progress: SessionProgressData;
 }
 
@@ -70,7 +74,7 @@ interface AuthContextType {
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: Error | null }>;
   refreshProfile: () => Promise<void>;
   updateProgress: (updates: Partial<TrainingProgress>) => Promise<{ error: Error | null }>;
-  markSessionCompleted: (sessionNumber: 1 | 2 | 3) => Promise<{ error: Error | null }>;
+  markSessionCompleted: (sessionNumber: 1 | 2 | 3 | 4 | 5) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -81,6 +85,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [progress, setProgress] = useState<TrainingProgress | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Flag to prevent onAuthStateChange from overwriting state during signup.
+  // signUp sets profile/progress directly; the auth listener must not race it.
+  const signupInProgressRef = useRef(false);
 
   // Super admin "view as org" state — persisted to sessionStorage
   const [viewAsOrg, setViewAsOrgState] = useState<ViewAsOrg | null>(() => {
@@ -167,7 +175,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session_2_progress: {},
         session_3_completed: false,
         session_3_progress: {},
-      })
+        session_4_completed: false,
+        session_4_progress: {},
+        session_5_completed: false,
+        session_5_progress: {},
+      } as any)
       .select()
       .single();
 
@@ -184,15 +196,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         // Defer profile fetch with setTimeout to avoid deadlock
         if (session?.user) {
+          // Keep loading=true until profile is fetched.  On page load this is
+          // already true; on login, loading may be false from the initial no-op,
+          // which causes a render with user=truthy + profile=null + loading=false
+          // — downstream components (Auth, ProtectedRoute) navigate prematurely.
+          setLoading(true);
+
           setTimeout(async () => {
+            // During signup, signUp() sets profile/progress directly.
+            // Skip the fetch to avoid overwriting with null (row may not exist yet).
+            if (signupInProgressRef.current) {
+              setLoading(false);
+              return;
+            }
+
             const profileData = await fetchProfile(session.user.id);
-            setProfile(profileData);
-            
+            // Don't overwrite a valid profile with null — prevents brief null flash
+            // during signup race window. signOut() handles explicit null-out.
+            if (profileData) {
+              setProfile(profileData);
+            }
+
             const progressData = await fetchProgress(session.user.id);
-            setProgress(progressData);
+            if (progressData) {
+              setProgress(progressData);
+            }
 
             // Update last_login_at only on explicit sign-in (not token refreshes or page reloads)
             if (event === 'SIGNED_IN') {
@@ -201,7 +232,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 .update({ last_login_at: new Date().toISOString() })
                 .eq('user_id', session.user.id);
             }
-            
+
             setLoading(false);
           }, 0);
         } else {
@@ -226,6 +257,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, displayName: string, organizationId?: string) => {
     try {
+      // Tell the auth-state listener to skip its fetch — we handle state directly.
+      signupInProgressRef.current = true;
+
       const redirectUrl = `${window.location.origin}/onboarding`;
 
       const { data, error } = await supabase.auth.signUp({
@@ -238,15 +272,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error;
 
-      // Create profile for the new user (with org assignment if provided)
+      // Create profile & progress rows, then set state directly.
+      // This avoids the race where onAuthStateChange's fetchProfile runs
+      // before the rows exist and overwrites state with null.
       if (data.user) {
-        await createProfile(data.user.id, displayName, organizationId);
-        await createProgress(data.user.id);
+        const newProfile = await createProfile(data.user.id, displayName, organizationId);
+        if (!newProfile) {
+          throw new Error('Failed to create user profile. Please try again.');
+        }
+        setProfile(newProfile);
+
+        const newProgress = await createProgress(data.user.id);
+        if (!newProgress) {
+          throw new Error('Failed to initialize training progress. Please try again.');
+        }
+        setProgress(newProgress);
       }
 
+      setLoading(false);
       return { error: null };
     } catch (error) {
       return { error: error as Error };
+    } finally {
+      signupInProgressRef.current = false;
     }
   };
 
@@ -339,7 +387,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const markSessionCompleted = async (sessionNumber: 1 | 2 | 3) => {
+  const markSessionCompleted = async (sessionNumber: 1 | 2 | 3 | 4 | 5) => {
     if (!user) return { error: new Error('Not authenticated') };
 
     const completedKey = `session_${sessionNumber}_completed` as const;
@@ -349,7 +397,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Also advance the current session if applicable
     const profileUpdates: Partial<UserProfile> = {};
-    if (profile && profile.current_session === sessionNumber && sessionNumber < 3) {
+    if (profile && profile.current_session === sessionNumber && sessionNumber < 5) {
       profileUpdates.current_session = sessionNumber + 1;
     }
 

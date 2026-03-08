@@ -11,7 +11,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Logo } from '@/components/Logo';
-import { supabase as supabaseClient } from '@/integrations/supabase/client';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
@@ -20,7 +19,7 @@ const nameSchema = z.string().min(2, 'Name must be at least 2 characters').max(1
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { signIn, signUp, user, profile, loading } = useAuth();
+  const { signIn, signUp, signOut, user, profile, loading } = useAuth();
   const { toast } = useToast();
   
   const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +30,7 @@ export default function Auth() {
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberMe, setRememberMe] = useState(false);
   
   // Signup form state
   const [signupName, setSignupName] = useState('');
@@ -43,10 +42,32 @@ export default function Auth() {
   // Forgot password state
   const [resetEmail, setResetEmail] = useState('');
 
-  // Redirect if already logged in
+  const clearSupabaseAuthStorage = () => {
+    const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+    try {
+      const projectRef = url ? new URL(url).hostname.split('.')[0] : null;
+      if (projectRef) {
+        localStorage.removeItem(`sb-${projectRef}-auth-token`);
+        return;
+      }
+    } catch {
+      // Fall back to best-effort cleanup below
+    }
+
+    for (const key of Object.keys(localStorage)) {
+      if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+        localStorage.removeItem(key);
+      }
+    }
+  };
+
+  // Redirect if already logged in — wait for profile to load before deciding
+  // which page to send the user to.  Without the profile check, a brief window
+  // after signIn where user is set but profile is still null would always send
+  // users to /onboarding (even those who already completed it).
   useEffect(() => {
-    if (user && !loading) {
-      if (profile?.onboarding_completed) {
+    if (user && !loading && profile) {
+      if (profile.onboarding_completed) {
         navigate('/dashboard');
       } else {
         navigate('/onboarding');
@@ -54,9 +75,31 @@ export default function Auth() {
     }
   }, [user, profile, loading, navigate]);
 
-  if (user) {
+  // Show nothing while auth state is resolving (prevents flash of login form)
+  if (loading) {
     return null;
   }
+
+  if (user && !profile) {
+    return (
+      <div className="min-h-screen gradient-hero flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-display">We’re finishing your setup</CardTitle>
+            <CardDescription>
+              Your account is signed in, but your profile is not ready yet.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button className="w-full" onClick={() => window.location.reload()}>Try Again</Button>
+            <Button variant="outline" className="w-full" onClick={() => signOut()}>Sign Out</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (user) return null;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,17 +119,13 @@ export default function Auth() {
 
     setIsLoading(true);
 
-    // Switch storage based on Remember Me
-    if (!rememberMe) {
-      supabaseClient.auth.setSession; // no-op, we configure storage below
-      // For "don't remember me", we clear localStorage after sign-in and rely on in-memory session
-    }
-
     const { error } = await signIn(loginEmail, loginPassword);
 
     if (!error && !rememberMe) {
-      // Remove persisted session so it doesn't survive browser close
-      localStorage.removeItem('sb-tehcmmctcmmecuzytiec-auth-token');
+      // Remove persisted session so it doesn't survive browser close.
+      // On next token refresh Supabase will re-persist, but closing the
+      // browser before that effectively ends the session.
+      clearSupabaseAuthStorage();
     }
 
     setIsLoading(false);
@@ -246,7 +285,7 @@ export default function Auth() {
                     Password reset email sent!
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Check your inbox for a link to reset your password.
+                    Check your inbox (and spam folder) for a link to reset your password. The link expires in 1 hour.
                   </p>
                 </div>
                 <Button 
@@ -403,7 +442,7 @@ export default function Auth() {
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    Your organization administrator will provide this code
+                    Your organization administrator will provide this code (e.g., BANKWISE-2024)
                   </p>
                 </div>
                 <div className="space-y-2">
