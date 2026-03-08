@@ -84,13 +84,13 @@ export function CertificateGenerator({
             ${bankName ? `<div class="bank">${bankName}</div>` : ''}
           </div>
           <div class="desc">
-            For successfully completing the comprehensive AI Training Program, demonstrating proficiency in AI prompting, custom agent development, and role-specific AI applications for banking professionals.
+            For successfully completing the comprehensive AI Training Program, demonstrating proficiency in structured prompting, AI agent development, and role-specific AI applications for banking professionals.
           </div>
           <div class="skills">
-            <span>AI Prompting</span>
+            <span>Foundation & Early Wins</span>
+            <span>Structured Interaction</span>
             <span>Agent Building</span>
-            <span>Workflow Design</span>
-            <span>Compliance Integration</span>
+            <span>Functional AI Tools</span>
           </div>
           <div class="footer">
             <div class="date">Completed: ${formattedDate}</div>
@@ -147,10 +147,10 @@ export function CertificateGenerator({
             {bankName && <p className="text-gray-600 mt-2">{bankName}</p>}
           </div>
           <p className="text-sm text-gray-600 max-w-md mx-auto leading-relaxed">
-            For successfully completing the comprehensive AI Training Program, demonstrating proficiency in AI prompting, custom agent development, and role-specific AI applications.
+            For successfully completing the comprehensive AI Training Program, demonstrating proficiency in structured prompting, AI agent development, and role-specific AI applications.
           </p>
           <div className="flex flex-wrap justify-center gap-2">
-            {['AI Prompting', 'Agent Building', 'Workflow Design', 'Compliance'].map((skill) => (
+            {['Foundation & Early Wins', 'Structured Interaction', 'Agent Building', 'Functional AI Tools'].map((skill) => (
               <span key={skill} className="px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
                 {skill}
               </span>

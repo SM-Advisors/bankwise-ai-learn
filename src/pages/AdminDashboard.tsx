@@ -942,24 +942,24 @@ export default function AdminDashboard() {
                     AI Training Program Overview
                   </CardTitle>
                   <CardDescription>
-                    Three-stage progressive training: Foundation → Customization → Specialization
+                    Three-stage progressive training: Foundation → Structured Interaction → Agents
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-center gap-2 mb-8 flex-wrap">
                     <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
                       <Sparkles className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium text-blue-600">Stage 1: Prompting</span>
+                      <span className="font-medium text-blue-600">Stage 1: Foundation</span>
                     </div>
                     <div className="text-muted-foreground">→</div>
                     <div className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 rounded-lg border border-purple-500/20">
                       <Bot className="h-4 w-4 text-purple-600" />
-                      <span className="font-medium text-purple-600">Stage 2: Agent Building</span>
+                      <span className="font-medium text-purple-600">Stage 2: Structured Interaction</span>
                     </div>
                     <div className="text-muted-foreground">→</div>
                     <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-lg border border-green-500/20">
                       <Building2 className="h-4 w-4 text-green-600" />
-                      <span className="font-medium text-green-600">Stage 3: Specialization</span>
+                      <span className="font-medium text-green-600">Stage 3: Agents</span>
                     </div>
                   </div>
 

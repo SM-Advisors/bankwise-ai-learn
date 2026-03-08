@@ -45,8 +45,8 @@ function FeatureGateDemo() {
       unlocks: ['Learn', 'Profile'],
     },
     {
-      label: 'session_1_module_2_done',
-      met: isUnlocked('session_1_module_2_done'),
+      label: 'session_1_basic_interaction_done',
+      met: isUnlocked('session_1_basic_interaction_done'),
       unlocks: ['Explore'],
     },
     {
@@ -107,7 +107,7 @@ function FeatureGateDemo() {
 
 export default function ShellPreview() {
   const navigate = useNavigate();
-  const [currentModule, setCurrentModule] = useState('1-2');
+  const [currentModule, setCurrentModule] = useState('1-3');
   const [showLoading, setShowLoading] = useState(false);
 
   const breadcrumbs = [
