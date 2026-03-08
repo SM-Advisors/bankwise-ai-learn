@@ -35,7 +35,6 @@ interface SubmissionReviewRequest {
     attemptNumber?: number;
     progressSummary?: string;
   };
-  userId?: string; // Optional fallback if auth not available
 }
 
 interface LessonChunk {
@@ -251,7 +250,7 @@ serve(async (req) => {
     }
 
     const requestBody: SubmissionReviewRequest = await req.json();
-    const { lessonId, moduleId, isGateModule, submission, rubric, agentTemplate, workflowData, departmentContext, learnerState, userId: bodyUserId } = requestBody;
+    const { lessonId, moduleId, isGateModule, submission, rubric, agentTemplate, workflowData, departmentContext, learnerState } = requestBody;
 
     if (!lessonId || !submission) {
       return new Response(
@@ -269,7 +268,7 @@ serve(async (req) => {
       global: { headers: authHeader ? { Authorization: authHeader } : {} },
     });
 
-    // Get user ID from auth (preferred) or body (fallback)
+    // Get authenticated user ID
     let userId: string | null = null;
 
     if (authHeader?.startsWith("Bearer ")) {
@@ -279,8 +278,11 @@ serve(async (req) => {
       }
     }
 
-    if (!userId && bodyUserId) {
-      userId = bodyUserId;
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Rate limiting

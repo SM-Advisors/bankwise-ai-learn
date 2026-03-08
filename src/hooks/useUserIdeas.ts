@@ -29,7 +29,11 @@ export function useUserIdeas() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchIdeas = async () => {
-    if (!user) return;
+    if (!user) {
+      setIdeas([]);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const { data, error: fetchError } = await (supabase
