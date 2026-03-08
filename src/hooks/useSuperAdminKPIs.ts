@@ -71,7 +71,8 @@ export function useSuperAdminKPIs() {
 
         if (allProfilesErr) throw allProfilesErr;
 
-        const profileByUserId = new Map<string, any>(
+        type ProfileRow = NonNullable<typeof allProfiles>[number];
+        const profileByUserId = new Map<string, ProfileRow>(
           (allProfiles || []).map((p) => [p.user_id, p])
         );
 

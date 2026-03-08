@@ -84,7 +84,7 @@ export function useUserAgents() {
     try {
       const { error } = await supabase
         .from('user_agents')
-        .updateupdates
+        .update(updates)
         .eq('id', id)
         .eq('user_id', user.id);
 

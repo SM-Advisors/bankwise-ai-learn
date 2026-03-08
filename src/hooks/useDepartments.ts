@@ -147,7 +147,7 @@ export function useAllDepartments() {
   const updateDepartment = async (id: string, updates: Partial<Department>) => {
     const { error } = await supabase
       .from('departments')
-      .updateupdates
+      .update(updates)
       .eq('id', id);
     if (error) throw error;
     await fetchAll();

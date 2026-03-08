@@ -64,7 +64,7 @@ export function useUserWorkflows() {
     try {
       const { error } = await supabase
         .from('user_workflows')
-        .updateupdates
+        .update(updates)
         .eq('id', id)
         .eq('user_id', user.id);
       if (error) throw error;

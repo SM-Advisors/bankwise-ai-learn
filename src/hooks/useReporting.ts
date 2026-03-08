@@ -184,7 +184,8 @@ export function useReporting(organizationId: string | null = null) {
         .from('training_progress')
         .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed');
 
-      const progressMap = new Map<string, any>();
+      type ProgressRow = NonNullable<typeof progressData>[number];
+      const progressMap = new Map<string, ProgressRow>();
       (progressData || []).forEach((p) => {
         progressMap.set(p.user_id, p);
       });
@@ -303,7 +304,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
         enrolledProfilesQuery,
       ]);
 
-      const profiles[]1= enrolledProfiles || [];
+      const profiles = enrolledProfiles || [];
       const allOrgUserIds = new Set((allProfiles || []).map((p) => p.user_id));
 
       // Build server-side prompt_events query — filter at DB level when org-scoped
@@ -337,7 +338,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
           .order('votes', { ascending: false })),
       ]);
 
-      const progress[]1= progressData || [];
+      const progress = progressData || [];
       // Deduplicate ideas by ID to prevent duplicates from join multiplicity
       const ideasRaw: IdeaItem[] = (ideasData || []) as IdeaItem[];
       const seenIds = new Set<string>();
@@ -351,14 +352,15 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
       const orgUserIds = new Set(profiles.map((p) => p.user_id));
 
       // Events are already org-filtered by the DB query above
-      const events[]1= promptEvents || [];
+      const events = promptEvents || [];
 
       // ── Section A: Progress & Skill ────────────────────────────────────
       const totalAllUsers = (allProfiles || []).length;
       const totalEnrolled = profiles.length;
       const enrollmentRate = totalAllUsers > 0 ? Math.round((totalEnrolled / totalAllUsers) * 100) : 0;
 
-      const progressMap = new Map<string, any>();
+      type ProgressRow2 = (typeof progress)[number];
+      const progressMap = new Map<string, ProgressRow2>();
       progress.forEach((p) => progressMap.set(p.user_id, p));
 
       const combined = profiles.map((profile) => {
