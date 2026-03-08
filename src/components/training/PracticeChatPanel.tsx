@@ -442,9 +442,11 @@ export function PracticeChatPanel({
               )}
             </div>
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
-                <Mic className="h-5 w-5" />
-              </Button>
+              <VoiceMicButton
+                onTranscript={(text) => setInput((prev) => (prev ? prev + ' ' : '') + text)}
+                disabled={isLoading}
+                size="default"
+              />
               {input.trim() ? (
                 <Button
                   size="icon"

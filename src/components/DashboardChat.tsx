@@ -376,6 +376,10 @@ export function DashboardChat({ profile, progress, forceOpen }: DashboardChatPro
                   className="text-sm"
                   disabled={isLoading}
                 />
+                <VoiceMicButton
+                  onTranscript={(text) => setInput((prev) => (prev ? prev + ' ' : '') + text)}
+                  disabled={isLoading}
+                />
                 <Button
                   type="submit"
                   size="icon"
