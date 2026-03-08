@@ -35,7 +35,6 @@ interface SubmissionReviewRequest {
     attemptNumber?: number;
     progressSummary?: string;
   };
-  userId?: string; // Optional fallback if auth not available
 }
 
 interface LessonChunk {
@@ -46,6 +45,7 @@ interface LessonChunk {
 }
 
 interface FeedbackResponse {
+  gateResult?: unknown;
   feedback: {
     summary: string;
     strengths: string[];
@@ -161,7 +161,7 @@ async function generateQueryEmbedding(text: string): Promise<number[] | null> {
 
 // Retrieve lesson content chunks from database (vector similarity with sequential fallback)
 async function retrieveLessonContext(
-  supabase: any,
+  supabase: ReturnType<typeof createClient>,
   params: { lessonId: string; moduleId?: string; query: string; topK?: number }
 ): Promise<LessonChunk[]> {
   const { lessonId, moduleId, query: ragQuery, topK = 6 } = params;
@@ -251,7 +251,7 @@ serve(async (req) => {
     }
 
     const requestBody: SubmissionReviewRequest = await req.json();
-    const { lessonId, moduleId, isGateModule, submission, rubric, agentTemplate, workflowData, departmentContext, learnerState, userId: bodyUserId } = requestBody;
+    const { lessonId, moduleId, isGateModule, submission, rubric, agentTemplate, workflowData, departmentContext, learnerState } = requestBody;
 
     if (!lessonId || !submission) {
       return new Response(
@@ -269,7 +269,7 @@ serve(async (req) => {
       global: { headers: authHeader ? { Authorization: authHeader } : {} },
     });
 
-    // Get user ID from auth (preferred) or body (fallback)
+    // Get authenticated user ID
     let userId: string | null = null;
 
     if (authHeader?.startsWith("Bearer ")) {
@@ -279,8 +279,11 @@ serve(async (req) => {
       }
     }
 
-    if (!userId && bodyUserId) {
-      userId = bodyUserId;
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Rate limiting
@@ -811,7 +814,7 @@ GATE EVALUATION RULES:
             user_id: userId,
             session_id: lessonId || "unknown",
             module_id: moduleId || null,
-            attempt_number: (learnerState as any)?.attemptNumber || 1,
+            attempt_number: learnerState?.attemptNumber || 1,
             scores: feedbackData.feedback,
             summary: feedbackData.feedback.summary || "",
           })
@@ -823,8 +826,8 @@ GATE EVALUATION RULES:
       JSON.stringify({
         ...feedbackData,
         // Pass through gateResult if present (gate modules only)
-        ...(isGateModule && (feedbackData as any).gateResult
-          ? { gateResult: (feedbackData as any).gateResult }
+        ...(isGateModule && feedbackData.gateResult
+          ? { gateResult: feedbackData.gateResult }
           : {}),
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

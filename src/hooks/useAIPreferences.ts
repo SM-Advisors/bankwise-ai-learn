@@ -40,7 +40,11 @@ export function useAIPreferences() {
   const [loading, setLoading] = useState(true);
 
   const fetchPreferences = async () => {
-    if (!user) return;
+    if (!user) {
+      setPreferences(null);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const { data, error } = await (supabase
@@ -94,7 +98,11 @@ export function useAIMemories() {
   const [loading, setLoading] = useState(true);
 
   const fetchMemories = async () => {
-    if (!user) return;
+    if (!user) {
+      setMemories([]);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const { data, error } = await (supabase

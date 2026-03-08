@@ -387,7 +387,7 @@ async function generateQueryEmbedding(text: string): Promise<number[] | null> {
 }
 
 async function retrieveLessonContext(
-  supabase: any,
+  supabase: ReturnType<typeof createClient>,
   params: { lessonId: string; moduleId?: string; query: string; topK?: number; learningStyle?: string }
 ): Promise<LessonChunk[]> {
   const { lessonId, moduleId, query: ragQuery, topK = 6, learningStyle = 'universal' } = params;
@@ -569,7 +569,6 @@ serve(async (req) => {
       agentContext,
       workflowContext,
       learnerState,
-      userId: bodyUserId,
     } = requestBody;
 
     // Detect sandbox mode from the flag or moduleId pattern
@@ -594,7 +593,7 @@ serve(async (req) => {
       global: { headers: authHeader ? { Authorization: authHeader } : {} },
     });
 
-    // Get user ID from auth (preferred) or body (fallback)
+    // Get authenticated user ID
     let userId: string | null = null;
 
     if (authHeader?.startsWith("Bearer ")) {
@@ -604,8 +603,11 @@ serve(async (req) => {
       }
     }
 
-    if (!userId && bodyUserId) {
-      userId = bodyUserId;
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Rate limiting

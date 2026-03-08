@@ -31,6 +31,15 @@ interface ChunkRow {
   module_id: string | null;
 }
 
+interface OpenAIEmbeddingItem {
+  index: number;
+  embedding: number[];
+}
+
+interface OpenAIEmbeddingResponse {
+  data: OpenAIEmbeddingItem[];
+}
+
 async function generateEmbeddings(
   texts: string[],
   apiKey: string
@@ -55,11 +64,11 @@ async function generateEmbeddings(
     );
   }
 
-  const result = await response.json();
+  const result = (await response.json()) as OpenAIEmbeddingResponse;
   // OpenAI returns embeddings sorted by index
   return result.data
-    .sort((a: any, b: any) => a.index - b.index)
-    .map((item: any) => item.embedding);
+    .sort((a, b) => a.index - b.index)
+    .map((item) => item.embedding);
 }
 
 serve(async (req) => {

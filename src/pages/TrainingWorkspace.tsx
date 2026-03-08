@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth, type UserProfile } from '@/contexts/AuthContext';
+import { useAuth, type UserProfile, type TrainingProgress } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -116,12 +116,14 @@ export default function TrainingWorkspace() {
     const progressKey = 'session_3_progress' as const;
     const currentProgress = (progress?.[progressKey] as SessionProgressData) || { completedModules: Array.from(completedModules) };
     const existing = currentProgress.capstoneData || { selectedOption: '' };
-    await updateProgress({
+    const progressUpdate: Partial<TrainingProgress> = {
       [progressKey]: {
         ...currentProgress,
         capstoneData: { ...existing, ...updates },
       },
-    } as any);
+    };
+
+    await updateProgress(progressUpdate);
   };
 
   // Module engagement tracking state
@@ -263,9 +265,11 @@ export default function TrainingWorkspace() {
     // Update local state immediately for responsive UI
     setModuleEngagement(engagement);
 
-    await updateProgress({
+    const progressUpdate: Partial<TrainingProgress> = {
       [progressKey]: { ...currentProgress, moduleEngagement: engagement },
-    } as any);
+    };
+
+    await updateProgress(progressUpdate);
   };
 
   // Manually bypass a gate module (user dismisses the gate requirement)
@@ -288,13 +292,15 @@ export default function TrainingWorkspace() {
     };
     setModuleEngagement(engagement);
 
-    await updateProgress({
+    const progressUpdate: Partial<TrainingProgress> = {
       [progressKey]: {
         ...currentProgress,
         completedModules: Array.from(newCompletedModules),
         moduleEngagement: engagement,
       },
-    } as any);
+    };
+
+    await updateProgress(progressUpdate);
   };
 
   if (loading || !profile) {
@@ -416,7 +422,7 @@ export default function TrainingWorkspace() {
           // Department context for bankers; interests for F&F users
           jobRole: profile?.job_role,
           departmentLob: profile?.department,
-          interests: (profile as any)?.interests || undefined,
+          interests: profile?.interests || undefined,
         },
       });
 
@@ -643,13 +649,15 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
       setModuleEngagement(engagement);
 
-      await updateProgress({
+      const progressUpdate: Partial<TrainingProgress> = {
         [progressKey]: {
           completedModules: Array.from(newCompletedModules),
           moduleEngagement: engagement,
           skillSignals: updatedSkillSignals,
         },
-      } as any);
+      };
+
+      await updateProgress(progressUpdate);
 
       // Signal: skill_applied — module completed
       if (gatePassed) {
@@ -681,8 +689,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
     trigger: draftWorkflow.workflow_data?.trigger || '',
     steps: draftWorkflow.workflow_data?.steps || [],
     finalOutput: draftWorkflow.workflow_data?.finalOutput || '',
-    stepCount: draftWorkflow.workflow_data?.steps?.filter((s: any) => s.name?.trim()).length || 0,
-    checkpointCount: draftWorkflow.workflow_data?.steps?.filter((s: any) => s.humanReview && s.name?.trim()).length || 0,
+    stepCount: draftWorkflow.workflow_data?.steps?.filter((s: { name?: string }) => s.name?.trim()).length || 0,
+    checkpointCount: draftWorkflow.workflow_data?.steps?.filter((s: { humanReview?: boolean; name?: string }) => s.humanReview && s.name?.trim()).length || 0,
   } : undefined;
 
   const handleTrainerSubmit = async () => {
@@ -842,21 +850,24 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
   const handleAcceptLevelChange = async (proposedLevel: string) => {
     const newProficiency = LEVEL_TO_PROFICIENCY[proposedLevel];
-    const promises: Promise<any>[] = [];
+    const promises: Promise<unknown>[] = [];
     if (newProficiency !== undefined) {
       promises.push(updateProfile({ ai_proficiency_level: newProficiency }));
     }
     // Use cached pendingRequest; if missing (e.g. expired before user clicked), fetch fresh
     let requestId = pendingRequest?.id;
     if (!requestId && user?.id) {
-      const { data } = await (supabase
-        .from('level_change_requests' as any)
+      const { data } = await supabase
+        .from('level_change_requests' as never)
         .select('id')
         .eq('user_id', user.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
-        .limit(1) as any);
-      requestId = data?.[0]?.id;
+        .limit(1);
+
+      if (Array.isArray(data) && data.length > 0) {
+        requestId = (data[0] as { id?: string }).id;
+      }
     }
     if (requestId) {
       promises.push(respondToLevelChange(requestId, true));
@@ -937,8 +948,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         currentSession={profile?.current_session ?? 1}
         completedSessions={{
           1: !!progress?.session_1_completed,
-          4: !!(progress as any)?.session_4_completed,
-          5: !!(progress as any)?.session_5_completed,
+          4: !!progress?.session_4_completed,
+          5: !!progress?.session_5_completed,
           2: !!progress?.session_2_completed,
           3: !!progress?.session_3_completed,
         }}

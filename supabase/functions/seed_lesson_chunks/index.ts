@@ -10,6 +10,15 @@ const OPENAI_EMBEDDING_MODEL = "text-embedding-3-small";
 const EMBEDDING_DIMENSIONS = 1536;
 const EMBEDDING_BATCH_SIZE = 50;
 
+interface OpenAIEmbeddingItem {
+  index: number;
+  embedding: number[];
+}
+
+interface OpenAIEmbeddingResponse {
+  data: OpenAIEmbeddingItem[];
+}
+
 async function generateEmbeddings(
   texts: string[],
   apiKey: string
@@ -32,10 +41,10 @@ async function generateEmbeddings(
     throw new Error(`OpenAI Embedding API error ${response.status}: ${errorText}`);
   }
 
-  const result = await response.json();
+  const result = (await response.json()) as OpenAIEmbeddingResponse;
   return result.data
-    .sort((a: any, b: any) => a.index - b.index)
-    .map((item: any) => item.embedding);
+    .sort((a, b) => a.index - b.index)
+    .map((item) => item.embedding);
 }
 
 /**
@@ -56,6 +65,35 @@ interface ChunkInput {
   text: string;
   source: string;
   metadata: Record<string, unknown>;
+}
+
+interface SessionModuleInput {
+  id: string;
+  title: string;
+  type: string;
+  content: {
+    overview: string;
+    keyPoints: string[];
+    examples?: Array<{ title: string; good?: string; bad?: string; explanation: string }>;
+    steps?: string[];
+    practiceTask: {
+      title: string;
+      instructions: string;
+      scenario: string;
+      hints: string[];
+      successCriteria: string[];
+    };
+  };
+}
+
+interface SessionSeedData {
+  title: string;
+  modules: SessionModuleInput[];
+}
+
+interface ChunkToEmbed {
+  id: string;
+  text: string;
 }
 
 // Embedded training content for all sessions — extracted from trainingContent.ts
@@ -210,7 +248,7 @@ serve(async (req) => {
 
     for (const [sessionIdStr, sessionData] of Object.entries(sessions)) {
       const sessionId = parseInt(sessionIdStr);
-      const session = sessionData as { title: string; modules: any[] };
+      const session = sessionData as SessionSeedData;
 
       if (!session.modules || !Array.isArray(session.modules)) {
         continue;
@@ -264,14 +302,15 @@ serve(async (req) => {
         .order("chunk_index", { ascending: true });
 
       if (!fetchErr && chunksToEmbed && chunksToEmbed.length > 0) {
+        const typedChunksToEmbed = chunksToEmbed as ChunkToEmbed[];
         let totalEmbedded = 0;
         const embErrors: string[] = [];
 
-        for (let i = 0; i < chunksToEmbed.length; i += EMBEDDING_BATCH_SIZE) {
-          const batch = chunksToEmbed.slice(i, i + EMBEDDING_BATCH_SIZE);
+        for (let i = 0; i < typedChunksToEmbed.length; i += EMBEDDING_BATCH_SIZE) {
+          const batch = typedChunksToEmbed.slice(i, i + EMBEDDING_BATCH_SIZE);
           try {
             const embeddings = await generateEmbeddings(
-              batch.map((c: any) => c.text),
+              batch.map((c) => c.text),
               OPENAI_API_KEY
             );
             for (let j = 0; j < batch.length; j++) {
@@ -288,7 +327,7 @@ serve(async (req) => {
           } catch (batchErr) {
             embErrors.push(`Batch error: ${batchErr instanceof Error ? batchErr.message : "Unknown"}`);
           }
-          if (i + EMBEDDING_BATCH_SIZE < chunksToEmbed.length) {
+          if (i + EMBEDDING_BATCH_SIZE < typedChunksToEmbed.length) {
             await new Promise((r) => setTimeout(r, 200));
           }
         }
@@ -297,7 +336,7 @@ serve(async (req) => {
           embedded: totalEmbedded,
           errors: embErrors.length > 0 ? embErrors : undefined,
         };
-        console.log(`Embedded ${totalEmbedded}/${chunksToEmbed.length} chunks`);
+        console.log(`Embedded ${totalEmbedded}/${typedChunksToEmbed.length} chunks`);
       }
     } else if (!OPENAI_API_KEY) {
       console.log("OPENAI_API_KEY not set — skipping embedding generation. Run embed_chunks function separately.");
