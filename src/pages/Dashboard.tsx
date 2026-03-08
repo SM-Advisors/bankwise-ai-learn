@@ -77,6 +77,15 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { profile, progress, loading } = useAuth();
   const { canAccessCommunity } = useFeatureGates();
+  const { isCompleted: tourDone, startTour } = useTour('dashboard');
+
+  // Auto-trigger dashboard tour on first visit
+  useEffect(() => {
+    if (!loading && profile && !tourDone) {
+      const timeout = setTimeout(() => startTour(DASHBOARD_STEPS), 800);
+      return () => clearTimeout(timeout);
+    }
+  }, [loading, profile, tourDone]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading || !profile) {
     return (
