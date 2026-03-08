@@ -43,7 +43,7 @@ export function usePracticeConversations(sessionId: string, moduleId: string | n
 
       const parsed: PracticeConversation[] = (data || []).map((row) => ({
         ...row,
-        messages: (Array.isArray(row.messages) ? row.messages : []) as PracticeMessage[],
+        messages: (Array.isArray(row.messages) ? row.messages : []) as unknown as PracticeMessage[],
       }));
 
       setConversations(parsed);
