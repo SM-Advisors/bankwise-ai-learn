@@ -89,6 +89,7 @@ export default function TrainingWorkspace() {
   // Determine if current module is an Agent Studio module
   // Agent Studio modules: Session 3, Modules 3-3 through 3-7 (Build Agent, Knowledge, Files, Tools, Capstone)
   const isAgentModule = sessionId === '3' && ['3-3', '3-4', '3-5', '3-6', '3-7'].includes(selectedModule?.id ?? '');
+  const isPersonalizationModule = sessionId === '1' && selectedModule?.id === '1-1';
 
   // For Session 3: determine special module types
   const isSession3 = sessionId === '3';
