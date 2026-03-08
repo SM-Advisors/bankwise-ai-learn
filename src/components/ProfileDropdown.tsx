@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { User, Settings, LogOut, ChevronDown, RefreshCw, Play, Shield } from 'lucide-react';
+import { User, LogOut, ChevronDown, RefreshCw, Play, Shield } from 'lucide-react';
 
 interface ProfileDropdownProps {
   onReplayTour?: () => void;
