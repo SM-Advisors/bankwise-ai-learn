@@ -8,6 +8,7 @@ const SESSION_LABELS: Record<number, string> = {
   2: 'AI Agent',
   3: 'Role Training',
   4: 'Integration',
+  5: 'Frankenstein',
 };
 
 interface SessionSwitcherProps {

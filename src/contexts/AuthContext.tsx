@@ -175,7 +175,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session_2_progress: {},
         session_3_completed: false,
         session_3_progress: {},
-      })
+        session_4_completed: false,
+        session_4_progress: {},
+        session_5_completed: false,
+        session_5_progress: {},
+      } as any)
       .select()
       .single();
 
