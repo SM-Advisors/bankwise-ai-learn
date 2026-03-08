@@ -309,7 +309,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Check if user is deactivated
       if (data?.user) {
-        const { data: profileCheck } = await (supabase
+        const { data: profileCheck } = await supabase
           .from('user_profiles')
           .select('is_active')
           .eq('user_id', data.user.id)
