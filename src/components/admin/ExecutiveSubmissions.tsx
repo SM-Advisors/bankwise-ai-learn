@@ -27,6 +27,10 @@ interface ExecutiveSubmission {
   created_at: string;
 }
 
+interface UserProfileRow {
+  user_id: string;
+}
+
 const STATUS_CONFIG: Record<SubmissionStatus, { label: string; className: string }> = {
   submitted: { label: 'Submitted', className: 'bg-blue-500/10 text-blue-700 dark:text-blue-300' },
   reviewed: { label: 'Reviewed', className: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-300' },
@@ -76,25 +80,25 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
     let orgUserIds: Set<string> | null = null;
     if (organizationId) {
       const { data: profiles } = await (supabase
-        .from('user_profiles' as any)
+        .from('user_profiles' as never)
         .select('user_id')
-        .eq('organization_id', organizationId) as any);
-      orgUserIds = new Set((profiles || []).map((p: any) => p.user_id));
+        .eq('organization_id', organizationId));
+      orgUserIds = new Set(((profiles || []) as UserProfileRow[]).map((p) => p.user_id));
     }
 
     const { data, error } = await (supabase
-      .from('executive_submissions' as any)
+      .from('executive_submissions' as never)
       .select('*')
-      .order('created_at', { ascending: false }) as any);
+      .order('created_at', { ascending: false }));
 
     if (error) {
       console.error('Failed to load submissions:', error);
       toast({ title: 'Failed to load submissions', variant: 'destructive' });
     } else {
       const filtered = orgUserIds
-        ? (data || []).filter((s: any) => orgUserIds!.has(s.user_id))
+        ? ((data || []) as ExecutiveSubmission[]).filter((s) => orgUserIds!.has(s.user_id))
         : (data || []);
-      setSubmissions(filtered);
+      setSubmissions(filtered as ExecutiveSubmission[]);
     }
     setLoading(false);
   };
@@ -107,13 +111,13 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
     setUpdatingId(id);
     const notes = noteValues[id] ?? null;
     const { error } = await (supabase
-      .from('executive_submissions' as any)
+      .from('executive_submissions' as never)
       .update({
         status,
         reviewer_notes: notes,
         reviewed_at: new Date().toISOString(),
       })
-      .eq('id', id) as any);
+      .eq('id', id));
 
     if (error) {
       toast({ title: 'Failed to update', description: error.message, variant: 'destructive' });

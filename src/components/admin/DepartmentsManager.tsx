@@ -18,6 +18,10 @@ import {
   Eye, EyeOff,
 } from 'lucide-react';
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'An unexpected error occurred';
+}
+
 export function DepartmentsManager() {
   const { departments, loading, refetch, createDepartment, updateDepartment, toggleDepartment } = useAllDepartments();
   const { toast } = useToast();
@@ -40,8 +44,8 @@ export function DepartmentsManager() {
     setSaving(true);
     try {
       // Get the banking industry ID
-      const { data: industries } = await supabase.from('industries' as any).select('id').eq('slug', 'banking').single();
-      const industryId = (industries as any)?.id;
+      const { data: industries } = await supabase.from('industries' as never).select('id').eq('slug', 'banking').single();
+      const industryId = (industries as { id?: string } | null)?.id;
       if (!industryId) throw new Error('Banking industry not found');
 
       const slug = deptForm.slug.trim() || deptForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
@@ -52,12 +56,12 @@ export function DepartmentsManager() {
         description: deptForm.description.trim() || null,
         icon: deptForm.icon || 'Building2',
         display_order: departments.length,
-      } as any);
+      });
       toast({ title: 'Department added' });
       setAddingDept(false);
       setDeptForm({ name: '', slug: '', description: '', icon: 'Building2' });
-    } catch (e: any) {
-      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    } catch (error: unknown) {
+      toast({ title: 'Error', description: getErrorMessage(error), variant: 'destructive' });
     }
     setSaving(false);
   };
@@ -70,11 +74,11 @@ export function DepartmentsManager() {
         name: deptForm.name.trim(),
         description: deptForm.description.trim() || null,
         icon: deptForm.icon || 'Building2',
-      } as any);
+      });
       toast({ title: 'Department updated' });
       setEditingDept(null);
-    } catch (e: any) {
-      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    } catch (error: unknown) {
+      toast({ title: 'Error', description: getErrorMessage(error), variant: 'destructive' });
     }
     setSaving(false);
   };
@@ -83,8 +87,8 @@ export function DepartmentsManager() {
     try {
       await toggleDepartment(dept.id, !dept.is_active);
       toast({ title: dept.is_active ? 'Department deactivated' : 'Department activated' });
-    } catch (e: any) {
-      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    } catch (error: unknown) {
+      toast({ title: 'Error', description: getErrorMessage(error), variant: 'destructive' });
     }
   };
 
@@ -92,12 +96,12 @@ export function DepartmentsManager() {
     if (!roleForm.name.trim()) return;
     setSaving(true);
     try {
-      const { error } = await supabase.from('department_roles' as any).insert({
+      const { error } = await supabase.from('department_roles' as never).insert({
         department_id: departmentId,
         name: roleForm.name.trim(),
         description: roleForm.description.trim() || null,
         display_order: 0,
-      } as any);
+      });
       if (error) throw error;
       toast({ title: 'Role added' });
       setAddingRole(null);
@@ -105,8 +109,8 @@ export function DepartmentsManager() {
       // Force re-expand to reload roles
       setExpandedDept(null);
       setTimeout(() => setExpandedDept(departmentId), 100);
-    } catch (e: any) {
-      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    } catch (error: unknown) {
+      toast({ title: 'Error', description: getErrorMessage(error), variant: 'destructive' });
     }
     setSaving(false);
   };

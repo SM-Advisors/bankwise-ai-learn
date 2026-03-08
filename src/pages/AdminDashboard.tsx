@@ -14,9 +14,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAllBankPolicies } from '@/hooks/useBankPolicies';
-import { useAllLiveTrainingSessions, LiveTrainingSessionInsert } from '@/hooks/useLiveTrainingSessions';
+import { useAllLiveTrainingSessions, type LiveTrainingSessionInsert, type LiveTrainingSession } from '@/hooks/useLiveTrainingSessions';
 import { useAdminAppSettings } from '@/hooks/useAppSettings';
-import { useAllEvents, EventInsert } from '@/hooks/useEvents';
+import { useAllEvents, type EventInsert, type Event } from '@/hooks/useEvents';
 import { getEventTypeConfig } from '@/components/EventModal';
 import { UsersManagement } from '@/components/UsersManagement';
 import { ProgressDashboard } from '@/components/admin/ProgressDashboard';
@@ -188,7 +188,14 @@ export default function AdminDashboard() {
   const { sessions: liveSessions, loading: liveSessionsLoading, createSession, updateSession, deleteSession } = useAllLiveTrainingSessions();
   const { settings: appSettings, loading: settingsLoading, updateSetting, getSetting } = useAdminAppSettings();
   
-  const [editingPolicy, setEditingPolicy] = useState<any>(null);
+  type EditablePolicy = {
+    id: string;
+    title: string;
+    content: string;
+    summary: string | null;
+  };
+
+  const [editingPolicy, setEditingPolicy] = useState<EditablePolicy | null>(null);
   const [editForm, setEditForm] = useState({ title: '', content: '', summary: '' });
   const [isCreating, setIsCreating] = useState(false);
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
@@ -204,7 +211,7 @@ export default function AdminDashboard() {
   });
 
   // Live session state
-  const [editingSession, setEditingSession] = useState<any>(null);
+  const [editingSession, setEditingSession] = useState<LiveTrainingSession | null>(null);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [sessionForm, setSessionForm] = useState({
     title: '',
@@ -218,7 +225,7 @@ export default function AdminDashboard() {
 
   // Events state
   const { events, loading: eventsLoading, createEvent, updateEvent, deleteEvent } = useAllEvents();
-  const [editingEvent, setEditingEvent] = useState<any>(null);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [eventForm, setEventForm] = useState({
     title: '',
@@ -319,7 +326,7 @@ export default function AdminDashboard() {
     return null;
   }
 
-  const handleEditPolicy = (policy: any) => {
+  const handleEditPolicy = (policy: EditablePolicy) => {
     setEditingPolicy(policy);
     setEditForm({
       title: policy.title,
@@ -429,7 +436,7 @@ export default function AdminDashboard() {
     });
   };
 
-  const handleEditSession = (session: any) => {
+  const handleEditSession = (session: LiveTrainingSession) => {
     setEditingSession(session);
     setSessionForm({
       title: session.title,
@@ -498,7 +505,7 @@ export default function AdminDashboard() {
     });
   };
 
-  const handleEditEvent = (event: any) => {
+  const handleEditEvent = (event: Event) => {
     setEditingEvent(event);
     setEventForm({
       title: event.title,
