@@ -401,7 +401,7 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
                     ) : (
                       <Clock className="h-4 w-4 text-muted-foreground" />
                     )}
-                    <span>Session 2: Building Your AI Agent</span>
+                    <span>Session 2: Structured Interaction, Models & Tools</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     {editingUser.progress.session_3_completed ? (
@@ -409,7 +409,7 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
                     ) : (
                       <Clock className="h-4 w-4 text-muted-foreground" />
                     )}
-                    <span>Session 3: Role-Specific Training</span>
+                    <span>Session 3: Agents</span>
                   </div>
                 </div>
               </div>

@@ -118,9 +118,9 @@ const Index = () => {
                   <AvatarFallback>A</AvatarFallback>
                 </Avatar>
               </div>
-              <h3 className="font-semibold text-lg mb-2">Role-Specific Training</h3>
+              <h3 className="font-semibold text-lg mb-2">Personalized Training</h3>
               <p className="text-muted-foreground text-sm">
-                Content designed for Accounting, Credit, and Executive banking professionals.
+                Content tailored to your role, department, and professional context from day one.
               </p>
             </div>
 

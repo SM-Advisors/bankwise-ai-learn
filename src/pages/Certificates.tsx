@@ -13,20 +13,24 @@ import type { SessionProgressData } from '@/types/progress';
 
 const SESSION_LABELS: Record<number, { title: string; skills: string[] }> = {
   1: {
-    title: 'AI Foundations & Prompting',
-    skills: ['CLEAR Framework', 'Prompt Engineering', 'Data Security', 'VERIFY Checklist'],
+    title: 'Foundation & Early Wins',
+    skills: ['Basic Interaction', 'Flipped Interaction Pattern', 'Iteration', 'Self-Review Loops'],
   },
   2: {
-    title: 'Building Your AI Agent',
-    skills: ['Agent Architecture', 'Template Building', 'Tool Integration', 'Living Agent'],
+    title: 'Structured Interaction, Models & Tools',
+    skills: ['CLEAR Framework', 'Output Templating', 'Multi-Shot Prompting', 'Chain-of-Thought', 'Model & Tool Selection'],
   },
   3: {
-    title: 'Role-Specific Training',
-    skills: ['Department Use Cases', 'Compliance Integration', 'Workflow Design', 'Advanced Techniques'],
+    title: 'Agents',
+    skills: ['Four Levels of Agents', 'Agent Building', 'Knowledge & Files', 'Tool Access'],
   },
   4: {
-    title: 'AI-Native Integration',
-    skills: ['AI Audit', 'Team Conventions', 'ROI Measurement', 'Integration Planning'],
+    title: 'Functional Agents',
+    skills: ['AI in Spreadsheets', 'AI in Presentations', 'AI in Email', 'Workflow Integration'],
+  },
+  5: {
+    title: 'Build Your Frankenstein',
+    skills: ['Stack Mapping', 'Workflow Design', 'Prototype Building', 'Presentation & Reflection'],
   },
 };
 

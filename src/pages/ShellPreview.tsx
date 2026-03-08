@@ -16,11 +16,13 @@ import { cn } from '@/lib/utils';
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
 const MOCK_MODULES = [
-  { id: '1-1', title: 'AI Foundations',        state: 'completed'    as const },
-  { id: '1-2', title: 'CLEAR Framework',       state: 'in_progress'  as const },
-  { id: '1-3', title: 'Prompt Patterns',       state: 'not_started'  as const },
-  { id: '1-4', title: 'Real-World Practice',   state: 'not_started'  as const },
-  { id: '1-5', title: 'Session Review',        state: 'not_started'  as const },
+  { id: '1-1', title: 'Personalization',       state: 'completed'    as const },
+  { id: '1-2', title: 'Interface Orientation',  state: 'completed'    as const },
+  { id: '1-3', title: 'Basic Interaction',      state: 'in_progress'  as const },
+  { id: '1-4', title: 'Your First Win',         state: 'not_started'  as const },
+  { id: '1-5', title: 'Iteration',              state: 'not_started'  as const },
+  { id: '1-6', title: 'Self-Review Loops',      state: 'not_started'  as const },
+  { id: '1-7', title: 'Sandbox',                state: 'not_started'  as const },
 ];
 
 // ─── FeatureGateDemo ──────────────────────────────────────────────────────────
@@ -233,7 +235,7 @@ export default function ShellPreview() {
               <EmptyState
                 icon={Compass}
                 title="Explore unlocks soon"
-                description="Complete Session 1, Module 2 — the CLEAR Framework — to unlock this zone."
+                description="Complete Session 1, Module 3 — Basic Interaction — to unlock this zone."
               />
             </SmileCard>
 
