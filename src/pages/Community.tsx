@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, type UserProfile } from '@/contexts/AuthContext';
 import { useCommunityTopics } from '@/hooks/useCommunityTopics';
 import { useCommunityReplies } from '@/hooks/useCommunityReplies';
 import { useToast } from '@/hooks/use-toast';
@@ -285,7 +285,7 @@ function TopicDetailView({
 }: {
   topic: ReturnType<typeof useCommunityTopics>['topics'][0] | null;
   userId: string | null;
-  profile: any;
+  profile: UserProfile | null;
   onBack: () => void;
   onDeleteTopic: (id: string) => void;
 }) {

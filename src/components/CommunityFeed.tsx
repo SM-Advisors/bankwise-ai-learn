@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, type UserProfile } from '@/contexts/AuthContext';
 import { useCommunityTopics, type TopicCategory } from '@/hooks/useCommunityTopics';
 import { useCommunityReplies } from '@/hooks/useCommunityReplies';
 import { useToast } from '@/hooks/use-toast';
@@ -497,7 +497,7 @@ function TopicDetailInline({
 }: {
   topic: ReturnType<typeof useCommunityTopics>['topics'][0];
   userId: string | null;
-  profile: any;
+  profile: UserProfile | null;
   onBack: () => void;
   onDeleteTopic: (id: string) => void;
 }) {

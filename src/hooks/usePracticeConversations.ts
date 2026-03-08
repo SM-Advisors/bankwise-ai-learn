@@ -31,17 +31,17 @@ export function usePracticeConversations(sessionId: string, moduleId: string | n
 
     setIsLoading(true);
     try {
-      const { data, error } = await (supabase
-        .from('practice_conversations' as any)
+      const { data, error } = await supabase
+        .from('practice_conversations')
         .select('*')
         .eq('user_id', user.id)
         .eq('session_id', sessionId)
         .eq('module_id', moduleId)
-        .order('updated_at', { ascending: false }) as any);
+        .order('updated_at', { ascending: false });
 
       if (error) throw error;
 
-      const parsed: PracticeConversation[] = (data || []).map((row: any) => ({
+      const parsed: PracticeConversation[] = (data || []).map((row) => ({
         ...row,
         messages: (Array.isArray(row.messages) ? row.messages : []) as PracticeMessage[],
       }));
@@ -85,8 +85,8 @@ export function usePracticeConversations(sessionId: string, moduleId: string | n
         ? firstMessage.content.slice(0, 50) + (firstMessage.content.length > 50 ? '...' : '')
         : 'New Conversation';
 
-      const { data, error } = await (supabase
-        .from('practice_conversations' as any)
+      const { data, error } = await supabase
+        .from('practice_conversations')
         .insert({
           user_id: user.id,
           session_id: sessionId,
@@ -95,7 +95,7 @@ export function usePracticeConversations(sessionId: string, moduleId: string | n
           messages: messages as unknown as Record<string, unknown>[],
         })
         .select()
-        .single() as any);
+        .single();
 
       if (error) throw error;
 
@@ -140,9 +140,9 @@ export function usePracticeConversations(sessionId: string, moduleId: string | n
       if (titleForDb) updates.title = titleForDb;
 
       (supabase
-        .from('practice_conversations' as any)
+        .from('practice_conversations')
         .update(updates)
-        .eq('id', convId) as any)
+        .eq('id', convId))
         .then(({ error }: { error: unknown }) => {
           if (error) console.error('Error appending practice message:', error);
         });
@@ -167,10 +167,10 @@ export function usePracticeConversations(sessionId: string, moduleId: string | n
     );
 
     try {
-      const { error } = await (supabase
-        .from('practice_conversations' as any)
+      const { error } = await supabase
+        .from('practice_conversations')
         .update({ is_submitted: true })
-        .eq('id', targetId) as any);
+        .eq('id', targetId);
 
       if (error) throw error;
     } catch (err) {

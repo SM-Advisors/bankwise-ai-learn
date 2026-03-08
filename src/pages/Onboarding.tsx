@@ -76,10 +76,10 @@ export default function Onboarding() {
       return;
     }
     (supabase
-      .from('organizations' as any)
+      .from('organizations')
       .select('audience_type, industry')
       .eq('id', profile.organization_id)
-      .single() as any)
+      .single())
       .then(({ data }: { data: { audience_type: string; industry: string } | null }) => {
         setOrgType(data?.audience_type || 'enterprise');
         setOrgIndustry(data?.industry || 'banking');

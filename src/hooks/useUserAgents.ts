@@ -16,15 +16,15 @@ export function useUserAgents() {
 
     setIsLoading(true);
     try {
-      const { data, error } = await (supabase
-        .from('user_agents' as any)
+      const { data, error } = await supabase
+        .from('user_agents')
         .select('*')
         .eq('user_id', user.id)
-        .order('updated_at', { ascending: false }) as any);
+        .order('updated_at', { ascending: false });
 
       if (error) throw error;
 
-      const parsed: UserAgent[] = (data || []).map((row: any) => ({
+      const parsed: UserAgent[] = (data || []).map((row) => ({
         ...row,
         template_data: (row.template_data || EMPTY_TEMPLATE) as AgentTemplateData,
       }));
@@ -52,8 +52,8 @@ export function useUserAgents() {
     if (!user?.id) return null;
 
     try {
-      const { data: result, error } = await (supabase
-        .from('user_agents' as any)
+      const { data: result, error } = await supabase
+        .from('user_agents')
         .insert({
           user_id: user.id,
           name: data?.name || 'My Agent',
@@ -63,7 +63,7 @@ export function useUserAgents() {
           system_prompt: data?.system_prompt || '',
         })
         .select('id')
-        .single() as any);
+        .single();
 
       if (error) throw error;
       await fetchAgents();
@@ -82,11 +82,11 @@ export function useUserAgents() {
     if (!user?.id) return;
 
     try {
-      const { error } = await (supabase
-        .from('user_agents' as any)
-        .update(updates as any)
+      const { error } = await supabase
+        .from('user_agents')
+        .update(updates)
         .eq('id', id)
-        .eq('user_id', user.id) as any);
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
@@ -105,22 +105,22 @@ export function useUserAgents() {
 
     try {
       // First, undeploy all other agents
-      await (supabase
-        .from('user_agents' as any)
-        .update({ is_deployed: false, status: 'draft' } as any)
+      await supabase
+        .from('user_agents')
+        .update({ is_deployed: false, status: 'draft' })
         .eq('user_id', user.id)
-        .eq('is_deployed', true) as any);
+        .eq('is_deployed', true);
 
       // Deploy the target agent
       const { error } = await (supabase
-        .from('user_agents' as any)
+        .from('user_agents')
         .update({
           is_deployed: true,
           deployed_at: new Date().toISOString(),
           status: 'active',
-        } as any)
+        })
         .eq('id', id)
-        .eq('user_id', user.id) as any);
+        .eq('user_id', user.id));
 
       if (error) throw error;
       await fetchAgents();
@@ -134,11 +134,11 @@ export function useUserAgents() {
     if (!user?.id) return;
 
     try {
-      const { error } = await (supabase
-        .from('user_agents' as any)
-        .update({ is_deployed: false, status: 'draft' } as any)
+      const { error } = await supabase
+        .from('user_agents')
+        .update({ is_deployed: false, status: 'draft' })
         .eq('id', id)
-        .eq('user_id', user.id) as any);
+        .eq('user_id', user.id);
 
       if (error) throw error;
       await fetchAgents();
@@ -152,12 +152,12 @@ export function useUserAgents() {
     if (!user?.id) return;
 
     try {
-      const { data, error } = await (supabase
-        .from('agent_test_conversations' as any)
+      const { data, error } = await supabase
+        .from('agent_test_conversations')
         .select('*')
         .eq('agent_id', agentId)
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false }) as any);
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setTestConversations((data || []) as AgentTestConversation[]);
@@ -174,8 +174,8 @@ export function useUserAgents() {
     if (!user?.id) return null;
 
     try {
-      const { data, error } = await (supabase
-        .from('agent_test_conversations' as any)
+      const { data, error } = await supabase
+        .from('agent_test_conversations')
         .insert({
           user_id: user.id,
           agent_id: agentId,
@@ -183,7 +183,7 @@ export function useUserAgents() {
           messages: [],
         })
         .select('id')
-        .single() as any);
+        .single();
 
       if (error) throw error;
       return data?.id || null;
@@ -211,19 +211,19 @@ export function useUserAgents() {
 
     try {
       // Fetch current messages, append, and update
-      const { data: current, error: fetchError } = await (supabase
-        .from('agent_test_conversations' as any)
+      const { data: current, error: fetchError } = await supabase
+        .from('agent_test_conversations')
         .select('messages')
         .eq('id', conversationId)
-        .single() as any);
+        .single();
 
       if (fetchError) throw fetchError;
 
       const updatedMessages = [...(current?.messages || []), message];
-      const { error } = await (supabase
-        .from('agent_test_conversations' as any)
-        .update({ messages: updatedMessages } as any)
-        .eq('id', conversationId) as any);
+      const { error } = await supabase
+        .from('agent_test_conversations')
+        .update({ messages: updatedMessages })
+        .eq('id', conversationId);
 
       if (error) throw error;
     } catch (err) {

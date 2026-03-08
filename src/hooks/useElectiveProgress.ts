@@ -29,7 +29,7 @@ export function useElectiveProgress() {
     }
     try {
       const { data, error } = await supabase
-        .from('elective_progress' as any)
+        .from('elective_progress')
         .select('*')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
@@ -87,7 +87,7 @@ export function useElectiveProgress() {
     if (!user?.id) return;
     try {
       const { error } = await supabase
-        .from('elective_progress' as any)
+        .from('elective_progress')
         .upsert({
           user_id: user.id,
           path_id: pathId,
@@ -116,7 +116,7 @@ export function useElectiveProgress() {
     if (!user?.id) return;
     try {
       const { error } = await supabase
-        .from('elective_progress' as any)
+        .from('elective_progress')
         .upsert({
           user_id: user.id,
           path_id: pathId,

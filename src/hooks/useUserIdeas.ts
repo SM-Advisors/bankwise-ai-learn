@@ -36,11 +36,11 @@ export function useUserIdeas() {
     }
     try {
       setLoading(true);
-      const { data, error: fetchError } = await (supabase
-        .from('user_ideas' as any)
+      const { data, error: fetchError } = await supabase
+        .from('user_ideas')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false }) as any);
+        .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
       setIdeas(data || []);
@@ -55,9 +55,9 @@ export function useUserIdeas() {
   const createIdea = async (idea: Pick<UserIdea, 'title' | 'description' | 'status'>) => {
     if (!user) return { success: false, error: 'Not authenticated' };
     try {
-      const { error: insertError } = await (supabase
-        .from('user_ideas' as any)
-        .insert({ ...idea, user_id: user.id }) as any);
+      const { error: insertError } = await supabase
+        .from('user_ideas')
+        .insert({ ...idea, user_id: user.id });
 
       if (insertError) throw insertError;
       await fetchIdeas();
@@ -70,10 +70,10 @@ export function useUserIdeas() {
 
   const updateIdea = async (id: string, updates: Partial<Pick<UserIdea, 'title' | 'description' | 'status'>>) => {
     try {
-      const { error: updateError } = await (supabase
-        .from('user_ideas' as any)
+      const { error: updateError } = await supabase
+        .from('user_ideas')
         .update(updates)
-        .eq('id', id) as any);
+        .eq('id', id);
 
       if (updateError) throw updateError;
       await fetchIdeas();
@@ -86,10 +86,10 @@ export function useUserIdeas() {
 
   const deleteIdea = async (id: string) => {
     try {
-      const { error: deleteError } = await (supabase
-        .from('user_ideas' as any)
+      const { error: deleteError } = await supabase
+        .from('user_ideas')
         .delete()
-        .eq('id', id) as any);
+        .eq('id', id);
 
       if (deleteError) throw deleteError;
       await fetchIdeas();

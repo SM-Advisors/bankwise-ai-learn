@@ -170,7 +170,7 @@ export function useReporting(organizationId: string | null = null) {
       setLoading(true);
 
       let profilesQuery = supabase
-        .from('user_profiles' as any)
+        .from('user_profiles')
         .select('user_id, display_name, job_role, department, ai_proficiency_level')
         .eq('onboarding_completed', true);
 
@@ -178,20 +178,21 @@ export function useReporting(organizationId: string | null = null) {
         profilesQuery = profilesQuery.eq('organization_id', organizationId);
       }
 
-      const { data: profiles } = await (profilesQuery as any);
+      const { data: profiles } = await profilesQuery;
 
-      const { data: progressData } = await (supabase
-        .from('training_progress' as any)
-        .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed') as any);
+      const { data: progressData } = await supabase
+        .from('training_progress')
+        .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed');
 
-      const progressMap = new Map<string, any>();
-      (progressData || []).forEach((p: any) => {
+      type ProgressRow = NonNullable<typeof progressData>[number];
+      const progressMap = new Map<string, ProgressRow>();
+      (progressData || []).forEach((p) => {
         progressMap.set(p.user_id, p);
       });
 
-      const profileUserIds = new Set((profiles || []).map((p: any) => p.user_id));
+      const profileUserIds = new Set((profiles || []).map((p) => p.user_id));
 
-      const combined: UserProgressRow[] = (profiles || []).map((profile: any) => {
+      const combined: UserProgressRow[] = (profiles || []).map((profile) => {
         const prog = progressMap.get(profile.user_id);
         return {
           user_id: profile.user_id,
@@ -211,25 +212,25 @@ export function useReporting(organizationId: string | null = null) {
       // Filter at the DB level when org-scoped to avoid fetching all rows.
       // Use a dummy ID when the set is empty so we don't inadvertently return all rows.
       let eventsQuery = supabase
-        .from('prompt_events' as any)
+        .from('prompt_events')
         .select('event_type, session_id, exception_flag, exception_type, user_id');
 
       if (organizationId && profileUserIds.size > 0) {
-        eventsQuery = (eventsQuery as any).in('user_id', Array.from(profileUserIds));
+        eventsQuery = eventsQuery.in('user_id', Array.from(profileUserIds));
       } else if (organizationId && profileUserIds.size === 0) {
-        eventsQuery = (eventsQuery as any).in('user_id', ['00000000-0000-0000-0000-000000000000']);
+        eventsQuery = eventsQuery.in('user_id', ['00000000-0000-0000-0000-000000000000']);
       }
 
-      const { data: events } = await (eventsQuery as any);
+      const { data: events } = await eventsQuery;
       const filteredEvents = events || [];
 
       if (filteredEvents.length > 0) {
-        const total_prompts = filteredEvents.filter((e: any) => e.event_type === 'prompt_submitted').length;
-        const total_exceptions = filteredEvents.filter((e: any) => e.exception_flag).length;
+        const total_prompts = filteredEvents.filter((e) => e.event_type === 'prompt_submitted').length;
+        const total_exceptions = filteredEvents.filter((e) => e.exception_flag).length;
         const by_session: Record<number, number> = {};
         const by_exception_type: Record<string, number> = {};
 
-        filteredEvents.forEach((e: any) => {
+        filteredEvents.forEach((e) => {
           if (e.session_id) by_session[e.session_id] = (by_session[e.session_id] || 0) + 1;
           if (e.exception_flag && e.exception_type) {
             by_exception_type[e.exception_type] = (by_exception_type[e.exception_type] || 0) + 1;
@@ -283,9 +284,9 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
   const fetchKPIs = async () => {
     try {
       // Build queries with optional org filter
-      let allProfilesQuery = supabase.from('user_profiles' as any).select('user_id');
+      let allProfilesQuery = supabase.from('user_profiles').select('user_id');
       let enrolledProfilesQuery = supabase
-        .from('user_profiles' as any)
+        .from('user_profiles')
         .select('user_id, display_name, job_role, department, ai_proficiency_level')
         .eq('onboarding_completed', true);
 
@@ -299,12 +300,12 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
         { data: allProfiles },
         { data: enrolledProfiles },
       ] = await Promise.all([
-        (allProfilesQuery as any),
-        (enrolledProfilesQuery as any),
+        allProfilesQuery,
+        enrolledProfilesQuery,
       ]);
 
-      const profiles: any[] = enrolledProfiles || [];
-      const allOrgUserIds = new Set((allProfiles || []).map((p: any) => p.user_id));
+      const profiles = enrolledProfiles || [];
+      const allOrgUserIds = new Set((allProfiles || []).map((p) => p.user_id));
 
       // Build server-side prompt_events query — filter at DB level when org-scoped
       // to avoid fetching all rows and relying solely on client-side JS filtering.
@@ -314,10 +315,10 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
         : ['00000000-0000-0000-0000-000000000000'];
 
       let promptEventsQuery = supabase
-        .from('prompt_events' as any)
+        .from('prompt_events')
         .select('user_id, session_id, event_type, exception_flag, exception_type, created_at');
       if (organizationId) {
-        promptEventsQuery = (promptEventsQuery as any).in('user_id', safeOrgIds);
+        promptEventsQuery = promptEventsQuery.in('user_id', safeOrgIds);
       }
 
       // Fetch remaining data in parallel now that we have the org filter
@@ -327,17 +328,17 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
         { data: ideasData },
       ] = await Promise.all([
         (supabase
-          .from('training_progress' as any)
-          .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed') as any),
-        (promptEventsQuery as any),
+          .from('training_progress')
+          .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed')),
+        promptEventsQuery,
         (supabase
-          .from('user_ideas' as any)
+          .from('user_ideas')
           .select('*')
           .eq('category', 'csuite_submission')
-          .order('votes', { ascending: false }) as any),
+          .order('votes', { ascending: false })),
       ]);
 
-      const progress: any[] = progressData || [];
+      const progress = progressData || [];
       // Deduplicate ideas by ID to prevent duplicates from join multiplicity
       const ideasRaw: IdeaItem[] = (ideasData || []) as IdeaItem[];
       const seenIds = new Set<string>();
@@ -348,20 +349,21 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
       });
 
       // Build a set of enrolled user IDs for local lookups (department breakdown, etc.)
-      const orgUserIds = new Set(profiles.map((p: any) => p.user_id));
+      const orgUserIds = new Set(profiles.map((p) => p.user_id));
 
       // Events are already org-filtered by the DB query above
-      const events: any[] = promptEvents || [];
+      const events = promptEvents || [];
 
       // ── Section A: Progress & Skill ────────────────────────────────────
       const totalAllUsers = (allProfiles || []).length;
       const totalEnrolled = profiles.length;
       const enrollmentRate = totalAllUsers > 0 ? Math.round((totalEnrolled / totalAllUsers) * 100) : 0;
 
-      const progressMap = new Map<string, any>();
+      type ProgressRow2 = (typeof progress)[number];
+      const progressMap = new Map<string, ProgressRow2>();
       progress.forEach((p) => progressMap.set(p.user_id, p));
 
-      const combined = profiles.map((profile: any) => {
+      const combined = profiles.map((profile) => {
         const prog = progressMap.get(profile.user_id);
         return {
           ...profile,
@@ -399,7 +401,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
       // Skill distribution
       const skillBuckets: Record<string, number> = { 'Beginner (0-2)': 0, 'Intermediate (3-5)': 0, 'Advanced (6-8)': 0 };
       let proficiencySum = 0;
-      combined.forEach((u: any) => {
+      combined.forEach((u) => {
         const level = u.ai_proficiency_level ?? 0;
         proficiencySum += level;
         if (level <= 2) skillBuckets['Beginner (0-2)']++;
@@ -415,22 +417,22 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
 
       // Department breakdowns
       const deptMap: Record<string, any[]> = {};
-      combined.forEach((u: any) => {
+      combined.forEach((u) => {
         const dept = u.department || 'unknown';
         if (!deptMap[dept]) deptMap[dept] = [];
         deptMap[dept].push(u);
       });
       const departmentBreakdowns: DepartmentBreakdown[] = Object.entries(deptMap).map(([dept, users]) => {
-        const profSum = users.reduce((s: number, u: any) => s + (u.ai_proficiency_level ?? 0), 0);
+        const profSum = users.reduce((s: number, u) => s + (u.ai_proficiency_level ?? 0), 0);
         return {
           department: dept,
           label: LOB_LABELS[dept] || dept,
           total: users.length,
-          s1: users.filter((u: any) => u.session_1_completed).length,
-          s2: users.filter((u: any) => u.session_2_completed).length,
-          s3: users.filter((u: any) => u.session_3_completed).length,
-          s4: users.filter((u: any) => u.session_4_completed).length,
-          s5: users.filter((u: any) => u.session_5_completed).length,
+          s1: users.filter((u) => u.session_1_completed).length,
+          s2: users.filter((u) => u.session_2_completed).length,
+          s3: users.filter((u) => u.session_3_completed).length,
+          s4: users.filter((u) => u.session_4_completed).length,
+          s5: users.filter((u) => u.session_5_completed).length,
           avgProficiency: users.length > 0 ? Math.round((profSum / users.length) * 10) / 10 : 0,
         };
       });
@@ -465,7 +467,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
 
       // Exceptions by department
       const userDeptMap = new Map<string, string>();
-      combined.forEach((u: any) => userDeptMap.set(u.user_id, u.department || 'unknown'));
+      combined.forEach((u) => userDeptMap.set(u.user_id, u.department || 'unknown'));
       const deptExceptions: Record<string, number> = {};
       exceptionEvents.forEach((e) => {
         const dept = userDeptMap.get(e.user_id) || 'unknown';
@@ -499,7 +501,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
       const repeatOffenders: RepeatOffender[] = Object.entries(userExceptionCounts)
         .filter(([, count]) => count >= 2)
         .map(([user_id, exception_count]) => {
-          const profile = combined.find((u: any) => u.user_id === user_id);
+          const profile = combined.find((u) => u.user_id === user_id);
           return {
             user_id,
             display_name: profile?.display_name || null,
@@ -513,7 +515,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
       // ── Section C: Innovation Pipeline ──────────────────────────────────
       const ideasByStatus: Record<string, number> = {};
       const ideasByDepartment: Record<string, number> = {};
-      ideas.forEach((idea: any) => {
+      ideas.forEach((idea) => {
         const s = idea.status || 'not_started';
         ideasByStatus[s] = (ideasByStatus[s] || 0) + 1;
         if (idea.submitter_department) {
@@ -571,21 +573,21 @@ export function useAllIdeas(organizationId?: string | null) {
       // If org-scoped, first get user_ids in that org, then filter ideas
       let orgUserIds: Set<string> | null = null;
       if (organizationId) {
-        const { data: profiles } = await (supabase
-          .from('user_profiles' as any)
+        const { data: profiles } = await supabase
+          .from('user_profiles')
           .select('user_id')
-          .eq('organization_id', organizationId) as any);
-        orgUserIds = new Set((profiles || []).map((p: any) => p.user_id));
+          .eq('organization_id', organizationId);
+        orgUserIds = new Set((profiles || []).map((p) => p.user_id));
       }
 
-      const { data, error } = await (supabase
-        .from('user_ideas' as any)
+      const { data, error } = await supabase
+        .from('user_ideas')
         .select('*')
-        .order('created_at', { ascending: false }) as any);
+        .order('created_at', { ascending: false });
       if (error) throw error;
 
       const filtered = orgUserIds
-        ? (data || []).filter((idea: any) => orgUserIds!.has(idea.user_id))
+        ? (data || []).filter((idea) => orgUserIds!.has(idea.user_id))
         : (data || []);
       setIdeas(filtered);
     } catch (err) {
@@ -598,9 +600,9 @@ export function useAllIdeas(organizationId?: string | null) {
   const updateIdeaStatus = async (id: string, status: string) => {
     try {
       const { error } = await (supabase
-        .from('user_ideas' as any)
+        .from('user_ideas')
         .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', id) as any);
+        .eq('id', id));
       if (error) throw error;
       await fetchIdeas();
       return { success: true };
@@ -613,9 +615,9 @@ export function useAllIdeas(organizationId?: string | null) {
   const updateIdeaROI = async (id: string, roi_impact: string) => {
     try {
       const { error } = await (supabase
-        .from('user_ideas' as any)
+        .from('user_ideas')
         .update({ roi_impact, updated_at: new Date().toISOString() })
-        .eq('id', id) as any);
+        .eq('id', id));
       if (error) throw error;
       await fetchIdeas();
       return { success: true };

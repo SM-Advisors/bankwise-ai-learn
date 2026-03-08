@@ -47,11 +47,11 @@ export function useAIPreferences() {
     }
     try {
       setLoading(true);
-      const { data, error } = await (supabase
-        .from('ai_user_preferences' as any)
+      const { data, error } = await supabase
+        .from('ai_user_preferences')
         .select('*')
         .eq('user_id', user.id)
-        .single() as any);
+        .single();
 
       if (error && error.code !== 'PGRST116') throw error;
       setPreferences(data || null);
@@ -71,9 +71,9 @@ export function useAIPreferences() {
         user_id: user.id,
         updated_at: new Date().toISOString(),
       };
-      const { error } = await (supabase
-        .from('ai_user_preferences' as any)
-        .upsert(payload, { onConflict: 'user_id' }) as any);
+      const { error } = await supabase
+        .from('ai_user_preferences')
+        .upsert(payload, { onConflict: 'user_id' });
       if (error) throw error;
       await fetchPreferences();
       return { success: true };
@@ -103,13 +103,13 @@ export function useAIMemories() {
     }
     try {
       setLoading(true);
-      const { data, error } = await (supabase
-        .from('ai_memories' as any)
+      const { data, error } = await supabase
+        .from('ai_memories')
         .select('*')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .order('is_pinned', { ascending: false })
-        .order('created_at', { ascending: false }) as any);
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setMemories(data || []);
@@ -124,9 +124,9 @@ export function useAIMemories() {
     if (!user) return { success: false, error: 'Not authenticated' };
     try {
       // Auto-pin saved memories so Andrea can see them immediately
-      const { error } = await (supabase
-        .from('ai_memories' as any)
-        .insert({ ...memory, user_id: user.id, is_pinned: true }) as any);
+      const { error } = await supabase
+        .from('ai_memories')
+        .insert({ ...memory, user_id: user.id, is_pinned: true });
       if (error) throw error;
       await fetchMemories();
       return { success: true };
@@ -139,9 +139,9 @@ export function useAIMemories() {
   const togglePin = async (id: string, isPinned: boolean) => {
     try {
       const { error } = await (supabase
-        .from('ai_memories' as any)
+        .from('ai_memories')
         .update({ is_pinned: !isPinned, updated_at: new Date().toISOString() })
-        .eq('id', id) as any);
+        .eq('id', id));
       if (error) throw error;
       await fetchMemories();
       return { success: true };
@@ -155,9 +155,9 @@ export function useAIMemories() {
     try {
       // Soft delete
       const { error } = await (supabase
-        .from('ai_memories' as any)
+        .from('ai_memories')
         .update({ is_active: false, updated_at: new Date().toISOString() })
-        .eq('id', id) as any);
+        .eq('id', id));
       if (error) throw error;
       await fetchMemories();
       return { success: true };

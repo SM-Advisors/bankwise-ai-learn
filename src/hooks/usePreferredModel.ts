@@ -10,7 +10,7 @@ interface UsePreferredModelResult {
 
 export function usePreferredModel(allowedModels: string[]): UsePreferredModelResult {
   const { user, profile } = useAuth();
-  const rawPreferred = (profile as any)?.preferred_model as string | undefined;
+  const rawPreferred = profile?.preferred_model as string | undefined;
 
   // Validate stored preference against current allowed list; fall back to default
   const resolve = (stored: string | undefined): string => {
@@ -29,10 +29,10 @@ export function usePreferredModel(allowedModels: string[]): UsePreferredModelRes
   const setPreferredModel = useCallback(async (modelId: string) => {
     if (!user?.id) return;
     setPreferredModelState(modelId);
-    await (supabase
-      .from('user_profiles' as any)
+    await supabase
+      .from('user_profiles')
       .update({ preferred_model: modelId })
-      .eq('id', user.id) as any);
+      .eq('id', user.id);
   }, [user?.id]);
 
   return { preferredModel, setPreferredModel };

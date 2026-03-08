@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAllUsersWithRoles, AppRole } from '@/hooks/useUserRole';
+import { useAllUsersWithRoles, AppRole, UserWithRole } from '@/hooks/useUserRole';
 import { useOrganizations } from '@/hooks/useOrganizations';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -54,7 +54,7 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
   const { users, loading, updateUserProfile, updateUserRole, deleteUser, refetch } = useAllUsersWithRoles(organizationId);
   const { organizations, loading: orgsLoading } = useOrganizations();
   const { departments: deptOptions, getDepartmentName } = useDepartments();
-  const [editingUser, setEditingUser] = useState<any>(null);
+  const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
   const [editForm, setEditForm] = useState({
     display_name: '',
     job_role: '',
@@ -63,7 +63,7 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
   });
   const [saving, setSaving] = useState(false);
   const [deactivatingUser, setDeactivatingUser] = useState<string | null>(null);
-  const [deletingUser, setDeletingUser] = useState<any>(null);
+  const [deletingUser, setDeletingUser] = useState<UserWithRole | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [addingUser, setAddingUser] = useState(false);
@@ -87,7 +87,7 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
     return map;
   }, [organizations]);
 
-  const handleEditUser = (user: any) => {
+  const handleEditUser = (user: UserWithRole) => {
     setEditingUser(user);
     setEditForm({
       display_name: user.display_name || '',
@@ -97,7 +97,7 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
     });
   };
 
-  const handleToggleDeactivate = async (user: any) => {
+  const handleToggleDeactivate = async (user: UserWithRole) => {
     setDeactivatingUser(user.user_id);
     const newIsActive = !user.is_active;
     const result = await updateUserProfile(user.user_id, { is_active: newIsActive });
@@ -142,7 +142,7 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
     }
   };
 
-  const getSessionProgress = (user: any) => {
+  const getSessionProgress = (user: UserWithRole) => {
     const progress = user.progress;
     if (!progress) return { completed: 0, total: 3, percentage: 0 };
 
@@ -180,8 +180,8 @@ export function UsersManagement({ organizationId }: UsersManagementProps) {
       resetAddForm();
       // Refresh users list
       refetch();
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message || 'Failed to create user.', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Error', description: err instanceof Error ? err.message : 'Failed to create user.', variant: 'destructive' });
     }
     setAddingUser(false);
   };

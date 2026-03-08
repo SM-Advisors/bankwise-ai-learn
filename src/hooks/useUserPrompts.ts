@@ -31,7 +31,7 @@ export function useUserPrompts() {
     }
     try {
       const { data, error } = await supabase
-        .from('user_prompts' as any)
+        .from('user_prompts')
         .select('*')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
@@ -66,7 +66,7 @@ export function useUserPrompts() {
     if (!user?.id) return null;
     try {
       const { data: result, error } = await supabase
-        .from('user_prompts' as any)
+        .from('user_prompts')
         .insert({
           user_id: user.id,
           title: data.title,
@@ -81,7 +81,7 @@ export function useUserPrompts() {
 
       if (error) throw error;
       await fetchPrompts();
-      return (result as any)?.id || null;
+      return result?.id || null;
     } catch {
       // Fallback: save to localStorage
       const newPrompt: UserPrompt = {
@@ -105,7 +105,7 @@ export function useUserPrompts() {
     if (!user?.id) return;
     try {
       const { error } = await supabase
-        .from('user_prompts' as any)
+        .from('user_prompts')
         .update(updates)
         .eq('id', id)
         .eq('user_id', user.id);
@@ -124,7 +124,7 @@ export function useUserPrompts() {
     if (!user?.id) return;
     try {
       const { error } = await supabase
-        .from('user_prompts' as any)
+        .from('user_prompts')
         .delete()
         .eq('id', id)
         .eq('user_id', user.id);

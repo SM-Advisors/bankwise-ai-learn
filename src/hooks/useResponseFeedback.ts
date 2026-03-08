@@ -19,7 +19,7 @@ export function useResponseFeedback() {
     if (!user?.id) return { success: false, error: 'Not authenticated' };
     setSubmitting(true);
     const { error } = await (supabase
-      .from('response_feedback' as any)
+      .from('response_feedback')
       .insert({
         user_id: user.id,
         session_id: params.sessionId || null,
@@ -28,7 +28,7 @@ export function useResponseFeedback() {
         message_preview: params.messagePreview?.slice(0, 100) || null,
         rating: params.rating,
         comment: params.comment || null,
-      }) as any);
+      }));
     setSubmitting(false);
     return { success: !error, error: error?.message };
   };

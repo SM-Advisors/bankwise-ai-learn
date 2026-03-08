@@ -153,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data, error } = await supabase
       .from('user_profiles')
-      .insert(insertData as any)
+      .insert(insertData as Record<string, unknown>)
       .select()
       .single();
 
@@ -179,7 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session_4_progress: {},
         session_5_completed: false,
         session_5_progress: {},
-      } as any)
+      })
       .select()
       .single();
 
@@ -313,7 +313,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .from('user_profiles')
           .select('is_active')
           .eq('user_id', data.user.id)
-          .maybeSingle() as any);
+          .maybeSingle();
         if (profileCheck?.is_active === false) {
           await supabase.auth.signOut();
           return { error: new Error('Your account has been deactivated. Please contact your administrator.') };
@@ -343,7 +343,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase
         .from('user_profiles')
-        .update(updates as any)
+        .update(updates as Record<string, unknown>)
         .eq('user_id', user.id);
 
       if (error) throw error;
@@ -413,7 +413,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (Object.keys(profileUpdates).length > 0) {
         const { error: profileError } = await supabase
           .from('user_profiles')
-          .update(profileUpdates as any)
+          .update(profileUpdates as Record<string, unknown>)
           .eq('user_id', user.id);
 
         if (profileError) throw profileError;

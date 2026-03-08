@@ -30,13 +30,13 @@ export function useCommunityTopics() {
     try {
       setLoading(true);
       const { data, error: fetchError } = await (supabase
-        .from('community_topics' as any)
+        .from('community_topics')
         .select('*, community_replies(count)')
-        .order('created_at', { ascending: false }) as any);
+        .order('created_at', { ascending: false }));
 
       if (fetchError) throw fetchError;
       // Map the embedded count to a flat reply_count field
-      const mapped = (data || []).map((t: any) => ({
+      const mapped = (data || []).map((t) => ({
         ...t,
         reply_count: t.community_replies?.[0]?.count ?? t.reply_count ?? 0,
         community_replies: undefined, // remove the nested object
@@ -61,8 +61,8 @@ export function useCommunityTopics() {
       const firstName = (profile?.display_name || 'Anonymous').split(' ')[0];
       const role = profile?.job_role || null;
 
-      const { error: insertError } = await (supabase
-        .from('community_topics' as any)
+      const { error: insertError } = await supabase
+        .from('community_topics')
         .insert({
           user_id: user.id,
           author_name: firstName,
@@ -70,7 +70,7 @@ export function useCommunityTopics() {
           title,
           body,
           category,
-        }) as any);
+        });
 
       if (insertError) throw insertError;
       await fetchTopics();
@@ -83,10 +83,10 @@ export function useCommunityTopics() {
 
   const deleteTopic = async (id: string) => {
     try {
-      const { error: deleteError } = await (supabase
-        .from('community_topics' as any)
+      const { error: deleteError } = await supabase
+        .from('community_topics')
         .delete()
-        .eq('id', id) as any);
+        .eq('id', id);
 
       if (deleteError) throw deleteError;
       await fetchTopics();

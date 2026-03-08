@@ -129,7 +129,7 @@ export default function TrainingWorkspace() {
         ...currentProgress,
         capstoneData: { ...existing, ...updates },
       },
-    } as any);
+    });
   };
 
   // Module engagement tracking state
@@ -273,7 +273,7 @@ export default function TrainingWorkspace() {
 
     await updateProgress({
       [progressKey]: { ...currentProgress, moduleEngagement: engagement },
-    } as any);
+    });
   };
 
   // Manually bypass a gate module (user dismisses the gate requirement)
@@ -302,7 +302,7 @@ export default function TrainingWorkspace() {
         completedModules: Array.from(newCompletedModules),
         moduleEngagement: engagement,
       },
-    } as any);
+    });
   };
 
   if (loading || !profile) {
@@ -406,7 +406,7 @@ export default function TrainingWorkspace() {
           // Department context for bankers; interests for F&F users
           jobRole: profile?.job_role,
           departmentLob: profile?.department,
-          interests: (profile as any)?.interests || undefined,
+          interests: profile?.interests || undefined,
         },
       });
 
@@ -639,7 +639,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           moduleEngagement: engagement,
           skillSignals: updatedSkillSignals,
         },
-      } as any);
+      });
 
       // Signal: skill_applied — module completed
       if (gatePassed) {
@@ -671,8 +671,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
     trigger: draftWorkflow.workflow_data?.trigger || '',
     steps: draftWorkflow.workflow_data?.steps || [],
     finalOutput: draftWorkflow.workflow_data?.finalOutput || '',
-    stepCount: draftWorkflow.workflow_data?.steps?.filter((s: any) => s.name?.trim()).length || 0,
-    checkpointCount: draftWorkflow.workflow_data?.steps?.filter((s: any) => s.humanReview && s.name?.trim()).length || 0,
+    stepCount: draftWorkflow.workflow_data?.steps?.filter((s) => s.name?.trim()).length || 0,
+    checkpointCount: draftWorkflow.workflow_data?.steps?.filter((s) => s.humanReview && s.name?.trim()).length || 0,
   } : undefined;
 
   const handleTrainerSubmit = async () => {
@@ -832,20 +832,20 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
   const handleAcceptLevelChange = async (proposedLevel: string) => {
     const newProficiency = LEVEL_TO_PROFICIENCY[proposedLevel];
-    const promises: Promise<any>[] = [];
+    const promises: Promise<unknown>[] = [];
     if (newProficiency !== undefined) {
       promises.push(updateProfile({ ai_proficiency_level: newProficiency }));
     }
     // Use cached pendingRequest; if missing (e.g. expired before user clicked), fetch fresh
     let requestId = pendingRequest?.id;
     if (!requestId && user?.id) {
-      const { data } = await (supabase
-        .from('level_change_requests' as any)
+      const { data } = await supabase
+        .from('level_change_requests')
         .select('id')
         .eq('user_id', user.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
-        .limit(1) as any);
+        .limit(1);
       requestId = data?.[0]?.id;
     }
     if (requestId) {
@@ -915,8 +915,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         currentSession={profile?.current_session ?? 1}
         completedSessions={{
           1: !!progress?.session_1_completed,
-          4: !!(progress as any)?.session_4_completed,
-          5: !!(progress as any)?.session_5_completed,
+          4: !!progress?.session_4_completed,
+          5: !!progress?.session_5_completed,
           2: !!progress?.session_2_completed,
           3: !!progress?.session_3_completed,
         }}

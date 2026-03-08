@@ -256,8 +256,8 @@ export default function Profile() {
     const { data: { user: authUser } } = await supabase.auth.getUser();
     if (authUser?.id) {
       await Promise.all([
-        (supabase.from('practice_conversations' as any).delete().eq('user_id', authUser.id) as any),
-        (supabase.from('dashboard_conversations' as any).delete().eq('user_id', authUser.id) as any),
+        (supabase.from('practice_conversations').delete().eq('user_id', authUser.id)),
+        (supabase.from('dashboard_conversations').delete().eq('user_id', authUser.id)),
       ]);
     }
     setDeletingConversations(false);

@@ -28,15 +28,15 @@ export function useDashboardConversations() {
 
     setIsLoading(true);
     try {
-      const { data, error } = await (supabase
-        .from('dashboard_conversations' as any)
+      const { data, error } = await supabase
+        .from('dashboard_conversations')
         .select('*')
         .eq('user_id', user.id)
-        .order('updated_at', { ascending: false }) as any);
+        .order('updated_at', { ascending: false });
 
       if (error) throw error;
 
-      const parsed: DashboardConversation[] = (data || []).map((row: any) => ({
+      const parsed: DashboardConversation[] = (data || []).map((row) => ({
         ...row,
         messages: (Array.isArray(row.messages) ? row.messages : []) as DashboardMessage[],
       }));
@@ -78,15 +78,15 @@ export function useDashboardConversations() {
         ? firstMessage.content.slice(0, 50) + (firstMessage.content.length > 50 ? '...' : '')
         : 'New Conversation';
 
-      const { data, error } = await (supabase
-        .from('dashboard_conversations' as any)
+      const { data, error } = await supabase
+        .from('dashboard_conversations')
         .insert({
           user_id: user.id,
           title,
           messages: messages as unknown as Record<string, unknown>[],
         })
         .select()
-        .single() as any);
+        .single();
 
       if (error) throw error;
 
@@ -131,9 +131,9 @@ export function useDashboardConversations() {
       if (titleForDb) updates.title = titleForDb;
 
       (supabase
-        .from('dashboard_conversations' as any)
+        .from('dashboard_conversations')
         .update(updates)
-        .eq('id', convId) as any)
+        .eq('id', convId))
         .then(({ error }: { error: unknown }) => {
           if (error) console.error('Error appending dashboard message:', error);
         });

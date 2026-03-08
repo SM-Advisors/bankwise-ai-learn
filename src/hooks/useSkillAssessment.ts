@@ -35,18 +35,18 @@ export function useSkillAssessment() {
 
     const [obsResult, reqResult] = await Promise.all([
       (supabase
-        .from('skill_observations' as any)
+        .from('skill_observations')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(100) as any),
+        .limit(100)),
       (supabase
-        .from('level_change_requests' as any)
+        .from('level_change_requests')
         .select('*')
         .eq('user_id', user.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
-        .limit(1) as any),
+        .limit(1)),
     ]);
 
     if (obsResult.data) setObservations(obsResult.data);
@@ -60,12 +60,12 @@ export function useSkillAssessment() {
 
   const respondToLevelChange = async (id: string, accept: boolean) => {
     const { error } = await (supabase
-      .from('level_change_requests' as any)
+      .from('level_change_requests')
       .update({
         status: accept ? 'accepted' : 'declined',
         responded_at: new Date().toISOString(),
       })
-      .eq('id', id) as any);
+      .eq('id', id));
 
     if (!error) {
       setPendingRequest(null);

@@ -23,6 +23,8 @@ interface DashboardChatProps {
     session_1_completed: boolean;
     session_2_completed: boolean;
     session_3_completed: boolean;
+    session_4_completed?: boolean | null;
+    session_5_completed?: boolean | null;
   } | null;
   /** When true, programmatically opens the chat panel (e.g. for a guided tour) */
   forceOpen?: boolean;
@@ -120,8 +122,8 @@ export function DashboardChat({ profile, progress, forceOpen }: DashboardChatPro
     if (progress?.session_1_completed) completedModules.push('Session 1: Foundation & Early Wins');
     if (progress?.session_2_completed) completedModules.push('Session 2: Structured Interaction, Models & Tools');
     if (progress?.session_3_completed) completedModules.push('Session 3: Agents');
-    if ((progress as any)?.session_4_completed) completedModules.push('Session 4: Functional Agents');
-    if ((progress as any)?.session_5_completed) completedModules.push('Session 5: Build Your Frankenstein');
+    if (progress?.session_4_completed) completedModules.push('Session 4: Functional Agents');
+    if (progress?.session_5_completed) completedModules.push('Session 5: Build Your Frankenstein');
 
     let progressSummary = `${completedModules.length}/5 sessions completed`;
     if (completedModules.length === 0) {

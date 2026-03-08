@@ -34,15 +34,15 @@ export function useOrganizations() {
       setLoading(true);
 
       // Fetch all organizations
-      const { data: orgs, error: orgsError } = await (supabase
-        .from('organizations' as any)
+      const { data: orgs, error: orgsError } = await supabase
+        .from('organizations')
         .select('id, name, slug, created_at, allowed_models, audience_type, industry')
-        .order('name', { ascending: true }) as any);
+        .order('name', { ascending: true });
 
       if (orgsError) {
         console.error('Error fetching organizations:', orgsError);
       } else {
-        const mapped: Organization[] = (orgs || []).map((o: any) => ({
+        const mapped: Organization[] = (orgs || []).map((o) => ({
           ...o,
           allowed_models: Array.isArray(o.allowed_models) ? o.allowed_models : ['claude-sonnet-4-6'],
           audience_type: o.audience_type || 'enterprise',
@@ -53,14 +53,14 @@ export function useOrganizations() {
 
       // Fetch registration codes with org names joined
       const { data: codes, error: codesError } = await (supabase
-        .from('registration_codes' as any)
+        .from('registration_codes')
         .select('id, code, organization_id, expires_at, max_uses, current_uses, is_active, created_by, created_at, organizations(name)')
-        .order('created_at', { ascending: false }) as any);
+        .order('created_at', { ascending: false }));
 
       if (codesError) {
         console.error('Error fetching registration codes:', codesError);
       } else {
-        const mapped: RegistrationCode[] = (codes || []).map((c: any) => ({
+        const mapped: RegistrationCode[] = (codes || []).map((c) => ({
           id: c.id,
           code: c.code,
           organization_id: c.organization_id,
@@ -92,9 +92,9 @@ export function useOrganizations() {
     industry?: string | null,
   ) => {
     try {
-      const { error } = await (supabase
-        .from('organizations' as any)
-        .insert({ name, slug, audience_type: audienceType, industry: industry || null }) as any);
+      const { error } = await supabase
+        .from('organizations')
+        .insert({ name, slug, audience_type: audienceType, industry: industry || null });
 
       if (error) {
         console.error('Error creating organization:', error);
@@ -122,15 +122,15 @@ export function useOrganizations() {
         return { success: false, error: 'Not authenticated' };
       }
 
-      const { error } = await (supabase
-        .from('registration_codes' as any)
+      const { error } = await supabase
+        .from('registration_codes')
         .insert({
           code: params.code,
           organization_id: params.organization_id,
           expires_at: params.expires_at || null,
           max_uses: params.max_uses || null,
           created_by: userId,
-        }) as any);
+        });
 
       if (error) {
         console.error('Error creating registration code:', error);
@@ -147,10 +147,10 @@ export function useOrganizations() {
 
   const toggleCodeActive = useCallback(async (codeId: string, isActive: boolean) => {
     try {
-      const { error } = await (supabase
-        .from('registration_codes' as any)
+      const { error } = await supabase
+        .from('registration_codes')
         .update({ is_active: isActive })
-        .eq('id', codeId) as any);
+        .eq('id', codeId);
 
       if (error) {
         console.error('Error toggling code active:', error);
@@ -167,10 +167,10 @@ export function useOrganizations() {
 
   const updateCodeUses = useCallback(async (codeId: string, currentUses: number) => {
     try {
-      const { error } = await (supabase
-        .from('registration_codes' as any)
+      const { error } = await supabase
+        .from('registration_codes')
         .update({ current_uses: currentUses })
-        .eq('id', codeId) as any);
+        .eq('id', codeId);
 
       if (error) {
         console.error('Error updating code uses:', error);
@@ -187,10 +187,10 @@ export function useOrganizations() {
 
   const updateCodeMaxUses = useCallback(async (codeId: string, maxUses: number | null) => {
     try {
-      const { error } = await (supabase
-        .from('registration_codes' as any)
+      const { error } = await supabase
+        .from('registration_codes')
         .update({ max_uses: maxUses })
-        .eq('id', codeId) as any);
+        .eq('id', codeId);
 
       if (error) {
         console.error('Error updating code max uses:', error);
@@ -207,10 +207,10 @@ export function useOrganizations() {
 
   const updateOrgModels = useCallback(async (orgId: string, models: string[]) => {
     try {
-      const { error } = await (supabase
-        .from('organizations' as any)
+      const { error } = await supabase
+        .from('organizations')
         .update({ allowed_models: models })
-        .eq('id', orgId) as any);
+        .eq('id', orgId);
 
       if (error) {
         console.error('Error updating org models:', error);
