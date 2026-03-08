@@ -159,7 +159,7 @@ export default function Profile() {
   );
   // Support legacy ?tab=settings and ?tab=memories
   useEffect(() => {
-    if (tabParam === 'settings' || tabParam === 'memories') {
+    if (tabParam === ('settings' as string) || tabParam === ('memories' as string)) {
       setActiveTab('personalization');
       setSearchParams({ tab: 'personalization' }, { replace: true });
     }
