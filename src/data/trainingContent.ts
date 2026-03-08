@@ -77,8 +77,8 @@ export const SESSION_1_CONTENT: SessionContent = {
         examples: [
           {
             title: 'Generic vs. Personalized Response',
-            bad: User asks: "Help me write a summary of this quarter\'s performance."\n\nAI responds with a generic business summary template using placeholder language that could apply to any industry.,
-            good: User asks: "Help me write a summary of this quarter\'s performance", but the system knows the user is a Commercial Lending Officer at a community bank.\n\nAI responds with a summary referencing loan portfolio growth, credit quality metrics, and CRE concentration ratios — using language the user would actually put in front of their credit committee.',
+            bad: 'User asks: "Help me write a summary of this quarter\'s performance."\n\nAI responds with a generic business summary template using placeholder language that could apply to any industry.',
+            good: 'User asks: "Help me write a summary of this quarter\'s performance", but the system knows the user is a Commercial Lending Officer at a community bank.\n\nAI responds with a summary referencing loan portfolio growth, credit quality metrics, and CRE concentration ratios — using language the user would actually put in front of their credit committee.',
             explanation: 'The personalized version requires zero extra effort from the user. The difference is entirely in the context the system already has. This is why personalization comes first.',
           },
         ],
