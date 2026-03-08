@@ -1049,6 +1049,59 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                 userName={profile?.display_name || undefined}
                 bankName={profile?.employer_name || undefined}
               />
+            ) : selectedModule && isPersonalizationModule && workspaceMode === 'practice' ? (
+              <PersonalizationPractice
+                onSaved={(prefs) => {
+                  // Send Andrea a message about the personalization for feedback
+                  const feedbackPrompt = `The user just completed their personalization setup. Here are their choices:\n\n- **Tone:** ${prefs.tone}\n- **Verbosity:** ${prefs.verbosity}\n- **Formatting:** ${prefs.formatting_preference}\n- **Role Context:** ${prefs.role_context || '(not set)'}\n- **Custom Instructions:** ${prefs.additional_instructions || '(not set)'}\n\nPlease provide structured, specific feedback on their personalization choices. Focus on the Role Context and Custom Instructions fields — are they specific enough? If they're well-crafted, congratulate them. If they could be improved, give concrete suggestions based on their role/department. Do NOT be generic.`;
+                  setTrainerInput(feedbackPrompt);
+                  // Auto-send to Andrea
+                  const userMsg: Message = { role: 'user', content: 'I just saved my personalization — can you review my setup?' };
+                  const apiMsg: Message = { role: 'user', content: feedbackPrompt };
+                  setTrainerMessages(prev => [...prev, userMsg]);
+                  setIsTrainerLoading(true);
+                  setTrainerInput('');
+                  supabase.functions.invoke('trainer_chat', {
+                    body: {
+                      lessonId: '1',
+                      moduleId: '1-1',
+                      sessionNumber: 1,
+                      messages: [...trainerMessages, apiMsg],
+                      learnerState: {
+                        currentCardTitle: selectedModule?.title,
+                        learningObjectives: selectedModule?.learningObjectives,
+                        learningOutcome: selectedModule?.learningOutcome,
+                        completedModules: Array.from(completedModules),
+                        displayName: profile?.display_name || undefined,
+                        jobRole: profile?.job_role || undefined,
+                        departmentLob: profile?.department || undefined,
+                      },
+                    },
+                  }).then(response => {
+                    const replyData = response.data;
+                    const replyText = replyData?.reply || 'Great job setting up your personalization!';
+                    setTrainerMessages(prev => [...prev, {
+                      role: 'assistant',
+                      content: replyText,
+                      suggestedPrompts: replyData?.suggestedPrompts || [],
+                      coachingAction: replyData?.coachingAction || 'celebrate',
+                    }]);
+                    setSuggestedPrompts(replyData?.suggestedPrompts || []);
+                  }).catch(() => {
+                    setTrainerMessages(prev => [...prev, {
+                      role: 'assistant',
+                      content: 'Great job completing your personalization! Your settings have been saved.',
+                    }]);
+                  }).finally(() => setIsTrainerLoading(false));
+
+                  // Mark module engagement
+                  trackModuleEngagement('1-1', {
+                    chatStarted: true,
+                    completed: true,
+                    completedAt: new Date().toISOString(),
+                  });
+                }}
+              />
             ) : selectedModule ? (
               <PracticeChatPanel
                 module={selectedModule}
