@@ -27,7 +27,7 @@ export function buildKPISnapshot(kpis: ReturnType<typeof useCSuiteKPIs>): string
     '',
     '▸ Department Breakdowns',
     ...kpis.departmentBreakdowns.map(d =>
-      `  ${d.label}: ${d.total} enrolled, S1=${d.s1} S2=${d.s2} S3=${d.s3}, avg proficiency ${d.avgProficiency}`
+      `  ${d.label}: ${d.total} enrolled, S1=${d.s1} S2=${d.s2} S3=${d.s3} S4=${d.s4} S5=${d.s5}, avg proficiency ${d.avgProficiency}`
     ),
     '',
     '▸ Compliance Exceptions',
