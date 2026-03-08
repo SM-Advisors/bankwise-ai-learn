@@ -1,5 +1,5 @@
-// Role-based scenario banks for Session 1-2 modules (Phase 4)
-// Session 3 modules already have departmentScenarios inline in trainingContent.ts
+// Role-based scenario banks for modules without inline departmentScenarios
+// Modules 1-3, 1-4, and 3-3 have departmentScenarios inline in trainingContent.ts
 // PracticeChatPanel falls back to these when no inline departmentScenarios exist
 
 export interface RoleScenario {
@@ -10,8 +10,8 @@ export interface RoleScenario {
 // Record<moduleId, Record<lobKey, RoleScenario>>
 export const ROLE_SCENARIO_BANKS: Record<string, Record<string, RoleScenario>> = {
 
-  // ─── MODULE 1-1: What AI Can Do For You ───────────────────────────────
-  '1-1': {
+  // ─── MODULE 2-2: Output Templating ───────────────────────────────
+  '2-2': {
     accounting_finance: {
       scenario: 'You are a finance team member preparing the month-end close package. Your CFO needs a variance commentary that explains budget vs. actual for three expense categories. Write a complete 5-element prompt (Role, Task, Context, Format, Constraints) that would generate a first draft. Then list 2 other tasks in your department where AI-assisted drafting would save the most time.',
       hints: [
@@ -140,8 +140,8 @@ export const ROLE_SCENARIO_BANKS: Record<string, Record<string, RoleScenario>> =
     },
   },
 
-  // ─── MODULE 1-2: The CLEAR Framework ──────────────────────────────────
-  '1-2': {
+  // ─── MODULE 2-1: Structured Prompting (CLEAR) ──────────────────────────────────
+  '2-1': {
     accounting_finance: {
       scenario: 'Part 1: Your controller needs a written explanation of the bank\'s interest income variance — actual came in $47K below budget this quarter. Using CLEAR, write a prompt that would generate a board-ready variance commentary. Annotate which part of your prompt maps to each CLEAR letter.\n\nPart 2: Evaluate these two prompts for missing CLEAR elements:\n- Prompt A: "Explain why interest income was below budget."\n- Prompt B: "As a financial analyst, write variance commentary for our Q3 interest income shortfall. Include the key drivers."',
       hints: [
@@ -270,8 +270,8 @@ export const ROLE_SCENARIO_BANKS: Record<string, Record<string, RoleScenario>> =
     },
   },
 
-  // ─── MODULE 1-4: Iteration & Refinement ───────────────────────────────
-  '1-4': {
+  // ─── MODULE 1-5: Iteration ───────────────────────────────
+  '1-5': {
     accounting_finance: {
       scenario: 'Starting prompt: "Analyze these financials."\n\nYou are preparing for the bank\'s quarterly financial review. Your CFO will present to the board. Starting from the basic prompt above, iterate at least 3 times to produce a prompt that generates a variance commentary showing budget vs. actual results for three key income statement lines, formatted for board review, excluding any unreleased figures. After your 3rd iteration, write one sentence on what changed most between v1 and v3.',
       hints: [
@@ -400,7 +400,7 @@ export const ROLE_SCENARIO_BANKS: Record<string, Record<string, RoleScenario>> =
     },
   },
 
-  // ─── MODULE 1-6: Session 1 Capstone ───────────────────────────────────
+  // ─── MODULE 1-6: Self-Review Loops ───────────────────────────────────
   '1-6': {
     accounting_finance: {
       scenario: 'You are closing the books on Q3 and your CFO needs one of these before the board meeting: (A) a written variance commentary on NIM, (B) a risk-flagged budget vs. actual table for operating expenses, or (C) a draft management discussion & analysis section for the board report.\n\nChoose the deliverable most relevant to your role. Write a CLEAR prompt, iterate at least 2 times, then apply VERIFY to the output. After reviewing AI output, write 2-3 sentences identifying exactly what you would verify before using it in the real board package.',
@@ -530,8 +530,8 @@ export const ROLE_SCENARIO_BANKS: Record<string, Record<string, RoleScenario>> =
     },
   },
 
-  // ─── MODULE 2-1: From Prompts to Agents ───────────────────────────────
-  '2-1': {
+  // ─── MODULE 3-1: Why Agents Exist ───────────────────────────────
+  '3-1': {
     accounting_finance: {
       scenario: 'Review the best prompt you wrote in Session 1 (ideally your variance commentary or MD&A prompt from Module 1-6). Map it to the 5 agent architecture sections:\n\n1. Which part becomes the Identity? (Who the agent is and who it serves)\n2. Which part becomes the Task List? (What it does)\n3. Which part becomes the Output Rules? (How it formats)\n4. Which part becomes the Guard Rails? (What it refuses)\n5. What Compliance Anchors would you add? (What regulatory language must always appear)\n\nThen answer: Would you build a dedicated Variance Commentary Agent for your monthly close process? What consistency or compliance benefit would it provide over one-off prompts?',
       hints: [
@@ -660,8 +660,8 @@ export const ROLE_SCENARIO_BANKS: Record<string, Record<string, RoleScenario>> =
     },
   },
 
-  // ─── MODULE 2-5: Your Living Agent ────────────────────────────────────
-  '2-5': {
+  // ─── MODULE 3-6: Add Tool Access ────────────────────────────────────
+  '3-6': {
     accounting_finance: {
       scenario: 'Your Finance Variance Commentary Agent is about to go live. Write your iteration plan:\n\n1. What will you watch for in the first week? Name 2-3 specific behaviors — e.g., does it consistently produce GAAP-accurate commentary, or does it fabricate figures that don\'t exist in the data?\n2. What guard rail do you expect to add first? Think about what happens when someone asks it to forecast figures or include projections without data.\n3. How will you measure effectiveness for variance commentary? Estimate time before AI, expected time with AI, and 1 quality indicator.\n4. Who else on your finance team could use this agent, and what would they customize?',
       hints: [
@@ -790,8 +790,8 @@ export const ROLE_SCENARIO_BANKS: Record<string, Record<string, RoleScenario>> =
     },
   },
 
-  // ─── MODULE 2-6: Build Your Agent ─────────────────────────────────────
-  '2-6': {
+  // ─── MODULE 3-7: Sandbox / Capstone ─────────────────────────────────────
+  '3-7': {
     accounting_finance: {
       scenario: 'Build your Finance Variance Commentary Agent.\n\nPart 1 — Assemble: Write a complete system prompt (150-400 words) that includes: Identity (a financial analyst who serves your bank\'s finance team and produces board-level commentary), Task List (variance analysis commentary, budget vs. actual tables, MD&A drafting), Output Rules (formal, concise, GAAP-compliant language), Guard Rails (refuses to fabricate figures, refuses to project forward without data, refuses to include unreleased financial data), Compliance Anchors (e.g., "All figures are draft and pending CFO review before distribution").\n\nPart 2 — Test: Describe 3 test messages: 1) Standard task (generate Q3 NIM variance commentary), 2) Edge case (draft commentary for a line item with no variance explanation in the data), 3) Out-of-scope request (produce a full earnings forecast for next year).\n\nPart 3 — Living Plan: First-week monitoring priorities, first guard rail to add, and how you\'ll know it\'s working.',
       hints: [
