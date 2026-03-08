@@ -47,8 +47,8 @@ export function useCertificates() {
   ) => {
     if (!user?.id) return;
     try {
-      const { error } = await supabase
-        .from('certificates')
+      const { error } = await (supabase
+        .from('certificates') as any)
         .upsert({
           user_id: user.id,
           session_id: sessionId,

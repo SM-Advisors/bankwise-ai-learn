@@ -120,7 +120,7 @@ export function useAllUsersWithRoles(organizationId?: string | null) {
       };
     }) || [];
 
-    setUsers(combinedUsers);
+    setUsers(combinedUsers as any);
     setLoading(false);
   };
 

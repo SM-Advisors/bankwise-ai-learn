@@ -10,7 +10,7 @@ interface UsePreferredModelResult {
 
 export function usePreferredModel(allowedModels: string[]): UsePreferredModelResult {
   const { user, profile } = useAuth();
-  const rawPreferred = profile?.preferred_model as string | undefined;
+  const rawPreferred = (profile as any)?.preferred_model as string | undefined;
 
   // Validate stored preference against current allowed list; fall back to default
   const resolve = (stored: string | undefined): string => {

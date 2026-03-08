@@ -43,7 +43,7 @@ export function usePracticeConversations(sessionId: string, moduleId: string | n
 
       const parsed: PracticeConversation[] = (data || []).map((row) => ({
         ...row,
-        messages: (Array.isArray(row.messages) ? row.messages : []) as PracticeMessage[],
+        messages: (Array.isArray(row.messages) ? row.messages : []) as unknown as PracticeMessage[],
       }));
 
       setConversations(parsed);
@@ -85,8 +85,8 @@ export function usePracticeConversations(sessionId: string, moduleId: string | n
         ? firstMessage.content.slice(0, 50) + (firstMessage.content.length > 50 ? '...' : '')
         : 'New Conversation';
 
-      const { data, error } = await supabase
-        .from('practice_conversations')
+      const { data, error } = await (supabase
+        .from('practice_conversations') as any)
         .insert({
           user_id: user.id,
           session_id: sessionId,

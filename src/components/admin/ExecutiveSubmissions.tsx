@@ -111,13 +111,13 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
     setUpdatingId(id);
     const notes = noteValues[id] ?? null;
     const { error } = await (supabase
-      .from('executive_submissions' as never)
+      .from('executive_submissions') as any)
       .update({
         status,
         reviewer_notes: notes,
         reviewed_at: new Date().toISOString(),
       })
-      .eq('id', id));
+      .eq('id', id);
 
     if (error) {
       toast({ title: 'Failed to update', description: error.message, variant: 'destructive' });

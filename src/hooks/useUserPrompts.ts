@@ -104,8 +104,8 @@ export function useUserPrompts() {
   const updatePrompt = useCallback(async (id: string, updates: Partial<UserPrompt>) => {
     if (!user?.id) return;
     try {
-      const { error } = await supabase
-        .from('user_prompts')
+      const { error } = await (supabase
+        .from('user_prompts') as any)
         .update(updates)
         .eq('id', id)
         .eq('user_id', user.id);
