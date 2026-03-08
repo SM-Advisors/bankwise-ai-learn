@@ -6,9 +6,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Loader2, Send, CheckCircle, AlertCircle,
-  ChevronRight, ChevronDown, Bot, User, Mic, AudioLines, Plus, SlidersHorizontal,
+  ChevronRight, ChevronDown, Bot, User, AudioLines, Plus, SlidersHorizontal,
   MessageSquarePlus, History, Clock, ChevronUp, Sparkles, RotateCcw,
 } from 'lucide-react';
+import { VoiceMicButton } from '@/components/VoiceMicButton';
 import { type ModuleContent } from '@/data/trainingContent';
 import { getRoleScenario } from '@/data/roleScenarioBanks';
 import { type PracticeConversation } from '@/hooks/usePracticeConversations';
