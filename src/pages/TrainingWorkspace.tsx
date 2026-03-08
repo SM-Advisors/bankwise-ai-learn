@@ -38,6 +38,7 @@ import { AppShell, type BreadcrumbItem } from '@/components/shell';
 import { type ProgressModule } from '@/components/smile';
 import { useValueSignals } from '@/hooks/useValueSignals';
 import { ModuleContentPanel } from '@/components/training/ModuleContentPanel';
+import { PersonalizationPractice } from '@/components/training/PersonalizationPractice';
 import { SessionSwitcher } from '@/components/training/SessionSwitcher';
 
 export default function TrainingWorkspace() {
