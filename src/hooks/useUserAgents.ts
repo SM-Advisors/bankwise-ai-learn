@@ -82,8 +82,8 @@ export function useUserAgents() {
     if (!user?.id) return;
 
     try {
-      const { error } = await supabase
-        .from('user_agents')
+      const { error } = await (supabase
+        .from('user_agents') as any)
         .update(updates)
         .eq('id', id)
         .eq('user_id', user.id);
