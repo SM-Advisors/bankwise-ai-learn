@@ -24,7 +24,7 @@ export function useUserAgents() {
 
       if (error) throw error;
 
-      const parsed: UserAgent[] = (data || []).map((row) => ({
+      const parsed: UserAgent[] = (data || []).map((row: any) => ({
         ...row,
         template_data: (row.template_data || EMPTY_TEMPLATE) as AgentTemplateData,
       }));

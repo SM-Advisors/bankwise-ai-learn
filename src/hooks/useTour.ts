@@ -32,7 +32,7 @@ export function useTour(tourId: TourId) {
     };
     // Keep legacy boolean in sync for dashboard tour
     if (tourId === 'dashboard') update.tour_completed = true;
-    await updateProfileupdate;
+    await (updateProfile as any)(update);
   };
 
   const startTour = (steps: DriveStep[], onComplete?: () => void) => {

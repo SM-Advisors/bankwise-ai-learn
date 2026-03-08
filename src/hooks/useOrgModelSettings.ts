@@ -33,7 +33,7 @@ export function useOrgModelSettings(): OrgModelSettings {
         } else {
           const raw = data.allowed_models;
           const models: string[] = Array.isArray(raw) && raw.length > 0
-            ? raw
+            ? (raw as string[])
             : [DEFAULT_MODEL];
           setAllowedModels(models);
         }

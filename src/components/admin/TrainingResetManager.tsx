@@ -187,7 +187,7 @@ export function TrainingResetManager() {
 
       if (!snap) throw new Error('Snapshot not found');
 
-      const snapshotData = snap.snapshot_data;
+      const snapshotData = snap.snapshot_data as any;
 
       // 2. Restore training_progress
       if (snapshotData.training_progress && Object.keys(snapshotData.training_progress).length > 0) {
