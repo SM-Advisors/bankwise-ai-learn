@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Lightbulb, Send, Loader2, Sparkles, Bookmark, Users, TrendingUp, X, Check, Brain } from 'lucide-react';
+import { VoiceMicButton } from '@/components/VoiceMicButton';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
