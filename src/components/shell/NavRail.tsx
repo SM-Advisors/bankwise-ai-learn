@@ -8,7 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { ChevronRight, ChevronLeft, User, LayoutDashboard, ShieldCheck, Settings, LogOut } from 'lucide-react';
+import { ChevronRight, ChevronLeft, User, LayoutDashboard, ShieldCheck, LogOut } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -213,10 +213,6 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
               <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
                 <User className="mr-2 h-4 w-4" />
                 My Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/profile?tab=settings')} className="cursor-pointer">
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
               </DropdownMenuItem>
               {(isAdmin || profile?.is_super_admin) && (
                 <DropdownMenuSeparator />
