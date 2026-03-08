@@ -35,7 +35,7 @@ import type { WorkflowData } from '@/types/workflow';
 import { Loader2, Bot, Building2, MessageSquare, GraduationCap, BookOpen } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AppShell, type BreadcrumbItem } from '@/components/shell';
-import { ProgressStrip, type ProgressModule } from '@/components/smile';
+import { type ProgressModule } from '@/components/smile';
 import { useValueSignals } from '@/hooks/useValueSignals';
 import { ModuleContentPanel } from '@/components/training/ModuleContentPanel';
 import { SessionSwitcher } from '@/components/training/SessionSwitcher';
