@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AppShell, type BreadcrumbItem } from '@/components/shell';
-import { ProgressStrip, type ProgressModule } from '@/components/smile';
+import { type ProgressModule } from '@/components/smile';
 import { useValueSignals } from '@/hooks/useValueSignals';
 
 export default function ElectiveWorkspace() {
@@ -585,15 +585,6 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
   const trainingActions = (
     <div className="flex items-center gap-3 min-w-0">
-      <ProgressStrip
-        modules={progressModules}
-        currentModuleId={selectedModule?.id}
-        onModuleClick={(id) => {
-          const mod = modules.find((m) => m.id === id);
-          if (mod) handleModuleSelect(mod);
-        }}
-        className="max-w-[480px]"
-      />
       {policies.length > 0 && (
         <div className="relative hidden md:block shrink-0">
           <Button

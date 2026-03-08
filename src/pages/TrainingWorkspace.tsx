@@ -35,7 +35,7 @@ import type { WorkflowData } from '@/types/workflow';
 import { Loader2, Bot, Building2, MessageSquare, GraduationCap, BookOpen } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AppShell, type BreadcrumbItem } from '@/components/shell';
-import { ProgressStrip, type ProgressModule } from '@/components/smile';
+import { type ProgressModule } from '@/components/smile';
 import { useValueSignals } from '@/hooks/useValueSignals';
 import { ModuleContentPanel } from '@/components/training/ModuleContentPanel';
 import { SessionSwitcher } from '@/components/training/SessionSwitcher';
@@ -905,19 +905,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
   ];
 
   const trainingActions = (
-    <div className="flex items-center w-full">
-      {/* Center: module progress */}
-      <div className="flex-1 flex justify-center">
-        <ProgressStrip
-          modules={progressModules}
-          currentModuleId={selectedModule?.id}
-          onModuleClick={(id) => {
-            const mod = session.modules.find((m) => m.id === id);
-            if (mod) handleModuleSelect(mod);
-          }}
-          className="max-w-[480px]"
-        />
-      </div>
+    <div className="flex items-center w-full justify-end">
       {/* Right: brainstorm button */}
       <div className="shrink-0">
         <BrainstormPanel compact />
