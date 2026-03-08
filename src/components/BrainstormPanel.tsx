@@ -542,14 +542,20 @@ Enterprise ($$$$$): Full RPA platforms (UiPath, Automation Anywhere), custom ven
                       }
                     }}
                   />
-                  <Button
-                    size="icon"
-                    onClick={handleChatSend}
-                    disabled={!chatInput.trim() || isLoading}
-                    className="shrink-0 self-end h-9 w-9"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
+                  <div className="flex flex-col gap-1 self-end">
+                    <VoiceMicButton
+                      onTranscript={(text) => setChatInput((prev) => (prev ? prev + ' ' : '') + text)}
+                      disabled={isLoading}
+                    />
+                    <Button
+                      size="icon"
+                      onClick={handleChatSend}
+                      disabled={!chatInput.trim() || isLoading}
+                      className="shrink-0 h-9 w-9"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               )}
             </>
