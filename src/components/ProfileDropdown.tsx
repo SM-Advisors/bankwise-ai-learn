@@ -138,7 +138,7 @@ export function ProfileDropdown({ onReplayTour }: ProfileDropdownProps = {}) {
           </DropdownMenuItem>
           {isAdmin && (
             <DropdownMenuItem onClick={() => navigate('/admin')} className="cursor-pointer">
-              <Settings className="mr-2 h-4 w-4" />
+              <Shield className="mr-2 h-4 w-4" />
               Admin Settings
             </DropdownMenuItem>
           )}
