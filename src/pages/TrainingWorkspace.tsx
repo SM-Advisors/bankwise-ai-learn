@@ -27,6 +27,7 @@ import { useUserPrompts } from '@/hooks/useUserPrompts';
 import { useOrgModelSettings } from '@/hooks/useOrgModelSettings';
 import { usePreferredModel } from '@/hooks/usePreferredModel';
 import { useWorkspaceTour } from '@/hooks/useWorkspaceTour';
+import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { AgentStudioPanel } from '@/components/agent-studio/AgentStudioPanel';
 import { WorkflowStudioPanel } from '@/components/workflow-studio/WorkflowStudioPanel';
 import { CapstonePanel } from '@/components/capstone/CapstonePanel';

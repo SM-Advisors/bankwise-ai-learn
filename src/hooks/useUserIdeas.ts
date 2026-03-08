@@ -43,7 +43,7 @@ export function useUserIdeas() {
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
-      setIdeas(data || []);
+      setIdeas((data || []) as any);
     } catch (err) {
       console.error('Error fetching ideas:', err);
       setError('Failed to load ideas');

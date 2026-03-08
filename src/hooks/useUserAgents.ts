@@ -219,9 +219,9 @@ export function useUserAgents() {
 
       if (fetchError) throw fetchError;
 
-      const updatedMessages = [...(current?.messages || []), message];
-      const { error } = await supabase
-        .from('agent_test_conversations')
+      const updatedMessages = [...((current?.messages as any[]) || []), message];
+      const { error } = await (supabase
+        .from('agent_test_conversations') as any)
         .update({ messages: updatedMessages })
         .eq('id', conversationId);
 

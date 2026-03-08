@@ -62,8 +62,8 @@ export function useUserWorkflows() {
     if (!user?.id) return;
     setWorkflows(prev => prev.map(w => w.id === id ? { ...w, ...updates, updated_at: new Date().toISOString() } : w));
     try {
-      const { error } = await supabase
-        .from('user_workflows')
+      const { error } = await (supabase
+        .from('user_workflows') as any)
         .update(updates)
         .eq('id', id)
         .eq('user_id', user.id);
