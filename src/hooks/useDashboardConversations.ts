@@ -38,7 +38,7 @@ export function useDashboardConversations() {
 
       const parsed: DashboardConversation[] = (data || []).map((row) => ({
         ...row,
-        messages: (Array.isArray(row.messages) ? row.messages : []) as DashboardMessage[],
+        messages: (Array.isArray(row.messages) ? row.messages : []) as unknown as DashboardMessage[],
       }));
 
       setConversations(parsed);
