@@ -28,7 +28,7 @@ export function SessionSwitcher({
 
   return (
     <div className="flex items-center gap-1.5 px-4 py-2 border-b bg-card/50 shrink-0 overflow-x-auto">
-      {([1, 2, 3, 4] as const).map((n) => {
+      {(([1, 2, 3, 4, 5] as const)).map((n) => {
         const isAccessible = n <= currentSession;
         const isActive = n === activeSession;
         const isCompleted = !!completedSessions[n];

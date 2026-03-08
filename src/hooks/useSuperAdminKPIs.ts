@@ -13,6 +13,8 @@ export interface OrgSummary {
   s1_completed: number;
   s2_completed: number;
   s3_completed: number;
+  s4_completed: number;
+  s5_completed: number;
   avg_proficiency: number | null;
 }
 
@@ -23,6 +25,8 @@ export interface PlatformKPIs {
   s1_completion_rate: number;
   s2_completion_rate: number;
   s3_completion_rate: number;
+  s4_completion_rate: number;
+  s5_completion_rate: number;
   avg_proficiency: number | null;
   ff_user_count: number;
   bank_user_count: number;
@@ -56,7 +60,7 @@ export function useSuperAdminKPIs() {
         // Fetch training progress
         const { data: progressRows, error: progressErr } = await supabase
           .from('training_progress')
-          .select('user_id, session_1_completed, session_2_completed, session_3_completed') as any;
+          .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed') as any;
 
         if (progressErr) throw progressErr;
 
@@ -86,6 +90,8 @@ export function useSuperAdminKPIs() {
             s1_completed: 0,
             s2_completed: 0,
             s3_completed: 0,
+            s4_completed: 0,
+            s5_completed: 0,
             avg_proficiency: null,
           });
         }
@@ -113,6 +119,8 @@ export function useSuperAdminKPIs() {
           if (row.session_1_completed) org.s1_completed++;
           if (row.session_2_completed) org.s2_completed++;
           if (row.session_3_completed) org.s3_completed++;
+          if (row.session_4_completed) org.s4_completed++;
+          if (row.session_5_completed) org.s5_completed++;
         }
 
         // Compute per-org avg proficiency
@@ -147,6 +155,8 @@ export function useSuperAdminKPIs() {
         const s1Total = (progressRows || []).filter((r: any) => r.session_1_completed).length;
         const s2Total = (progressRows || []).filter((r: any) => r.session_2_completed).length;
         const s3Total = (progressRows || []).filter((r: any) => r.session_3_completed).length;
+        const s4Total = (progressRows || []).filter((r: any) => r.session_4_completed).length;
+        const s5Total = (progressRows || []).filter((r: any) => r.session_5_completed).length;
         const progressTotal = (progressRows || []).length;
 
         setPlatform({
@@ -156,6 +166,8 @@ export function useSuperAdminKPIs() {
           s1_completion_rate: progressTotal > 0 ? Math.round((s1Total / progressTotal) * 100) : 0,
           s2_completion_rate: progressTotal > 0 ? Math.round((s2Total / progressTotal) * 100) : 0,
           s3_completion_rate: progressTotal > 0 ? Math.round((s3Total / progressTotal) * 100) : 0,
+          s4_completion_rate: progressTotal > 0 ? Math.round((s4Total / progressTotal) * 100) : 0,
+          s5_completion_rate: progressTotal > 0 ? Math.round((s5Total / progressTotal) * 100) : 0,
           avg_proficiency: allScores.length > 0
             ? Math.round(allScores.reduce((a: number, b: number) => a + b, 0) / allScores.length)
             : null,

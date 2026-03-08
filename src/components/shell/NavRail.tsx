@@ -57,7 +57,7 @@ export function NavRail({ isExpanded, onToggle }: NavRailProps) {
 
   function resolveZonePath(zoneId: string, defaultPath: string): string {
     if (zoneId === 'learn') {
-      const session = Math.min(profile?.current_session || 1, 4);
+      const session = Math.min(profile?.current_session || 1, 5);
       return `/training/${session}`;
     }
     return defaultPath;

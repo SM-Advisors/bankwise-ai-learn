@@ -115,9 +115,9 @@ export function CSuiteReports() {
     lines.push(`"Exception Rate","${kpis.exceptionRate ?? 0}%"`);
     lines.push('');
     lines.push('DEPARTMENT BREAKDOWN');
-    lines.push('"Department","Users","S1","S2","S3","Avg Level"');
+    lines.push('"Department","Users","S1","S2","S3","S4","S5","Avg Level"');
     (kpis.departmentBreakdowns || []).forEach((item) => {
-      lines.push(`"${item.label || item.department || ''}","${item.total ?? 0}","${item.s1 ?? 0}","${item.s2 ?? 0}","${item.s3 ?? 0}","${item.avgProficiency ?? 0}"`);
+      lines.push(`"${item.label || item.department || ''}","${item.total ?? 0}","${item.s1 ?? 0}","${item.s2 ?? 0}","${item.s3 ?? 0}","${item.s4 ?? 0}","${item.s5 ?? 0}","${item.avgProficiency ?? 0}"`);
     });
     lines.push('');
     lines.push('INNOVATION PIPELINE');
@@ -324,6 +324,8 @@ export function CSuiteReports() {
                           <th className="text-center py-2 px-2 font-medium">S1</th>
                           <th className="text-center py-2 px-2 font-medium">S2</th>
                           <th className="text-center py-2 px-2 font-medium">S3</th>
+                          <th className="text-center py-2 px-2 font-medium">S4</th>
+                          <th className="text-center py-2 px-2 font-medium">S5</th>
                           <th className="text-center py-2 px-2 font-medium">Avg Level</th>
                         </tr>
                       </thead>
@@ -335,6 +337,8 @@ export function CSuiteReports() {
                             <td className="py-2.5 px-2 text-center text-green-600 font-medium">{dept.s1}</td>
                             <td className="py-2.5 px-2 text-center text-blue-600 font-medium">{dept.s2}</td>
                             <td className="py-2.5 px-2 text-center text-purple-600 font-medium">{dept.s3}</td>
+                            <td className="py-2.5 px-2 text-center text-amber-600 font-medium">{dept.s4}</td>
+                            <td className="py-2.5 px-2 text-center text-rose-600 font-medium">{dept.s5}</td>
                             <td className="py-2.5 px-2 text-center">
                               <Badge variant="outline" className="text-xs">{dept.avgProficiency}/8</Badge>
                             </td>

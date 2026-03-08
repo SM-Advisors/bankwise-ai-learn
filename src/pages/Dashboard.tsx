@@ -13,7 +13,7 @@ import {
 } from '@/utils/computeProgress';
 import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';
 import type { SessionProgressData, SkillSignal } from '@/types/progress';
-import { CheckCircle, Play, Sparkles, Bot, Building2, Zap, Lock, Users } from 'lucide-react';
+import { CheckCircle, Play, Sparkles, Bot, Building2, Zap, Lock, Users, Wrench } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { BrainstormPanel } from '@/components/BrainstormPanel';
 
@@ -22,31 +22,38 @@ import { BrainstormPanel } from '@/components/BrainstormPanel';
 const SESSIONS = [
   {
     id: 1,
-    title: 'AI Foundations & Prompting',
-    description: 'Master the fundamentals of effective AI prompting with the CLEAR framework and VERIFY checklist.',
+    title: 'Foundation & Early Wins',
+    description: 'Build confidence with AI through conversation-first computing — every exercise works, every win is real.',
     icon: Sparkles,
-    duration: '~45 min',
+    duration: '~90 min',
   },
   {
     id: 2,
-    title: 'Building Your AI Agent',
-    description: 'Create a custom AI agent tailored to your line of business and daily tasks.',
-    icon: Bot,
-    duration: '~60 min',
+    title: 'Structured Interaction, Models & Tools',
+    description: 'Move from casual conversation to professional-grade AI use with frameworks, models, and tools.',
+    icon: Building2,
+    duration: '~90 min',
   },
   {
     id: 3,
-    title: 'Role-Specific Training',
-    description: 'Deep dive into AI applications specific to your department and role.',
-    icon: Building2,
-    duration: '~50 min',
+    title: 'Agents',
+    description: 'Understand what agents are, why they exist, and build one layer by layer.',
+    icon: Bot,
+    duration: '~90 min',
   },
   {
     id: 4,
-    title: 'AI-Native Integration',
-    description: 'Move from AI-capable to AI-native — integrate AI as a default part of your workflow.',
+    title: 'Functional Agents',
+    description: 'Use agents already built into the tools you use every day — spreadsheets, presentations, email.',
     icon: Zap,
-    duration: '~50 min',
+    duration: '~60 min',
+  },
+  {
+    id: 5,
+    title: 'Build Your Frankenstein',
+    description: 'Design your own AI stack — stitch the pieces together in the way that serves your work.',
+    icon: Wrench,
+    duration: '~90 min',
   },
 ] as const;
 
@@ -87,12 +94,12 @@ export default function Dashboard() {
 
   const sessionCompleted = (id: number) => !!(progress as any)?.[`session_${id}_completed`];
 
-  const currentSession = Math.min(profile.current_session || 1, 4);
+  const currentSession = Math.min(profile.current_session || 1, 5);
   const currentSessionData = getSessionProgressData(currentSession);
   const currentSessionInfo: SessionMeta = SESSIONS[currentSession - 1];
 
   function deriveHomeState(): HomeState {
-    if (sessionCompleted(4)) return 'all_complete';
+    if (sessionCompleted(5)) return 'all_complete';
 
     const completedInCurrent = getCompletedModuleCount(currentSession, currentSessionData);
     if (completedInCurrent > 0) return 'mid_session';
@@ -108,7 +115,7 @@ export default function Dashboard() {
   const completedCount = getCompletedModuleCount(currentSession, currentSessionData);
   const moduleTotal = getSessionModuleTotal(currentSession);
 
-  const allSkillSignals: SkillSignal[] = [1, 2, 3, 4].flatMap((sid) => {
+  const allSkillSignals: SkillSignal[] = [1, 2, 3, 4, 5].flatMap((sid) => {
     const data = getSessionProgressData(sid);
     return data?.skillSignals || [];
   });

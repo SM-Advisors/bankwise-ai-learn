@@ -10,6 +10,8 @@ export interface UserProgressRow {
   session_1_completed: boolean;
   session_2_completed: boolean;
   session_3_completed: boolean;
+  session_4_completed: boolean;
+  session_5_completed: boolean;
 }
 
 export interface PromptEventStats {
@@ -38,6 +40,8 @@ export interface DepartmentBreakdown {
   s1: number;
   s2: number;
   s3: number;
+  s4: number;
+  s5: number;
   avgProficiency: number;
 }
 
@@ -178,7 +182,7 @@ export function useReporting(organizationId: string | null = null) {
 
       const { data: progressData } = await (supabase
         .from('training_progress' as any)
-        .select('user_id, session_1_completed, session_2_completed, session_3_completed') as any);
+        .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed') as any);
 
       const progressMap = new Map<string, any>();
       (progressData || []).forEach((p: any) => {
@@ -198,6 +202,8 @@ export function useReporting(organizationId: string | null = null) {
           session_1_completed: prog?.session_1_completed || false,
           session_2_completed: prog?.session_2_completed || false,
           session_3_completed: prog?.session_3_completed || false,
+          session_4_completed: prog?.session_4_completed || false,
+          session_5_completed: prog?.session_5_completed || false,
         };
       });
       setUserProgress(combined);
@@ -322,7 +328,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
       ] = await Promise.all([
         (supabase
           .from('training_progress' as any)
-          .select('user_id, session_1_completed, session_2_completed, session_3_completed') as any),
+          .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed') as any),
         (promptEventsQuery as any),
         (supabase
           .from('user_ideas' as any)
@@ -362,19 +368,25 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
           session_1_completed: prog?.session_1_completed || false,
           session_2_completed: prog?.session_2_completed || false,
           session_3_completed: prog?.session_3_completed || false,
+          session_4_completed: prog?.session_4_completed || false,
+          session_5_completed: prog?.session_5_completed || false,
         };
       });
 
       const s1Count = combined.filter((u) => u.session_1_completed).length;
       const s2Count = combined.filter((u) => u.session_2_completed).length;
       const s3Count = combined.filter((u) => u.session_3_completed).length;
-      const fullyCompleted = combined.filter((u) => u.session_1_completed && u.session_2_completed && u.session_3_completed).length;
+      const s4Count = combined.filter((u) => u.session_4_completed).length;
+      const s5Count = combined.filter((u) => u.session_5_completed).length;
+      const fullyCompleted = combined.filter((u) => u.session_1_completed && u.session_2_completed && u.session_3_completed && u.session_4_completed && u.session_5_completed).length;
       const completionRate = totalEnrolled > 0 ? Math.round((fullyCompleted / totalEnrolled) * 100) : 0;
 
       const funnelData: SessionFunnelItem[] = [
-        { session: 'S1', label: 'Session 1: Prompting', completed: s1Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s1Count / totalEnrolled) * 100) : 0 },
-        { session: 'S2', label: 'Session 2: AI Agent', completed: s2Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s2Count / totalEnrolled) * 100) : 0 },
-        { session: 'S3', label: 'Session 3: Specialization', completed: s3Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s3Count / totalEnrolled) * 100) : 0 },
+        { session: 'S1', label: 'Session 1: Foundation', completed: s1Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s1Count / totalEnrolled) * 100) : 0 },
+        { session: 'S2', label: 'Session 2: Structured Interaction', completed: s2Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s2Count / totalEnrolled) * 100) : 0 },
+        { session: 'S3', label: 'Session 3: Agents', completed: s3Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s3Count / totalEnrolled) * 100) : 0 },
+        { session: 'S4', label: 'Session 4: Functional Agents', completed: s4Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s4Count / totalEnrolled) * 100) : 0 },
+        { session: 'S5', label: 'Session 5: Build Your Frankenstein', completed: s5Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s5Count / totalEnrolled) * 100) : 0 },
       ];
 
       // Active users
@@ -417,6 +429,8 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
           s1: users.filter((u: any) => u.session_1_completed).length,
           s2: users.filter((u: any) => u.session_2_completed).length,
           s3: users.filter((u: any) => u.session_3_completed).length,
+          s4: users.filter((u: any) => u.session_4_completed).length,
+          s5: users.filter((u: any) => u.session_5_completed).length,
           avgProficiency: users.length > 0 ? Math.round((profSum / users.length) * 10) / 10 : 0,
         };
       });

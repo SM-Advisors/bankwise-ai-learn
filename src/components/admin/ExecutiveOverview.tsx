@@ -230,7 +230,7 @@ export function ExecutiveOverview({ organizationId, onNavigateTab }: ExecutiveOv
             <CardContent>
               <div className="space-y-2.5">
                 {kpis.departmentBreakdowns.slice(0, 6).map((dept) => {
-                  const completionPct = dept.total > 0 ? Math.round((dept.s3 / dept.total) * 100) : 0;
+                  const completionPct = dept.total > 0 ? Math.round((dept.s5 / dept.total) * 100) : 0;
                   return (
                     <div key={dept.label} className="flex items-center gap-3">
                       <span className="text-sm w-28 truncate">{dept.label}</span>

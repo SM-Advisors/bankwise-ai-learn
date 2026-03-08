@@ -446,7 +446,7 @@ export default function Onboarding() {
                   </div>
                   <div className="flex items-center justify-between px-4 py-3">
                     <span className="text-muted-foreground">First session</span>
-                    <span className="font-medium">AI Foundations</span>
+                    <span className="font-medium">Foundation & Early Wins</span>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">

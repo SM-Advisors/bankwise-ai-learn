@@ -9,7 +9,7 @@ import {
 
 // ─── Explore zone — feature hub ──────────────────────────────────────────────
 //
-// Unlocked after module 1-2 (CLEAR Framework). Groups all "explore more" features:
+// Unlocked after module 1-3 (Basic Interaction). Groups all "explore more" features:
 // Prompt Library, My Ideas, Electives, AI Journey, Certificates.
 
 const FEATURES = [

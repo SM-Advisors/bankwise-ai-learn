@@ -113,50 +113,50 @@ const moduleTypeIcon: Record<string, React.ElementType> = {
 const CORE_PROGRAMS = [
   {
     id: 1,
-    title: 'AI Prompting & Personalization',
-    description: 'Foundation training for effective AI communication. All users start here to master prompting fundamentals, context setting, and personalization techniques.',
+    title: 'Foundation & Early Wins',
+    description: 'Start with personalization, learn basic AI interaction, get your first real win, then build iteration and self-review skills.',
     icon: Sparkles,
     stage: 'Stage 1 - Foundation',
-    modules: ALL_SESSION_CONTENT[1]?.modules.length || 5,
+    modules: ALL_SESSION_CONTENT[1]?.modules.length || 7,
     estimatedTime: '2-3 hours',
     prerequisites: 'None - starting point for all users',
     outcomes: [
-      'Master the CLEAR prompting framework',
-      'Write effective prompts for banking tasks',
-      'Set appropriate context for AI interactions',
-      'Handle sensitive data appropriately',
+      'Have productive AI conversations from day one',
+      'Use the Flipped Interaction Pattern and Outline Expander',
+      'Iterate on AI output for better results',
+      'Apply self-review loops to build critical thinking',
     ],
   },
   {
     id: 2,
-    title: 'Building Your AI Agent',
-    description: 'Create a customized AI assistant tailored to your line of business. Learn agent architecture, custom instructions, and tool integration.',
+    title: 'Structured Interaction, Models & Tools',
+    description: 'Add structure with the CLEAR Framework, master output templating, multi-shot prompting, model selection, chain-of-thought reasoning, and tool selection.',
     icon: Bot,
-    stage: 'Stage 2 - Customization',
-    modules: ALL_SESSION_CONTENT[2]?.modules.length || 5,
+    stage: 'Stage 2 - Structure',
+    modules: ALL_SESSION_CONTENT[2]?.modules.length || 7,
     estimatedTime: '3-4 hours',
-    prerequisites: 'Complete Session 1: AI Prompting & Personalization',
+    prerequisites: 'Complete Session 1: Foundation & Early Wins',
     outcomes: [
-      'Understand AI agent architecture',
-      'Create custom agent instructions',
-      'Configure agent for your specific role',
-      'Test and refine agent behavior',
+      'Apply the CLEAR Framework for precision tasks',
+      'Use multi-shot prompting and chain-of-thought reasoning',
+      'Select the right model and tools for each task',
+      'Template output formats for consistent results',
     ],
   },
   {
     id: 3,
-    title: 'Department-Specific Training',
-    description: 'Deep dive into AI applications specific to your line of business. Includes Accounting & Finance, Credit Administration, and Executive & Leadership tracks.',
+    title: 'Agents',
+    description: 'Understand why agents exist, learn the Four Levels, and build your own agent from instructions through knowledge, files, and tool access.',
     icon: Building2,
-    stage: 'Stage 3 - Specialization',
-    modules: ALL_SESSION_CONTENT[3]?.modules.length || 5,
+    stage: 'Stage 3 - Agents',
+    modules: ALL_SESSION_CONTENT[3]?.modules.length || 7,
     estimatedTime: '4-6 hours',
-    prerequisites: 'Complete Session 2: Building Your AI Agent',
+    prerequisites: 'Complete Session 2: Structured Interaction, Models & Tools',
     outcomes: [
-      'Apply AI to department-specific workflows',
-      'Ensure compliance in AI usage',
-      'Master advanced prompting techniques',
-      'Complete real-world capstone project',
+      'Understand the Four Levels of AI agents',
+      'Build a basic agent with instructions and constraints',
+      'Add knowledge, files, and tool access to agents',
+      'Test and deploy a production-quality agent',
     ],
   },
 ];
@@ -942,24 +942,24 @@ export default function AdminDashboard() {
                     AI Training Program Overview
                   </CardTitle>
                   <CardDescription>
-                    Three-stage progressive training: Foundation → Customization → Specialization
+                    Three-stage progressive training: Foundation → Structured Interaction → Agents
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-center gap-2 mb-8 flex-wrap">
                     <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
                       <Sparkles className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium text-blue-600">Stage 1: Prompting</span>
+                      <span className="font-medium text-blue-600">Stage 1: Foundation</span>
                     </div>
                     <div className="text-muted-foreground">→</div>
                     <div className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 rounded-lg border border-purple-500/20">
                       <Bot className="h-4 w-4 text-purple-600" />
-                      <span className="font-medium text-purple-600">Stage 2: Agent Building</span>
+                      <span className="font-medium text-purple-600">Stage 2: Structured Interaction</span>
                     </div>
                     <div className="text-muted-foreground">→</div>
                     <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-lg border border-green-500/20">
                       <Building2 className="h-4 w-4 text-green-600" />
-                      <span className="font-medium text-green-600">Stage 3: Specialization</span>
+                      <span className="font-medium text-green-600">Stage 3: Agents</span>
                     </div>
                   </div>
 

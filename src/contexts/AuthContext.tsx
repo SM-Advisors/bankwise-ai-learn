@@ -44,6 +44,10 @@ export interface TrainingProgress {
   session_2_completed: boolean;
   session_2_progress: SessionProgressData;
   session_3_completed: boolean;
+  session_4_completed: boolean;
+  session_4_progress: SessionProgressData;
+  session_5_completed: boolean;
+  session_5_progress: SessionProgressData;
   session_3_progress: SessionProgressData;
 }
 
@@ -389,7 +393,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Also advance the current session if applicable
     const profileUpdates: Partial<UserProfile> = {};
-    if (profile && profile.current_session === sessionNumber && sessionNumber < 3) {
+    if (profile && profile.current_session === sessionNumber && sessionNumber < 5) {
       profileUpdates.current_session = sessionNumber + 1;
     }
 

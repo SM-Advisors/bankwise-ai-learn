@@ -86,12 +86,15 @@ export default function TrainingWorkspace() {
   })();
 
   // Determine if current module is an Agent Studio module
-  const isAgentModule = sessionId === '2' && (selectedModule?.id === '2-3' || selectedModule?.id === '2-6');
+  // Agent Studio modules: Session 3, Modules 3-3 through 3-7 (Build Agent, Knowledge, Files, Tools, Capstone)
+  const isAgentModule = sessionId === '3' && ['3-3', '3-4', '3-5', '3-6', '3-7'].includes(selectedModule?.id ?? '');
 
   // For Session 3: determine special module types
   const isSession3 = sessionId === '3';
-  const isWorkflowModule = isSession3 && selectedModule?.id === '3-3';
-  const isCapstoneModule = isSession3 && selectedModule?.id === '3-5';
+  // Workflow Studio moved to Session 5 Module 2 (Build Your Frankenstein)
+  const isSession5 = sessionId === '5';
+  const isWorkflowModule = isSession5 && selectedModule?.id === '5-2';
+  const isCapstoneModule = isSession3 && selectedModule?.id === '3-7';
   const deployedAgent = activeAgent;
 
   // Department info for Session 3
@@ -934,6 +937,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         currentSession={profile?.current_session ?? 1}
         completedSessions={{
           1: !!progress?.session_1_completed,
+          4: !!(progress as any)?.session_4_completed,
+          5: !!(progress as any)?.session_5_completed,
           2: !!progress?.session_2_completed,
           3: !!progress?.session_3_completed,
         }}
