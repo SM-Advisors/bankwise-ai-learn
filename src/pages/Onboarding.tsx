@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth, LearningStyleType } from '@/contexts/AuthContext';
 import { getIndustryConfig, type IndustryConfig } from '@/data/industryConfigs';
 import { Button } from '@/components/ui/button';
@@ -53,11 +53,13 @@ const LEVEL_LABELS = ['Observer', 'Learner', 'Practitioner', 'Champion'];
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function Onboarding() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const retakeParam = searchParams.get('retake') === 'true';
   const { profile, updateProfile, loading } = useAuth();
   const { toast } = useToast();
 
   const [isRetake] = useState<boolean>(() =>
-    !!(profile?.intake_role_key || profile?.learning_style || profile?.ai_proficiency_level),
+    retakeParam || !!(profile?.intake_role_key || profile?.learning_style || profile?.ai_proficiency_level),
   );
 
   const [orgType, setOrgType] = useState<string>(() => sessionStorage.getItem('signup_org_type') || '');
@@ -88,8 +90,8 @@ export default function Onboarding() {
   }, [profile?.organization_id, orgTypeResolved, loading]);
 
   useEffect(() => {
-    if (!loading && profile?.onboarding_completed) navigate('/dashboard');
-  }, [profile, loading, navigate]);
+    if (!loading && profile?.onboarding_completed && !retakeParam) navigate('/dashboard');
+  }, [profile, loading, navigate, retakeParam]);
 
   // ── Step state ────────────────────────────────────────────────────────────
   const [step, setStep] = useState(1);

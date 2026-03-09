@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useOrganizations } from '@/hooks/useOrganizations';
+import { useOrganizations, type OrgPlatformType } from '@/hooks/useOrganizations';
 import { useToast } from '@/hooks/use-toast';
 import { ENTERPRISE_INDUSTRIES, CONSUMER_INDUSTRIES, type AudienceType } from '@/data/industryConfigs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,6 +55,7 @@ export function OrganizationsManager() {
     updateCodeUses,
     updateCodeMaxUses,
     updateOrgModels,
+    updateOrgPlatform,
   } = useOrganizations();
 
   const [savingModelsOrgId, setSavingModelsOrgId] = useState<string | null>(null);
@@ -72,6 +73,7 @@ export function OrganizationsManager() {
   const [orgSlug, setOrgSlug] = useState('');
   const [orgAudienceType, setOrgAudienceType] = useState<AudienceType>('enterprise');
   const [orgIndustry, setOrgIndustry] = useState('banking');
+  const [orgPlatform, setOrgPlatform] = useState<OrgPlatformType>('default');
   const [creatingOrg, setCreatingOrg] = useState(false);
 
   // Create code form state
@@ -99,7 +101,7 @@ export function OrganizationsManager() {
       return;
     }
     setCreatingOrg(true);
-    const result = await createOrganization(orgName.trim(), orgSlug.trim(), orgAudienceType, orgIndustry);
+    const result = await createOrganization(orgName.trim(), orgSlug.trim(), orgAudienceType, orgIndustry, orgPlatform);
     setCreatingOrg(false);
     if (result.success) {
       toast({ title: 'Organization created', description: `"${orgName}" has been added.` });
@@ -107,6 +109,7 @@ export function OrganizationsManager() {
       setOrgSlug('');
       setOrgAudienceType('enterprise');
       setOrgIndustry('banking');
+      setOrgPlatform('default');
     } else {
       toast({ title: 'Error', description: result.error || 'Failed to create organization.', variant: 'destructive' });
     }
@@ -256,6 +259,22 @@ export function OrganizationsManager() {
                               {org.industry}
                             </Badge>
                           )}
+                          <Badge
+                            variant={org.platform === 'chatgpt' ? 'default' : 'outline'}
+                            className={`text-xs cursor-pointer ${org.platform === 'chatgpt' ? 'bg-green-600 hover:bg-green-700' : 'hover:bg-muted'}`}
+                            onClick={async () => {
+                              const next = org.platform === 'chatgpt' ? 'default' : 'chatgpt';
+                              const result = await updateOrgPlatform(org.id, next);
+                              if (result.success) {
+                                toast({ title: 'Platform updated', description: `Set to ${next === 'chatgpt' ? 'ChatGPT' : 'Default'} UI` });
+                              } else {
+                                toast({ title: 'Error', description: result.error || 'Failed to update platform', variant: 'destructive' });
+                              }
+                            }}
+                            title="Click to toggle platform"
+                          >
+                            {org.platform === 'chatgpt' ? 'ChatGPT UI' : 'Default UI'}
+                          </Badge>
                         </div>
                       </div>
                       <Badge variant="outline" className="text-xs shrink-0">
@@ -274,7 +293,7 @@ export function OrganizationsManager() {
               <Plus className="h-4 w-4" />
               Create Organization
             </h4>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div className="space-y-2">
                 <Label htmlFor="org-name">Name</Label>
                 <Input
@@ -316,6 +335,18 @@ export function OrganizationsManager() {
                     {(orgAudienceType === 'enterprise' ? ENTERPRISE_INDUSTRIES : CONSUMER_INDUSTRIES).map((cfg) => (
                       <SelectItem key={cfg.slug} value={cfg.slug}>{cfg.name}</SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="org-platform">Training UI</Label>
+                <Select value={orgPlatform} onValueChange={(v) => setOrgPlatform(v as OrgPlatformType)}>
+                  <SelectTrigger id="org-platform">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card">
+                    <SelectItem value="default">Default</SelectItem>
+                    <SelectItem value="chatgpt">ChatGPT</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
