@@ -32,6 +32,7 @@ vi.mock('@/data/trainingContent', () => ({
 const eng = (overrides: Partial<ModuleEngagement> = {}): ModuleEngagement => ({
   contentViewed: false,
   chatStarted: false,
+  practiceMessageCount: 0,
   submitted: false,
   completed: false,
   ...overrides,
