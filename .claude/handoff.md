@@ -1,44 +1,50 @@
 # Session Handoff
 
-**Date:** 2026-03-03
-**Branch:** `claude/continue-previous-session-Y9QIS`
-**Status:** Ready for Next Phase
+**Date:** 2026-03-09
+**Branch:** claude/curriculum-rewrite-6wVX9 (merged to main via PR)
+**Status:** Completed — clean slate
 
 ## Goal
-Build and ship three features for the BankWise AI Learn / SMILE platform per the SMILE brief v2.0: onboarding redesign, Andrea proactive trigger engine, and a session switcher bar.
+Patch two CodeQL high-severity security alerts in `extract-agent-knowledge` edge function, then audit and confirm all recent backend changes were deployed to production.
 
 ## What Was Done
-- **Onboarding redesign** — 5-step interactive flow (name → role → prompt micro-task → Andrea + learning style → "You're ready"). Removed interest picker, proficiency slider, and old 7-question assessment.
-- **Andrea proactive trigger engine** — 4 triggers: return engagement (3+ days away), Explore zone unlock, Community zone unlock, stall detection (10 min on module). One signal per session; dismissed triggers never repeat.
-- **Session switcher bar** — Compact pill bar at top of TrainingWorkspace showing all 4 sessions with completion/locked state, clickable to jump between sessions.
-- All three changes committed and pushed to `claude/continue-previous-session-Y9QIS`.
+- Fixed **double-unescaping** (CWE-116): moved `&amp;` decode to last in `stripXml` so `&amp;lt;` doesn't double-decode into `<`
+- Fixed **incomplete sanitization** (CWE-80): added a second tag-strip pass after entity decoding to neutralise tags reconstructed from encoded angle brackets (e.g. `&lt;script&gt;`)
+- Committed and pushed fix to `claude/curriculum-rewrite-6wVX9`; PR merged
+- Audited all commits from past 2 days and identified undeployed migrations + edge functions
+- User confirmed: **all 3 migrations ran** and **all edge functions redeployed**
 
 ## Key Decisions
-- `gh` CLI is not available in this environment — PR details were provided to the user to create manually on GitHub.
-- No new dependencies introduced; all features built with existing component patterns.
+- Kept `&lt;`/`&gt;` decoding (Copilot suggested removing it — wrong for plain-text use case like DOCX extraction)
+- Second tag-strip pass is the correct fix for the reconstruction attack vector, not removing entity decoding
+- Duplicate migration `20260308114552` was intentionally left as-is (safe no-op due to `IF NOT EXISTS`)
 
 ## Current State
-All changes committed and clean. Branch is up to date with origin. PR details were given to the user; they are handling creation and merge themselves.
+Everything is deployed and clean:
+- All 3 migrations live in production
+- All edge functions deployed (including new `extract-agent-knowledge`)
+- No uncommitted changes, no pending work
 
 ### Uncommitted Changes
-None — all changes committed.
+None — all changes committed and pushed.
 
 ## Open Issues
-- PR has not yet been created — user is handling this manually via GitHub UI.
+None.
 
 ## Next Steps
-Start fresh — ask the user what they want to tackle next. No prior roadmap carried forward.
+None carry-over from this session. Resume normal feature work.
 
 ## Key Files
-- `src/components/onboarding/` — 5-step onboarding flow
-- `src/components/andrea/` — Andrea trigger engine
-- `src/components/training/TrainingWorkspace.tsx` — session switcher bar
+- `supabase/functions/extract-agent-knowledge/index.ts` — new edge function for DOCX/PDF/TXT extraction; `stripXml()` is the patched function
+- `supabase/migrations/20260307220000_add_session_5_progress.sql` — adds session 5 columns + relaxes constraint
+- `supabase/migrations/20260309000001_add_org_platform.sql` — adds `platform` column to `organizations` (required for ChatGPT Edge UI)
 
 ## Context for Next Session
-- `gh` CLI is unavailable; use `git push` + GitHub web UI for PRs.
-- Previous handoff content (curriculum v2.0 roadmap) has been explicitly discarded by the user — do not reference it.
-- **Product name**: SMILE (Smart, Modular, Intelligent Learning Experience for AI). Domain: `smile.smaiadvisors.com`.
-- **Brand**: SM Advisors, navy (#202735) + orange (#dd4124), Inter/Playfair Display fonts.
-- **Git workflow**: Branch naming must follow `claude/...` pattern. Push with `git push -u origin <branch>`.
-- **Lovable is the deployment pipeline**: GitHub push → Lovable auto-deploys frontend.
-- **`as any` casts**: Necessary because Lovable's auto-generated types don't include manually-created tables.
+- The `organizations.platform` column defaults to `'default'`; orgs using the ChatGPT Edge UI need it set to `'chatgpt'` — this is a data change, not a code change, done per-org in the dashboard or via SQL
+- Edge functions are all deployed from the repo root with `supabase functions deploy --project-ref <ref>`
+- The duplicate session-5 migration (`20260308114552`) exists in the repo — it's harmless but worth noting if the migration count ever looks off
+- **Product name**: SMILE (Smart, Modular, Intelligent Learning Experience for AI). Domain: `smile.smaiadvisors.com`
+- **Brand**: SM Advisors, navy (#202735) + orange (#dd4124), Inter/Playfair Display fonts
+- **Git workflow**: Branch naming must follow `claude/...` pattern. Push with `git push -u origin <branch>`
+- **Lovable is the deployment pipeline**: GitHub push → Lovable auto-deploys frontend
+- **`as any` casts**: Necessary because Lovable's auto-generated types don't include manually-created tables
