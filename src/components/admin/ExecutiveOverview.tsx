@@ -9,7 +9,6 @@ import {
 } from 'lucide-react';
 import { useCSuiteKPIs, getLobLabel } from '@/hooks/useReporting';
 import { useAuth } from '@/contexts/AuthContext';
-import { CSuiteAdvisorPanel } from './CSuiteAdvisorPanel';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
@@ -189,98 +188,88 @@ export function ExecutiveOverview({ organizationId, onNavigateTab }: ExecutiveOv
         </Card>
       )}
 
-      {/* Two-column: Funnel + Andrea */}
-      <div className="grid lg:grid-cols-5 gap-4">
-        {/* Left column — Funnel + Department highlights */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Session Completion Funnel */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                Session Completion Funnel
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[180px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={kpis.funnelData} layout="vertical" margin={{ left: 0, right: 16 }}>
-                    <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} tickFormatter={v => `${v}%`} />
-                    <YAxis type="category" dataKey="label" width={80} tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(v: number) => `${v}%`} />
-                    <Bar dataKey="rate" radius={[0, 4, 4, 0]} barSize={24}>
-                      {kpis.funnelData.map((_, i) => (
-                        <Cell key={i} fill={FUNNEL_COLORS[i % FUNNEL_COLORS.length]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Funnel + Department highlights */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        {/* Session Completion Funnel */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium">
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              Session Completion Funnel
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[180px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={kpis.funnelData} layout="vertical" margin={{ left: 0, right: 16 }}>
+                  <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} tickFormatter={v => `${v}%`} />
+                  <YAxis type="category" dataKey="label" width={80} tick={{ fontSize: 11 }} />
+                  <Tooltip formatter={(v: number) => `${v}%`} />
+                  <Bar dataKey="rate" radius={[0, 4, 4, 0]} barSize={24}>
+                    {kpis.funnelData.map((_, i) => (
+                      <Cell key={i} fill={FUNNEL_COLORS[i % FUNNEL_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Department Highlights */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-                Department Highlights
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2.5">
-                {kpis.departmentBreakdowns.slice(0, 6).map((dept) => {
-                  const completionPct = dept.total > 0 ? Math.round((dept.s5 / dept.total) * 100) : 0;
-                  return (
-                    <div key={dept.label} className="flex items-center gap-3">
-                      <span className="text-sm w-28 truncate">{dept.label}</span>
-                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{
-                            width: `${completionPct}%`,
-                            backgroundColor: completionPct >= 60 ? '#22c55e' : completionPct >= 30 ? '#eab308' : '#ef4444',
-                          }}
-                        />
-                      </div>
-                      <span className="text-xs text-muted-foreground w-10 text-right">{completionPct}%</span>
+        {/* Department Highlights */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium">
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+              Department Highlights
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2.5">
+              {kpis.departmentBreakdowns.slice(0, 6).map((dept) => {
+                const completionPct = dept.total > 0 ? Math.round((dept.s5 / dept.total) * 100) : 0;
+                return (
+                  <div key={dept.label} className="flex items-center gap-3">
+                    <span className="text-sm w-28 truncate">{dept.label}</span>
+                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${completionPct}%`,
+                          backgroundColor: completionPct >= 60 ? '#22c55e' : completionPct >= 30 ? '#eab308' : '#ef4444',
+                        }}
+                      />
                     </div>
-                  );
-                })}
-              </div>
-              {kpis.departmentBreakdowns.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mt-3 text-xs text-muted-foreground w-full gap-1"
-                  onClick={() => onNavigateTab('analytics')}
-                >
-                  View full breakdown
-                  <ChevronRight className="h-3 w-3" />
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+                    <span className="text-xs text-muted-foreground w-10 text-right">{completionPct}%</span>
+                  </div>
+                );
+              })}
+            </div>
+            {kpis.departmentBreakdowns.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-3 text-xs text-muted-foreground w-full gap-1"
+                onClick={() => onNavigateTab('analytics')}
+              >
+                View full breakdown
+                <ChevronRight className="h-3 w-3" />
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 gap-3">
-            <Card className="p-4">
-              <div className="text-2xl font-bold">{kpis.activeUsers7d}</div>
-              <p className="text-xs text-muted-foreground mt-0.5">Active (7 days)</p>
-            </Card>
-            <Card className="p-4">
-              <div className="text-2xl font-bold">{kpis.avgProficiency}<span className="text-sm font-normal text-muted-foreground">/8</span></div>
-              <p className="text-xs text-muted-foreground mt-0.5">Avg Proficiency</p>
-            </Card>
-          </div>
-        </div>
-
-        {/* Right column — Inline Andrea */}
-        <div className="lg:col-span-3">
-          <Card className="h-full flex flex-col overflow-hidden">
-            <CSuiteAdvisorPanel organizationId={organizationId} />
-          </Card>
-        </div>
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Card className="p-4">
+          <div className="text-2xl font-bold">{kpis.activeUsers7d}</div>
+          <p className="text-xs text-muted-foreground mt-0.5">Active (7 days)</p>
+        </Card>
+        <Card className="p-4">
+          <div className="text-2xl font-bold">{kpis.avgProficiency}<span className="text-sm font-normal text-muted-foreground">/8</span></div>
+          <p className="text-xs text-muted-foreground mt-0.5">Avg Proficiency</p>
+        </Card>
       </div>
     </div>
   );

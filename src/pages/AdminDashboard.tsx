@@ -618,7 +618,7 @@ export default function AdminDashboard() {
   return (
     <div className="flex h-full">
       {/* Main content area */}
-      <div className={`flex-1 min-w-0 overflow-y-auto transition-all duration-200 ${andreaPaneOpen && activeMainTab !== 'overview' ? 'mr-0' : ''}`}>
+      <div className="flex-1 min-w-0 overflow-y-auto">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Help panel modal */}
       <HelpPanel open={helpPanelOpen} onOpenChange={setHelpPanelOpen} />
@@ -1635,72 +1635,70 @@ export default function AdminDashboard() {
     </div>
     </div>
 
-      {/* Andrea right pane — visible on non-overview tabs */}
-      {activeMainTab !== 'overview' && (
-        <>
-          {/* Toggle button */}
-          {!andreaPaneOpen && (
-            <button
-              onClick={() => setAndreaPaneOpen(true)}
-              className="fixed right-0 top-1/2 -translate-y-1/2 z-50 bg-primary text-primary-foreground px-1.5 py-4 rounded-l-lg shadow-lg hover:bg-primary/90 transition-colors"
-              title="Open Andrea"
-            >
-              <span className="text-xs [writing-mode:vertical-lr] rotate-180 font-medium">Andrea</span>
-            </button>
-          )}
+      {/* Andrea right pane — visible on all tabs, sticky to viewport */}
+      <>
+        {/* Toggle button when collapsed */}
+        {!andreaPaneOpen && (
+          <button
+            onClick={() => setAndreaPaneOpen(true)}
+            className="fixed right-0 top-1/2 -translate-y-1/2 z-50 bg-primary text-primary-foreground px-1.5 py-4 rounded-l-lg shadow-lg hover:bg-primary/90 transition-colors"
+            title="Open Andrea"
+          >
+            <span className="text-xs [writing-mode:vertical-lr] rotate-180 font-medium">Andrea</span>
+          </button>
+        )}
 
-          {andreaPaneOpen && (
-            <div className="w-[420px] shrink-0 border-l border-border bg-background flex flex-col h-full">
-              {/* Pane header with tabs */}
-              <div className="flex items-center border-b px-3 py-2 gap-2 shrink-0">
-                <div className="flex gap-1 flex-1">
-                  <button
-                    onClick={() => setAndreaPaneTab('chat')}
-                    className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${
-                      andreaPaneTab === 'chat'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-muted'
-                    }`}
-                  >
-                    Chat
-                  </button>
-                  <button
-                    onClick={() => setAndreaPaneTab('notes')}
-                    className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${
-                      andreaPaneTab === 'notes'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-muted'
-                    }`}
-                  >
-                    Notes
-                  </button>
-                </div>
+        {andreaPaneOpen && (
+          <div className="w-[420px] shrink-0 border-l border-border bg-background flex flex-col h-full sticky top-0 self-start" style={{ height: '100vh' }}>
+            {/* Pane header with tabs */}
+            <div className="flex items-center border-b px-3 py-2 gap-2 shrink-0">
+              <div className="flex gap-1 flex-1">
                 <button
-                  onClick={() => setAndreaPaneOpen(false)}
-                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
-                  title="Collapse Andrea pane"
+                  onClick={() => setAndreaPaneTab('chat')}
+                  className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${
+                    andreaPaneTab === 'chat'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
+                  }`}
                 >
-                  <X className="h-4 w-4" />
+                  Chat
+                </button>
+                <button
+                  onClick={() => setAndreaPaneTab('notes')}
+                  className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${
+                    andreaPaneTab === 'notes'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  Notes
                 </button>
               </div>
-
-              {/* Pane content */}
-              <div className="flex-1 overflow-hidden">
-                {andreaPaneTab === 'chat' ? (
-                  <CSuiteAdvisorPanel
-                    organizationId={effectiveOrgId}
-                    onSummarize={(summary) => addNote(summary)}
-                  />
-                ) : (
-                  <div className="p-4 overflow-y-auto h-full">
-                    <AndreaNotesPanel organizationId={effectiveOrgId} />
-                  </div>
-                )}
-              </div>
+              <button
+                onClick={() => setAndreaPaneOpen(false)}
+                className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                title="Collapse Andrea pane"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
-          )}
-        </>
-      )}
+
+            {/* Pane content */}
+            <div className="flex-1 overflow-hidden">
+              {andreaPaneTab === 'chat' ? (
+                <CSuiteAdvisorPanel
+                  organizationId={effectiveOrgId}
+                  onSummarize={(summary) => addNote(summary)}
+                />
+              ) : (
+                <div className="p-4 overflow-y-auto h-full">
+                  <AndreaNotesPanel organizationId={effectiveOrgId} />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </>
     </div>
   );
 }
