@@ -17,11 +17,15 @@ function stripXml(xml: string): string {
     .replace(/<w:tab\/>/gi, "\t")
     .replace(/<w:br[^>]*\/>/gi, "\n")
     .replace(/<[^>]+>/g, "")
-    .replace(/&amp;/g, "&")
+    // Decode named entities — &amp; must come last so &amp;lt; doesn't
+    // double-decode into < (which could reconstruct stripped tags).
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&")
+    // Re-strip any tags reconstructed by entity decoding (e.g. &lt;script&gt;)
+    .replace(/<[^>]+>/g, "")
     .replace(/\r\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
