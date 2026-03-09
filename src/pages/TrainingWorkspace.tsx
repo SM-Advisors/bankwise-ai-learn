@@ -1192,6 +1192,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   onModelChange={setPreferredModel}
                   gateMessage={lastGateMessage}
                   orgName={profile?.employer_name || undefined}
+                  policies={policies}
                 />
               ) : (
                 <PracticeChatPanel

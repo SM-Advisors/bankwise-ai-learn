@@ -2,11 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   Loader2, ChevronRight, ChevronDown, ChevronUp,
   Bot, AudioLines, Plus, CheckCircle, AlertCircle,
   RotateCcw, ArrowUp, EyeOff, Eye, Building2,
-  Palette, ImageIcon, Paperclip, Globe, Wrench,
+  Palette, ImageIcon, Paperclip, Globe, Wrench, FileText,
 } from 'lucide-react';
 import { VoiceMicButton } from '@/components/VoiceMicButton';
 import { type ModuleContent } from '@/data/trainingContent';
@@ -14,6 +15,7 @@ import { getRoleScenario } from '@/data/roleScenarioBanks';
 import { type PracticeConversation } from '@/hooks/usePracticeConversations';
 import { AVAILABLE_MODELS, PROVIDER_COLORS, type ModelDefinition } from '@/lib/models';
 import { useToast } from '@/hooks/use-toast';
+import { type BankPolicy } from '@/types/training';
 
 interface PracticeMessage {
   role: 'user' | 'assistant';
@@ -44,6 +46,7 @@ interface ChatGPTPracticeChatPanelProps {
   gateMessage?: string | null;
   // Edge extras
   orgName?: string;
+  policies?: BankPolicy[];
 }
 
 const PLUS_MENU_ITEMS = [
@@ -77,12 +80,14 @@ export function ChatGPTPracticeChatPanel({
   onModelChange,
   gateMessage,
   orgName,
+  policies = [],
 }: ChatGPTPracticeChatPanelProps) {
   const { toast } = useToast();
   const [input, setInput] = useState('');
   const [plusMenuOpen, setPlusMenuOpen] = useState(false);
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [incognito, setIncognito] = useState(false);
+  const [knowledgeOpen, setKnowledgeOpen] = useState(false);
 
   const showModelSelector = allowedModels.length > 1 && !!selectedModel && !!onModelChange;
   const selectedModelDef: ModelDefinition | undefined = AVAILABLE_MODELS.find(m => m.id === selectedModel);
@@ -126,6 +131,17 @@ export function ChatGPTPracticeChatPanel({
     setPlusMenuOpen(false);
     if (action === 'coming_soon') {
       toast({ title: 'Coming soon', description: 'This feature will be available shortly.' });
+    } else if (action === 'knowledge') {
+      setKnowledgeOpen(true);
+    }
+  };
+
+  const handleToggleIncognito = () => {
+    const next = !incognito;
+    setIncognito(next);
+    if (next) {
+      // Start a fresh session when entering incognito
+      onNewChat();
     }
   };
 
@@ -196,7 +212,7 @@ export function ChatGPTPracticeChatPanel({
           )}
           <button
             type="button"
-            onClick={() => setIncognito(o => !o)}
+            onClick={handleToggleIncognito}
             title={incognito ? 'Turn off incognito' : 'Turn on incognito'}
             className={`p-1.5 rounded-lg transition-colors ${incognito ? 'text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
           >
@@ -422,6 +438,42 @@ export function ChatGPTPracticeChatPanel({
       <p className="text-xs text-gray-400 dark:text-gray-600 text-center pb-3 px-4 shrink-0">
         LLM can make mistakes. LLM doesn't use {displayOrgName}'s workspace data to train its models.
       </p>
+
+      {/* ── Company Knowledge sheet ── */}
+      <Sheet open={knowledgeOpen} onOpenChange={setKnowledgeOpen}>
+        <SheetContent side="right" className="w-[380px] sm:w-[420px] flex flex-col">
+          <SheetHeader className="shrink-0">
+            <SheetTitle className="flex items-center gap-2 text-sm">
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+              Company Knowledge
+            </SheetTitle>
+          </SheetHeader>
+          <ScrollArea className="flex-1 mt-4">
+            {policies.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-3 py-16 text-center px-4">
+                <FileText className="h-8 w-8 text-muted-foreground/30" />
+                <p className="text-sm text-muted-foreground">
+                  No org resources have been published yet.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 px-1 pb-4">
+                {policies.filter(p => p.is_active !== false).map(policy => (
+                  <div key={policy.id} className="rounded-xl border bg-card p-4 space-y-1.5">
+                    <p className="text-sm font-medium text-foreground leading-snug">{policy.title}</p>
+                    {policy.summary && (
+                      <p className="text-xs text-muted-foreground leading-relaxed">{policy.summary}</p>
+                    )}
+                    <span className="inline-block text-[10px] uppercase tracking-wide text-muted-foreground/60 font-medium">
+                      {policy.policy_type}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
