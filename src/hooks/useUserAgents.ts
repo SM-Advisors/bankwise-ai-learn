@@ -129,6 +129,38 @@ export function useUserAgents() {
     }
   }, [user?.id, fetchAgents]);
 
+  // Share an agent (makes it readable by any authenticated user via link)
+  const shareAgent = useCallback(async (id: string): Promise<void> => {
+    if (!user?.id) return;
+    try {
+      const { error } = await supabase
+        .from('user_agents')
+        .update({ is_shared: true, shared_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('user_id', user.id);
+      if (error) throw error;
+      await fetchAgents();
+    } catch (err) {
+      console.error('Error sharing agent:', err);
+    }
+  }, [user?.id, fetchAgents]);
+
+  // Unshare an agent
+  const unshareAgent = useCallback(async (id: string): Promise<void> => {
+    if (!user?.id) return;
+    try {
+      const { error } = await supabase
+        .from('user_agents')
+        .update({ is_shared: false })
+        .eq('id', id)
+        .eq('user_id', user.id);
+      if (error) throw error;
+      await fetchAgents();
+    } catch (err) {
+      console.error('Error unsharing agent:', err);
+    }
+  }, [user?.id, fetchAgents]);
+
   // Undeploy an agent
   const undeployAgent = useCallback(async (id: string): Promise<void> => {
     if (!user?.id) return;
@@ -241,6 +273,8 @@ export function useUserAgents() {
     updateAgent,
     deployAgent,
     undeployAgent,
+    shareAgent,
+    unshareAgent,
     fetchAgents,
     fetchTestConversations,
     createTestConversation,

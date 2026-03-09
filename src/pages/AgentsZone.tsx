@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Bot, Send, Pencil, Loader2, ArrowRight } from 'lucide-react';
+import { Bot, Send, Pencil, Loader2, ArrowRight, Share2, Copy, Check, Globe, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // ─── AgentsZone ──────────────────────────────────────────────────────────────
@@ -21,11 +21,13 @@ type Message = { role: 'user' | 'assistant'; content: string };
 export default function AgentsZone() {
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const { activeAgent, isLoading: agentsLoading } = useUserAgents();
+  const { activeAgent, isLoading: agentsLoading, shareAgent, unshareAgent } = useUserAgents();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [showSharePanel, setShowSharePanel] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -71,6 +73,23 @@ export default function AgentsZone() {
       ]);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const shareUrl = activeAgent ? `${window.location.origin}/agent/${activeAgent.id}` : '';
+
+  const copyShareLink = async () => {
+    await navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleToggleShare = async () => {
+    if (!activeAgent) return;
+    if (activeAgent.is_shared) {
+      await unshareAgent(activeAgent.id);
+    } else {
+      await shareAgent(activeAgent.id);
     }
   };
 
@@ -139,13 +158,61 @@ export default function AgentsZone() {
           <Button
             variant="ghost"
             size="sm"
+            className={cn('gap-1.5 shrink-0', showSharePanel ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}
+            onClick={() => setShowSharePanel((v) => !v)}
+          >
+            <Share2 className="h-3.5 w-3.5" />
+            Share
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             className="gap-1.5 shrink-0 text-muted-foreground hover:text-foreground"
             onClick={() => navigate('/training/3')}
           >
             <Pencil className="h-3.5 w-3.5" />
-            Edit agent
+            Edit
           </Button>
         </div>
+
+        {/* Share panel */}
+        {showSharePanel && (
+          <div className="px-6 py-3 border-b bg-muted/30 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {activeAgent!.is_shared ? (
+                  <Globe className="h-4 w-4 text-green-600" />
+                ) : (
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                )}
+                <span className="text-sm font-medium">
+                  {activeAgent!.is_shared ? 'Shared — anyone with the link can use this agent' : 'Private — only you can use this agent'}
+                </span>
+              </div>
+              <Button
+                variant={activeAgent!.is_shared ? 'outline' : 'default'}
+                size="sm"
+                className="shrink-0 text-xs h-7"
+                onClick={handleToggleShare}
+              >
+                {activeAgent!.is_shared ? 'Make private' : 'Enable sharing'}
+              </Button>
+            </div>
+            {activeAgent!.is_shared && (
+              <div className="flex items-center gap-2">
+                <input
+                  readOnly
+                  value={shareUrl}
+                  className="flex-1 h-8 text-xs rounded-md border border-input bg-background px-3 text-muted-foreground"
+                />
+                <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs shrink-0" onClick={copyShareLink}>
+                  {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? 'Copied' : 'Copy'}
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
