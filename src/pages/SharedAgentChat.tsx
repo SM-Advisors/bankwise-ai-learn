@@ -47,7 +47,7 @@ export default function SharedAgentChat() {
         if (error || !data) {
           setNotFound(true);
         } else {
-          setAgent(data as UserAgent);
+          setAgent(data as unknown as UserAgent);
         }
         setIsLoadingAgent(false);
       });

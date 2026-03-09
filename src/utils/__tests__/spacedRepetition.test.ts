@@ -8,6 +8,8 @@ import type { RetrievalResponse } from '../spacedRepetition';
 const q = (id: string, moduleId = 'mod-1'): RetrievalQuestion => ({
   id,
   moduleId,
+  sessionId: 1,
+  skill: 'general',
   question: `Question ${id}`,
   keyAnswer: `Answer ${id}`,
 });
