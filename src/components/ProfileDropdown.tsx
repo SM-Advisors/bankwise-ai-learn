@@ -87,15 +87,9 @@ export function ProfileDropdown({ onReplayTour }: ProfileDropdownProps = {}) {
     navigate('/');
   };
 
-  const handleRetakeIntake = async () => {
-    // Reset onboarding_completed to false so user goes through onboarding again
-    const { error } = await updateProfile({ onboarding_completed: false });
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Intake Form', description: 'Redirecting to the intake form...' });
-      navigate('/onboarding');
-    }
+  const handleRetakeIntake = () => {
+    toast({ title: 'Intake Form', description: 'Redirecting to the intake form...' });
+    navigate('/onboarding?retake=true');
   };
 
   return (
