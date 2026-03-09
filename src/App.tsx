@@ -38,6 +38,7 @@ import NotFound from "./pages/NotFound";
 import ShellPreview from "./pages/ShellPreview";
 import Explore from "./pages/Explore";
 import CommunityZone from "./pages/CommunityZone";
+import AgentsZone from "./pages/AgentsZone";
 
 const queryClient = new QueryClient();
 
@@ -174,6 +175,13 @@ const App = () => (
                   <Route path="/community" element={
                     <ProtectedRoute requireOnboarding>
                       <CommunityZone />
+                    </ProtectedRoute>
+                  } />
+
+                  {/* Agents zone — unlocked after first agent deployment */}
+                  <Route path="/agents" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AgentsZone />
                     </ProtectedRoute>
                   } />
 

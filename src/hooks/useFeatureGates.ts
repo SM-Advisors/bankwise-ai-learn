@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { LEARNER_ZONES, type UnlockCondition, type Zone } from '@/config/zones';
 import type { SessionProgressData } from '@/types/progress';
+import { supabase } from '@/integrations/supabase/client';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -24,14 +26,27 @@ function hasCompletedModule(
  * useFeatureGates
  *
  * Single source of truth for progressive disclosure.
- * Reads from the existing useAuth() hook — no new DB queries.
+ * Reads from useAuth() for profile/progress checks, plus a lightweight
+ * head-only count query for the deployed-agent gate.
  *
  * Zones are ABSENT from the UI until their condition is met (not disabled).
  */
 export function useFeatureGates() {
-  const { profile, progress } = useAuth();
+  const { user, profile, progress } = useAuth();
 
   const session1Progress = progress?.session_1_progress as SessionProgressData | null;
+
+  // Check whether the user has at least one deployed agent (lightweight head-only count)
+  const [hasDeployedAgent, setHasDeployedAgent] = useState(false);
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase
+      .from('user_agents')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('is_deployed', true)
+      .then(({ count }) => setHasDeployedAgent((count ?? 0) > 0));
+  }, [user?.id]);
 
   function isUnlocked(condition: UnlockCondition): boolean {
     switch (condition) {
@@ -51,6 +66,9 @@ export function useFeatureGates() {
 
       case 'session_1_completed':
         return progress?.session_1_completed ?? false;
+
+      case 'session_3_agent_deployed':
+        return hasDeployedAgent;
 
       default:
         return false;
