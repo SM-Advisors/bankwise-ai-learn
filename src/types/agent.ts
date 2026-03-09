@@ -14,6 +14,7 @@ export interface AgentTemplateData {
   }>;
   complianceAnchors: string[];
   conversation_starters?: string[];
+  knowledge_base?: Array<{ title: string; content: string }>;
 }
 
 export interface UserAgent {
@@ -59,6 +60,7 @@ export const EMPTY_TEMPLATE: AgentTemplateData = {
   ],
   complianceAnchors: [''],
   conversation_starters: ['', '', ''],
+  knowledge_base: [],
 };
 
 // Assemble structured template data into a plaintext system prompt
@@ -93,6 +95,14 @@ export function assembleSystemPrompt(template: AgentTemplateData): string {
   const anchors = template.complianceAnchors.filter((a) => a.trim());
   if (anchors.length > 0) {
     sections.push(`COMPLIANCE ANCHORS:\n${anchors.map((a) => `- ${a}`).join('\n')}`);
+  }
+
+  const kb = (template.knowledge_base || []).filter((b) => b.title.trim() || b.content.trim());
+  if (kb.length > 0) {
+    const kbLines = kb
+      .map((b) => `--- ${b.title.trim() || 'Untitled'} ---\n${b.content.trim()}`)
+      .join('\n\n');
+    sections.push(`KNOWLEDGE BASE:\n${kbLines}`);
   }
 
   return sections.join('\n\n');
