@@ -1,17 +1,49 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Rocket, FlaskConical, FileText, CheckCircle, AlertCircle, Settings2, Info, Plus, Trash2 } from 'lucide-react';
+import { Rocket, FlaskConical, FileText, CheckCircle, AlertCircle, Settings2, Info, Plus, Trash2, Upload, Loader2, Clock, CalculatorIcon, Search, Globe, Wrench } from 'lucide-react';
 import { AgentTemplateBuilder } from './AgentTemplateBuilder';
 import { AgentTestChat } from './AgentTestChat';
 import { useUserAgents } from '@/hooks/useUserAgents';
+import { supabase } from '@/integrations/supabase/client';
 import type { AgentTemplateData } from '@/types/agent';
 import { EMPTY_TEMPLATE, assembleSystemPrompt, countWords } from '@/types/agent';
 import type { ModuleContent } from '@/data/trainingContent';
+
+const AVAILABLE_TOOLS = [
+  {
+    id: 'date_time',
+    label: 'Date & Time',
+    description: "Agent knows today's date for scheduling and deadline tasks",
+    icon: Clock,
+    comingSoon: false,
+  },
+  {
+    id: 'calculator',
+    label: 'Calculator',
+    description: 'Agent performs precise math and shows work step-by-step',
+    icon: CalculatorIcon,
+    comingSoon: false,
+  },
+  {
+    id: 'policy_search',
+    label: 'Knowledge Search',
+    description: 'Agent cross-references your knowledge sources for policy accuracy',
+    icon: Search,
+    comingSoon: false,
+  },
+  {
+    id: 'web_search',
+    label: 'Web Search',
+    description: 'Search the web for real-time information',
+    icon: Globe,
+    comingSoon: true,
+  },
+] as const;
 
 interface AgentStudioPanelProps {
   module: ModuleContent;
@@ -41,6 +73,8 @@ export function AgentStudioPanel({
   const [currentTestType, setCurrentTestType] = useState<'freeform' | 'standard' | 'edge' | 'out_of_scope'>('freeform');
   const [mode, setMode] = useState<'guided' | 'advanced'>('guided');
   const [advancedPrompt, setAdvancedPrompt] = useState('');
+  const [uploadingBlocks, setUploadingBlocks] = useState<Set<number>>(new Set());
+  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Local template state (synced from agent)
   const currentAgent = draftAgent || agents[0] || null;
@@ -178,6 +212,56 @@ export function AgentStudioPanel({
     },
     [currentAgent?.id, testConversationId, currentTestType, createTestConversation, appendTestMessage]
   );
+
+  // File upload for knowledge blocks
+  const uploadFileForBlock = useCallback(async (idx: number, file: File) => {
+    setUploadingBlocks((prev) => new Set(prev).add(idx));
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error('Not authenticated');
+
+      const supabaseUrl = (supabase as any).supabaseUrl as string;
+      const res = await fetch(`${supabaseUrl}/functions/v1/extract-agent-knowledge`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      const result = await res.json();
+      if (!res.ok || result.error) throw new Error(result.error || 'Extraction failed');
+
+      // Merge extracted text into the block
+      handleTemplateChange({
+        ...localTemplate,
+        knowledge_base: (localTemplate.knowledge_base || []).map((b, i) =>
+          i === idx
+            ? { title: b.title || result.title || file.name, content: result.content }
+            : b
+        ),
+      });
+    } catch (err) {
+      console.error('File extraction error:', err);
+      // Show error in the block content
+      handleTemplateChange({
+        ...localTemplate,
+        knowledge_base: (localTemplate.knowledge_base || []).map((b, i) =>
+          i === idx
+            ? { ...b, content: `Error extracting file: ${err instanceof Error ? err.message : 'Unknown error'}` }
+            : b
+        ),
+      });
+    } finally {
+      setUploadingBlocks((prev) => {
+        const next = new Set(prev);
+        next.delete(idx);
+        return next;
+      });
+    }
+  }, [localTemplate, handleTemplateChange]);
 
   // Mode switching
   const handleModeSwitch = (newMode: 'guided' | 'advanced') => {
@@ -375,6 +459,31 @@ export function AgentStudioPanel({
                             placeholder="Document title (e.g., Overdraft Policy)"
                             className="flex-1 h-7 text-xs rounded-md border border-input bg-background px-3 py-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                           />
+                          {/* Hidden file input */}
+                          <input
+                            type="file"
+                            accept=".pdf,.docx,.txt,.md,.csv"
+                            className="hidden"
+                            ref={(el) => { fileInputRefs.current[idx] = el; }}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) uploadFileForBlock(idx, file);
+                              e.target.value = '';
+                            }}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 shrink-0 text-muted-foreground hover:text-foreground"
+                            title="Upload file (.pdf, .docx, .txt, .md)"
+                            disabled={uploadingBlocks.has(idx)}
+                            onClick={() => fileInputRefs.current[idx]?.click()}
+                          >
+                            {uploadingBlocks.has(idx)
+                              ? <Loader2 className="h-3 w-3 animate-spin" />
+                              : <Upload className="h-3 w-3" />
+                            }
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -401,7 +510,7 @@ export function AgentStudioPanel({
                               ),
                             })
                           }
-                          placeholder="Paste document content here..."
+                          placeholder={uploadingBlocks.has(idx) ? 'Extracting text from file…' : 'Paste document content here, or upload a file above…'}
                           rows={4}
                           className="w-full text-xs rounded-md border border-input bg-background px-3 py-2 resize-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring leading-relaxed"
                         />
@@ -409,6 +518,66 @@ export function AgentStudioPanel({
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* Tool Connections */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Wrench className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Tool Connections</span>
+                  {(localTemplate.enabled_tools || []).filter(t => t !== 'web_search').length > 0 && (
+                    <Badge variant="secondary" className="text-[10px] h-4">
+                      {(localTemplate.enabled_tools || []).filter(t => t !== 'web_search').length} active
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Enable tools to expand what your agent can do. Active tools are injected into the system prompt.
+                </p>
+                <div className="space-y-2">
+                  {AVAILABLE_TOOLS.map((tool) => {
+                    const isEnabled = (localTemplate.enabled_tools || []).includes(tool.id);
+                    const Icon = tool.icon;
+                    return (
+                      <div
+                        key={tool.id}
+                        className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+                          tool.comingSoon
+                            ? 'opacity-50 cursor-not-allowed bg-muted/10'
+                            : isEnabled
+                            ? 'bg-primary/5 border-primary/20 cursor-pointer'
+                            : 'bg-muted/10 hover:bg-muted/20 cursor-pointer'
+                        }`}
+                        onClick={() => {
+                          if (tool.comingSoon) return;
+                          const current = localTemplate.enabled_tools || [];
+                          const next = isEnabled
+                            ? current.filter((t) => t !== tool.id)
+                            : [...current, tool.id];
+                          handleTemplateChange({ ...localTemplate, enabled_tools: next });
+                        }}
+                      >
+                        <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${
+                          isEnabled ? 'bg-primary/10' : 'bg-muted'
+                        }`}>
+                          <Icon className={`h-3.5 w-3.5 ${isEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium">{tool.label}</span>
+                            {tool.comingSoon && (
+                              <Badge variant="outline" className="text-[9px] h-3.5 px-1.5">Soon</Badge>
+                            )}
+                            {isEnabled && !tool.comingSoon && (
+                              <Badge className="text-[9px] h-3.5 px-1.5 bg-primary/10 text-primary border-primary/20">On</Badge>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">{tool.description}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Word count + completion status */}

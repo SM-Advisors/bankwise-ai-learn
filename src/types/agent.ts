@@ -15,6 +15,7 @@ export interface AgentTemplateData {
   complianceAnchors: string[];
   conversation_starters?: string[];
   knowledge_base?: Array<{ title: string; content: string }>;
+  enabled_tools?: string[];
 }
 
 export interface UserAgent {
@@ -61,6 +62,7 @@ export const EMPTY_TEMPLATE: AgentTemplateData = {
   complianceAnchors: [''],
   conversation_starters: ['', '', ''],
   knowledge_base: [],
+  enabled_tools: [],
 };
 
 // Assemble structured template data into a plaintext system prompt
@@ -103,6 +105,24 @@ export function assembleSystemPrompt(template: AgentTemplateData): string {
       .map((b) => `--- ${b.title.trim() || 'Untitled'} ---\n${b.content.trim()}`)
       .join('\n\n');
     sections.push(`KNOWLEDGE BASE:\n${kbLines}`);
+  }
+
+  const activeTools = (template.enabled_tools || []).filter((t) => t !== 'web_search');
+  if (activeTools.length > 0) {
+    const toolLines: string[] = [];
+    if (activeTools.includes('date_time')) {
+      const dateStr = new Date().toLocaleDateString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      });
+      toolLines.push(`- Date & Time: Today is ${dateStr}. Use this context for date-relative questions, scheduling, or deadline calculations.`);
+    }
+    if (activeTools.includes('calculator')) {
+      toolLines.push(`- Calculator: You can perform precise mathematical calculations. Always show your work step-by-step when computing numbers.`);
+    }
+    if (activeTools.includes('policy_search')) {
+      toolLines.push(`- Knowledge Search: Cross-reference the Knowledge Base documents above to provide policy-accurate, source-grounded answers.`);
+    }
+    sections.push(`ENABLED TOOLS:\n${toolLines.join('\n')}`);
   }
 
   return sections.join('\n\n');
