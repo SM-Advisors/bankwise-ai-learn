@@ -149,14 +149,30 @@ export default function AgentsZone() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
-          {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center gap-3 h-full text-center text-muted-foreground">
-              <Bot className="h-10 w-10 opacity-20" />
-              <p className="text-sm max-w-xs">
-                Start a conversation. Your agent will respond according to its configured instructions.
-              </p>
-            </div>
-          )}
+          {messages.length === 0 && (() => {
+            const starters = (activeAgent!.template_data.conversation_starters || []).filter(s => s.trim());
+            return (
+              <div className="flex flex-col items-center justify-center gap-4 h-full text-center">
+                <Bot className="h-10 w-10 text-muted-foreground/20" />
+                <p className="text-sm text-muted-foreground max-w-xs">
+                  Start a conversation. Your agent will respond according to its configured instructions.
+                </p>
+                {starters.length > 0 && (
+                  <div className="flex flex-wrap justify-center gap-2 max-w-sm">
+                    {starters.map((s, i) => (
+                      <button
+                        key={i}
+                        onClick={() => { setInput(s); }}
+                        className="text-xs px-3 py-2 rounded-xl border bg-card hover:bg-muted transition-colors text-left text-foreground/80"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {messages.map((msg, i) => (
             <div

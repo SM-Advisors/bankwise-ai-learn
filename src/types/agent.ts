@@ -13,6 +13,7 @@ export interface AgentTemplateData {
     alternative: string;
   }>;
   complianceAnchors: string[];
+  conversation_starters?: string[];
 }
 
 export interface UserAgent {
@@ -57,6 +58,7 @@ export const EMPTY_TEMPLATE: AgentTemplateData = {
     { rule: '', alternative: '' },
   ],
   complianceAnchors: [''],
+  conversation_starters: ['', '', ''],
 };
 
 // Assemble structured template data into a plaintext system prompt

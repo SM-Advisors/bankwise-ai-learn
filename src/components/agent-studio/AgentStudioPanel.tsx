@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Rocket, FlaskConical, FileText, CheckCircle, AlertCircle, Settings2 } from 'lucide-react';
+import { Rocket, FlaskConical, FileText, CheckCircle, AlertCircle, Settings2, Info } from 'lucide-react';
 import { AgentTemplateBuilder } from './AgentTemplateBuilder';
 import { AgentTestChat } from './AgentTestChat';
 import { useUserAgents } from '@/hooks/useUserAgents';
@@ -242,6 +242,22 @@ export function AgentStudioPanel({
                 <Settings2 className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Configure</span>
               </div>
+
+              {/* Module-aware context banner — shown for modules 3-4 through 3-7 */}
+              {(['3-4', '3-5', '3-6', '3-7'] as string[]).includes(module.id) && (() => {
+                const CONTEXT: Record<string, string> = {
+                  '3-4': 'You\'re building on the agent you created in Module 3-3. This module: add knowledge so your agent becomes a specialist, not just a generalist.',
+                  '3-5': 'Your agent is taking shape. This module: enable file input so users can hand your agent a document and get work done on it.',
+                  '3-6': 'Almost there. This module: connect tools so your agent can take actions, not just give advice.',
+                  '3-7': 'Capstone — pull everything together. Deploy your agent and use it for a real task.',
+                };
+                return (
+                  <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-primary/5 border border-primary/10 text-xs text-muted-foreground leading-relaxed">
+                    <Info className="h-3.5 w-3.5 text-primary/60 shrink-0 mt-0.5" />
+                    <span>{CONTEXT[module.id]}</span>
+                  </div>
+                );
+              })()}
 
               {/* Mode toggle */}
               <div className="inline-flex items-center rounded-lg border border-border bg-muted/50 p-0.5">

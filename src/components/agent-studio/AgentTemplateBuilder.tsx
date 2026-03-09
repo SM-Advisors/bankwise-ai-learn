@@ -9,7 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Plus, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, AlertCircle, MessageSquare } from 'lucide-react';
 import type { AgentTemplateData } from '@/types/agent';
 
 interface AgentTemplateBuilderProps {
@@ -46,7 +46,7 @@ export function AgentTemplateBuilder({
 
   return (
     <div className="space-y-2">
-      <Accordion type="multiple" defaultValue={['identity', 'tasks', 'rules', 'guardrails', 'anchors']} className="space-y-2">
+      <Accordion type="multiple" defaultValue={['identity', 'tasks', 'rules', 'guardrails', 'anchors', 'starters']} className="space-y-2">
           {/* IDENTITY */}
           <AccordionItem value="identity" className="border rounded-lg px-4">
             <AccordionTrigger className="py-3 hover:no-underline">
@@ -363,6 +363,69 @@ export function AgentTemplateBuilder({
                 >
                   <Plus className="h-3 w-3" />
                   Add Anchor
+                </Button>
+              )}
+            </AccordionContent>
+          </AccordionItem>
+          {/* CONVERSATION STARTERS */}
+          <AccordionItem value="starters" className="border rounded-lg px-4">
+            <AccordionTrigger className="py-3 hover:no-underline">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+                <span className="font-medium text-sm">6. Conversation Starters</span>
+                <span className="text-xs text-muted-foreground">(optional)</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4 space-y-2">
+              <p className="text-xs text-muted-foreground mb-3">
+                Suggested first messages shown when someone opens your agent — like a Custom GPT.
+              </p>
+              {(templateData.conversation_starters || []).map((starter, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <Input
+                    value={starter}
+                    onChange={(e) =>
+                      handleChange((prev) => ({
+                        ...prev,
+                        conversation_starters: (prev.conversation_starters || []).map((s, i) =>
+                          i === idx ? e.target.value : s
+                        ),
+                      }))
+                    }
+                    placeholder={`Starter ${idx + 1} (e.g., "Summarise this loan file for me")`}
+                    className="text-sm"
+                  />
+                  {(templateData.conversation_starters || []).length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-destructive"
+                      onClick={() =>
+                        handleChange((prev) => ({
+                          ...prev,
+                          conversation_starters: (prev.conversation_starters || []).filter((_, i) => i !== idx),
+                        }))
+                      }
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              {(templateData.conversation_starters || []).length < 4 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-xs"
+                  onClick={() =>
+                    handleChange((prev) => ({
+                      ...prev,
+                      conversation_starters: [...(prev.conversation_starters || []), ''],
+                    }))
+                  }
+                >
+                  <Plus className="h-3 w-3" />
+                  Add Starter
                 </Button>
               )}
             </AccordionContent>
