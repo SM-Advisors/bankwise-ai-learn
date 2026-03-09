@@ -900,6 +900,7 @@ export type Database = {
           industry: string | null
           name: string
           org_type: string | null
+          platform: string
           slug: string
         }
         Insert: {
@@ -910,6 +911,7 @@ export type Database = {
           industry?: string | null
           name: string
           org_type?: string | null
+          platform?: string
           slug: string
         }
         Update: {
@@ -920,6 +922,7 @@ export type Database = {
           industry?: string | null
           name?: string
           org_type?: string | null
+          platform?: string
           slug?: string
         }
         Relationships: []
