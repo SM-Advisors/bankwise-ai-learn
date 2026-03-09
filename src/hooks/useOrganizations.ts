@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+export type OrgPlatformType = 'default' | 'chatgpt';
+
 export interface Organization {
   id: string;
   name: string;
@@ -9,6 +11,7 @@ export interface Organization {
   allowed_models: string[];
   audience_type: 'enterprise' | 'consumer';
   industry: string | null;
+  platform: OrgPlatformType;
 }
 
 export interface RegistrationCode {
@@ -36,7 +39,7 @@ export function useOrganizations() {
       // Fetch all organizations
       const { data: orgs, error: orgsError } = await supabase
         .from('organizations')
-        .select('id, name, slug, created_at, allowed_models, audience_type, industry')
+        .select('id, name, slug, created_at, allowed_models, audience_type, industry, platform')
         .order('name', { ascending: true });
 
       if (orgsError) {
@@ -47,6 +50,7 @@ export function useOrganizations() {
           allowed_models: Array.isArray(o.allowed_models) ? o.allowed_models as string[] : ['claude-sonnet-4-6'],
           audience_type: o.audience_type || 'enterprise',
           industry: o.industry || null,
+          platform: (o.platform === 'chatgpt' ? 'chatgpt' : 'default') as OrgPlatformType,
         }));
         setOrganizations(mapped);
       }
@@ -90,11 +94,12 @@ export function useOrganizations() {
     slug: string,
     audienceType: 'enterprise' | 'consumer' = 'enterprise',
     industry?: string | null,
+    platform: OrgPlatformType = 'default',
   ) => {
     try {
       const { error } = await supabase
         .from('organizations')
-        .insert({ name, slug, audience_type: audienceType, industry: industry || null });
+        .insert({ name, slug, audience_type: audienceType, industry: industry || null, platform } as any);
 
       if (error) {
         console.error('Error creating organization:', error);
@@ -225,6 +230,26 @@ export function useOrganizations() {
     }
   }, [fetchOrganizations]);
 
+  const updateOrgPlatform = useCallback(async (orgId: string, platform: OrgPlatformType) => {
+    try {
+      const { error } = await (supabase
+        .from('organizations')
+        .update({ platform } as any)
+        .eq('id', orgId));
+
+      if (error) {
+        console.error('Error updating org platform:', error);
+        return { success: false, error: error.message };
+      }
+
+      await fetchOrganizations();
+      return { success: true };
+    } catch (err) {
+      console.error('Error updating org platform:', err);
+      return { success: false, error: 'Failed to update platform' };
+    }
+  }, [fetchOrganizations]);
+
   return {
     organizations,
     registrationCodes,
@@ -236,5 +261,6 @@ export function useOrganizations() {
     updateCodeUses,
     updateCodeMaxUses,
     updateOrgModels,
+    updateOrgPlatform,
   };
 }
