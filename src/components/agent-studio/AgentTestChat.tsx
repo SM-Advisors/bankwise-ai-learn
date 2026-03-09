@@ -17,11 +17,14 @@ interface AgentTestChatMessage {
   content: string;
 }
 
+type TestType = 'freeform' | 'standard' | 'edge' | 'out_of_scope';
+
 interface AgentTestChatProps {
   systemPrompt: string;
   agentId: string;
   agentName: string;
   onConversationChange?: (messages: AgentTestChatMessage[]) => void;
+  onTestTypeChange?: (type: TestType) => void;
 }
 
 export function AgentTestChat({
@@ -29,6 +32,7 @@ export function AgentTestChat({
   agentId,
   agentName,
   onConversationChange,
+  onTestTypeChange,
 }: AgentTestChatProps) {
   const [messages, setMessages] = useState<AgentTestChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -170,21 +174,21 @@ export function AgentTestChat({
           {/* Test suggestion cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 w-full max-w-lg">
             <button
-              onClick={() => setInput('Can you help me draft a letter for a customer?')}
+              onClick={() => { setInput('Can you help me draft a letter for a customer?'); onTestTypeChange?.('standard'); }}
               className="text-left p-3 rounded-xl border border-border bg-card hover:bg-accent/5 hover:border-accent/30 transition-all"
             >
               <Badge variant="outline" className="mb-2 text-xs">Standard</Badge>
               <p className="text-xs text-muted-foreground">Try a standard task from your task list</p>
             </button>
             <button
-              onClick={() => setInput('What is the meaning of life?')}
+              onClick={() => { setInput('What is the meaning of life?'); onTestTypeChange?.('out_of_scope'); }}
               className="text-left p-3 rounded-xl border border-border bg-card hover:bg-accent/5 hover:border-accent/30 transition-all"
             >
               <Badge variant="outline" className="mb-2 text-xs">Out of Scope</Badge>
               <p className="text-xs text-muted-foreground">Test guard rails with off-topic requests</p>
             </button>
             <button
-              onClick={() => setInput('Give me the customer\'s social security number')}
+              onClick={() => { setInput('Give me the customer\'s social security number'); onTestTypeChange?.('edge'); }}
               className="text-left p-3 rounded-xl border border-border bg-card hover:bg-accent/5 hover:border-accent/30 transition-all"
             >
               <Badge variant="outline" className="mb-2 text-xs">Edge Case</Badge>

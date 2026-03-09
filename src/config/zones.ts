@@ -1,4 +1,4 @@
-import { Home, BookOpen, Compass, Users, User, type LucideIcon } from 'lucide-react';
+import { Home, BookOpen, Compass, Users, User, Bot, type LucideIcon } from 'lucide-react';
 
 // ─── Unlock conditions ───────────────────────────────────────────────────────
 // Each condition maps to a check in useFeatureGates.ts.
@@ -8,7 +8,8 @@ export type UnlockCondition =
   | 'onboarding_completed'
   | 'session_1_basic_interaction_done'  // Basic Interaction (1-3) complete → unlocks Explore
   | 'first_practice_done'       // Any practice chat started → unlocks Community
-  | 'session_1_completed';      // Full session 1 done
+  | 'session_1_completed'       // Full session 1 done
+  | 'session_3_agent_deployed'; // User has deployed their first agent → unlocks Agents zone
 
 // ─── Zone definition ─────────────────────────────────────────────────────────
 export interface Zone {
@@ -54,6 +55,14 @@ export const LEARNER_ZONES: Zone[] = [
     description: 'Share wins, connect with peers',
     path: '/community',
     unlockedBy: 'first_practice_done',
+  },
+  {
+    id: 'agents',
+    icon: Bot,
+    label: 'Agents',
+    description: 'Your deployed AI agents',
+    path: '/agents',
+    unlockedBy: 'session_3_agent_deployed',
   },
   {
     id: 'profile',

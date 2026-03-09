@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Rocket, FlaskConical, FileText, CheckCircle, AlertCircle, Settings2 } from 'lucide-react';
+import { Rocket, FlaskConical, FileText, CheckCircle, AlertCircle, Settings2, Info, Plus, Trash2 } from 'lucide-react';
 import { AgentTemplateBuilder } from './AgentTemplateBuilder';
 import { AgentTestChat } from './AgentTestChat';
 import { useUserAgents } from '@/hooks/useUserAgents';
@@ -38,6 +38,7 @@ export function AgentStudioPanel({
 
   const [isDeploying, setIsDeploying] = useState(false);
   const [testConversationId, setTestConversationId] = useState<string | null>(null);
+  const [currentTestType, setCurrentTestType] = useState<'freeform' | 'standard' | 'edge' | 'out_of_scope'>('freeform');
   const [mode, setMode] = useState<'guided' | 'advanced'>('guided');
   const [advancedPrompt, setAdvancedPrompt] = useState('');
 
@@ -150,11 +151,18 @@ export function AgentStudioPanel({
   // Track test conversations when messages change
   const handleTestConversationChange = useCallback(
     async (messages: Array<{ role: 'user' | 'assistant'; content: string }>) => {
-      if (!currentAgent?.id || messages.length === 0) return;
+      if (!currentAgent?.id) return;
 
-      // Create conversation on first message
+      // Reset when chat is cleared
+      if (messages.length === 0) {
+        setTestConversationId(null);
+        setCurrentTestType('freeform');
+        return;
+      }
+
+      // Create conversation on first message, using the tracked test type
       if (!testConversationId && messages.length === 1) {
-        const id = await createTestConversation(currentAgent.id, 'freeform');
+        const id = await createTestConversation(currentAgent.id, currentTestType);
         if (id) {
           setTestConversationId(id);
           await appendTestMessage(id, messages[0]);
@@ -168,7 +176,7 @@ export function AgentStudioPanel({
         await appendTestMessage(testConversationId, latestMessage);
       }
     },
-    [currentAgent?.id, testConversationId, createTestConversation, appendTestMessage]
+    [currentAgent?.id, testConversationId, currentTestType, createTestConversation, appendTestMessage]
   );
 
   // Mode switching
@@ -191,8 +199,11 @@ export function AgentStudioPanel({
   const allSectionsDone = isIdentityDone && isTasksDone && isRulesDone && isGuardRailsDone && isAnchorsDone;
 
   const hasPrompt = localSystemPrompt.trim().length > 0;
-  const hasTests = testConversations.length > 0;
-  const canDeploy = hasPrompt && hasTests;
+  const coveredTypes = new Set(testConversations.map((t) => t.test_type));
+  const hasStandardTest = coveredTypes.has('standard');
+  const hasEdgeTest = coveredTypes.has('edge');
+  const hasOutOfScopeTest = coveredTypes.has('out_of_scope');
+  const canDeploy = hasPrompt && hasStandardTest && hasEdgeTest && hasOutOfScopeTest;
   const isDeployed = currentAgent?.is_deployed ?? false;
 
   return (
@@ -243,6 +254,22 @@ export function AgentStudioPanel({
                 <span className="text-sm font-medium">Configure</span>
               </div>
 
+              {/* Module-aware context banner — shown for modules 3-4 through 3-7 */}
+              {(['3-4', '3-5', '3-6', '3-7'] as string[]).includes(module.id) && (() => {
+                const CONTEXT: Record<string, string> = {
+                  '3-4': 'You\'re building on the agent you created in Module 3-3. This module: add knowledge so your agent becomes a specialist, not just a generalist.',
+                  '3-5': 'Your agent is taking shape. This module: enable file input so users can hand your agent a document and get work done on it.',
+                  '3-6': 'Almost there. This module: connect tools so your agent can take actions, not just give advice.',
+                  '3-7': 'Capstone — pull everything together. Deploy your agent and use it for a real task.',
+                };
+                return (
+                  <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-primary/5 border border-primary/10 text-xs text-muted-foreground leading-relaxed">
+                    <Info className="h-3.5 w-3.5 text-primary/60 shrink-0 mt-0.5" />
+                    <span>{CONTEXT[module.id]}</span>
+                  </div>
+                );
+              })()}
+
               {/* Mode toggle */}
               <div className="inline-flex items-center rounded-lg border border-border bg-muted/50 p-0.5">
                 <button
@@ -291,23 +318,98 @@ export function AgentStudioPanel({
                 </div>
               )}
 
-              {/* Knowledge Sources placeholder */}
-              <Card className="border-dashed">
-                <CardContent className="py-4 flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+              {/* Knowledge Sources */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Knowledge Sources</span>
+                    {(localTemplate.knowledge_base || []).length > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        ({(localTemplate.knowledge_base || []).length})
+                      </span>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">Knowledge Sources</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Attach bank policies, compliance docs, or reference materials to your agent.
-                    </p>
-                    <Button variant="outline" size="sm" disabled className="mt-2 text-xs">
-                      Coming soon
+                  {(localTemplate.knowledge_base || []).length < 5 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 gap-1 text-xs"
+                      onClick={() =>
+                        handleTemplateChange({
+                          ...localTemplate,
+                          knowledge_base: [
+                            ...(localTemplate.knowledge_base || []),
+                            { title: '', content: '' },
+                          ],
+                        })
+                      }
+                    >
+                      <Plus className="h-3 w-3" />
+                      Add source
                     </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Paste bank policies, procedures, or reference materials. Your agent will draw on these when answering questions.
+                </p>
+                {(localTemplate.knowledge_base || []).length === 0 ? (
+                  <div className="rounded-lg border-2 border-dashed border-muted-foreground/15 px-4 py-5 text-center text-xs text-muted-foreground">
+                    No knowledge added yet. Add a source to make your agent a specialist.
                   </div>
-                </CardContent>
-              </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {(localTemplate.knowledge_base || []).map((block, idx) => (
+                      <div key={idx} className="space-y-2 p-3 rounded-lg border bg-muted/20">
+                        <div className="flex items-center gap-2">
+                          <input
+                            value={block.title}
+                            onChange={(e) =>
+                              handleTemplateChange({
+                                ...localTemplate,
+                                knowledge_base: (localTemplate.knowledge_base || []).map((b, i) =>
+                                  i === idx ? { ...b, title: e.target.value } : b
+                                ),
+                              })
+                            }
+                            placeholder="Document title (e.g., Overdraft Policy)"
+                            className="flex-1 h-7 text-xs rounded-md border border-input bg-background px-3 py-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 shrink-0 text-muted-foreground hover:text-destructive"
+                            onClick={() =>
+                              handleTemplateChange({
+                                ...localTemplate,
+                                knowledge_base: (localTemplate.knowledge_base || []).filter(
+                                  (_, i) => i !== idx
+                                ),
+                              })
+                            }
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <textarea
+                          value={block.content}
+                          onChange={(e) =>
+                            handleTemplateChange({
+                              ...localTemplate,
+                              knowledge_base: (localTemplate.knowledge_base || []).map((b, i) =>
+                                i === idx ? { ...b, content: e.target.value } : b
+                              ),
+                            })
+                          }
+                          placeholder="Paste document content here..."
+                          rows={4}
+                          className="w-full text-xs rounded-md border border-input bg-background px-3 py-2 resize-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring leading-relaxed"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {/* Word count + completion status */}
               <div className="flex items-center gap-2 pt-1">
@@ -335,11 +437,28 @@ export function AgentStudioPanel({
                     Complete
                   </Badge>
                 )}
-                {hasTests && (
-                  <Badge variant="outline" className="gap-1 text-blue-600 border-blue-500/30">
-                    {testConversations.length} test{testConversations.length !== 1 ? 's' : ''}
-                  </Badge>
-                )}
+              </div>
+
+              {/* Deploy checklist */}
+              <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">Deploy checklist</p>
+                {[
+                  { done: hasPrompt, label: 'System prompt written' },
+                  { done: hasStandardTest, label: 'Standard task tested' },
+                  { done: hasEdgeTest, label: 'Edge case tested' },
+                  { done: hasOutOfScopeTest, label: 'Out-of-scope tested' },
+                ].map(({ done, label }) => (
+                  <div key={label} className="flex items-center gap-2">
+                    {done ? (
+                      <CheckCircle className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                    ) : (
+                      <AlertCircle className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
+                    )}
+                    <span className={`text-xs ${done ? 'text-foreground' : 'text-muted-foreground'}`}>
+                      {label}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </ScrollArea>
@@ -358,6 +477,7 @@ export function AgentStudioPanel({
             agentId={currentAgent?.id || ''}
             agentName={localName}
             onConversationChange={handleTestConversationChange}
+            onTestTypeChange={setCurrentTestType}
           />
         </div>
       </div>

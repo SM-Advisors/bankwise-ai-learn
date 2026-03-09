@@ -11,6 +11,9 @@ import { VideoModal } from '@/components/VideoModal';
 import { TrainerChatPanel } from '@/components/training/TrainerChatPanel';
 import { PracticeChatPanel } from '@/components/training/PracticeChatPanel';
 import { ModuleListSidebar } from '@/components/training/ModuleListSidebar';
+import { ChatGPTSidebar } from '@/components/training/ChatGPTSidebar';
+import { ChatGPTPracticeChatPanel } from '@/components/training/ChatGPTPracticeChatPanel';
+import { useOrgPlatform } from '@/hooks/useOrgPlatform';
 import { type Message, type BankPolicy } from '@/types/training';
 import type { SessionProgressData, ModuleEngagement } from '@/types/progress';
 import { DEFAULT_ENGAGEMENT } from '@/types/progress';
@@ -155,6 +158,8 @@ export default function TrainingWorkspace() {
   } = usePracticeConversations(sessionId || '1', selectedModule?.id || null);
 
   const { allowedModels } = useOrgModelSettings();
+  const { platform } = useOrgPlatform();
+  const isChatGPTEdge = platform === 'chatgpt';
   const { preferredModel, setPreferredModel } = usePreferredModel(allowedModels);
 
   // Initialize trainer with dynamic AI-generated greeting
@@ -1017,16 +1022,35 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
       <div className="flex-1 flex overflow-hidden">
         {/* Left Column - Training Modules (desktop only) */}
         {!isMobile && (
-          <ModuleListSidebar
-            collapsed={leftCollapsed}
-            onToggleCollapse={() => setLeftCollapsed(!leftCollapsed)}
-            modules={session.modules}
-            selectedModule={selectedModule}
-            completedModules={completedModules}
-            moduleEngagement={moduleEngagement}
-            onSelectModule={handleModuleSelect}
-            onGateBypass={handleGateBypass}
-          />
+          isChatGPTEdge ? (
+            <ChatGPTSidebar
+              collapsed={leftCollapsed}
+              onToggleCollapse={() => setLeftCollapsed(!leftCollapsed)}
+              modules={session.modules}
+              selectedModule={selectedModule}
+              completedModules={completedModules}
+              moduleEngagement={moduleEngagement}
+              onSelectModule={handleModuleSelect}
+              onGateBypass={handleGateBypass}
+              conversations={practiceConversations}
+              activeConversationId={activeConversationId}
+              onSelectConversation={selectConversation}
+              onNewChat={startNewChat}
+              displayName={profile?.display_name || undefined}
+              orgName={profile?.employer_name || undefined}
+            />
+          ) : (
+            <ModuleListSidebar
+              collapsed={leftCollapsed}
+              onToggleCollapse={() => setLeftCollapsed(!leftCollapsed)}
+              modules={session.modules}
+              selectedModule={selectedModule}
+              completedModules={completedModules}
+              moduleEngagement={moduleEngagement}
+              onSelectModule={handleModuleSelect}
+              onGateBypass={handleGateBypass}
+            />
+          )
         )}
 
         {/* Left column — Learn Mode content (65%) or Practice Chat (flex-1) */}
@@ -1144,29 +1168,56 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                 }}
               />
             ) : selectedModule ? (
-              <PracticeChatPanel
-                module={selectedModule}
-                messages={activeMessages}
-                onSendMessage={handlePracticeSendMessage}
-                isLoading={isPracticeLoading}
-                isCompleted={moduleCompleted}
-                isSubmitted={isActiveConversationSubmitted}
-                onSubmitForReview={handleSubmitForReview}
-                onContinueToNext={nextModule ? () => setSelectedModule(nextModule) : undefined}
-                onCompleteSession={!nextModule ? handleCompleteSession : undefined}
-                hasNextModule={!!nextModule}
-                conversations={practiceConversations}
-                activeConversationId={activeConversationId}
-                onNewChat={startNewChat}
-                onSelectConversation={selectConversation}
-                departmentLabel={departmentLabel || undefined}
-                lineOfBusiness={profile?.department || undefined}
-                displayName={profile?.display_name?.split(' ')[0] || undefined}
-                allowedModels={allowedModels}
-                selectedModel={preferredModel}
-                onModelChange={setPreferredModel}
-                gateMessage={lastGateMessage}
-              />
+              isChatGPTEdge ? (
+                <ChatGPTPracticeChatPanel
+                  module={selectedModule}
+                  messages={activeMessages}
+                  onSendMessage={handlePracticeSendMessage}
+                  isLoading={isPracticeLoading}
+                  isCompleted={moduleCompleted}
+                  isSubmitted={isActiveConversationSubmitted}
+                  onSubmitForReview={handleSubmitForReview}
+                  onContinueToNext={nextModule ? () => setSelectedModule(nextModule) : undefined}
+                  onCompleteSession={!nextModule ? handleCompleteSession : undefined}
+                  hasNextModule={!!nextModule}
+                  conversations={practiceConversations}
+                  activeConversationId={activeConversationId}
+                  onNewChat={startNewChat}
+                  onSelectConversation={selectConversation}
+                  departmentLabel={departmentLabel || undefined}
+                  lineOfBusiness={profile?.department || undefined}
+                  displayName={profile?.display_name?.split(' ')[0] || undefined}
+                  allowedModels={allowedModels}
+                  selectedModel={preferredModel}
+                  onModelChange={setPreferredModel}
+                  gateMessage={lastGateMessage}
+                  orgName={profile?.employer_name || undefined}
+                />
+              ) : (
+                <PracticeChatPanel
+                  module={selectedModule}
+                  messages={activeMessages}
+                  onSendMessage={handlePracticeSendMessage}
+                  isLoading={isPracticeLoading}
+                  isCompleted={moduleCompleted}
+                  isSubmitted={isActiveConversationSubmitted}
+                  onSubmitForReview={handleSubmitForReview}
+                  onContinueToNext={nextModule ? () => setSelectedModule(nextModule) : undefined}
+                  onCompleteSession={!nextModule ? handleCompleteSession : undefined}
+                  hasNextModule={!!nextModule}
+                  conversations={practiceConversations}
+                  activeConversationId={activeConversationId}
+                  onNewChat={startNewChat}
+                  onSelectConversation={selectConversation}
+                  departmentLabel={departmentLabel || undefined}
+                  lineOfBusiness={profile?.department || undefined}
+                  displayName={profile?.display_name?.split(' ')[0] || undefined}
+                  allowedModels={allowedModels}
+                  selectedModel={preferredModel}
+                  onModelChange={setPreferredModel}
+                  gateMessage={lastGateMessage}
+                />
+              )
             ) : null}
           </div>
         )}

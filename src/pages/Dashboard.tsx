@@ -14,11 +14,12 @@ import {
 } from '@/utils/computeProgress';
 import { aggregateSkillSignals } from '@/utils/deriveSkillSignals';
 import type { SessionProgressData, SkillSignal } from '@/types/progress';
-import { CheckCircle, Play, Sparkles, Bot, Building2, Zap, Lock, Users, Wrench } from 'lucide-react';
+import { CheckCircle, Play, Sparkles, Bot, Building2, Zap, Lock, Users, Wrench, ArrowRight, Pencil } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { BrainstormPanel } from '@/components/BrainstormPanel';
 import { useTour } from '@/hooks/useTour';
 import { DASHBOARD_STEPS } from '@/constants/tourSteps';
+import { useUserAgents } from '@/hooks/useUserAgents';
 
 // ─── Session metadata ─────────────────────────────────────────────────────────
 
@@ -77,6 +78,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { profile, progress, loading } = useAuth();
   const { canAccessCommunity } = useFeatureGates();
+  const { activeAgent } = useUserAgents();
   const { isCompleted: tourDone, startTour } = useTour('dashboard');
 
   // Auto-trigger dashboard tour on first visit
@@ -193,6 +195,38 @@ export default function Dashboard() {
               <p className="text-xs text-muted-foreground/70">Complete your first practice chat to unlock peer discussions and sharing.</p>
             </div>
             <Lock className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+          </div>
+        )}
+
+        {/* Deployed agent card — shown once user has an active agent */}
+        {activeAgent && (
+          <div className="mt-5 flex items-center gap-3 px-4 py-3 rounded-lg border bg-card">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Bot className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{activeAgent.name}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {activeAgent.description || 'Your deployed agent'}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="shrink-0 gap-1 text-muted-foreground hover:text-foreground"
+              onClick={() => navigate('/training/3')}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              Edit
+            </Button>
+            <Button
+              size="sm"
+              className="shrink-0 gap-1"
+              onClick={() => navigate('/agents')}
+            >
+              Open
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
           </div>
         )}
 
