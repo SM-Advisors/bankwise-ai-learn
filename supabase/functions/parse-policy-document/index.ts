@@ -174,7 +174,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3",
         messages: aiMessages,
         max_tokens: 16000,
       }),
@@ -216,7 +216,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
+        model: "google/gemini-3",
         messages: [
           { role: "system", content: "Write a concise 1-2 sentence summary of this policy document. Be factual and direct." },
           { role: "user", content: extractedContent.substring(0, 4000) },

@@ -204,7 +204,7 @@ export function PersonalizationPractice({ onSaved }: PersonalizationPracticeProp
       {/* Save button */}
       <div className="shrink-0 border-t bg-card px-6 py-4">
         <Button
-          className="w-full gap-2"
+          className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white"
           onClick={handleSave}
           disabled={saving || saved}
         >
@@ -215,7 +215,7 @@ export function PersonalizationPractice({ onSaved }: PersonalizationPracticeProp
           ) : (
             <Save className="h-4 w-4" />
           )}
-          {saved ? 'Saved to My Profile' : 'Save'}
+          {saved ? 'Saved to My SMILE Profile' : 'Submit to Andrea and Save to Your SMILE Profile'}
         </Button>
       </div>
     </div>

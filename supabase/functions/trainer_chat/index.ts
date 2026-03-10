@@ -731,6 +731,7 @@ SANDBOX GREETING RULES:
 - Suggest 2-3 things they might try (based on skills from this session)
 - Ask what they'd like to explore, or invite them to just dive in
 - Keep it concise and energetic — they earned this free time
+- HARD LIMIT: No paragraph may exceed 40 words. Use multiple short paragraphs if needed.
 
 RESPONSE FORMAT — MANDATORY:
 {
@@ -834,6 +835,8 @@ ${questions[effectiveSessionNumber] || ""}
 
 These are NOT graded — they are retrieval practice. Note which ones the learner struggles with and use that to inform your feedback. After the knowledge check, transition to the sandbox exploration.`;
 })()}
+
+HARD LIMIT: No paragraph in "reply" may exceed 40 words. Use multiple short paragraphs (separated by \\n\\n) if needed.
 
 RESPONSE FORMAT — MANDATORY:
 {
@@ -1054,7 +1057,7 @@ You MUST respond with valid JSON in this exact format:
 }
 
 FIELD DEFINITIONS:
-- "reply": Your main response. Write like a smart colleague in a chat — conversational, concise, one flowing paragraph. No headers, no bullet points, no numbered lists, no bold labels. Just plain prose. 1-3 sentences for normal replies. Up to 4-5 sentences max when reviewing work or showing an example. Never structure your reply with sections or formatting — it should read like a natural message, not a document. Use markdown only when showing an actual code/prompt example the learner needs to copy.
+- "reply": Your main response. Write like a smart colleague in a chat — conversational, concise. HARD LIMIT: No paragraph may exceed 40 words. If you need to say more, use multiple short paragraphs separated by \\n\\n. No headers, no bullet points, no numbered lists, no bold labels. Just plain prose. 1-3 sentences for normal replies. Up to 4-5 sentences max when reviewing work or showing an example. Never structure your reply with sections or formatting — it should read like a natural message, not a document. Use markdown only when showing an actual code/prompt example the learner needs to copy.
 - "suggestedPrompts": 2-3 short follow-up actions (under 60 chars each), phrased as things the LEARNER would say to you.
 - "coachingAction": What type of response this is:
   - "socratic" — you're asking a clarifying question before answering

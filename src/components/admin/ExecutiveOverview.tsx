@@ -103,7 +103,7 @@ export function ExecutiveOverview({ organizationId, onNavigateTab }: ExecutiveOv
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 lg:px-6">
       {/* Greeting */}
       <div>
         <h2 className="text-xl font-semibold">

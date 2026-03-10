@@ -12,6 +12,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAllBankPolicies } from '@/hooks/useBankPolicies';
 import { useAllLiveTrainingSessions, type LiveTrainingSessionInsert, type LiveTrainingSession } from '@/hooks/useLiveTrainingSessions';
@@ -31,6 +32,7 @@ import { OrgResourcesManager } from '@/components/admin/OrgResourcesManager';
 import { AdminAndreaFloat } from '@/components/admin/AdminAndreaFloat';
 import { AndreaNotesPanel } from '@/components/admin/AndreaNotesPanel';
 import { useAdminAndreaNotes } from '@/hooks/useAdminAndreaChat';
+import { useOrganizations } from '@/hooks/useOrganizations';
 import { ExecutiveOverview } from '@/components/admin/ExecutiveOverview';
 import { HelpPanel } from '@/components/HelpPanel';
 import { useTour } from '@/hooks/useTour';
@@ -252,9 +254,10 @@ export default function AdminDashboard() {
     error?: string;
   } | null>(null);
 
-  // Viewing org context (for super admin drill-down)
+  // Viewing org context (for super admin drill-down or admin org switching)
   const [viewingOrgName, setViewingOrgName] = useState<string | null>(null);
   const isSuperAdmin = !!profile?.is_super_admin;
+  const { organizations: allOrgs } = useOrganizations();
 
   // Fetch org name when viewing another org
   useEffect(() => {
@@ -688,6 +691,34 @@ export default function AdminDashboard() {
             ? `Managing users and content for ${viewingOrgName}`
             : 'Monitor adoption, review insights, and manage your AI training program'}
         </p>
+        {/* Org switcher — admins can switch to view any organization */}
+        {allOrgs.length > 0 && (
+          <div className="flex items-center gap-2 mt-3">
+            <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+            <Select
+              value={viewingOrgId || profile?.organization_id || ''}
+              onValueChange={(orgId) => {
+                if (orgId === profile?.organization_id) {
+                  searchParams.delete('org_id');
+                } else {
+                  searchParams.set('org_id', orgId);
+                }
+                setSearchParams(searchParams);
+              }}
+            >
+              <SelectTrigger className="w-[280px] h-9">
+                <SelectValue placeholder="Select organization" />
+              </SelectTrigger>
+              <SelectContent>
+                {allOrgs.map((org) => (
+                  <SelectItem key={org.id} value={org.id}>
+                    {org.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       <Tabs value={activeMainTab} onValueChange={setActiveMainTab} className="space-y-6">
