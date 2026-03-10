@@ -57,7 +57,11 @@ export default function TrainingWorkspace() {
 
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
-  const [selectedModule, setSelectedModule] = useState<ModuleContent | null>(null);
+  // Restore persisted module & mode from sessionStorage to survive tab switches
+  const persistedModuleId = sessionStorage.getItem(`training_${sessionId}_moduleId`);
+  const persistedMode = sessionStorage.getItem(`training_${sessionId}_mode`) as 'learn' | 'practice' | null;
+
+  const [selectedModule, setSelectedModuleRaw] = useState<ModuleContent | null>(null);
   const [trainerMessages, setTrainerMessages] = useState<Message[]>([]);
   const [trainerInput, setTrainerInput] = useState('');
   const [isTrainerLoading, setIsTrainerLoading] = useState(false);
@@ -65,7 +69,21 @@ export default function TrainingWorkspace() {
   const [moduleCompleted, setModuleCompleted] = useState(false);
   const [lastGateMessage, setLastGateMessage] = useState<string | null>(null);
   // 'learn' shows the content panel; 'practice' shows the chat
-  const [workspaceMode, setWorkspaceMode] = useState<'learn' | 'practice'>('learn');
+  const [workspaceMode, setWorkspaceModeRaw] = useState<'learn' | 'practice'>(persistedMode || 'learn');
+
+  // Wrap setters to persist to sessionStorage
+  const setSelectedModule = (mod: ModuleContent | null) => {
+    setSelectedModuleRaw(mod);
+    if (mod && sessionId) {
+      sessionStorage.setItem(`training_${sessionId}_moduleId`, mod.id);
+    }
+  };
+  const setWorkspaceMode = (mode: 'learn' | 'practice') => {
+    setWorkspaceModeRaw(mode);
+    if (sessionId) {
+      sessionStorage.setItem(`training_${sessionId}_mode`, mode);
+    }
+  };
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
@@ -223,9 +241,12 @@ export default function TrainingWorkspace() {
 
   useEffect(() => {
     if (session?.modules?.length && !selectedModule) {
-      // Prefer the next unfinished module; fall back to the first module.
+      // Restore persisted module if available, otherwise prefer the next unfinished
+      const restoredModule = persistedModuleId
+        ? session.modules.find((m) => m.id === persistedModuleId)
+        : null;
       const nextModule =
-        session.modules.find((m) => !completedModules.has(m.id)) ?? session.modules[0];
+        restoredModule ?? session.modules.find((m) => !completedModules.has(m.id)) ?? session.modules[0];
       setSelectedModule(nextModule);
       if (nextModule.type === 'video') {
         setVideoModalOpen(true);
@@ -353,11 +374,13 @@ export default function TrainingWorkspace() {
     }
   };
 
-  // When the user clicks "Start Practice", switch to practice mode and show
-  // exercise instructions from Andrea in the coaching panel.
-  const handleStartPractice = () => {
-    setWorkspaceMode('practice');
+  // Practice instructions popup state
+  const [practicePopupOpen, setPracticePopupOpen] = useState(false);
+  const [practiceInstructionContent, setPracticeInstructionContent] = useState('');
 
+  // When the user clicks "Start Practice", show a popup with instructions.
+  // When they click "Begin", the popup closes and instructions appear as Andrea message.
+  const handleStartPractice = () => {
     if (!selectedModule) return;
 
     const task = selectedModule.content.practiceTask;
@@ -380,9 +403,18 @@ export default function TrainingWorkspace() {
       `Give it a try in the chat. When you're ready, submit your conversation and I'll give you feedback.`,
     ].join('\n');
 
+    setPracticeInstructionContent(instructionContent);
+    setPracticePopupOpen(true);
+  };
+
+  // When the user clicks "Begin" in the popup, close it and inject instructions into Andrea chat
+  const handleBeginPractice = () => {
+    setPracticePopupOpen(false);
+    setWorkspaceMode('practice');
+
     setTrainerMessages(prev => [...prev, {
       role: 'assistant' as const,
-      content: instructionContent,
+      content: practiceInstructionContent,
     }]);
   };
 
@@ -954,17 +986,22 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
       topBarActions={trainingActions}
       contentClassName="flex flex-col overflow-hidden p-0"
     >
-      {/* Session switcher — navigate between sessions 1–4 */}
+      {/* Session switcher — navigate between sessions 1–5, with horizontal module dropdown */}
       <SessionSwitcher
         activeSession={parseInt(sessionId || '1')}
         currentSession={profile?.current_session ?? 1}
         completedSessions={{
           1: !!progress?.session_1_completed,
-          4: !!progress?.session_4_completed,
-          5: !!progress?.session_5_completed,
           2: !!progress?.session_2_completed,
           3: !!progress?.session_3_completed,
+          4: !!progress?.session_4_completed,
+          5: !!progress?.session_5_completed,
         }}
+        modules={session.modules}
+        selectedModule={selectedModule}
+        completedModules={completedModules}
+        moduleEngagement={moduleEngagement}
+        onSelectModule={handleModuleSelect}
       />
 
       {/* Mobile mode tab bar (Learn / Practice / Coach) */}
@@ -1020,37 +1057,24 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Column - Training Modules (desktop only) */}
-        {!isMobile && (
-          isChatGPTEdge ? (
-            <ChatGPTSidebar
-              collapsed={leftCollapsed}
-              onToggleCollapse={() => setLeftCollapsed(!leftCollapsed)}
-              modules={session.modules}
-              selectedModule={selectedModule}
-              completedModules={completedModules}
-              moduleEngagement={moduleEngagement}
-              onSelectModule={handleModuleSelect}
-              onGateBypass={handleGateBypass}
-              conversations={practiceConversations}
-              activeConversationId={activeConversationId}
-              onSelectConversation={selectConversation}
-              onNewChat={startNewChat}
-              displayName={profile?.display_name || undefined}
-              orgName={profile?.employer_name || undefined}
-            />
-          ) : (
-            <ModuleListSidebar
-              collapsed={leftCollapsed}
-              onToggleCollapse={() => setLeftCollapsed(!leftCollapsed)}
-              modules={session.modules}
-              selectedModule={selectedModule}
-              completedModules={completedModules}
-              moduleEngagement={moduleEngagement}
-              onSelectModule={handleModuleSelect}
-              onGateBypass={handleGateBypass}
-            />
-          )
+        {/* Left Column - ChatGPT sidebar only (modules now in SessionSwitcher dropdown) */}
+        {!isMobile && isChatGPTEdge && (
+          <ChatGPTSidebar
+            collapsed={leftCollapsed}
+            onToggleCollapse={() => setLeftCollapsed(!leftCollapsed)}
+            modules={session.modules}
+            selectedModule={selectedModule}
+            completedModules={completedModules}
+            moduleEngagement={moduleEngagement}
+            onSelectModule={handleModuleSelect}
+            onGateBypass={handleGateBypass}
+            conversations={practiceConversations}
+            activeConversationId={activeConversationId}
+            onSelectConversation={selectConversation}
+            onNewChat={startNewChat}
+            displayName={profile?.display_name || undefined}
+            orgName={profile?.employer_name || undefined}
+          />
         )}
 
         {/* Left column — Learn Mode content (65%) or Practice Chat (flex-1) */}
@@ -1276,6 +1300,42 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         videoUrl={selectedModule?.videoUrl || 'https://youtu.be/xZ1FAm7IoA4'}
         title={selectedModule?.title || "Introduction to AI Prompting"}
       />
+
+      {/* Practice Instructions Popup */}
+      {practicePopupOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-card rounded-xl shadow-xl border max-w-lg w-full mx-4 max-h-[80vh] flex flex-col">
+            <div className="px-6 py-4 border-b">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-primary" />
+                Practice Instructions
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Andrea will guide you through this practice exercise
+              </p>
+            </div>
+            <div className="px-6 py-4 overflow-y-auto flex-1">
+              <div className="prose prose-sm max-w-none">
+                {practiceInstructionContent.split('\n').map((line, i) => {
+                  if (!line.trim()) return <br key={i} />;
+                  if (line.startsWith('**') && line.endsWith('**')) {
+                    return <p key={i} className="font-semibold text-sm">{line.replace(/\*\*/g, '')}</p>;
+                  }
+                  return <p key={i} className="text-sm text-muted-foreground leading-relaxed">{line}</p>;
+                })}
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t">
+              <Button
+                className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white"
+                onClick={handleBeginPractice}
+              >
+                Begin
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </AppShell>
   );

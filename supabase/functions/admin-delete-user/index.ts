@@ -72,12 +72,30 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Delete from public tables first
+    // Delete from public tables first — order matters for FK constraints.
+    // Tables with user_id FK to auth.users cascade on auth deletion, but we
+    // explicitly clean up to avoid edge-case FK errors from tables that
+    // reference other user-owned rows (e.g. community_replies → community_topics).
+    await adminClient.from("community_replies").delete().eq("user_id", user_id);
+    await adminClient.from("community_topics").delete().eq("user_id", user_id);
+    await adminClient.from("practice_conversations").delete().eq("user_id", user_id);
+    await adminClient.from("dashboard_conversations" as any).delete().eq("user_id", user_id);
+    await adminClient.from("agent_test_conversations" as any).delete().eq("user_id", user_id);
+    await adminClient.from("user_agents").delete().eq("user_id", user_id);
+    await adminClient.from("user_ideas" as any).delete().eq("user_id", user_id);
+    await adminClient.from("prompt_events").delete().eq("user_id", user_id);
+    await adminClient.from("ai_preferences").delete().eq("user_id", user_id);
+    await adminClient.from("ai_memories").delete().eq("user_id", user_id);
+    await adminClient.from("skill_observations" as any).delete().eq("user_id", user_id);
+    await adminClient.from("response_feedback" as any).delete().eq("user_id", user_id);
+    await adminClient.from("submission_scores" as any).delete().eq("user_id", user_id);
+    await adminClient.from("retrieval_responses" as any).delete().eq("user_id", user_id);
+    await adminClient.from("rate_limit_events" as any).delete().eq("user_id", user_id);
     await adminClient.from("user_roles").delete().eq("user_id", user_id);
     await adminClient.from("training_progress").delete().eq("user_id", user_id);
     await adminClient.from("user_profiles").delete().eq("user_id", user_id);
 
-    // Delete the auth user
+    // Delete the auth user (cascades any remaining FK references)
     const { error: deleteError } = await adminClient.auth.admin.deleteUser(user_id);
     if (deleteError) {
       return new Response(JSON.stringify({ error: deleteError.message }), {

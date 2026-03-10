@@ -181,12 +181,12 @@ export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPan
                     {example.bad && (
                       <div className="bg-destructive/5 border border-destructive/20 p-3 rounded-lg">
                         <p className="text-xs font-medium text-destructive mb-1.5">Less effective</p>
-                        <p className="text-sm italic text-muted-foreground">"{example.bad}"</p>
+                        <p className="text-sm italic text-muted-foreground">{example.bad}</p>
                       </div>
                     )}
                     <div className="bg-green-500/5 border border-green-500/20 p-3 rounded-lg">
                       <p className="text-xs font-medium text-green-700 mb-1.5">More effective</p>
-                      <p className="text-sm whitespace-pre-wrap">"{example.good}"</p>
+                      <p className="text-sm whitespace-pre-wrap">{example.good}</p>
                     </div>
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       <span className="font-medium">Why: </span>{example.explanation}
@@ -204,14 +204,14 @@ export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPan
       {/* Progressive CTA: "See Examples" → "Start Practice" */}
       <div className="shrink-0 border-t bg-card px-6 py-4">
         {hasExamples && !showExamples ? (
-          <Button className="w-full gap-2" variant="outline" onClick={() => setShowExamples(true)}>
+          <Button className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white animate-[radiate_2s_ease-in-out_infinite]" onClick={() => setShowExamples(true)}>
             <Lightbulb className="h-4 w-4" />
-            See Examples
+            Click Here to Continue – See Examples
           </Button>
         ) : (
-          <Button className="w-full gap-2" onClick={onStartPractice}>
+          <Button className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white animate-[radiate_2s_ease-in-out_infinite]" onClick={onStartPractice}>
             <MessageSquare className="h-4 w-4" />
-            Start Practice
+            Click Here to Continue – Start Practice
           </Button>
         )}
       </div>
