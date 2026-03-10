@@ -62,7 +62,20 @@ export default function TrainingWorkspace() {
   const persistedMode = sessionStorage.getItem(`training_${sessionId}_mode`) as 'learn' | 'practice' | null;
 
   const [selectedModule, setSelectedModuleRaw] = useState<ModuleContent | null>(null);
-  const [trainerMessages, setTrainerMessages] = useState<Message[]>([]);
+  // Persist trainer messages to sessionStorage to survive navigation
+  const [trainerMessages, setTrainerMessagesRaw] = useState<Message[]>(() => {
+    try {
+      const stored = sessionStorage.getItem(`training_${sessionId}_trainerMsgs`);
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
+  const setTrainerMessages: typeof setTrainerMessagesRaw = (action) => {
+    setTrainerMessagesRaw(prev => {
+      const next = typeof action === 'function' ? action(prev) : action;
+      try { sessionStorage.setItem(`training_${sessionId}_trainerMsgs`, JSON.stringify(next.slice(-30))); } catch {}
+      return next;
+    });
+  };
   const [trainerInput, setTrainerInput] = useState('');
   const [isTrainerLoading, setIsTrainerLoading] = useState(false);
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
@@ -1140,6 +1153,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
               />
             ) : selectedModule && isPersonalizationModule && workspaceMode === 'practice' ? (
               <PersonalizationPractice
+                hasNextModule={!!nextModule}
+                onContinueToNext={nextModule ? () => setSelectedModule(nextModule) : undefined}
                 onSaved={(prefs) => {
                   // Send Andrea a message about the personalization for feedback
                   const feedbackPrompt = `The user just completed their personalization setup. Here are their choices:\n\n- **Tone:** ${prefs.tone}\n- **Verbosity:** ${prefs.verbosity}\n- **Formatting:** ${prefs.formatting_preference}\n- **Role Context:** ${prefs.role_context || '(not set)'}\n- **Custom Instructions:** ${prefs.additional_instructions || '(not set)'}\n\nPlease provide structured, specific feedback on their personalization choices. Focus on the Role Context and Custom Instructions fields — are they specific enough? If they're well-crafted, congratulate them. If they could be improved, give concrete suggestions based on their role/department. Do NOT be generic.`;
