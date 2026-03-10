@@ -731,7 +731,7 @@ SANDBOX GREETING RULES:
 - Suggest 2-3 things they might try (based on skills from this session)
 - Ask what they'd like to explore, or invite them to just dive in
 - Keep it concise and energetic — they earned this free time
-- HARD LIMIT: No paragraph may exceed 40 words. Use multiple short paragraphs if needed.
+- *** ABSOLUTE HARD LIMIT: No paragraph may exceed 40 words. Count your words. Break long paragraphs into multiple short ones separated by \\n\\n. Aim for 15-30 words per paragraph. ***
 
 RESPONSE FORMAT — MANDATORY:
 {
@@ -836,7 +836,7 @@ ${questions[effectiveSessionNumber] || ""}
 These are NOT graded — they are retrieval practice. Note which ones the learner struggles with and use that to inform your feedback. After the knowledge check, transition to the sandbox exploration.`;
 })()}
 
-HARD LIMIT: No paragraph in "reply" may exceed 40 words. Use multiple short paragraphs (separated by \\n\\n) if needed.
+*** ABSOLUTE HARD LIMIT: No paragraph in "reply" may exceed 40 words. Count your words. Break long paragraphs into multiple short ones separated by \\n\\n. Aim for 15-30 words per paragraph. Re-read before returning. ***
 
 RESPONSE FORMAT — MANDATORY:
 {
@@ -1057,7 +1057,12 @@ You MUST respond with valid JSON in this exact format:
 }
 
 FIELD DEFINITIONS:
-- "reply": Your main response. Write like a smart colleague in a chat — conversational, concise. HARD LIMIT: No paragraph may exceed 40 words. If you need to say more, use multiple short paragraphs separated by \\n\\n. No headers, no bullet points, no numbered lists, no bold labels. Just plain prose. 1-3 sentences for normal replies. Up to 4-5 sentences max when reviewing work or showing an example. Never structure your reply with sections or formatting — it should read like a natural message, not a document. Use markdown only when showing an actual code/prompt example the learner needs to copy.
+- "reply": Your main response. Write like a smart colleague in a chat — conversational, concise.
+
+  *** ABSOLUTE HARD LIMIT — 40 WORDS PER PARAGRAPH ***
+  Count your words in every paragraph. If ANY paragraph exceeds 40 words, STOP and break it into two or more shorter paragraphs separated by \\n\\n. This is non-negotiable. Re-read your reply before returning it and split any paragraph that is over 40 words. Aim for 15-30 words per paragraph.
+
+  No headers, no bullet points, no numbered lists, no bold labels. Just plain prose. 1-3 short paragraphs for normal replies. Up to 4-5 paragraphs max when reviewing work or showing an example. Never structure your reply with sections or formatting — it should read like a natural message, not a document. Use markdown only when showing an actual code/prompt example the learner needs to copy.
 - "suggestedPrompts": 2-3 short follow-up actions (under 60 chars each), phrased as things the LEARNER would say to you.
 - "coachingAction": What type of response this is:
   - "socratic" — you're asking a clarifying question before answering
@@ -1361,6 +1366,38 @@ ${effectiveSessionNumber >= 2 ? `11. VERIFY INTEGRATION: When reviewing any AI-g
 });
 
 // ─── RESPONSE PARSER ─────────────────────────────────────────────────────────
+// Post-process reply to enforce 40-word paragraph limit server-side
+function enforceWordLimit(reply: string, maxWords = 40): string {
+  const paragraphs = reply.split(/\n\n+/);
+  const result: string[] = [];
+  for (const para of paragraphs) {
+    const trimmed = para.trim();
+    if (!trimmed) continue;
+    const words = trimmed.split(/\s+/);
+    if (words.length <= maxWords) {
+      result.push(trimmed);
+    } else {
+      // Split at sentence boundaries within the paragraph
+      const sentences = trimmed.match(/[^.!?]+[.!?]+(?:\s|$)/g) || [trimmed];
+      let chunk: string[] = [];
+      let wordCount = 0;
+      for (const sentence of sentences) {
+        const sentenceWords = sentence.trim().split(/\s+/).length;
+        if (wordCount + sentenceWords > maxWords && chunk.length > 0) {
+          result.push(chunk.join(' ').trim());
+          chunk = [sentence.trim()];
+          wordCount = sentenceWords;
+        } else {
+          chunk.push(sentence.trim());
+          wordCount += sentenceWords;
+        }
+      }
+      if (chunk.length > 0) result.push(chunk.join(' ').trim());
+    }
+  }
+  return result.join('\n\n');
+}
+
 function parseAndreaResponse(rawText: string): {
   reply: string;
   suggestedPrompts: string[];
@@ -1412,7 +1449,7 @@ function parseAndreaResponse(rawText: string): {
   try {
     const parsed = JSON.parse(rawText);
     return {
-      reply: parsed.reply || defaults.reply,
+      reply: enforceWordLimit(parsed.reply || defaults.reply),
       suggestedPrompts: Array.isArray(parsed.suggestedPrompts) ? parsed.suggestedPrompts.slice(0, 4) : [],
       coachingAction: parsed.coachingAction || "explain",
       hintAvailable: !!parsed.hintAvailable,
@@ -1430,7 +1467,7 @@ function parseAndreaResponse(rawText: string): {
       try {
         const parsed = JSON.parse(jsonMatch[0]);
         return {
-          reply: parsed.reply || defaults.reply,
+          reply: enforceWordLimit(parsed.reply || defaults.reply),
           suggestedPrompts: Array.isArray(parsed.suggestedPrompts) ? parsed.suggestedPrompts.slice(0, 4) : [],
           coachingAction: parsed.coachingAction || "explain",
           hintAvailable: !!parsed.hintAvailable,

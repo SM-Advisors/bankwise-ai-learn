@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { ROLE_OPTIONS } from '@/data/intakeQuestions';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,30 +24,127 @@ const LEARNING_STYLE_OPTIONS: { value: LearningStyleType; label: string; desc: s
   { value: 'logic-based',       label: 'Show me the why',  desc: 'I need to understand how it works' },
 ];
 
-// ── Score → proficiency level (1–4) ──────────────────────────────────────────
-function scoreToLevel(score: number): number {
-  if (score <= 2) return 1;
-  if (score <= 5) return 2;
-  if (score <= 8) return 3;
+// ── 6 AI Skill Assessment multiple-choice questions ───────────────────────────
+interface AISkillQuestion {
+  id: string;
+  question: string;
+  options: { key: string; label: string; score: number }[];
+}
+
+const AI_SKILL_QUESTIONS: AISkillQuestion[] = [
+  {
+    id: 'ai1',
+    question: 'When you hear "AI prompt," what comes to mind?',
+    options: [
+      { key: 'A', label: "I'm not sure what that means", score: 1 },
+      { key: 'B', label: "Typing a question into ChatGPT or similar", score: 2 },
+      { key: 'C', label: "Giving an AI specific instructions to get a useful result", score: 3 },
+      { key: 'D', label: "Crafting structured inputs with context, constraints, and format", score: 4 },
+    ],
+  },
+  {
+    id: 'ai2',
+    question: 'How often do you use AI tools in your work today?',
+    options: [
+      { key: 'A', label: "Never — I haven't tried AI at work", score: 1 },
+      { key: 'B', label: "Rarely — I've experimented once or twice", score: 2 },
+      { key: 'C', label: "Sometimes — I use it for specific tasks", score: 3 },
+      { key: 'D', label: "Regularly — it's part of my daily workflow", score: 4 },
+    ],
+  },
+  {
+    id: 'ai3',
+    question: 'If AI gave you an answer that looked correct, what would you do?',
+    options: [
+      { key: 'A', label: "Use it as-is — it's probably right", score: 1 },
+      { key: 'B', label: "Skim it quickly before using it", score: 2 },
+      { key: 'C', label: "Check the key facts against a reliable source", score: 3 },
+      { key: 'D', label: "Verify it thoroughly and consider what could be wrong", score: 4 },
+    ],
+  },
+  {
+    id: 'ai4',
+    question: 'A colleague wants to paste customer data into an AI tool. How do you react?',
+    options: [
+      { key: 'A', label: "Sounds fine — the AI needs context to help", score: 1 },
+      { key: 'B', label: "I'd want to check with someone first", score: 2 },
+      { key: 'C', label: "I'd suggest removing personal details first", score: 3 },
+      { key: 'D', label: "I'd flag this as a data privacy concern and check policy", score: 4 },
+    ],
+  },
+  {
+    id: 'ai5',
+    question: 'How comfortable are you explaining AI capabilities to a coworker?',
+    options: [
+      { key: 'A', label: "Not comfortable — I don't know enough yet", score: 1 },
+      { key: 'B', label: "I could explain the basics", score: 2 },
+      { key: 'C', label: "I could explain it and give a practical example", score: 3 },
+      { key: 'D', label: "Very comfortable — I've already helped others", score: 4 },
+    ],
+  },
+  {
+    id: 'ai6',
+    question: 'When AI output isn\'t quite right, what do you typically do?',
+    options: [
+      { key: 'A', label: "Give up and do it manually", score: 1 },
+      { key: 'B', label: "Try again with the same prompt", score: 2 },
+      { key: 'C', label: "Revise my prompt to be more specific", score: 3 },
+      { key: 'D', label: "Iterate with follow-up instructions to refine the result", score: 4 },
+    ],
+  },
+];
+
+// ── Score AI skill answers → proficiency level (1–4) ──────────────────────────
+function aiSkillScoreToLevel(answers: Record<string, number>): number {
+  const scores = Object.values(answers);
+  if (scores.length === 0) return 1;
+  const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+  if (avg <= 1.5) return 1;
+  if (avg <= 2.5) return 2;
+  if (avg <= 3.3) return 3;
   return 4;
 }
 
 // ── Score → Andrea's contextual response ─────────────────────────────────────
-function scoreToAndreaMessage(score: number): string {
-  if (score <= 2) {
+function levelToAndreaMessage(level: number): string {
+  if (level === 1) {
     return "Good first step. Writing effective prompts is a skill—one you'll build quickly here. Every great prompt starts with someone willing to try.";
   }
-  if (score <= 5) {
+  if (level === 2) {
     return "You're already thinking in the right direction. With a bit of structure, your prompts will get much more predictable results.";
   }
-  if (score <= 8) {
-    return "That's a solid prompt. You've clearly used AI before and you're thinking about the right things. Let's go deeper, faster.";
+  if (level === 3) {
+    return "That's solid. You've clearly used AI before and you're thinking about the right things. Let's go deeper, faster.";
   }
-  return "That's a well-crafted prompt. Context, constraints, risk awareness—you've got the fundamentals. Let's make sure we challenge you appropriately.";
+  return "You've got strong fundamentals. Context, constraints, risk awareness—let's make sure we challenge you appropriately.";
 }
 
 // ── Level label ───────────────────────────────────────────────────────────────
 const LEVEL_LABELS = ['Observer', 'Learner', 'Practitioner', 'Champion'];
+
+// ── Step domain descriptions ──────────────────────────────────────────────────
+const STEP_DESCRIPTIONS: Record<number, { title: string; purpose: string }> = {
+  1: {
+    title: 'Your Identity',
+    purpose: 'Andrea uses your name to make every interaction personal — not generic.',
+  },
+  2: {
+    title: 'Your Role at the Organization',
+    purpose: 'Your role determines which examples, scenarios, and use cases Andrea shows you. The more accurate this is, the more relevant your training will be.',
+  },
+  3: {
+    title: 'Your AI Skillset',
+    purpose: 'These questions help Andrea understand your current comfort with AI so she can meet you exactly where you are — not too basic, not too advanced.',
+  },
+  4: {
+    title: 'How You Like to Learn',
+    purpose: 'This tells Andrea how to deliver content to you. Some people learn by doing, others by seeing examples first. There\'s no wrong answer.',
+  },
+  5: {
+    title: 'Your Personalized Path',
+    purpose: '',
+  },
+};
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function Onboarding() {
@@ -104,10 +200,8 @@ export default function Onboarding() {
   const [roleKey, setRoleKey] = useState(profile?.intake_role_key || '');
   const [consumerJobTitle, setConsumerJobTitle] = useState(profile?.job_role || '');
 
-  // Step 3: Micro-task prompt
-  const [userPrompt, setUserPrompt] = useState('');
-  const [promptScore, setPromptScore] = useState<number | null>(null);
-  const [isScoringPrompt, setIsScoringPrompt] = useState(false);
+  // Step 3: AI Skill Assessment (6 multiple-choice questions)
+  const [aiSkillAnswers, setAiSkillAnswers] = useState<Record<string, number>>({});
 
   // Step 4: Learning style
   const [learningStyle, setLearningStyle] = useState<LearningStyleType | null>(profile?.learning_style || null);
@@ -121,6 +215,9 @@ export default function Onboarding() {
     await updateProfile({ onboarding_completed: true });
     navigate('/dashboard');
   };
+
+  // Compute level from skill answers
+  const computedLevel = aiSkillScoreToLevel(aiSkillAnswers);
 
   // ── Advance ───────────────────────────────────────────────────────────────
   const handleNext = async () => {
@@ -140,31 +237,10 @@ export default function Onboarding() {
     }
 
     if (step === 3) {
-      if (userPrompt.trim().length < 15) {
-        toast({ title: 'Keep going', description: 'Write a bit more to get a useful result', variant: 'destructive' });
+      if (Object.keys(aiSkillAnswers).length < AI_SKILL_QUESTIONS.length) {
+        toast({ title: 'Please answer all questions', description: `Answer all ${AI_SKILL_QUESTIONS.length} questions to continue`, variant: 'destructive' });
         return;
       }
-      // Score prompt before advancing — retry once on failure
-      setIsScoringPrompt(true);
-      let scored = false;
-      for (let attempt = 0; attempt < 2 && !scored; attempt++) {
-        try {
-          const res = await supabase.functions.invoke('intake-prompt-score', {
-            body: { prompt: userPrompt },
-          });
-          if (res.data?.score != null) {
-            setPromptScore(res.data.score);
-            scored = true;
-          }
-        } catch {
-          // retry once
-        }
-      }
-      if (!scored) {
-        // Default to mid-range so users aren't unfairly placed at the lowest level
-        setPromptScore(5);
-      }
-      setIsScoringPrompt(false);
     }
 
     if (step === 4) {
@@ -190,7 +266,7 @@ export default function Onboarding() {
     setIsSubmitting(true);
 
     const selectedRole = ROLE_OPTIONS.find(r => r.key === roleKey);
-    const level = scoreToLevel(promptScore ?? 0);
+    const level = computedLevel;
 
     const { error } = await updateProfile({
       display_name: displayName.trim(),
@@ -235,6 +311,7 @@ export default function Onboarding() {
   }
 
   const isLastStep = step === TOTAL_STEPS;
+  const stepInfo = STEP_DESCRIPTIONS[step];
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -265,6 +342,9 @@ export default function Onboarding() {
                 <CardDescription>
                   {industryConfig.welcomeMessage || "Welcome. Let's set up your personalized experience."}
                 </CardDescription>
+                {stepInfo.purpose && (
+                  <p className="text-xs text-muted-foreground mt-2 italic">{stepInfo.purpose}</p>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -292,6 +372,9 @@ export default function Onboarding() {
                     ? "Select your role — we'll tailor your training content and examples to match your work."
                     : "Tell us about your work so we can make your learning relevant."}
                 </CardDescription>
+                {stepInfo.purpose && (
+                  <p className="text-xs text-muted-foreground mt-2 italic">{stepInfo.purpose}</p>
+                )}
               </CardHeader>
               <CardContent>
                 {isEnterprise ? (
@@ -342,37 +425,44 @@ export default function Onboarding() {
             </>
           )}
 
-          {/* ── Step 3: Micro-task ─────────────────────────────────────── */}
+          {/* ── Step 3: AI Skill Assessment (Multiple Choice) ──────────── */}
           {step === 3 && (
             <>
               <CardHeader>
-                <CardTitle>Try this.</CardTitle>
+                <CardTitle>How confident are you with AI?</CardTitle>
                 <CardDescription>
-                  Write the actual prompt you would type into an AI tool.
+                  Answer these {AI_SKILL_QUESTIONS.length} quick questions — no right or wrong answers.
                 </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-lg bg-muted/50 border p-4 text-sm">
-                  <span className="font-medium">Task: </span>
-                  Draft a follow-up email to a small business customer after a meeting about a commercial line of credit.
-                </div>
-                <Textarea
-                  placeholder="Type your prompt here…"
-                  value={userPrompt}
-                  onChange={(e) => setUserPrompt(e.target.value)}
-                  rows={5}
-                  className="resize-none"
-                  autoFocus
-                />
-                <p className="text-xs text-muted-foreground">
-                  No right or wrong answers — this helps Andrea understand where you're starting from.
-                </p>
-                {isScoringPrompt && (
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20 mt-2">
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                    <span className="text-sm text-primary font-medium">Analyzing your prompt...</span>
-                  </div>
+                {stepInfo.purpose && (
+                  <p className="text-xs text-muted-foreground mt-2 italic">{stepInfo.purpose}</p>
                 )}
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {AI_SKILL_QUESTIONS.map((q, qi) => (
+                  <div key={q.id} className="space-y-2">
+                    <p className="text-sm font-medium">{qi + 1}. {q.question}</p>
+                    <div className="grid gap-1.5">
+                      {q.options.map(opt => (
+                        <button
+                          key={opt.key}
+                          type="button"
+                          onClick={() => setAiSkillAnswers(prev => ({ ...prev, [q.id]: opt.score }))}
+                          className={cn(
+                            'w-full text-left px-4 py-2.5 rounded-lg border text-sm transition-all',
+                            aiSkillAnswers[q.id] === opt.score
+                              ? 'border-primary bg-primary/8 font-medium'
+                              : 'border-border hover:border-primary/40 hover:bg-muted/30',
+                          )}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground text-center">
+                  {Object.keys(aiSkillAnswers).length} of {AI_SKILL_QUESTIONS.length} answered
+                </p>
               </CardContent>
             </>
           )}
@@ -382,15 +472,18 @@ export default function Onboarding() {
             <>
               <CardHeader>
                 <CardTitle>How would you like me to teach you?</CardTitle>
+                {stepInfo.purpose && (
+                  <p className="text-xs text-muted-foreground mt-2 italic">{stepInfo.purpose}</p>
+                )}
               </CardHeader>
               <CardContent className="space-y-5">
-                {/* Andrea's response to their prompt */}
+                {/* Andrea's response to their skill assessment */}
                 <div className="flex gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
                   <div className="shrink-0 h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
                     A
                   </div>
                   <p className="text-sm text-foreground leading-relaxed">
-                    {scoreToAndreaMessage(promptScore ?? 0)}
+                    {levelToAndreaMessage(computedLevel)}
                   </p>
                 </div>
 
@@ -438,7 +531,7 @@ export default function Onboarding() {
                 <div className="rounded-lg border divide-y text-sm">
                   <div className="flex items-center justify-between px-4 py-3">
                     <span className="text-muted-foreground">Starting as</span>
-                    <span className="font-medium">{LEVEL_LABELS[scoreToLevel(promptScore ?? 0) - 1]}</span>
+                    <span className="font-medium">{LEVEL_LABELS[computedLevel - 1]}</span>
                   </div>
                   <div className="flex items-center justify-between px-4 py-3">
                     <span className="text-muted-foreground">Learning style</span>
@@ -479,15 +572,10 @@ export default function Onboarding() {
 
             <Button
               onClick={handleNext}
-              disabled={isSubmitting || isScoringPrompt}
+              disabled={isSubmitting}
               className="gap-2"
             >
-              {isScoringPrompt ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Analyzing…
-                </>
-              ) : isSubmitting ? (
+              {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : isLastStep ? (
                 "Let's go"
