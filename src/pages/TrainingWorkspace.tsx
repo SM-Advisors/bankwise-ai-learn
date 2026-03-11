@@ -278,17 +278,34 @@ export default function TrainingWorkspace() {
     setLastGateMessage(null);
   }, [selectedModule, completedModules]);
 
-  // Load completed modules and engagement data from database progress
+  // Load completed modules and engagement data from database progress.
+  // Guard against setting identical values to avoid cascading re-renders
+  // (e.g. module selection reset, Andrea conversation clear) when progress
+  // object reference changes but the actual data hasn't changed.
   useEffect(() => {
     if (progress && sessionId) {
       const progressKey = `session_${sessionId}_progress` as keyof typeof progress;
       const sessionProgress = progress[progressKey] as SessionProgressData | null;
       if (sessionProgress) {
         if (sessionProgress.completedModules) {
-          setCompletedModules(new Set(sessionProgress.completedModules as string[]));
+          const incoming = sessionProgress.completedModules as string[];
+          setCompletedModules(prev => {
+            // Only update if the set of completed modules actually changed
+            if (prev.size === incoming.length && incoming.every(id => prev.has(id))) {
+              return prev; // same reference → no re-render
+            }
+            return new Set(incoming);
+          });
         }
         if (sessionProgress.moduleEngagement) {
-          setModuleEngagement(sessionProgress.moduleEngagement);
+          setModuleEngagement(prev => {
+            // Only update if engagement data actually changed
+            const next = sessionProgress.moduleEngagement;
+            if (JSON.stringify(prev) === JSON.stringify(next)) {
+              return prev; // same reference → no re-render
+            }
+            return next;
+          });
         }
       }
     }

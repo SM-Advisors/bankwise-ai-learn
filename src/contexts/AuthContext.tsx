@@ -197,6 +197,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
 
+        // On token refresh (e.g. tab regain focus), only update session/user tokens.
+        // Skip the full profile/progress re-fetch to avoid cascading state resets
+        // that clear the Andrea conversation and restart the module.
+        if (event === 'TOKEN_REFRESHED') {
+          return;
+        }
+
         // Defer profile fetch with setTimeout to avoid deadlock
         if (session?.user) {
           // Keep loading=true until profile is fetched.  On page load this is
