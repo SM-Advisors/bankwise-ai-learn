@@ -782,6 +782,7 @@ RESPONSE FORMAT — MANDATORY:
 
       const greetingPrompt = buildAndreaPersona(orgIndustry) + `\n\n` +
         getSessionCoachingDepth(effectiveSessionNumber) + `\n\n` +
+        getProficiencyInstructions(aiProficiencyLevel) + `\n\n` +
         `Generate a SHORT, personalized greeting (3-4 sentences max) for this learner who just opened the training workspace.
 
 LEARNER CONTEXT:
@@ -807,6 +808,7 @@ GREETING RULES:
 - Do NOT explain how the workspace works (they already know)
 - Do NOT be generic. Make it feel like you know them.
 - Keep it warm but professional — you're a banking colleague, not a cheerleader
+- CRITICAL: Adapt your language complexity to their AI PROFICIENCY level above. For beginners, use simple everyday language. For advanced users, speak with precision and skip basic explanations.
 
 ${(() => {
   // Knowledge checks happen at END of session (sandbox module), not start of next
@@ -1143,6 +1145,7 @@ REVIEW INSTRUCTIONS: When the learner asks you to review their practice conversa
 4. Suggest specific improvements to their prompting technique
 5. Reference the module's success criteria when evaluating
 6. If they haven't submitted for review yet, you can still comment on what you're seeing
+7. CRITICAL: Only flag issues that directly violate the TASK CRITERIA for the current module. All other observations (general best practices, advanced techniques not yet taught, style preferences) should be framed as "Areas for Improvement" — informational and encouraging, NOT blocking. The learner should feel they can progress even with these growth areas noted.
 
 ---` : ""}
 

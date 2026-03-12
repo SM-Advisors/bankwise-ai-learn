@@ -19,6 +19,22 @@ interface PracticeChatRequest {
   lineOfBusiness?: string; // User's department (Session 3 department personalization)
   interests?: string[]; // F&F users: personal interest tags for personalization
   model?: string; // Selected model (defaults to claude-sonnet-4-6)
+  jobRole?: string; // User's job role from profile
+  departmentLob?: string; // Alias for lineOfBusiness from frontend
+}
+
+interface AIMemory {
+  content: string;
+  context: string | null;
+  is_pinned: boolean;
+}
+
+interface AIPreferences {
+  tone: string | null;
+  verbosity: string | null;
+  formatting_preference: string | null;
+  role_context: string | null;
+  additional_instructions: string | null;
 }
 
 // ─── PII & COMPLIANCE PRE-PROCESSING ───────────────────────────────────────
@@ -246,19 +262,73 @@ serve(async (req) => {
       lineOfBusiness,
       interests,
       model: requestedModel,
+      jobRole: requestedJobRole,
+      departmentLob,
     }: PracticeChatRequest = await req.json();
 
     const model = requestedModel || "claude-sonnet-4-6";
 
+    // ── Fetch user personalization (profile, preferences, memories) ──
+    let displayName: string | null = null;
+    let jobRole: string | null = requestedJobRole || bankRole || null;
+    let aiProficiencyLevel: number | null = null;
+    let employerName: string | null = null;
+    let aiPreferences: AIPreferences | null = null;
+    let aiMemories: AIMemory[] = [];
+
+    // Resolve lineOfBusiness from either field name
+    const effectiveLob = lineOfBusiness || departmentLob;
+
+    if (userId) {
+      const supabaseAdmin = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      );
+
+      const { data: profile } = await supabaseAdmin
+        .from("user_profiles")
+        .select("display_name, job_role, ai_proficiency_level, employer_name")
+        .eq("user_id", userId)
+        .single();
+
+      if (profile) {
+        displayName = profile.display_name;
+        if (!jobRole && profile.job_role) jobRole = profile.job_role;
+        aiProficiencyLevel = profile.ai_proficiency_level;
+        employerName = profile.employer_name;
+      }
+
+      // Fetch AI preferences
+      const { data: prefs } = await supabaseAdmin
+        .from("ai_user_preferences")
+        .select("tone, verbosity, formatting_preference, role_context, additional_instructions")
+        .eq("user_id", userId)
+        .single();
+      if (prefs) aiPreferences = prefs as AIPreferences;
+
+      // Fetch active memories (pinned first, max 10)
+      const { data: mems } = await supabaseAdmin
+        .from("ai_memories")
+        .select("content, context, is_pinned")
+        .eq("user_id", userId)
+        .eq("is_active", true)
+        .order("is_pinned", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (mems) aiMemories = mems as AIMemory[];
+    }
+
     // Determine if this is a Friends & Family (non-banker) user
-    const isFF = !lineOfBusiness && interests && interests.length > 0;
+    const isFF = !effectiveLob && interests && interests.length > 0;
 
     // Build context block — department for bankers, interests for F&F users
-    const departmentName = getDepartmentName(lineOfBusiness);
-    const departmentContext = (bankRole || departmentName) ? `
+    const departmentName = getDepartmentName(effectiveLob);
+    const departmentContext = (jobRole || departmentName) ? `
 DEPARTMENT CONTEXT:
 ${departmentName ? `The user works in: ${departmentName}` : ""}
-${bankRole ? `Their role: ${bankRole}` : ""}
+${jobRole ? `Their role: ${jobRole}` : ""}
+${displayName ? `Their name: ${displayName}` : ""}
+${employerName ? `Organization: ${employerName}` : ""}
 Tailor your responses to be relevant to their department. Use terminology, examples, and realistic scenarios appropriate for their line of business.` : "";
 
     const interestsContext = isFF ? `
@@ -339,6 +409,27 @@ ${isFF ? `3. PERSONAL REALISM:
    - If they ask for something you can't do (access real systems, look up real data), say so naturally
    - Suggest what information they'd need to provide for you to help`;
 
+    // ── Inject personalization context into system prompt ──────────────────
+    const personalizationBlock = [
+      aiPreferences ? `
+USER PREFERENCES:
+- Preferred tone: ${aiPreferences.tone || 'professional'}
+- Verbosity: ${aiPreferences.verbosity || 'balanced'}
+- Formatting: ${aiPreferences.formatting_preference || 'mixed'}
+${aiPreferences.role_context ? `- Role context: ${aiPreferences.role_context}` : ""}
+${aiPreferences.additional_instructions ? `- Custom instructions: ${aiPreferences.additional_instructions}` : ""}
+Adapt your responses to match these preferences.` : "",
+      aiMemories.length > 0 ? `
+THINGS YOU KNOW ABOUT THIS USER:
+${aiMemories.map((m) => `- ${m.is_pinned ? "[IMPORTANT] " : ""}${m.content}`).join("\n")}
+Use these facts naturally when relevant — do not list them back to the user.` : "",
+      displayName ? `\nThe user's name is ${displayName}. You may use it naturally when appropriate.` : "",
+    ].filter(Boolean).join("\n");
+
+    const fullSystemPrompt = personalizationBlock
+      ? systemPrompt + "\n" + personalizationBlock
+      : systemPrompt;
+
     // ── PII / Compliance pre-check ──────────────────────────────────────────
     const latestUserMessage = [...messages].reverse().find(m => m.role === "user")?.content || "";
     const complianceFlag = detectComplianceIssues(latestUserMessage);
@@ -362,7 +453,7 @@ ${isFF ? `3. PERSONAL REALISM:
 
     let reply: string;
     try {
-      reply = await callModel(model, systemPrompt, claudeMessages);
+      reply = await callModel(model, fullSystemPrompt, claudeMessages);
     } catch (modelError) {
       const errMsg = modelError instanceof Error ? modelError.message : String(modelError);
       if (errMsg === "rate_limit") {
