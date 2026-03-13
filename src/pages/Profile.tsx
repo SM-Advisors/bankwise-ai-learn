@@ -3,8 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth, LearningStyleType } from '@/contexts/AuthContext';
 import { useAIPreferences, useAIMemories } from '@/hooks/useAIPreferences';
 import { useSkillAssessment } from '@/hooks/useSkillAssessment';
-import { useUserIdeas, IdeaStatus } from '@/hooks/useUserIdeas';
-import { useIdeaPreview } from '@/hooks/useIdeaPreview';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { AppShell } from '@/components/shell';
@@ -28,10 +26,8 @@ import {
 import {
   Brain, Save, Loader2, Trash2, Pin, PinOff, Plus, BookOpen,
   TrendingUp, Target, CheckCircle, Sparkles, Bot, Building2,
-  Zap, Award, ArrowRight, Sliders, Lightbulb, Clock, CalendarClock,
-  Pencil, Play, Eye, User, RefreshCw, Shield,
+  Zap, Award, ArrowRight, Sliders, User, RefreshCw, Shield,
 } from 'lucide-react';
-import { IdeaPreviewDialog } from '@/components/IdeaPreviewDialog';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
 import { ROLE_OPTIONS } from '@/data/intakeQuestions';
 import {
@@ -106,12 +102,6 @@ const LEVEL_COLORS: Record<string, string> = {
   advanced:   'bg-amber-500',
 };
 
-const IDEA_STATUS_CONFIG: Record<IdeaStatus, { label: string; icon: React.ElementType; variant: 'default' | 'secondary' | 'outline' }> = {
-  not_started: { label: 'Not Started', icon: Clock, variant: 'outline' },
-  needs_knowledge: { label: 'Needs Knowledge', icon: BookOpen, variant: 'secondary' },
-  future: { label: 'Future Project', icon: CalendarClock, variant: 'default' },
-};
-
 const PLACEMENT_LABELS: Record<number, string> = {
   1: 'Observer',
   2: 'Learner',
@@ -123,7 +113,7 @@ const PLACEMENT_LABELS: Record<number, string> = {
 
 type ProfileTab = 'my-profile' | 'personalization' | 'journey';
 type PersonalizationSubtab = 'preferences' | 'data-privacy' | 'memories';
-type JourneySubtab = 'progress' | 'skills' | 'ideas';
+type JourneySubtab = 'progress' | 'skills';
 
 // ─── Tab button ──────────────────────────────────────────────────────────────
 
@@ -297,47 +287,6 @@ export default function Profile() {
 
   const pinnedMemories = memories.filter((m) => m.is_pinned);
   const unpinnedMemories = memories.filter((m) => !m.is_pinned);
-
-  // ── Ideas state (Journey > My Ideas subtab) ───────────────────────────────
-  const { ideas, loading: ideasLoading, createIdea, updateIdea, deleteIdea } = useUserIdeas();
-  const { generatingId, generatePreview, getPreviewStatus, getPreviewHtml } = useIdeaPreview();
-  const [ideaDialogOpen, setIdeaDialogOpen] = useState(false);
-  const [editingIdea, setEditingIdea] = useState<string | null>(null);
-  const [ideaTitle, setIdeaTitle] = useState('');
-  const [ideaDescription, setIdeaDescription] = useState('');
-  const [ideaStatus, setIdeaStatus] = useState<IdeaStatus>('not_started');
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewIdea, setPreviewIdea] = useState<{ id: string; title: string } | null>(null);
-
-  const resetIdeaForm = () => { setIdeaTitle(''); setIdeaDescription(''); setIdeaStatus('not_started'); setEditingIdea(null); };
-
-  const handleIdeaSubmit = async () => {
-    if (!ideaTitle.trim()) { toast({ title: 'Title is required', variant: 'destructive' }); return; }
-    const result = editingIdea
-      ? await updateIdea(editingIdea, { title: ideaTitle.trim(), description: ideaDescription.trim(), status: ideaStatus })
-      : await createIdea({ title: ideaTitle.trim(), description: ideaDescription.trim(), status: ideaStatus });
-    if (result?.success) {
-      toast({ title: editingIdea ? 'Idea updated' : 'Idea saved' });
-      setIdeaDialogOpen(false);
-      resetIdeaForm();
-    } else {
-      toast({ title: result?.error || 'Something went wrong', variant: 'destructive' });
-    }
-  };
-
-  const handleDeleteIdea = async (id: string) => {
-    const result = await deleteIdea(id);
-    if (result.success) toast({ title: 'Idea removed' });
-    else toast({ title: 'Failed to delete idea', variant: 'destructive' });
-  };
-
-  const handleBuildPreview = async (idea: typeof ideas[0]) => {
-    setPreviewIdea({ id: idea.id, title: idea.title });
-    setPreviewOpen(true);
-    const result = await generatePreview(idea.id, idea.title, idea.description);
-    if (result.success) toast({ title: 'Preview ready!' });
-    else toast({ title: 'Preview generation failed', description: result.error, variant: 'destructive' });
-  };
 
   // ── Journey derived data ──────────────────────────────────────────────────
   const prog = progress as unknown as Record<string, unknown>;
@@ -814,7 +763,6 @@ export default function Profile() {
           <div className="flex gap-2">
             <SubTabBtn active={journeySubtab === 'progress'} label="Progress" onClick={() => setJourneySubtab('progress')} />
             <SubTabBtn active={journeySubtab === 'skills'} label="Skills" onClick={() => setJourneySubtab('skills')} />
-            <SubTabBtn active={journeySubtab === 'ideas'} label="My Ideas" onClick={() => setJourneySubtab('ideas')} />
           </div>
 
           {/* ── Progress subtab ─────────────────────────────────────────────── */}
@@ -985,176 +933,6 @@ export default function Profile() {
             </Card>
           )}
 
-          {/* ── My Ideas subtab ─────────────────────────────────────────────── */}
-          {journeySubtab === 'ideas' && (
-            <>
-              <div className="flex items-center justify-between">
-                <p className="text-muted-foreground text-sm">
-                  {ideas.length === 0
-                    ? "You haven't captured any ideas yet. Start adding AI use cases you'd like to explore!"
-                    : `You have ${ideas.length} idea${ideas.length === 1 ? '' : 's'} saved.`}
-                </p>
-                <Button className="gap-2" onClick={() => { resetIdeaForm(); setIdeaDialogOpen(true); }}>
-                  <Plus className="h-4 w-4" />
-                  Add Idea
-                </Button>
-              </div>
-
-              {ideasLoading ? (
-                <div className="flex items-center justify-center py-16">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-              ) : ideas.length === 0 ? (
-                <Card className="border-2 border-dashed">
-                  <CardContent className="flex flex-col items-center justify-center py-16">
-                    <Lightbulb className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                    <h3 className="text-lg font-medium mb-1">No ideas yet</h3>
-                    <p className="text-muted-foreground text-sm mb-4">Start capturing AI use cases you want to explore later.</p>
-                    <Button className="gap-2" onClick={() => { resetIdeaForm(); setIdeaDialogOpen(true); }}>
-                      <Plus className="h-4 w-4" />
-                      Add Your First Idea
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {ideas.map((idea) => {
-                    const statusConfig = IDEA_STATUS_CONFIG[idea.status];
-                    const StatusIcon = statusConfig.icon;
-                    return (
-                      <Card key={idea.id} className="hover:shadow-md transition-shadow">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between">
-                            <CardTitle className="text-base">{idea.title}</CardTitle>
-                            <Badge variant={statusConfig.variant} className="gap-1 shrink-0 ml-2">
-                              <StatusIcon className="h-3 w-3" />
-                              {statusConfig.label}
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          {idea.description && (
-                            <p className="text-sm text-muted-foreground mb-3 line-clamp-3">{idea.description}</p>
-                          )}
-                          {(() => {
-                            const pvStatus = getPreviewStatus(idea.id, idea.preview_status);
-                            if (pvStatus === 'generating' || generatingId === idea.id) {
-                              return (
-                                <Button variant="outline" size="sm" className="w-full gap-2 text-xs mb-3" disabled>
-                                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Building preview...
-                                </Button>
-                              );
-                            }
-                            if (pvStatus === 'generated') {
-                              return (
-                                <Button variant="outline" size="sm"
-                                  className="w-full gap-2 text-xs mb-3 border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950/30"
-                                  onClick={() => { setPreviewIdea({ id: idea.id, title: idea.title }); setPreviewOpen(true); }}>
-                                  <Eye className="h-3.5 w-3.5" /> View Preview
-                                </Button>
-                              );
-                            }
-                            if (pvStatus === 'failed') {
-                              return (
-                                <Button variant="outline" size="sm"
-                                  className="w-full gap-2 text-xs mb-3 border-red-200 text-red-700 hover:bg-red-50"
-                                  onClick={() => handleBuildPreview(idea)}>
-                                  <Play className="h-3.5 w-3.5" /> Retry Preview
-                                </Button>
-                              );
-                            }
-                            return (
-                              <Button variant="outline" size="sm" className="w-full gap-2 text-xs mb-3"
-                                onClick={() => handleBuildPreview(idea)}>
-                                <Play className="h-3.5 w-3.5" /> Build Preview
-                              </Button>
-                            );
-                          })()}
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground">{new Date(idea.created_at).toLocaleDateString()}</span>
-                            <div className="flex gap-1">
-                              <Button variant="ghost" size="sm" onClick={() => {
-                                setIdeaTitle(idea.title);
-                                setIdeaDescription(idea.description);
-                                setIdeaStatus(idea.status);
-                                setEditingIdea(idea.id);
-                                setIdeaDialogOpen(true);
-                              }}>
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete this idea?</AlertDialogTitle>
-                                    <AlertDialogDescription>This will permanently remove "{idea.title}".</AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDeleteIdea(idea.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Idea create/edit dialog */}
-              <Dialog open={ideaDialogOpen} onOpenChange={(open) => { setIdeaDialogOpen(open); if (!open) resetIdeaForm(); }}>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>{editingIdea ? 'Edit Idea' : 'New Idea'}</DialogTitle>
-                    <DialogDescription>Describe an AI use case you'd like to explore.</DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-2">
-                    <div>
-                      <label className="text-sm font-medium mb-1.5 block">Title</label>
-                      <Input placeholder="e.g., Automate loan document review" value={ideaTitle} onChange={(e) => setIdeaTitle(e.target.value)} />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium mb-1.5 block">Description</label>
-                      <Textarea placeholder="Describe the use case..." value={ideaDescription} onChange={(e) => setIdeaDescription(e.target.value)} rows={4} />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium mb-1.5 block">Status</label>
-                      <Select value={ideaStatus} onValueChange={(v) => setIdeaStatus(v as IdeaStatus)}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="not_started">Not Started</SelectItem>
-                          <SelectItem value="needs_knowledge">Needs Knowledge</SelectItem>
-                          <SelectItem value="future">Future Project</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => { setIdeaDialogOpen(false); resetIdeaForm(); }}>Cancel</Button>
-                    <Button onClick={handleIdeaSubmit}>{editingIdea ? 'Save Changes' : 'Save Idea'}</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-
-              {/* Preview dialog */}
-              {previewIdea && (
-                <IdeaPreviewDialog
-                  open={previewOpen}
-                  onOpenChange={setPreviewOpen}
-                  title={previewIdea.title}
-                  html={getPreviewHtml(previewIdea.id, ideas.find(i => i.id === previewIdea.id)?.preview_html)}
-                  isGenerating={generatingId === previewIdea.id}
-                />
-              )}
-            </>
-          )}
         </div>
       )}
     </AppShell>
