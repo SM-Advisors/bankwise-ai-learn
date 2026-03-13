@@ -43,6 +43,7 @@ export interface Message {
     summary: string;
     strengths: string[];
     issues: string[];
+    areasForImprovement?: string[];
     fixes: string[];
     next_steps: string[];
   };

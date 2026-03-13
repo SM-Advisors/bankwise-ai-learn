@@ -501,23 +501,36 @@ export default function TrainingWorkspace() {
         ? inlineDept[lob].scenario
         : (lob && getRoleScenario(selectedModule.id, lob)?.scenario) || selectedModule.content.practiceTask.scenario;
 
-      const response = await supabase.functions.invoke('ai-practice', {
-        body: {
-          messages: messagesForApi,
-          moduleTitle: selectedModule.content.practiceTask.title,
-          scenario: resolvedScenario,
-          sessionNumber: parseInt(sessionId || '1'),
-          model: preferredModel,
-          // Session 3: use deployed agent's custom system prompt if available
-          ...(isSession3 && deployedAgent?.system_prompt ? { customSystemPrompt: deployedAgent.system_prompt } : {}),
-          // Department context for bankers; interests for F&F users
-          jobRole: profile?.job_role,
-          departmentLob: profile?.department,
-          interests: profile?.interests || undefined,
-        },
-      });
+      const requestBody = {
+        messages: messagesForApi,
+        moduleTitle: selectedModule.content.practiceTask.title,
+        scenario: resolvedScenario,
+        sessionNumber: parseInt(sessionId || '1'),
+        model: preferredModel,
+        // Session 3: use deployed agent's custom system prompt if available
+        ...(isSession3 && deployedAgent?.system_prompt ? { customSystemPrompt: deployedAgent.system_prompt } : {}),
+        // Department context for bankers; interests for F&F users
+        jobRole: profile?.job_role,
+        departmentLob: profile?.department,
+        interests: profile?.interests || undefined,
+      };
 
-      if (response.error) throw response.error;
+      // Retry up to 2 times on network/connection errors (handles tab-away browser throttling)
+      let response;
+      let lastError: unknown;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          response = await supabase.functions.invoke('ai-practice', { body: requestBody });
+          if (!response.error) break;
+          lastError = response.error;
+        } catch (err) {
+          lastError = err;
+        }
+        // Wait briefly before retry (1s, 2s)
+        if (attempt < 2) await new Promise(r => setTimeout(r, (attempt + 1) * 1000));
+      }
+
+      if (!response || response.error) throw lastError || new Error('Connection failed');
 
       const reply = response.data?.reply || "I'd be happy to help. Could you provide more details?";
       const assistantMsg = { role: 'assistant' as const, content: reply };
@@ -1273,6 +1286,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   selectedModel={preferredModel}
                   onModelChange={setPreferredModel}
                   gateMessage={lastGateMessage}
+                  completedModules={completedModules}
                 />
               )
             ) : null}

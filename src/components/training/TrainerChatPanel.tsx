@@ -42,7 +42,7 @@ function StructuredFeedbackCard({ feedback }: { feedback: NonNullable<Message['s
         <Target className="h-3.5 w-3.5 text-accent shrink-0" />
         <span className="text-xs font-medium text-foreground flex-1">Rubric Scorecard</span>
         <span className="text-[10px] text-muted-foreground">
-          {feedback.strengths.length} strengths · {feedback.issues.length} issues
+          {feedback.strengths.length} strengths · {feedback.issues.length} issues{feedback.areasForImprovement?.length ? ` · ${feedback.areasForImprovement.length} tips` : ''}
         </span>
         <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
       </button>
@@ -97,6 +97,23 @@ function StructuredFeedbackCard({ feedback }: { feedback: NonNullable<Message['s
                 {feedback.fixes.map((fix, i) => (
                   <li key={i} className="text-xs text-foreground/80 pl-4 relative before:content-['•'] before:absolute before:left-1 before:text-blue-500">
                     {fix}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Areas for Improvement (informational, non-blocking) */}
+          {feedback.areasForImprovement && feedback.areasForImprovement.length > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <Lightbulb className="h-3 w-3 text-purple-500" />
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-purple-600 dark:text-purple-400">Areas for Improvement</span>
+              </div>
+              <ul className="space-y-0.5">
+                {feedback.areasForImprovement.map((area, i) => (
+                  <li key={i} className="text-xs text-foreground/80 pl-4 relative before:content-['•'] before:absolute before:left-1 before:text-purple-500">
+                    {area}
                   </li>
                 ))}
               </ul>

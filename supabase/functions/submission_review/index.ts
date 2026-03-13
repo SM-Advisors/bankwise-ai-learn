@@ -56,6 +56,7 @@ interface FeedbackResponse {
     summary: string;
     strengths: string[];
     issues: string[];
+    areasForImprovement?: string[];
     fixes: string[];
     next_steps: string[];
   };
@@ -723,8 +724,9 @@ ${isGateModule ? `{
   "feedback": {
     "summary": "2-3 sentence overall assessment",
     "strengths": ["specific thing done well", "another strength"],
-    "issues": ["specific issue found", "another issue"],
-    "fixes": ["actionable fix for issue 1", "actionable fix for issue 2"],
+    "issues": ["ONLY issues that directly violate the task criteria or learning objectives listed above"],
+    "areasForImprovement": ["optional observations that go beyond the task criteria — nice-to-know but NOT required to pass"],
+    "fixes": ["actionable fix for each issue listed above (task-criteria issues only)"],
     "next_steps": ["what to try next", "suggested improvement"]
   },
   "gateResult": {
@@ -739,12 +741,14 @@ GATE EVALUATION RULES:
 - Evaluate each learning objective listed under "This Module's Objectives" above
 - passed = true if criteriaMetCount >= 60% of criteriaTotalCount (round up) AND no critical compliance issues are present
 - The submission must show actual performance of the skills, not just awareness of them
-- Be fair but rigorous — vague or surface-level submissions that don't demonstrate the specific skills should not pass` : `{
+- Be fair but rigorous — vague or surface-level submissions that don't demonstrate the specific skills should not pass
+- CRITICAL DISTINCTION: Only flag as "issues" things that directly fail the task criteria for THIS module. Everything else (general best practices, advanced techniques not yet taught, style preferences) should go in "areasForImprovement" — these are informational and do NOT block the learner from passing. The learner should be able to read them, learn from them, and still move forward.` : `{
   "feedback": {
     "summary": "2-3 sentence overall assessment",
     "strengths": ["specific thing done well", "another strength"],
-    "issues": ["specific issue found", "another issue"],
-    "fixes": ["actionable fix for issue 1", "actionable fix for issue 2"],
+    "issues": ["ONLY issues that directly violate the task criteria for this module"],
+    "areasForImprovement": ["optional observations beyond the task criteria — informational, not blocking"],
+    "fixes": ["actionable fix for each issue (task-criteria issues only)"],
     "next_steps": ["what to try next", "suggested improvement"]
   }
 }`}`;

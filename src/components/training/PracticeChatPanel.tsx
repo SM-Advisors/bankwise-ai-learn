@@ -10,10 +10,17 @@ import {
   MessageSquarePlus, History, Clock, ChevronUp, Sparkles, RotateCcw,
 } from 'lucide-react';
 import { VoiceMicButton } from '@/components/VoiceMicButton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { type ModuleContent } from '@/data/trainingContent';
 import { getRoleScenario } from '@/data/roleScenarioBanks';
 import { type PracticeConversation } from '@/hooks/usePracticeConversations';
 import { AVAILABLE_MODELS, PROVIDER_COLORS, type ModelDefinition } from '@/lib/models';
+
+// Map of features to the module that teaches them. Button is disabled until the module is completed.
+const FEATURE_MODULE_MAP: Record<string, string> = {
+  tools: '2-6',       // Tool Selection module
+  modelSelector: '2-4', // Model Selection module
+};
 
 interface PracticeMessage {
   role: 'user' | 'assistant';
@@ -42,6 +49,7 @@ interface PracticeChatPanelProps {
   selectedModel?: string;
   onModelChange?: (modelId: string) => void;
   gateMessage?: string | null;
+  completedModules?: Set<string>;
 }
 
 export function PracticeChatPanel({
@@ -66,11 +74,17 @@ export function PracticeChatPanel({
   selectedModel,
   onModelChange,
   gateMessage,
+  completedModules = new Set(),
 }: PracticeChatPanelProps) {
   const [input, setInput] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'work' | 'web'>('work');
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+
+  // Feature gating: check if features are unlocked based on completed modules
+  const isToolsUnlocked = completedModules.has(FEATURE_MODULE_MAP.tools);
+  const isModelSelectorUnlocked = completedModules.has(FEATURE_MODULE_MAP.modelSelector);
+  const lockedTooltip = "This feature will be available after the module where it is taught.";
 
   const showModelSelector = allowedModels.length > 1 && !!selectedModel && !!onModelChange;
   const selectedModelDef: ModelDefinition | undefined = AVAILABLE_MODELS.find(m => m.id === selectedModel);
@@ -396,16 +410,31 @@ export function PracticeChatPanel({
           />
           {/* Toolbar row */}
           <div className="flex items-center justify-between px-3 py-2">
+            <TooltipProvider delayDuration={200}>
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
-                <Plus className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-full text-sm px-3 text-muted-foreground hover:text-foreground hover:bg-muted">
-                <SlidersHorizontal className="h-4 w-4" />
-                Tools
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted" disabled={!isToolsUnlocked}>
+                      <Plus className="h-5 w-5" />
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {!isToolsUnlocked && <TooltipContent side="top"><p className="text-xs">{lockedTooltip}</p></TooltipContent>}
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-full text-sm px-3 text-muted-foreground hover:text-foreground hover:bg-muted" disabled={!isToolsUnlocked}>
+                      <SlidersHorizontal className="h-4 w-4" />
+                      Tools
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {!isToolsUnlocked && <TooltipContent side="top"><p className="text-xs">{lockedTooltip}</p></TooltipContent>}
+              </Tooltip>
               {/* Model selector — only shown when org has 2+ models enabled */}
-              {showModelSelector && (
+              {showModelSelector && isModelSelectorUnlocked && (
                 <div className="relative">
                   <button
                     type="button"
@@ -440,7 +469,21 @@ export function PracticeChatPanel({
                   )}
                 </div>
               )}
+              {/* Show locked model selector button when feature is gated */}
+              {showModelSelector && !isModelSelectorUnlocked && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-full text-xs px-2.5 text-muted-foreground border border-border/60" disabled>
+                        Model
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top"><p className="text-xs">{lockedTooltip}</p></TooltipContent>
+                </Tooltip>
+              )}
             </div>
+            </TooltipProvider>
             <div className="flex items-center gap-1">
               <VoiceMicButton
                 onTranscript={(text) => setInput((prev) => (prev ? prev + ' ' : '') + text)}
