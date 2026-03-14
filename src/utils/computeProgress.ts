@@ -11,16 +11,8 @@ export function getModuleState(engagement?: ModuleEngagement): ModuleState {
   return 'not_started';
 }
 
-// Weight each state contributes toward session progress
-const STATE_WEIGHTS: Record<ModuleState, number> = {
-  not_started: 0,
-  content_viewed: 0.2,
-  practicing: 0.5,
-  submitted: 0.8,
-  completed: 1.0,
-};
-
-// Compute per-session progress as a percentage (0-100)
+// Compute per-session progress as a percentage (0-100).
+// Uses simple completed / total ratio for clarity.
 export function computeSessionProgress(
   sessionId: number,
   progressData: SessionProgressData | null | undefined
@@ -31,23 +23,8 @@ export function computeSessionProgress(
   const moduleCount = session.modules.length;
   if (moduleCount === 0) return 0;
 
-  const engagement = progressData?.moduleEngagement || {};
-
-  // Also check the legacy completedModules array for backward compat
-  const legacyCompleted = new Set(progressData?.completedModules || []);
-
-  let totalWeight = 0;
-  for (const mod of session.modules) {
-    const eng = engagement[mod.id];
-    if (eng) {
-      totalWeight += STATE_WEIGHTS[getModuleState(eng)];
-    } else if (legacyCompleted.has(mod.id)) {
-      // Module was completed before engagement tracking existed
-      totalWeight += STATE_WEIGHTS.completed;
-    }
-  }
-
-  return Math.round((totalWeight / moduleCount) * 100);
+  const counts = getSessionModuleCounts(sessionId, progressData);
+  return Math.round((counts.completed / moduleCount) * 100);
 }
 
 // Compute overall progress across all sessions, weighted by module count.

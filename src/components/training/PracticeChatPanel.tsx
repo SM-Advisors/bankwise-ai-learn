@@ -77,6 +77,7 @@ export function PracticeChatPanel({
   completedModules = new Set(),
 }: PracticeChatPanelProps) {
   const [input, setInput] = useState('');
+  const inputBeforeRecordingRef = useRef('');
   const [historyOpen, setHistoryOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'work' | 'web'>('work');
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
@@ -486,7 +487,17 @@ export function PracticeChatPanel({
             </TooltipProvider>
             <div className="flex items-center gap-1">
               <VoiceMicButton
-                onTranscript={(text) => setInput((prev) => (prev ? prev + ' ' : '') + text)}
+                onTranscript={(text) => {
+                  const base = inputBeforeRecordingRef.current;
+                  setInput((base ? base + ' ' : '') + text);
+                }}
+                onInterimTranscript={(text) => {
+                  if (!inputBeforeRecordingRef.current && input) {
+                    inputBeforeRecordingRef.current = input;
+                  }
+                  const base = inputBeforeRecordingRef.current;
+                  setInput((base ? base + ' ' : '') + text);
+                }}
                 disabled={isLoading}
                 size="default"
               />

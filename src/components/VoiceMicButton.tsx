@@ -1,4 +1,4 @@
-import { Mic, MicOff, Loader2 } from 'lucide-react';
+import { Mic, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useVoiceToText } from '@/hooks/useVoiceToText';
@@ -6,8 +6,10 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 interface VoiceMicButtonProps {
-  /** Called with transcript text to insert into the input */
+  /** Called with final transcript text to insert into the input */
   onTranscript: (text: string) => void;
+  /** Called with interim (live) transcript during recording */
+  onInterimTranscript?: (text: string) => void;
   /** Additional class names */
   className?: string;
   /** Size variant */
@@ -18,6 +20,7 @@ interface VoiceMicButtonProps {
 
 export function VoiceMicButton({
   onTranscript,
+  onInterimTranscript,
   className,
   size = 'sm',
   disabled = false,
@@ -29,6 +32,7 @@ export function VoiceMicButton({
       onTranscript(text);
       toast({ title: 'Transcribed', description: text.slice(0, 80) + (text.length > 80 ? '…' : '') });
     },
+    onInterimTranscript,
     onError: (error) => {
       toast({ title: 'Voice input error', description: error, variant: 'destructive' });
     },
@@ -49,22 +53,20 @@ export function VoiceMicButton({
           className={cn(
             btnSize,
             'p-0 shrink-0',
-            isRecording && 'text-destructive animate-pulse',
+            isRecording && 'text-red-500 animate-pulse',
             isProcessing && 'text-muted-foreground',
             className
           )}
         >
           {isProcessing ? (
             <Loader2 className={cn(iconSize, 'animate-spin')} />
-          ) : isRecording ? (
-            <MicOff className={iconSize} />
           ) : (
             <Mic className={iconSize} />
           )}
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        {isProcessing ? 'Transcribing…' : isRecording ? 'Stop recording' : 'Voice input'}
+        {isProcessing ? 'Transcribing…' : isRecording ? 'Listening — tap to stop' : 'Voice input'}
       </TooltipContent>
     </Tooltip>
   );
