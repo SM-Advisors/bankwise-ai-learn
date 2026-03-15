@@ -1249,12 +1249,35 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                     }]);
                   }).finally(() => setIsTrainerLoading(false));
 
-                  // Mark module engagement
-                  trackModuleEngagement('1-1', {
-                    chatStarted: true,
-                    completed: true,
-                    completedAt: new Date().toISOString(),
-                  });
+                  // Mark module as completed — update both engagement AND completedModules
+                  setModuleCompleted(true);
+                  const newCompleted = new Set(completedModules);
+                  newCompleted.add('1-1');
+                  setCompletedModules(newCompleted);
+
+                  // Persist to DB: engagement + completedModules array
+                  if (sessionId) {
+                    const progressKey = `session_${sessionId}_progress` as const;
+                    const currentProgress = (progress?.[progressKey] as SessionProgressData) || { completedModules: [] };
+                    const engagement = { ...(currentProgress.moduleEngagement || {}), ...moduleEngagement };
+                    engagement['1-1'] = {
+                      ...(engagement['1-1'] || {}),
+                      contentViewed: true,
+                      chatStarted: true,
+                      submitted: true,
+                      submittedAt: new Date().toISOString(),
+                      completed: true,
+                      completedAt: new Date().toISOString(),
+                    };
+                    setModuleEngagement(engagement);
+                    updateProgress({
+                      [progressKey]: {
+                        ...currentProgress,
+                        completedModules: Array.from(newCompleted),
+                        moduleEngagement: engagement,
+                      },
+                    });
+                  }
                 }}
               />
             ) : selectedModule ? (
