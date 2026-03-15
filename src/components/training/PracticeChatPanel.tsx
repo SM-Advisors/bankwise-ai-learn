@@ -13,6 +13,7 @@ import { VoiceMicButton } from '@/components/VoiceMicButton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { type ModuleContent } from '@/data/trainingContent';
 import { getRoleScenario } from '@/data/roleScenarioBanks';
+import type { GeneratedModuleContent } from '@/hooks/useGeneratedModuleContent';
 import { type PracticeConversation } from '@/hooks/usePracticeConversations';
 import { AVAILABLE_MODELS, PROVIDER_COLORS, type ModelDefinition } from '@/lib/models';
 
@@ -50,6 +51,7 @@ interface PracticeChatPanelProps {
   onModelChange?: (modelId: string) => void;
   gateMessage?: string | null;
   completedModules?: Set<string>;
+  generatedContent?: GeneratedModuleContent | null;
 }
 
 export function PracticeChatPanel({
@@ -75,6 +77,7 @@ export function PracticeChatPanel({
   onModelChange,
   gateMessage,
   completedModules = new Set(),
+  generatedContent,
 }: PracticeChatPanelProps) {
   const [input, setInput] = useState('');
   const inputBeforeRecordingRef = useRef('');
@@ -93,15 +96,20 @@ export function PracticeChatPanel({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Department-specific scenario and hints (inline departmentScenarios → role scenario bank → default)
+  // Department-specific scenario and hints: generated → inline departmentScenarios → role scenario bank → default
+  const genDeptScenario = lineOfBusiness && generatedContent?.departmentScenarios?.[lineOfBusiness];
   const deptScenarios = module.content.practiceTask.departmentScenarios;
   const roleScenario = lineOfBusiness ? getRoleScenario(module.id, lineOfBusiness) : null;
-  const activeScenario = (deptScenarios && lineOfBusiness && deptScenarios[lineOfBusiness]?.scenario)
-    ? deptScenarios[lineOfBusiness].scenario
-    : roleScenario?.scenario ?? module.content.practiceTask.scenario;
-  const activeHints = (deptScenarios && lineOfBusiness && deptScenarios[lineOfBusiness]?.hints)
-    ? deptScenarios[lineOfBusiness].hints
-    : roleScenario?.hints ?? module.content.practiceTask.hints;
+  const activeScenario = genDeptScenario?.scenario
+    || generatedContent?.practiceScenario
+    || (deptScenarios && lineOfBusiness && deptScenarios[lineOfBusiness]?.scenario)
+    || roleScenario?.scenario
+    || module.content.practiceTask.scenario;
+  const activeHints = genDeptScenario?.hints
+    || (generatedContent?.hints?.length ? generatedContent.hints : undefined)
+    || (deptScenarios && lineOfBusiness && deptScenarios[lineOfBusiness]?.hints)
+    || roleScenario?.hints
+    || module.content.practiceTask.hints;
 
   // Scroll to bottom when messages change
   useEffect(() => {

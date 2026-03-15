@@ -44,6 +44,7 @@ import { AppShell, type BreadcrumbItem } from '@/components/shell';
 import { type ProgressModule } from '@/components/smile';
 import { useValueSignals } from '@/hooks/useValueSignals';
 import { useIndustryContent } from '@/hooks/useIndustryContent';
+import { useGeneratedModuleContent, type GeneratedModuleContent } from '@/hooks/useGeneratedModuleContent';
 import { ModuleContentPanel } from '@/components/training/ModuleContentPanel';
 import { PersonalizationPractice } from '@/components/training/PersonalizationPractice';
 import { SessionSwitcher } from '@/components/training/SessionSwitcher';
@@ -107,8 +108,27 @@ export default function TrainingWorkspace() {
 
   const { policies } = useBankPolicies();
   const { emitSignal } = useValueSignals();
-  const { industrySlug } = useIndustryContent();
+  const { industrySlug, config: industryConfig } = useIndustryContent();
   const { createMemory } = useAIMemories();
+
+  // ── Generated content: industry-specific examples & scenarios ───────────
+  const modulePedagogy = selectedModule ? {
+    title: selectedModule.title,
+    learningObjectives: selectedModule.learningObjectives,
+    learningOutcome: selectedModule.learningOutcome || '',
+    keyPoints: selectedModule.content.keyPoints || [],
+    overview: selectedModule.content.overview,
+    practiceTaskTitle: selectedModule.content.practiceTask.title,
+    practiceTaskInstructions: selectedModule.content.practiceTask.instructions,
+    successCriteria: selectedModule.successCriteria || [],
+  } : null;
+  const departmentSlug = profile?.department || null;
+  const departmentName = departmentSlug
+    ? (industryConfig.departments.find(d => d.slug === departmentSlug)?.name || departmentSlug)
+    : null;
+  const { content: generatedContent } = useGeneratedModuleContent(
+    selectedModule?.id || null, modulePedagogy, departmentSlug, departmentName,
+  );
   const { pendingRequest, respondToLevelChange } = useSkillAssessment();
   const { activeAgent, draftAgent } = useUserAgents();
   const { draftWorkflow } = useUserWorkflows();
@@ -556,12 +576,15 @@ export default function TrainingWorkspace() {
     setIsPracticeLoading(true);
 
     try {
-      // Resolve role-specific scenario: inline departmentScenarios → role scenario bank → default
+      // Resolve role-specific scenario: generated → inline departmentScenarios → role scenario bank → default
       const lob = profile?.department;
+      const generatedDeptScenario = lob && generatedContent?.departmentScenarios?.[lob]?.scenario;
+      const generatedScenario = generatedDeptScenario || generatedContent?.practiceScenario;
       const inlineDept = selectedModule.content.practiceTask.departmentScenarios;
-      const resolvedScenario = (inlineDept && lob && inlineDept[lob]?.scenario)
-        ? inlineDept[lob].scenario
-        : (lob && getRoleScenario(selectedModule.id, lob)?.scenario) || selectedModule.content.practiceTask.scenario;
+      const resolvedScenario = generatedScenario
+        || (inlineDept && lob && inlineDept[lob]?.scenario)
+        || (lob && getRoleScenario(selectedModule.id, lob)?.scenario)
+        || selectedModule.content.practiceTask.scenario;
 
       const requestBody = {
         messages: messagesForApi,
@@ -1248,6 +1271,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
               <ModuleContentPanel
                 module={selectedModule}
                 onStartPractice={handleStartPractice}
+                generatedContent={generatedContent}
               />
             ) : selectedModule && isAgentModule ? (
               <AgentStudioPanel module={selectedModule} />
@@ -1375,6 +1399,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   gateMessage={lastGateMessage}
                   orgName={profile?.employer_name || undefined}
                   policies={policies}
+                  generatedContent={generatedContent}
                 />
               ) : (
                 <PracticeChatPanel
@@ -1400,6 +1425,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   onModelChange={setPreferredModel}
                   gateMessage={lastGateMessage}
                   completedModules={completedModules}
+                  generatedContent={generatedContent}
                 />
               )
             ) : null}
