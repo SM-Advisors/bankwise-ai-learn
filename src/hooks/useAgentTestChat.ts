@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 
 interface AgentTestChatMessage {
   role: 'user' | 'assistant';
@@ -7,6 +8,8 @@ interface AgentTestChatMessage {
 }
 
 export function useAgentTestChat() {
+  const { industrySlug } = useIndustryContent();
+
   const sendMessage = useCallback(async (
     systemPrompt: string,
     messages: AgentTestChatMessage[],
@@ -20,6 +23,7 @@ export function useAgentTestChat() {
           messages,
           agentId: agentId || '',
           testType: testType || 'freeform',
+          industrySlug,
         },
       });
 
@@ -32,7 +36,7 @@ export function useAgentTestChat() {
       console.error('Agent test chat error:', err);
       return { error: err instanceof Error ? err.message : 'Unknown error' };
     }
-  }, []);
+  }, [industrySlug]);
 
   return { sendMessage };
 }

@@ -43,6 +43,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/s
 import { AppShell, type BreadcrumbItem } from '@/components/shell';
 import { type ProgressModule } from '@/components/smile';
 import { useValueSignals } from '@/hooks/useValueSignals';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 import { ModuleContentPanel } from '@/components/training/ModuleContentPanel';
 import { PersonalizationPractice } from '@/components/training/PersonalizationPractice';
 import { SessionSwitcher } from '@/components/training/SessionSwitcher';
@@ -106,6 +107,7 @@ export default function TrainingWorkspace() {
 
   const { policies } = useBankPolicies();
   const { emitSignal } = useValueSignals();
+  const { industrySlug } = useIndustryContent();
   const { createMemory } = useAIMemories();
   const { pendingRequest, respondToLevelChange } = useSkillAssessment();
   const { activeAgent, draftAgent } = useUserAgents();
@@ -211,6 +213,7 @@ export default function TrainingWorkspace() {
               messages: [],
               greeting: true,
               isSandbox: selectedModule.type === 'sandbox',
+              industrySlug,
               learnerState: {
                 currentCardTitle: selectedModule.title,
                 learningObjectives: selectedModule.learningObjectives,
@@ -566,6 +569,7 @@ export default function TrainingWorkspace() {
         scenario: resolvedScenario,
         sessionNumber: parseInt(sessionId || '1'),
         model: preferredModel,
+        industrySlug,
         // Session 3: use deployed agent's custom system prompt if available
         ...(isSession3 && deployedAgent?.system_prompt ? { customSystemPrompt: deployedAgent.system_prompt } : {}),
         // Department context for bankers; interests for F&F users
@@ -656,6 +660,7 @@ export default function TrainingWorkspace() {
             practiceConversation: activeMessages,
             agentContext: agentContextForAndrea,
             workflowContext: workflowContextForAndrea,
+            industrySlug,
             learnerState: {
               currentCardTitle: selectedModule.title,
               learningObjectives: selectedModule.learningObjectives,
@@ -712,6 +717,7 @@ export default function TrainingWorkspace() {
             submission: conversationTranscript,
             trainerCoaching: replyText,
             rubric,
+            industrySlug,
             // Pass agent template for modules 2-3 and 2-5 for agent-specific rubrics
             ...(isAgentModule && currentAgent?.template_data ? { agentTemplate: currentAgent.template_data } : {}),
             // Session 3: department context for role-specific evaluation
@@ -905,6 +911,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           practiceConversation: activeMessages.length > 0 ? activeMessages : undefined,
           agentContext: agentContextForAndrea,
           workflowContext: workflowContextForAndrea,
+          industrySlug,
           learnerState: {
             currentCardTitle: selectedModule?.title,
             learningObjectives: selectedModule?.learningObjectives,
@@ -978,6 +985,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           practiceConversation: activeMessages.length > 0 ? activeMessages : undefined,
           agentContext: agentContextForAndrea,
           workflowContext: workflowContextForAndrea,
+          industrySlug,
           learnerState: {
             currentCardTitle: selectedModule?.title,
             learningObjectives: selectedModule?.learningObjectives,
@@ -1282,6 +1290,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                       moduleId: '1-1',
                       sessionNumber: 1,
                       messages: [...trainerMessages, apiMsg],
+                      industrySlug,
                       learnerState: {
                         currentCardTitle: selectedModule?.title,
                         learningObjectives: selectedModule?.learningObjectives,

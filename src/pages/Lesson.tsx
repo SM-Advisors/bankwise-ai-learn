@@ -9,10 +9,12 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, RefreshCw, BookOpen } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 
 export default function Lesson() {
   const navigate = useNavigate();
   const { state, setLesson, setIsGeneratingLesson } = useTraining();
+  const { industrySlug } = useIndustryContent();
   const [error, setError] = useState<string | null>(null);
 
   const selectedDepartment = departments.find((d) => d.id === state.selectedDepartment);
@@ -45,6 +47,7 @@ export default function Lesson() {
       topic: selectedTopic.title,
       topicDescription: selectedTopic.description,
       learningStyle: state.learningStyle,
+      industrySlug,
     };
 
     try {

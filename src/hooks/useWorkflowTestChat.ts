@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 
 interface WorkflowStep {
   name: string;
@@ -9,6 +10,7 @@ interface WorkflowStep {
 }
 
 export function useWorkflowTestChat() {
+  const { industrySlug } = useIndustryContent();
   const [isLoading, setIsLoading] = useState(false);
 
   const sendMessage = useCallback(async (
@@ -29,6 +31,7 @@ export function useWorkflowTestChat() {
           totalSteps,
           messages,
           previousStepOutputs,
+          industrySlug,
         },
       });
 
@@ -40,7 +43,7 @@ export function useWorkflowTestChat() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [industrySlug]);
 
   return { sendMessage, isLoading };
 }

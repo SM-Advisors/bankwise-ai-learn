@@ -8,6 +8,7 @@ import { X, Send, Loader2, Clock, Plus } from 'lucide-react';
 import { VoiceMicButton } from '@/components/VoiceMicButton';
 import andreaCoach from '@/assets/andrea-coach.png';
 import andreaCoach2 from '@/assets/andrea-coach2.png';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 import { useDashboardConversations } from '@/hooks/useDashboardConversations';
 import type { DashboardMessage } from '@/hooks/useDashboardConversations';
 
@@ -37,6 +38,7 @@ const DEFAULT_SUGGESTIONS = [
 ];
 
 export function DashboardChat({ profile, progress, forceOpen }: DashboardChatProps) {
+  const { industrySlug } = useIndustryContent();
   const [isOpen, setIsOpen] = useState(false);
   const [hasBeenOpened, setHasBeenOpened] = useState(false);
   const [input, setInput] = useState('');
@@ -168,6 +170,7 @@ export function DashboardChat({ profile, progress, forceOpen }: DashboardChatPro
         body: {
           lessonId: 'dashboard',
           messages: messagesForApi,
+          industrySlug,
           learnerState: buildLearnerState(),
         },
       });
