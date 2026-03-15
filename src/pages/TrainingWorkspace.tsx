@@ -83,6 +83,7 @@ export default function TrainingWorkspace() {
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
   const [moduleCompleted, setModuleCompleted] = useState(false);
   const [lastGateMessage, setLastGateMessage] = useState<string | null>(null);
+  const [lastGateResult, setLastGateResult] = useState<import('@/types/progress').GateResult | null>(null);
   const [priorModuleContext, setPriorModuleContext] = useState<string | null>(null);
   // 'learn' shows the content panel; 'practice' shows the chat
   const [workspaceMode, setWorkspaceModeRaw] = useState<'learn' | 'practice'>(persistedMode || 'learn');
@@ -463,7 +464,7 @@ export default function TrainingWorkspace() {
     );
   }
 
-  const handleModuleSelect = (module: ModuleContent) => {
+  const handleModuleSelect = async (module: ModuleContent) => {
     // Reset Andrea conversation when switching to a different module
     if (module.id !== selectedModule?.id) {
       setTrainerMessages([]);
@@ -483,6 +484,32 @@ export default function TrainingWorkspace() {
         contentViewed: true,
         contentViewedAt: new Date().toISOString(),
       });
+    }
+
+    // Module 1-5 context carryover: load submitted 1-4 conversation
+    if (module.id === '1-5' && user?.id) {
+      try {
+        const { data } = await supabase
+          .from('practice_conversations')
+          .select('messages')
+          .eq('user_id', user.id)
+          .eq('session_id', '1')
+          .eq('module_id', '1-4')
+          .eq('is_submitted', true)
+          .order('updated_at', { ascending: false })
+          .limit(1);
+        if (data?.[0]?.messages) {
+          const msgs = data[0].messages as Array<{ role: string; content: string }>;
+          const transcript = msgs.map(m => `[${m.role === 'user' ? 'My Prompt' : 'AI Response'}]: ${m.content}`).join('\n\n');
+          setPriorModuleContext(transcript);
+        } else {
+          setPriorModuleContext(null);
+        }
+      } catch {
+        setPriorModuleContext(null);
+      }
+    } else {
+      setPriorModuleContext(null);
     }
   };
 
@@ -801,12 +828,9 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
     // Mark conversation as submitted in database
     await markSubmitted();
 
-    // Gate modules require explicit quality pass. Non-gate modules pass by default
-    // if the gate evaluation was unavailable (e.g. edge function failure).
-    const isGate = !!selectedModule.isGateModule;
-    const gatePassed = gateResult
-      ? gateResult.passed === true
-      : !isGate; // non-gate modules pass when gate result is unavailable
+    // All modules gate progression (strict sequential). If gate evaluation was
+    // unavailable (edge function failure), default to pass to avoid blocking the learner.
+    const gatePassed = gateResult ? gateResult.passed === true : true;
 
     // Mark module as completed only if quality gate passed
     const newCompletedModules = new Set(completedModules);
@@ -816,7 +840,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
       setCompletedModules(newCompletedModules);
     }
 
-    // Store the gate message for display in the UI
+    // Store the gate result for display in the UI
+    setLastGateResult(gateResult);
     if (gateResult && !gatePassed) {
       setLastGateMessage(gateResult.gateMessage || 'Your submission needs more work before you can move on. Check Andrea\'s feedback for details.');
     } else {
@@ -1397,6 +1422,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   selectedModel={preferredModel}
                   onModelChange={setPreferredModel}
                   gateMessage={lastGateMessage}
+                  lastGateResult={lastGateResult}
                   orgName={profile?.employer_name || undefined}
                   policies={policies}
                   generatedContent={generatedContent}
@@ -1424,6 +1450,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   selectedModel={preferredModel}
                   onModelChange={setPreferredModel}
                   gateMessage={lastGateMessage}
+                  lastGateResult={lastGateResult}
                   completedModules={completedModules}
                   generatedContent={generatedContent}
                 />
