@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useOrganizations, type OrgPlatformType } from '@/hooks/useOrganizations';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { ENTERPRISE_INDUSTRIES, CONSUMER_INDUSTRIES, type AudienceType } from '@/data/industryConfigs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -75,6 +76,7 @@ export function OrganizationsManager() {
   const [orgIndustry, setOrgIndustry] = useState('banking');
   const [orgPlatform, setOrgPlatform] = useState<OrgPlatformType>('default');
   const [creatingOrg, setCreatingOrg] = useState(false);
+  const [regeneratingOrgId, setRegeneratingOrgId] = useState<string | null>(null);
 
   // Create code form state
   const [codeString, setCodeString] = useState('');
@@ -112,6 +114,22 @@ export function OrganizationsManager() {
       setOrgPlatform('default');
     } else {
       toast({ title: 'Error', description: result.error || 'Failed to create organization.', variant: 'destructive' });
+    }
+  };
+
+  const handleRegenerateContent = async (orgId: string, orgName: string) => {
+    setRegeneratingOrgId(orgId);
+    try {
+      const { error } = await supabase
+        .from('generated_module_content' as any)
+        .delete()
+        .eq('org_id', orgId);
+      if (error) throw error;
+      toast({ title: 'Content cache cleared', description: `Generated content for "${orgName}" has been cleared. It will regenerate when learners next access modules.` });
+    } catch (err) {
+      toast({ title: 'Error', description: 'Failed to clear content cache.', variant: 'destructive' });
+    } finally {
+      setRegeneratingOrgId(null);
     }
   };
 
@@ -281,6 +299,20 @@ export function OrganizationsManager() {
                         {new Date(org.created_at).toLocaleDateString()}
                       </Badge>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2 h-7 text-xs w-full"
+                      disabled={regeneratingOrgId === org.id}
+                      onClick={() => handleRegenerateContent(org.id, org.name)}
+                    >
+                      {regeneratingOrgId === org.id ? (
+                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-3 w-3 mr-1" />
+                      )}
+                      Regenerate Content
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
