@@ -79,7 +79,7 @@ serve(async (req) => {
 
     const styleInstruction = learningStyleInstructions[learningStyle];
 
-    const systemPrompt = `You are an expert AI training curriculum designer for financial institutions, specifically community and regional banks. You create practical, job-ready training content that teaches banking professionals how to apply AI in their specific roles.
+    const systemPrompt = `You are an expert AI training curriculum designer for professional organizations. You create practical, job-ready training content that teaches professionals how to apply AI in their specific roles.
 
 IMPORTANT CONTEXT: This training adjusts HOW practice is delivered, not WHAT is taught. All learners are trained to the same behaviors, standards, and compliance expectations. The following never change regardless of learning style:
 - Target workplace behaviors
@@ -90,9 +90,9 @@ IMPORTANT CONTEXT: This training adjusts HOW practice is delivered, not WHAT is 
 ${styleInstruction}
 
 Your lessons are:
-- Specific to banking workflows (never generic AI education)
+- Specific to the learner's professional workflows (never generic AI education)
 - Focused on practical outputs employees can use immediately
-- Compliant with banking regulations and data privacy
+- Compliant with applicable regulations and data privacy
 - Using only non-sensitive, synthetic example data
 
 IMPORTANT: You must respond with ONLY valid JSON matching this exact structure (no markdown, no code blocks, just raw JSON):
@@ -121,7 +121,7 @@ Topic Description: ${topicDescription}
 The learner has an ${learningStyle} learning style. Structure the ENTIRE lesson according to their preference—this affects presentation order, emphasis, and format, not the actual skills or compliance requirements taught.
 
 Remember to:
-1. Make all examples specific to banking/financial institution contexts
+1. Make all examples specific to the learner's professional context and department
 2. Include practical AI prompts or techniques they can use
 3. Focus on the specific job output mentioned in the topic
 4. Use only non-sensitive, synthetic example data

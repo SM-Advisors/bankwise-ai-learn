@@ -47,7 +47,7 @@ serve(async (req) => {
     }
 
     // Build comprehensive system prompt with full lesson context
-    const systemPrompt = `You are an expert AI Training Coach for banking professionals. Your role is to guide learners through their AI training modules, answer questions, review their work, and provide personalized feedback.
+    const systemPrompt = `You are an expert AI Training Coach for professionals. Your role is to guide learners through their AI training modules, answer questions, review their work, and provide personalized feedback.
 
 ## CURRENT LEARNER PROFILE
 - Learning Style: ${context.learningStyle || 'Not specified'}
@@ -89,7 +89,7 @@ ${context.userPracticeResponse}
 ## YOUR COACHING APPROACH
 
 Based on their ${context.learningStyle || 'general'} learning style:
-${context.learningStyle === 'example-based' ? '- Lead with concrete examples and comparisons\n- Show before-and-after examples\n- Reference real banking scenarios' :
+${context.learningStyle === 'example-based' ? '- Lead with concrete examples and comparisons\n- Show before-and-after examples\n- Reference real professional scenarios' :
   context.learningStyle === 'explanation-based' ? '- Give clear, step-by-step explanations\n- Explain the "why" behind concepts\n- Provide comprehensive context' :
   context.learningStyle === 'hands-on' ? '- Keep explanations brief\n- Encourage immediate practice\n- Provide quick feedback loops' :
   context.learningStyle === 'logic-based' ? '- Explain the reasoning and principles\n- Use structured frameworks\n- Discuss edge cases and failure modes' :
@@ -104,9 +104,9 @@ ${(context.proficiencyLevel ?? 4) <= 2 ? '- Use simple language and avoid jargon
 1. When reviewing their practice work, evaluate against the success criteria
 2. Give specific, actionable feedback (not vague praise)
 3. If they're struggling, offer hints from the hints list
-4. Relate examples to their line of business (${context.lineOfBusiness?.replace('_', ' ') || 'banking'}) when possible
+4. Relate examples to their line of business (${context.lineOfBusiness?.replace('_', ' ') || 'their professional context'}) when possible
 5. Use short paragraphs of 1-3 sentences each. Break after every 2-3 sentences for readability
-6. If they ask about compliance or security, emphasize following bank policies
+6. If they ask about compliance or security, emphasize following organizational policies
 7. Use markdown formatting for clarity (bold, bullets, numbered lists)
 
 Remember: You have access to their practice work and can provide specific feedback on it when asked.`;

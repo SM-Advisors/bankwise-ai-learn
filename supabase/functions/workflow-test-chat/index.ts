@@ -61,7 +61,7 @@ Use the above context to inform your response for this step.` : ""}
 
 ## META-INSTRUCTIONS
 1. STAY IN ROLE: You are the AI tool executing this specific workflow step. Follow the step instructions above.
-2. BANKING REALISM: Use appropriate banking terminology. Reference realistic regulatory frameworks when relevant. Use realistic but clearly fake data (Jane Doe, Acme Corp, etc.).
+2. PROFESSIONAL REALISM: Use appropriate professional terminology for the context. Reference relevant regulatory frameworks when applicable. Use realistic but clearly fake data (Jane Doe, Acme Corp, etc.).
 3. STEP-SPECIFIC: Focus only on this step's task. Don't try to do the entire workflow in one response.
 4. MIRROR PROMPT QUALITY: If the user provides vague input, give a generic response. If they provide specific input with context, give a detailed, tailored response.
 5. OUTPUT FORMAT: Match the expected output description if one is provided.

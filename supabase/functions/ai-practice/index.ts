@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { checkRateLimit } from "../_shared/rateLimiter.ts";
+import { getIndustryContext, getRealismBlock } from "../_shared/industryContext.ts";
 
 
 interface Message {
@@ -22,6 +23,7 @@ interface PracticeChatRequest {
   jobRole?: string; // User's job role from profile
   departmentLob?: string; // Alias for lineOfBusiness from frontend
   priorModuleContext?: string; // Transcript from a prior module for context carryover
+  industrySlug?: string; // Industry for dynamic context
 }
 
 interface AIMemory {
@@ -266,6 +268,7 @@ serve(async (req) => {
       jobRole: requestedJobRole,
       departmentLob,
       priorModuleContext,
+      industrySlug,
     }: PracticeChatRequest = await req.json();
 
     const model = requestedModel || "claude-sonnet-4-6";
@@ -335,12 +338,12 @@ Tailor your responses to be relevant to their department. Use terminology, examp
 
     const interestsContext = isFF ? `
 PERSONALIZATION CONTEXT — CRITICAL:
-This learner is NOT a banker. They are a general user whose personal interests are: ${interests!.join(", ")}.
-- IGNORE any banking framing in the scenario below — reframe it entirely around their interests
-- Replace banking tasks with equivalent tasks from their world (e.g. a "credit memo" becomes a "project summary", a "loan application" becomes a freelance proposal, etc.)
-- Do NOT use banking terminology, regulatory frameworks, or financial institution examples
+This learner is NOT an industry professional. They are a general user whose personal interests are: ${interests!.join(", ")}.
+- IGNORE any industry-specific framing in the scenario below — reframe it entirely around their interests
+- Replace professional tasks with equivalent tasks from their world (e.g. a "professional document" becomes a "personal project summary")
+- Do NOT use industry-specific terminology, regulatory frameworks, or specialized examples
 - Use examples, language, and contexts that feel natural and relevant to their stated interests
-- Make the exercise feel personal and fun, not like a banking simulation` : "";
+- Make the exercise feel personal and fun, not like a workplace simulation` : "";
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
@@ -361,14 +364,17 @@ ${departmentContext}${interestsContext}
 
 META-INSTRUCTIONS:
 - Stay in character as the agent described above
-- Use appropriate banking terminology and realistic fake data
+- Use appropriate professional terminology and realistic fake data
 - Mirror prompt quality — vague prompts get generic responses, specific prompts get tailored ones
 - Do NOT mention training, exercises, or modules — act as a real AI tool
 - Follow all guard rails, output rules, and compliance anchors defined in the system prompt above`
-      : `You are an AI assistant being used by a banking professional as part of their day-to-day work. You are NOT a coach or tutor — you are the actual AI tool they are practicing with.
+      : (() => {
+        const industryCtx = getIndustryContext(industrySlug);
+        const realismBlock = getRealismBlock(industryCtx, isFF, interests);
+        return `You are an AI assistant being used by a ${industryCtx.professionalLabel} as part of their day-to-day work. You are NOT a coach or tutor — you are the actual AI tool they are practicing with.
 
 ## YOUR ROLE
-You are a general-purpose AI assistant (like ChatGPT or Claude) that a banker is using at their desk. Respond naturally and helpfully to whatever they ask.
+You are a general-purpose AI assistant (like ChatGPT or Claude) that a professional is using at their desk. Respond naturally and helpfully to whatever they ask.
 
 ## SCENARIO CONTEXT
 The user is working on: "${moduleTitle}"
@@ -390,16 +396,7 @@ ${departmentContext}${interestsContext}
    - Do NOT break the fourth wall or reference "the module" or "the exercise"
    - If they ask you something outside the scenario, respond naturally
 
-${isFF ? `3. PERSONAL REALISM:
-   - This is NOT a banking user — never use banking terminology, regulatory frameworks, or financial examples
-   - Reframe all tasks and examples around the user's interests: ${interests?.join(", ") || "general topics"}
-   - Use realistic but clearly fake data appropriate to their context (fictional names, made-up companies, etc.)
-   - Make responses feel relevant and natural for someone with those interests` : `3. BANKING REALISM:
-   - Use appropriate banking terminology in your responses
-   - If they ask you to draft something, draft it properly
-   - If they ask for analysis, provide realistic analysis
-   - Reference realistic regulatory frameworks (OCC, FDIC, etc.) when relevant
-   - Use realistic but clearly fake data (Jane Doe, Acme Corp, etc.)`}
+3. ${realismBlock}
 
 4. RESPONSE LENGTH:
    - Match response length to what a real AI tool would provide
@@ -410,6 +407,7 @@ ${isFF ? `3. PERSONAL REALISM:
 5. BE HONEST ABOUT LIMITATIONS:
    - If they ask for something you can't do (access real systems, look up real data), say so naturally
    - Suggest what information they'd need to provide for you to help`;
+      })();
 
     // ── Inject personalization context into system prompt ──────────────────
     const personalizationBlock = [

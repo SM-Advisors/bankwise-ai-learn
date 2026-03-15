@@ -2,6 +2,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { checkRateLimit } from "../_shared/rateLimiter.ts";
+import { getIndustryContext } from "../_shared/industryContext.ts";
 
 
 
@@ -165,21 +166,21 @@ Your response MUST:
 1. Immediately and warmly remind them to NEVER include real customer data in AI prompts
 2. Suggest using synthetic/fake data instead (e.g., "Try using 'Jane Doe, account #000-000' as a placeholder")
 3. Explain that even in training, building the habit of protecting data matters
-4. Reference the bank's data handling policy if available in BANK POLICIES section
+4. Reference the organization's data handling policy if available in ORGANIZATION POLICIES section
 Do NOT ignore this. Address it directly but without shaming them.`,
 
     compliance_bypass: `COMPLIANCE COACHING ALERT (WARNING):
 The learner is suggesting bypassing compliance procedures in their prompt.
 Your response MUST:
 1. Acknowledge their frustration with process (empathize first)
-2. Explain that part of effective AI prompting in banking is BUILDING compliance into workflows, not around them
+2. Explain that part of effective AI prompting is BUILDING compliance into workflows, not around them
 3. Suggest reframing: "What if we built a prompt that makes compliance faster, not skippable?"
 4. This is a great teaching moment — compliance-aware prompting is a key skill`,
 
     data_export: `COMPLIANCE COACHING ALERT (WARNING):
 The learner is requesting bulk data operations in their prompt.
 Your response MUST:
-1. Note that bulk data operations require special authorization in banking
+1. Note that bulk data operations require special authorization in most professional contexts
 2. Suggest scoping down: "Let's practice with a single record first"
 3. Teach them about data minimization in AI prompts — only request what you need
 4. Reference data handling policies if available`,
@@ -187,7 +188,7 @@ Your response MUST:
     inappropriate_use: `COMPLIANCE COACHING ALERT (INFO):
 The learner appears to be using the training for non-work purposes.
 Your response should:
-1. Gently redirect: "I'm best at helping with banking AI tasks — let's focus there"
+1. Gently redirect: "I'm best at helping with professional AI tasks — let's focus there"
 2. Don't be harsh — just steer back to the training content
 3. Suggest a relevant exercise from the current module instead`,
   };
@@ -210,7 +211,7 @@ function getLearningStyleInstructions(style: string): string {
   const instructions: Record<string, string> = {
     example_based: `LEARNING STYLE: Example-Based (Show Me First)
 COACHING MOVES:
-1. LEAD WITH EXAMPLE: Start every response with a concrete, relatable banking example from their department. "Here's what this looks like for a credit analyst..."
+1. LEAD WITH EXAMPLE: Start every response with a concrete, relatable example from their department. "Here's what this looks like for someone in your role..."
 2. EXPLAIN THE PATTERN: After the example, explain the underlying principle (2-3 sentences max). "The reason this works is..."
 3. CONNECT TO THEIR WORK: Ask them to map it to their specific role. "How would you adapt this for your [department] work?"
 4. VERIFY UNDERSTANDING: End with a check. "Does that example click, or would another one from a different angle help?"
@@ -252,13 +253,13 @@ function getTechLearningStyleInstructions(techStyle: string | null): string {
   const normalized = normalizeLearningStyle(techStyle);
   const instructions: Record<string, string> = {
     example_based: `TECH LEARNING STYLE: Demo-First
-When explaining AI TOOL concepts (not banking concepts), show the tool in action first with a concrete walkthrough before explaining the theory. Use screenshots-style descriptions ("You'll see a text box at the top — paste your prompt there and hit Enter") so the learner can visualize the interface. After the demo, connect the tool's behavior to banking tasks they already understand.`,
+When explaining AI TOOL concepts, show the tool in action first with a concrete walkthrough before explaining the theory. Use screenshots-style descriptions ("You'll see a text box at the top — paste your prompt there and hit Enter") so the learner can visualize the interface. After the demo, connect the tool's behavior to professional tasks they already understand.`,
     explanation_based: `TECH LEARNING STYLE: Documentation-First
 When explaining AI TOOL concepts, start with how the feature or tool works and why it was designed that way before demonstrating it. Walk through the key settings and options systematically — what each one does, when to use it, and what the defaults mean. Once the learner understands the "why," show a quick example so they can see the concept in practice.`,
     logic_based: `TECH LEARNING STYLE: Architecture-First
 When explaining AI TOOL concepts, explain the underlying system architecture and how components connect to each other before jumping into usage. Use cause-and-effect reasoning: "When you change X, it affects Y because Z." Present decision trees or if-then logic for choosing between tool options so the learner can reason through tool selection independently.`,
     hands_on: `TECH LEARNING STYLE: Explore-First
-When explaining AI TOOL concepts, give the learner something to click or try immediately — skip the preamble. Frame instructions as quick experiments: "Open the settings panel, toggle this option, and see what changes in the output." After they've explored, circle back with a 1-sentence explanation of what they just experienced and why it matters for their banking workflow.`,
+When explaining AI TOOL concepts, give the learner something to click or try immediately — skip the preamble. Frame instructions as quick experiments: "Open the settings panel, toggle this option, and see what changes in the output." After they've explored, circle back with a 1-sentence explanation of what they just experienced and why it matters for their professional workflow.`,
   };
   return instructions[normalized] || "";
 }
@@ -450,13 +451,13 @@ async function retrieveBankPolicies(supabaseUrl: string): Promise<BankPolicy[]> 
 
   const adminClient = createClient(supabaseUrl, serviceRoleKey);
   const { data, error } = await adminClient
-    .from("bank_policies")
+    .from("org_policies")
     .select("id, title, content, summary, policy_type")
     .eq("is_active", true)
     .order("display_order", { ascending: true });
 
   if (error) {
-    console.error("Error retrieving bank policies:", error);
+    console.error("Error retrieving org policies:", error);
     return [];
   }
 
@@ -469,45 +470,13 @@ function getIndustryPersonaContext(industry?: string | null): {
   savvyDescription: string;
   colleagueDescription: string;
 } {
-  switch (industry) {
-    case "healthcare":
-      return {
-        orgContext: " in healthcare",
-        savvyDescription: "You speak healthcare naturally. You reference clinical workflows, patient records, HIPAA compliance, care coordination, EHR systems, and care team communication. Use real healthcare vocabulary — say \"care transition note\" not \"professional handoff document.\"",
-        colleagueDescription: "healthcare colleague",
-      };
-    case "insurance":
-      return {
-        orgContext: " in insurance",
-        savvyDescription: "You speak insurance naturally. You reference underwriting guidelines, claims processing, policy administration, actuarial analysis, loss ratios, and compliance. Use real insurance vocabulary — say \"claims adjuster review\" not \"document review.\"",
-        colleagueDescription: "insurance colleague",
-      };
-    case "retail":
-      return {
-        orgContext: " in retail",
-        savvyDescription: "You speak retail naturally. You reference merchandising, inventory management, customer experience, supply chain, planograms, and store operations. Use real retail vocabulary — say \"seasonal collection launch\" not \"product introduction.\"",
-        colleagueDescription: "retail colleague",
-      };
-    case "manufacturing":
-      return {
-        orgContext: " in manufacturing",
-        savvyDescription: "You speak manufacturing naturally. You reference production planning, quality control (SPC, FMEA), supply chain, preventive maintenance, safety compliance, and continuous improvement (Lean/Six Sigma). Use real manufacturing vocabulary — say \"root cause analysis\" not \"problem investigation.\"",
-        colleagueDescription: "manufacturing colleague",
-      };
-    case "general":
-      return {
-        orgContext: " for everyday AI skills",
-        savvyDescription: "You use clear, relatable language that works in any context. Avoid industry jargon. Focus on practical skills that apply broadly — at work, at home, or in a career transition. Make examples feel personal and immediately useful. Meet the learner where they are.",
-        colleagueDescription: "knowledgeable colleague",
-      };
-    case "banking":
-    default:
-      return {
-        orgContext: " for banking professionals",
-        savvyDescription: "You speak banking naturally. You reference credit committees, BSA/AML reviews, loan documentation, board reports, and regulatory examinations like someone who's been in the industry. Use real banking vocabulary — don't genericize. Say \"underwriting memo\" not \"professional document.\"",
-        colleagueDescription: "banking colleague",
-      };
-  }
+  const ctx = getIndustryContext(industry);
+  const label = ctx.professionalLabel;
+  return {
+    orgContext: ctx.slug === "general" ? " for everyday AI skills" : ` for ${label}s`,
+    savvyDescription: ctx.andreaPersona,
+    colleagueDescription: ctx.slug === "general" ? "knowledgeable colleague" : `${ctx.name.toLowerCase()} colleague`,
+  };
 }
 
 // ─── ANDREA'S PERSONA ──────────────────────────────────────────────────────
@@ -795,7 +764,7 @@ ${isEnterpriseUser ? `- Role: ${jobRole || "professional"}
 - Modules Completed: ${completedCount}
 ${learnerState?.currentCardTitle ? `- Starting Module: ${learnerState.currentCardTitle}` : ""}
 ${!isEnterpriseUser ? `
-IMPORTANT — CONSUMER USER: This learner is NOT in an enterprise organization. Do NOT reference industry-specific policies, BSA/AML, credit committees, clinical workflows, or any industry jargon. Use general professional or personal contexts. Reference their interests above for examples and analogies.` : ""}
+IMPORTANT — CONSUMER USER: This learner is NOT in an enterprise organization. Do NOT reference industry-specific policies or jargon. Use general professional or personal contexts. Reference their interests above for examples and analogies.` : ""}
 
 ${aiMemories.length > 0 ? `THINGS YOU REMEMBER ABOUT THIS LEARNER:\n${aiMemories.slice(0, 5).map(m => `- ${m.content}`).join("\n")}` : ""}
 
@@ -807,7 +776,7 @@ GREETING RULES:
 - End with something encouraging about the current module they're about to start
 - Do NOT explain how the workspace works (they already know)
 - Do NOT be generic. Make it feel like you know them.
-- Keep it warm but professional — you're a banking colleague, not a cheerleader
+- Keep it warm but professional — you're a knowledgeable colleague, not a cheerleader
 - CRITICAL: Adapt your language complexity to their AI PROFICIENCY level above. For beginners, use simple everyday language. For advanced users, speak with precision and skip basic explanations.
 
 ${(() => {
@@ -980,16 +949,16 @@ ${chunk.text}`).join("\n\n")}
       } else {
         contextSection = `## NO LESSON CONTENT AVAILABLE
 No specific lesson content was found for this module. You should:
-1. Draw on your banking AI knowledge to help the learner
+1. Draw on your professional AI knowledge to help the learner
 2. Be transparent: "I don't have the specific lesson content loaded, but here's what I know..."
 3. Encourage them to click on the module in the left panel to review the content
 DO NOT invent specific lesson content that doesn't exist.`;
       }
 
-      // Build bank policies section
+      // Build organization policies section
       if (policies.length > 0) {
-        policiesSection = `## BANK POLICIES & GUIDELINES
-The following are the bank's official policies regarding AI usage. Reference these when relevant:
+        policiesSection = `## ORGANIZATION POLICIES & GUIDELINES
+The following are the organization's official policies regarding AI usage. Reference these when relevant:
 
 ${policies.map((policy) => `### ${policy.title} (${policy.policy_type})
 ${policy.summary ? `**Summary:** ${policy.summary}\n` : ""}
@@ -1021,7 +990,7 @@ You are in BRAINSTORM mode — a creative thinking partner helping the learner d
 - Concise: 1-2 sentences per idea, no long lists
 - Socratic: after suggesting, ask what resonates or what they want to dig deeper on
 - Do NOT teach CLEAR framework, VERIFY, or curriculum content in this mode
-- For non-bank users: use general professional or personal examples based on their interests`;
+- For consumer users: use general professional or personal examples based on their interests`;
 
     const sandboxCoachingDepth = `SESSION COACHING DEPTH: Sandbox — Free Exploration
 You are in SANDBOX mode — an open, unstructured practice space at the end of the training session.
@@ -1164,7 +1133,7 @@ AGENT COACHING RULES:
 - Suggest improvements to specific sections: "Your guard rails could include a redirect for investment advice"
 - Celebrate deployment: "Your agent is live — exciting!"
 - If their template is incomplete, guide them to fill in missing sections
-- Comment on system prompt quality: word count, specificity, banking relevance
+- Comment on system prompt quality: word count, specificity, professional relevance
 - Never write the entire template for them — guide them to do it themselves
 ---
 
@@ -1232,8 +1201,8 @@ This learner is engaging confidently with detailed, substantive messages.
 ${!isEnterpriseUser ? `## CONSUMER/PERSONAL USER — PERSONA OVERRIDE (highest priority)
 This learner is NOT in an enterprise organization. They are a personal learner or general professional.
 Completely override the INDUSTRY-SAVVY persona anchor for this learner:
-- NEVER use industry-specific jargon (no BSA/AML, credit committees, clinical workflows, underwriting, etc.)
-- NEVER ask policy questions specific to any industry ("Has your bank issued guidance on AI?" etc.)
+- NEVER use industry-specific jargon of any kind
+- NEVER ask policy questions specific to any industry
 - REPLACE industry-specific examples → everyday tasks or personal projects
 ${userInterests?.length ? `- USE these interests for all examples and analogies: ${userInterests.join(", ")}` : "- Use general professional or everyday contexts for examples"}
 - When the curriculum references industry-specific examples, tell the learner they can apply the same concepts to their own context
@@ -1245,13 +1214,13 @@ ${userInterests?.length ? `- USE these interests for all examples and analogies:
 3. Give ONE actionable suggestion at a time, not a list
 4. Follow the SOCRATIC COACHING RULE for conceptual questions
 5. Match the SESSION COACHING DEPTH for this session
-6. Reference bank policies ONLY when directly relevant AND only for bank users
+6. Reference organization policies ONLY when directly relevant AND only for enterprise users
 7. If their practice looks good, say so specifically and encourage them to submit
 8. Never lecture — be a ${isEnterpriseUser ? getIndustryPersonaContext(orgIndustry).colleagueDescription : "knowledgeable colleague"} who happens to be great at AI
 9. Use their name occasionally (not every message) if you know it
 10. If compliance coaching is required above, address it FIRST before anything else
 ${effectiveSessionNumber >= 2 ? `11. VERIFY INTEGRATION: When reviewing any AI-generated output the learner shows you in Sessions 2-4, check whether they applied VERIFY. If they present output without verification commentary, ask: "Before we move on — did you run VERIFY on this? What would you check first?" Reinforce the habit across all sessions.` : ""}
-12. PROMPT LIBRARY: When the learner crafts a prompt that is well-structured, reusable, and banking-relevant — especially prompts that use CLEAR framework elements, include guard rails, or demonstrate advanced techniques — suggest they save it to their Prompt Library. Frame it naturally: "That prompt is solid and reusable — you might want to save it to your Prompt Library so you can pull it up next time you need a [task type]." Do NOT suggest this for every prompt — only genuinely reusable, high-quality ones (roughly 1 in 5-10 messages).`;
+12. PROMPT LIBRARY: When the learner crafts a prompt that is well-structured, reusable, and professionally relevant — especially prompts that use CLEAR framework elements, include guard rails, or demonstrate advanced techniques — suggest they save it to their Prompt Library. Frame it naturally: "That prompt is solid and reusable — you might want to save it to your Prompt Library so you can pull it up next time you need a [task type]." Do NOT suggest this for every prompt — only genuinely reusable, high-quality ones (roughly 1 in 5-10 messages).`;
 
     // Convert messages to Claude format
     const claudeMessages = messages.map((m) => ({

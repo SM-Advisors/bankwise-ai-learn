@@ -1,8 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { getIndustryContext } from "../_shared/industryContext.ts";
 
 interface IntakePromptScoreRequest {
   prompt: string;
+  microTask?: string;
+  industrySlug?: string;
 }
 
 interface CriterionScores {
@@ -20,33 +23,35 @@ interface IntakePromptScoreResponse {
   criteria: CriterionScores;
 }
 
-const SYSTEM_PROMPT = `You are a prompt quality assessor for a banking AI training program. You score prompts written by banking professionals who are learning to use AI responsibly.
+function buildSystemPrompt(microTask: string, industrySlug?: string): string {
+  const industryCtx = getIndustryContext(industrySlug);
+  return `You are a prompt quality assessor for a professional AI training program. You score prompts written by ${industryCtx.professionalLabel}s who are learning to use AI responsibly.
 
 THE TASK THE LEARNER WAS GIVEN:
-"Write the actual prompt you would type into an AI tool to draft a follow-up email to a small business customer after a meeting about a commercial line of credit."
+"${microTask}"
 
 Score the prompt on these 7 criteria. Award partial credit where appropriate.
 
 1. TASK CLARITY (0–1 point)
-   Does the prompt clearly state what the AI should produce? A prompt that merely says "write an email" with no specifics scores 0. A prompt that describes the purpose, type of email, and desired outcome scores 1.
+   Does the prompt clearly state what the AI should produce? A prompt with no specifics scores 0. A prompt that describes the purpose, type of output, and desired outcome scores 1.
 
 2. CONTEXT PROVISION (0–2 points)
-   Does the prompt supply relevant background? Look for: mention of the customer/client relationship, the meeting that occurred, the commercial line of credit product, the small business context, or specifics about what was discussed.
+   Does the prompt supply relevant background? Look for: mention of the professional context, the situation, the specific deliverable, or domain-specific details.
    0 = no context, 1 = minimal (1–2 elements present), 2 = rich context (3+ elements present).
 
 3. AUDIENCE AWARENESS (0–1 point)
-   Does the prompt indicate who the email is for and adjust tone accordingly? Look for: mention of the customer/recipient, desired tone (professional, warm, formal), or awareness that this is external-facing communication. Score 1 if present, 0 if absent.
+   Does the prompt indicate who the output is for and adjust tone accordingly? Look for: mention of the recipient, desired tone, or awareness of the communication context. Score 1 if present, 0 if absent.
 
 4. CONSTRAINT SETTING (0–2 points)
    Does the prompt set boundaries on the output? Look for: tone guidance, length constraints, what to include or exclude, formatting instructions, or structural direction.
    0 = no constraints, 1 = 1–2 constraints mentioned, 2 = 3 or more constraints.
 
 5. RISK AWARENESS (0–2 points)
-   Does the prompt show awareness of banking-specific risks? Look for: instructions to mark as draft/for review, avoid specific rate quotes or binding commitments, maintain compliance, exclude sensitive data, or flag content as preliminary.
+   Does the prompt show awareness of professional risks? Look for: instructions to mark as draft/for review, avoid binding commitments, maintain compliance, exclude sensitive data, or flag content as preliminary.
    0 = no risk awareness, 1 = some awareness (1 element), 2 = strong awareness (2+ elements).
 
 6. ITERATION READINESS (0–1 point)
-   Does the prompt show awareness that AI output needs refinement? Look for: calling it a "draft", including placeholders (e.g., [customer name]), requesting a format that invites editing, or explicitly mentioning revision. Score 1 if present, 0 if absent.
+   Does the prompt show awareness that AI output needs refinement? Look for: calling it a "draft", including placeholders, requesting a format that invites editing, or explicitly mentioning revision. Score 1 if present, 0 if absent.
 
 7. PROFESSIONALISM SIGNALS (0–1 point)
    Does the prompt demonstrate effort and sophistication? Very short prompts (under ~120 characters) with no structure score 0. Prompts showing deliberate structure, multiple sentences, or organized instructions score 1.
@@ -64,6 +69,7 @@ RESPONSE FORMAT: Return ONLY valid JSON with no markdown, no code fences, no exp
     "professionalismSignals": <0 or 1>
   }
 }`;
+}
 
 const EMPTY_CRITERIA: CriterionScores = {
   taskClarity: 0,
@@ -90,6 +96,8 @@ serve(async (req) => {
 
     const body: IntakePromptScoreRequest = await req.json();
     const prompt = (body.prompt || "").trim();
+    const defaultMicroTask = getIndustryContext(body.industrySlug).onboardingMicroTask;
+    const microTask = body.microTask || defaultMicroTask;
 
     // Too short to score — return 0 without calling LLM
     if (prompt.length < 15) {
@@ -109,7 +117,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "claude-haiku-4-5",
         max_tokens: 300,
-        system: SYSTEM_PROMPT,
+        system: buildSystemPrompt(microTask, body.industrySlug),
         messages: [{ role: "user", content: prompt }],
       }),
     });

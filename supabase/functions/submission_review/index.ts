@@ -83,7 +83,7 @@ function getFeedbackStyleInstructions(style: string): string {
     example_based: `FEEDBACK STYLE: Example-Based
 - Include a concrete example of an improved version for each issue
 - Show "before/after" comparisons where helpful
-- Use banking-specific examples`,
+- Use industry-specific examples relevant to the learner's work context`,
     
     explanation_based: `FEEDBACK STYLE: Explanation-Based
 - Explain WHY each strength works well
@@ -130,7 +130,7 @@ function getProficiencyFeedbackInstructions(level: number | null): string {
   }
 }
 
-interface BankPolicy {
+interface OrgPolicy {
   id: string;
   title: string;
   content: string;
@@ -225,8 +225,8 @@ async function retrieveLessonContext(
   return data || [];
 }
 
-// Retrieve active bank policies (uses service role to bypass RLS since policies are institutional data)
-async function retrieveBankPolicies(supabaseUrl: string): Promise<BankPolicy[]> {
+// Retrieve active org policies (uses service role to bypass RLS since policies are institutional data)
+async function retrieveOrgPolicies(supabaseUrl: string): Promise<OrgPolicy[]> {
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!serviceRoleKey) {
     console.error("SUPABASE_SERVICE_ROLE_KEY not available for policy retrieval");
@@ -235,17 +235,17 @@ async function retrieveBankPolicies(supabaseUrl: string): Promise<BankPolicy[]> 
 
   const adminClient = createClient(supabaseUrl, serviceRoleKey);
   const { data, error } = await adminClient
-    .from("bank_policies")
+    .from("org_policies")
     .select("id, title, content, summary, policy_type")
     .eq("is_active", true)
     .order("display_order", { ascending: true });
 
   if (error) {
-    console.error("Error retrieving bank policies:", error);
+    console.error("Error retrieving org policies:", error);
     return [];
   }
 
-  console.log(`Retrieved ${data?.length || 0} bank policies`);
+  console.log(`Retrieved ${data?.length || 0} org policies`);
   return data || [];
 }
 
@@ -341,8 +341,8 @@ serve(async (req) => {
       topK: 6,
     });
 
-    // Retrieve bank policies
-    const policies = await retrieveBankPolicies(supabaseUrl);
+    // Retrieve organization policies
+    const policies = await retrieveOrgPolicies(supabaseUrl);
 
     // Build context section from chunks
     let contextSection = "";
@@ -360,11 +360,11 @@ Evaluate the submission based on general prompt engineering best practices.
 Note in your feedback that specific lesson criteria were not available.`;
     }
 
-    // Build bank policies section
+    // Build organization policies section
     let policiesSection = "";
     if (policies.length > 0) {
-      policiesSection = `## BANK POLICIES & GUIDELINES
-The following are the bank's official policies. Check submissions for compliance:
+      policiesSection = `## ORGANIZATION POLICIES & GUIDELINES
+The following are the organization's official policies. Check submissions for compliance:
 
 ${policies.map((policy) => `### ${policy.title} (${policy.policy_type})
 ${policy.summary ? `**Summary:** ${policy.summary}\n` : ""}
@@ -374,7 +374,7 @@ ${policy.content}`).join("\n\n")}
     }
 
     // Build system prompt
-    const systemPrompt = `You are a strict but supportive AI Practice Reviewer for a banking AI training platform. Your job is to evaluate learner submissions and provide structured feedback.
+    const systemPrompt = `You are a strict but supportive AI Practice Reviewer for a professional AI training platform. Your job is to evaluate learner submissions and provide structured feedback.
 
 ${getFeedbackStyleInstructions(learningStyle)}
 
@@ -442,11 +442,11 @@ CLEAR Framework: Context → Length/Format → Examples → Audience → Require
 | Examples (E) | No examples provided | 1 relevant example showing the desired style/format | Examples demonstrate both what to include AND what to avoid |
 | Audience (A) | No audience specified | Audience identified (e.g., "branch manager") | Audience specification includes knowledge level, decision role, and what they need to act |
 | Requirements (R) | No explicit requirements | 2+ requirements listed | Requirements are specific, testable, and ranked by priority |
-| Banking Relevance | Generic business prompt | Banking task with appropriate terminology | Real task from their actual work — usable without modification |
+| Professional Relevance | Generic prompt with no work context | Task uses appropriate professional terminology | Real task from their actual work — usable without modification |
 
 EVALUATION FOCUS:
 - Are all 5 CLEAR elements present — Context, Length/Format, Examples, Audience, Requirements?
-- Are elements banking-specific, not generic placeholders?
+- Are elements specific to the learner's professional context, not generic placeholders?
 - Does the prompt produce a different (better) output than a casual ask would?
 - Are requirements specific enough that the learner could tell if they were met?` : moduleId === "2-3" ? `## MODULE 2-3 RUBRIC: MULTI-SHOT PROMPTING
 This submission tests the learner's ability to use examples to teach an AI consistent output patterns.
@@ -695,14 +695,14 @@ EVALUATION FOCUS:
 - Are prompt templates specific enough to use immediately?
 - Would this workflow be reusable by a colleague without additional explanation?
 - Does the workflow include a review checkpoint before any output leaves the team?` : `## RUBRIC
-${rubric ? (typeof rubric === "string" ? rubric : JSON.stringify(rubric, null, 2)) : "Evaluate based on clarity, specificity, context, and appropriateness for banking use cases."}`}
+${rubric ? (typeof rubric === "string" ? rubric : JSON.stringify(rubric, null, 2)) : "Evaluate based on clarity, specificity, context, and appropriateness for the learner's professional use cases."}`}
 
 ${departmentContext?.lineOfBusiness ? `## DEPARTMENT CONTEXT
 The learner works in: ${departmentContext.lineOfBusiness === "accounting_finance" ? "Accounting & Finance" : departmentContext.lineOfBusiness === "credit_administration" ? "Credit Administration" : departmentContext.lineOfBusiness === "executive_leadership" ? "Executive & Leadership" : departmentContext.lineOfBusiness}
 ${departmentContext.bankRole ? `Their role: ${departmentContext.bankRole}` : ""}
-Evaluate whether the submission is relevant to their department. Note if examples and terminology are appropriate for their line of business.` : departmentContext?.interests?.length ? `## LEARNER CONTEXT (FRIENDS & FAMILY TESTER)
-This learner is a non-banker pilot tester. Their interests are: ${departmentContext.interests.join(", ")}.
-Do NOT penalize them for lacking banking-specific terminology or banking examples. Instead, evaluate whether they demonstrate understanding of the core AI concepts in the module. Credit creative use of non-banking analogies drawn from their interests.` : ""}
+Evaluate whether the submission is relevant to their department. Note if examples and terminology are appropriate for their line of business.` : departmentContext?.interests?.length ? `## LEARNER CONTEXT (PERSONAL USER)
+This learner is not an enterprise user. Their interests are: ${departmentContext.interests.join(", ")}.
+Do NOT penalize them for lacking industry-specific terminology. Instead, evaluate whether they demonstrate understanding of the core AI concepts in the module. Credit creative use of analogies drawn from their interests.` : ""}
 
 ## SUBMISSION CONTEXT
 - Lesson ID: ${lessonId}
@@ -719,8 +719,8 @@ ${learnerState?.attemptNumber ? `- Attempt #${learnerState.attemptNumber}` : ""}
 4. Balance praise with constructive criticism
 5. Tailor language complexity to the ${learningStyle.replace("_", "-")} learning style
 6. If lesson content is missing, acknowledge this and evaluate on general best practices
-7. Check submissions for compliance with BANK POLICIES - flag any potential violations
-8. If the submission touches on data handling, AI usage, or security, verify alignment with bank guidelines
+7. Check submissions for compliance with ORGANIZATION POLICIES - flag any potential violations
+8. If the submission touches on data handling, AI usage, or security, verify alignment with organizational guidelines
 
 ## REQUIRED OUTPUT FORMAT (strict JSON, no extra keys)
 ${isGateModule ? `{
