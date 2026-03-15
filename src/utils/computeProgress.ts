@@ -11,8 +11,17 @@ export function getModuleState(engagement?: ModuleEngagement): ModuleState {
   return 'not_started';
 }
 
+// Weight each engagement state for progress calculation
+const STATE_WEIGHTS: Record<ModuleState, number> = {
+  not_started: 0,
+  content_viewed: 0.2,
+  practicing: 0.5,
+  submitted: 0.8,
+  completed: 1.0,
+};
+
 // Compute per-session progress as a percentage (0-100).
-// Uses simple completed / total ratio for clarity.
+// Uses weighted engagement states so users see incremental progress.
 export function computeSessionProgress(
   sessionId: number,
   progressData: SessionProgressData | null | undefined
@@ -24,7 +33,11 @@ export function computeSessionProgress(
   if (moduleCount === 0) return 0;
 
   const counts = getSessionModuleCounts(sessionId, progressData);
-  return Math.round((counts.completed / moduleCount) * 100);
+  let weightedSum = 0;
+  for (const [state, count] of Object.entries(counts)) {
+    weightedSum += count * STATE_WEIGHTS[state as ModuleState];
+  }
+  return Math.round((weightedSum / moduleCount) * 100);
 }
 
 // Compute overall progress across all sessions, weighted by module count.
