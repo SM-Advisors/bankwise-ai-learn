@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-03-15
 **Test framework:** Vitest 3.2.4 + Testing Library 16.0.0 + jsdom
-**Current state:** 6 test files, 105 tests, all passing
+**Current state:** 15 test files, 278 tests, all passing
 
 ---
 
@@ -14,6 +14,15 @@
 | `src/utils/__tests__/computeProgress.test.ts` | 30 | PASS |
 | `src/utils/__tests__/deriveSkillSignals.test.ts` | 18 | PASS |
 | `src/utils/__tests__/spacedRepetition.test.ts` | 19 | PASS |
+| `src/utils/__tests__/andreaTriggerStorage.test.ts` | 9 | PASS |
+| `src/utils/__tests__/moduleProgression.test.ts` | 65 | PASS |
+| `src/contexts/__tests__/calculateLearningStyle.test.ts` | 11 | PASS |
+| `src/lib/__tests__/models.test.ts` | 8 | PASS |
+| `src/data/__tests__/trainingContent.test.ts` | 11 | PASS |
+| `src/data/__tests__/spacedRepetitionBank.test.ts` | 10 | PASS |
+| `src/data/__tests__/proficiencyAssessment.test.ts` | 31 | PASS |
+| `src/config/__tests__/zones.test.ts` | 11 | PASS |
+| `src/hooks/__tests__/useFeatureGates.test.tsx` | 17 | PASS |
 | `src/test/comprehensive-hooks.test.tsx` | 6 | PASS |
 | `src/test/example.test.ts` | 1 | PASS |
 
@@ -216,20 +225,21 @@ src/
 │   ├── computeProgress.test.ts        ✅ Done (30 tests)
 │   ├── deriveSkillSignals.test.ts     ✅ Done (18 tests)
 │   ├── spacedRepetition.test.ts       ✅ Done (19 tests)
-│   └── andreaTriggerStorage.test.ts   ⬜ Phase 2
+│   ├── andreaTriggerStorage.test.ts   ✅ Done (9 tests)
+│   └── moduleProgression.test.ts     ✅ Done (65 tests)
 ├── contexts/__tests__/
-│   ├── calculateLearningStyle.test.ts ⬜ Phase 2
+│   ├── calculateLearningStyle.test.ts ✅ Done (11 tests)
 │   └── AuthContext.test.tsx           ⬜ Phase 5
 ├── lib/__tests__/
-│   └── models.test.ts                ⬜ Phase 2
+│   └── models.test.ts                ✅ Done (8 tests)
 ├── config/__tests__/
-│   └── zones.test.ts                 ⬜ Phase 3
+│   └── zones.test.ts                 ✅ Done (11 tests)
 ├── data/__tests__/
-│   ├── trainingContent.test.ts        ⬜ Phase 3
-│   ├── spacedRepetitionBank.test.ts   ⬜ Phase 3
-│   └── proficiencyAssessment.test.ts  ⬜ Phase 3
+│   ├── trainingContent.test.ts        ✅ Done (11 tests)
+│   ├── spacedRepetitionBank.test.ts   ✅ Done (10 tests)
+│   └── proficiencyAssessment.test.ts  ✅ Done (31 tests)
 ├── hooks/__tests__/
-│   └── useFeatureGates.test.tsx       ⬜ Phase 4
+│   └── useFeatureGates.test.tsx       ✅ Done (17 tests)
 ├── components/__tests__/
 │   ├── ProtectedRoute.test.tsx        ⬜ Phase 6
 │   └── ErrorBoundary.test.tsx         ⬜ Phase 6
@@ -245,13 +255,13 @@ src/
 | Phase | Scope | Est. Tests | Effort | Mocking |
 |-------|-------|-----------|--------|---------|
 | ~~1~~ | ~~Pure utilities~~ | ~~98~~ | ~~Done~~ | ~~None~~ |
-| 2 | Pure functions & config | 25–35 | Low | None |
-| 3 | Data integrity validation | 20–30 | Low | None |
-| 4 | Feature gates | 15–20 | Medium | useAuth mock |
+| ~~2~~ | ~~Pure functions & config~~ | ~~28~~ | ~~Done~~ | ~~None~~ |
+| ~~3~~ | ~~Data integrity validation~~ | ~~63~~ | ~~Done~~ | ~~None~~ |
+| ~~4~~ | ~~Feature gates~~ | ~~17~~ | ~~Done~~ | ~~useAuth mock~~ |
 | 5 | Auth context integration | 15–20 | Medium-High | Supabase mock |
 | 6 | Component rendering | 10–15 | Medium | Auth + Router mocks |
 
-**Phases 2 and 3 require no mocking infrastructure and can be implemented immediately.**
+**Phases 2, 3, and 4 are complete. Phases 5 and 6 remain for auth context integration and component rendering tests.**
 
 ---
 
