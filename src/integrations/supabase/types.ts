@@ -1280,36 +1280,6 @@ export type Database = {
         }
         Relationships: []
       }
-      training_reset_snapshots: {
-        Row: {
-          expires_at: string
-          id: string
-          reset_at: string
-          reset_by: string
-          reversed_at: string | null
-          snapshot_data: Json
-          user_id: string
-        }
-        Insert: {
-          expires_at?: string
-          id?: string
-          reset_at?: string
-          reset_by: string
-          reversed_at?: string | null
-          snapshot_data?: Json
-          user_id: string
-        }
-        Update: {
-          expires_at?: string
-          id?: string
-          reset_at?: string
-          reset_by?: string
-          reversed_at?: string | null
-          snapshot_data?: Json
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_agents: {
         Row: {
           created_at: string
