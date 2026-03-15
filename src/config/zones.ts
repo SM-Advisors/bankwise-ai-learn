@@ -38,7 +38,7 @@ export const LEARNER_ZONES: Zone[] = [
     label: 'Learn',
     description: 'Your training sessions',
     path: '/training/1',
-    unlockedBy: 'always',
+    unlockedBy: 'onboarding_completed',
   },
   {
     id: 'explore',
@@ -46,7 +46,7 @@ export const LEARNER_ZONES: Zone[] = [
     label: 'Explore',
     description: 'Prompt library, ideas, sandboxes, electives',
     path: '/explore',
-    unlockedBy: 'always',
+    unlockedBy: 'session_1_basic_interaction_done',
   },
   {
     id: 'community',
@@ -54,7 +54,7 @@ export const LEARNER_ZONES: Zone[] = [
     label: 'Community',
     description: 'Share wins, connect with peers',
     path: '/community',
-    unlockedBy: 'always',
+    unlockedBy: 'first_practice_done',
   },
   {
     id: 'agents',
@@ -62,7 +62,7 @@ export const LEARNER_ZONES: Zone[] = [
     label: 'Agents',
     description: 'Your deployed AI agents',
     path: '/agents',
-    unlockedBy: 'always',
+    unlockedBy: 'session_3_agent_deployed',
   },
   {
     id: 'profile',
@@ -70,7 +70,7 @@ export const LEARNER_ZONES: Zone[] = [
     label: 'Profile',
     description: 'Preferences, memories, skills & progress',
     path: '/profile',
-    unlockedBy: 'always',
+    unlockedBy: 'onboarding_completed',
   },
 ];
 
