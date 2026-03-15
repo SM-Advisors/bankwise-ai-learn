@@ -8,6 +8,26 @@
 
 export type AudienceType = 'enterprise' | 'consumer';
 
+export interface IndustryRole {
+  /** Stored in user_profiles.job_role */
+  value: string;
+  /** Display label in role selection */
+  label: string;
+  /** Best-fit department slug for content personalization */
+  departmentSlug?: string;
+}
+
+export interface IndustryDepartment {
+  /** Stored in user_profiles.department */
+  slug: string;
+  /** Display name */
+  name: string;
+  /** Short description */
+  description: string;
+  /** Lucide icon name */
+  icon?: string;
+}
+
 export interface IndustryConfig {
   /** Unique slug stored in organizations.industry */
   slug: string;
@@ -35,6 +55,24 @@ export interface IndustryConfig {
    * Only used when audienceType === 'consumer'.
    */
   welcomeMessage?: string;
+
+  // ── Expanded fields for industry switching ──────────────────────────────
+
+  /** Industry-specific role options for onboarding and profile */
+  roles: IndustryRole[];
+  /** Industry-specific department definitions */
+  departments: IndustryDepartment[];
+  /** Regulatory bodies, key frameworks, prohibited data types */
+  complianceContext: string;
+  /** Rich paragraph giving AI enough context to generate realistic scenarios */
+  scenarioGenerationContext: string;
+  /** UI copy overrides keyed by component location */
+  uiCopyOverrides: {
+    policiesLabel: string;
+    certificateDescription: string;
+    communityPlaceholder: string;
+    policyTypeName: string;
+  };
 }
 
 // ── Enterprise industries ────────────────────────────────────────────────────
@@ -51,6 +89,41 @@ const banking: IndustryConfig = {
     "You speak banking naturally. You reference credit committees, BSA/AML reviews, loan documentation, board reports, and regulatory examinations like someone who's been in the industry. Use real banking vocabulary — don't genericize. Say \"underwriting memo\" not \"professional document.\"",
   onboardingMicroTask:
     'Write the actual prompt you would type into an AI tool to draft a follow-up email to a small business customer after a meeting about a commercial line of credit.',
+  roles: [
+    { value: 'front_line', label: 'Front-line / Retail Banking', departmentSlug: 'retail_banking' },
+    { value: 'loan_officer', label: 'Loan Officer / Credit Analyst / Mortgage', departmentSlug: 'commercial_lending' },
+    { value: 'compliance', label: 'Compliance / BSA / Risk', departmentSlug: 'compliance_bsa_aml' },
+    { value: 'operations', label: 'Operations / Back Office', departmentSlug: 'operations' },
+    { value: 'it', label: 'IT / Technology', departmentSlug: 'it_information_security' },
+    { value: 'executive', label: 'Executive / C-Suite / Senior Leadership', departmentSlug: 'executive_leadership' },
+    { value: 'finance', label: 'Finance / Accounting / Internal Audit', departmentSlug: 'accounting_finance' },
+    { value: 'hr', label: 'Human Resources / Training', departmentSlug: 'human_resources' },
+    { value: 'other', label: 'Other' },
+  ],
+  departments: [
+    { slug: 'commercial_lending', name: 'Commercial Lending', description: 'Commercial real estate, C&I lending, and business loan origination', icon: 'Landmark' },
+    { slug: 'retail_banking', name: 'Retail Banking', description: 'Branch operations, consumer deposits, and customer service', icon: 'Users' },
+    { slug: 'mortgage_consumer_lending', name: 'Mortgage & Consumer Lending', description: 'Residential mortgage origination, consumer loans, and home equity', icon: 'Home' },
+    { slug: 'credit_administration', name: 'Credit Administration', description: 'Loan processing, credit analysis, underwriting, and portfolio management', icon: 'FileCheck' },
+    { slug: 'treasury_cash_management', name: 'Treasury & Cash Management', description: 'Asset-liability management, liquidity, investments, and cash management services', icon: 'Vault' },
+    { slug: 'operations', name: 'Operations', description: 'Deposit operations, payment processing, wire transfers, and back-office support', icon: 'Settings' },
+    { slug: 'compliance_bsa_aml', name: 'Compliance & BSA/AML', description: 'Regulatory compliance, Bank Secrecy Act, anti-money laundering, and fair lending', icon: 'ShieldCheck' },
+    { slug: 'risk_management', name: 'Risk Management', description: 'Enterprise risk, credit risk review, interest rate risk, and audit', icon: 'AlertTriangle' },
+    { slug: 'it_information_security', name: 'IT & Information Security', description: 'Technology infrastructure, cybersecurity, vendor management, and digital banking', icon: 'Shield' },
+    { slug: 'human_resources', name: 'Human Resources', description: 'Talent acquisition, training & development, benefits, and employee relations', icon: 'UserPlus' },
+    { slug: 'marketing_business_development', name: 'Marketing & Business Development', description: 'Brand management, digital marketing, community relations, and business growth', icon: 'Megaphone' },
+    { slug: 'accounting_finance', name: 'Accounting & Finance', description: 'Financial reporting, general ledger, reconciliation, budgeting, and regulatory filings', icon: 'Calculator' },
+    { slug: 'wealth_management_trust', name: 'Wealth Management & Trust', description: 'Trust administration, investment management, financial planning, and fiduciary services', icon: 'TrendingUp' },
+    { slug: 'executive_leadership', name: 'Executive & Leadership', description: 'Strategic planning, board governance, organizational management, and bank-wide oversight', icon: 'Crown' },
+  ],
+  complianceContext: 'Regulatory bodies: OCC, FDIC, Federal Reserve, CFPB, FinCEN, state banking regulators. Key frameworks: BSA/AML, CRA, TRID, ECOA, HMDA, UDAAP, Reg B, Reg Z, Reg E. Prohibited data: customer PII, account numbers, SSNs, loan application data must never be shared with AI tools without proper authorization and data handling procedures.',
+  scenarioGenerationContext: 'Community banking professionals handle a range of tasks including commercial and consumer lending, deposit operations, compliance monitoring, and customer service. Typical AI use cases include drafting credit memos, preparing board reports, writing SAR narratives, analyzing financial spreads, creating customer communications, and summarizing regulatory guidance. The bank serves small-to-medium businesses and retail consumers in their local community. Scenarios should reflect realistic day-to-day banking work — not theoretical exercises.',
+  uiCopyOverrides: {
+    policiesLabel: 'Bank Policies',
+    certificateDescription: 'role-specific AI applications for banking professionals',
+    communityPlaceholder: 'Start a discussion with your fellow banking professionals.',
+    policyTypeName: 'Bank Policy',
+  },
 };
 
 const healthcare: IndustryConfig = {
@@ -65,6 +138,37 @@ const healthcare: IndustryConfig = {
     'You speak healthcare naturally. You reference clinical workflows, patient records, HIPAA compliance, care coordination, EHR systems, and care team communication. Use real healthcare vocabulary — say "care transition note" not "professional handoff document."',
   onboardingMicroTask:
     'Write the actual prompt you would type into an AI tool to draft a care transition summary for a patient being discharged from the hospital to a rehabilitation facility.',
+  roles: [
+    { value: 'clinical_ops_director', label: 'Director of Clinical Operations', departmentSlug: 'clinical_operations' },
+    { value: 'vp_revenue_cycle', label: 'VP Revenue Cycle', departmentSlug: 'revenue_cycle_management' },
+    { value: 'cno', label: 'Chief Nursing Officer', departmentSlug: 'nursing_administration' },
+    { value: 'cmo', label: 'Chief Medical Officer', departmentSlug: 'medical_staff_services' },
+    { value: 'vp_quality', label: 'VP Quality & Patient Safety', departmentSlug: 'quality_patient_safety' },
+    { value: 'it_digital_health', label: 'Director of IT / Digital Health', departmentSlug: 'health_information_technology' },
+    { value: 'vp_compliance', label: 'VP Compliance / Privacy', departmentSlug: 'compliance_privacy' },
+    { value: 'hr_workforce', label: 'Director of HR / Workforce Development', departmentSlug: 'human_resources_workforce' },
+    { value: 'cfo_finance', label: 'CFO / Finance Director', departmentSlug: 'finance_accounting' },
+    { value: 'other', label: 'Other' },
+  ],
+  departments: [
+    { slug: 'clinical_operations', name: 'Clinical Operations', description: 'Patient care delivery, clinical workflows, care coordination, and operational efficiency', icon: 'Stethoscope' },
+    { slug: 'revenue_cycle_management', name: 'Revenue Cycle Management', description: 'Billing, coding, claims management, denials, and financial clearance', icon: 'Receipt' },
+    { slug: 'quality_patient_safety', name: 'Quality & Patient Safety', description: 'Quality metrics, patient safety initiatives, accreditation, and performance improvement', icon: 'ShieldCheck' },
+    { slug: 'compliance_privacy', name: 'Compliance & Privacy (HIPAA)', description: 'HIPAA compliance, privacy programs, regulatory audits, and risk assessments', icon: 'Lock' },
+    { slug: 'health_information_technology', name: 'Health Information Technology', description: 'EHR systems, health data analytics, interoperability, and digital health initiatives', icon: 'Monitor' },
+    { slug: 'nursing_administration', name: 'Nursing Administration', description: 'Nurse staffing, scheduling, clinical education, and nursing practice standards', icon: 'Heart' },
+    { slug: 'medical_staff_services', name: 'Medical Staff Services', description: 'Credentialing, privileging, peer review, and medical staff governance', icon: 'UserCheck' },
+    { slug: 'finance_accounting', name: 'Finance & Accounting', description: 'Budgeting, financial reporting, cost accounting, and reimbursement analysis', icon: 'Calculator' },
+    { slug: 'human_resources_workforce', name: 'Human Resources & Workforce Development', description: 'Recruitment, retention, training, workforce planning, and employee engagement', icon: 'UserPlus' },
+  ],
+  complianceContext: 'Regulatory bodies: HHS/OCR, CMS, Joint Commission, state health departments, state licensing boards. Key frameworks: HIPAA, HITECH, 42 CFR Part 2, Stark Law, Anti-Kickback Statute, EMTALA, Medicare Conditions of Participation. Prohibited data: PHI (Protected Health Information), patient identifiers, medical record numbers, treatment details, and diagnostic information must never be shared with AI tools without proper BAA (Business Associate Agreement) and de-identification procedures.',
+  scenarioGenerationContext: 'Healthcare leaders manage clinical operations, revenue cycle, quality improvement, and compliance across hospitals, health systems, and ambulatory care settings. Typical AI use cases include drafting care transition summaries, analyzing readmission data, preparing quality committee reports, summarizing regulatory guidance (Joint Commission, CMS), optimizing staff scheduling, drafting patient communications, coding audit support, and creating training materials for clinical staff. The organization serves patients across inpatient, outpatient, and post-acute care settings. Scenarios should reflect realistic healthcare leadership work — operational decisions, quality initiatives, and compliance requirements.',
+  uiCopyOverrides: {
+    policiesLabel: 'Organization Policies',
+    certificateDescription: 'role-specific AI applications for healthcare professionals',
+    communityPlaceholder: 'Start a discussion with your fellow healthcare professionals.',
+    policyTypeName: 'Organization Policy',
+  },
 };
 
 const insurance: IndustryConfig = {
@@ -79,6 +183,31 @@ const insurance: IndustryConfig = {
     'You speak insurance naturally. You reference underwriting guidelines, claims processing, policy administration, actuarial analysis, loss ratios, and compliance requirements. Use real insurance vocabulary — say "claims adjuster review" not "document review."',
   onboardingMicroTask:
     'Write the actual prompt you would type into an AI tool to summarize a complex commercial property insurance claim for a claims adjuster preparing for a coverage review.',
+  roles: [
+    { value: 'underwriter', label: 'Underwriter', departmentSlug: 'underwriting' },
+    { value: 'claims_adjuster', label: 'Claims Adjuster / Examiner', departmentSlug: 'claims' },
+    { value: 'actuary', label: 'Actuary / Pricing Analyst', departmentSlug: 'actuarial' },
+    { value: 'agent_broker', label: 'Agent / Broker', departmentSlug: 'distribution' },
+    { value: 'compliance', label: 'Compliance / Regulatory', departmentSlug: 'compliance' },
+    { value: 'operations', label: 'Operations / Policy Admin', departmentSlug: 'operations' },
+    { value: 'other', label: 'Other' },
+  ],
+  departments: [
+    { slug: 'underwriting', name: 'Underwriting', description: 'Risk assessment, policy issuance, and underwriting guidelines' },
+    { slug: 'claims', name: 'Claims', description: 'Claims intake, investigation, adjustment, and settlement' },
+    { slug: 'actuarial', name: 'Actuarial & Pricing', description: 'Loss modeling, rate development, and reserving' },
+    { slug: 'distribution', name: 'Distribution & Sales', description: 'Agent management, producer relations, and sales support' },
+    { slug: 'compliance', name: 'Compliance & Regulatory', description: 'State filings, market conduct, and regulatory compliance' },
+    { slug: 'operations', name: 'Operations & Policy Admin', description: 'Policy servicing, endorsements, and billing' },
+  ],
+  complianceContext: 'Regulatory bodies: State Departments of Insurance, NAIC, federal oversight (FIO). Key frameworks: state insurance codes, market conduct regulations, unfair claims practices acts, data privacy laws (state-specific). Prohibited data: policyholder PII, claims details, medical records in claims files, financial underwriting data.',
+  scenarioGenerationContext: 'Insurance professionals handle underwriting risk assessments, claims investigations, policy administration, actuarial analysis, and regulatory compliance. Typical AI use cases include summarizing claims files, drafting coverage analyses, generating underwriting memos, analyzing loss ratios, preparing regulatory filings, and creating policyholder communications.',
+  uiCopyOverrides: {
+    policiesLabel: 'Company Policies',
+    certificateDescription: 'role-specific AI applications for insurance professionals',
+    communityPlaceholder: 'Start a discussion with your fellow insurance professionals.',
+    policyTypeName: 'Company Policy',
+  },
 };
 
 const retail: IndustryConfig = {
@@ -93,6 +222,29 @@ const retail: IndustryConfig = {
     'You speak retail naturally. You reference merchandising, inventory management, customer experience, supply chain, planograms, and store operations. Use real retail vocabulary — say "seasonal collection launch" not "product introduction period."',
   onboardingMicroTask:
     'Write the actual prompt you would type into an AI tool to create a product description for a new seasonal collection item targeting your core customer demographic.',
+  roles: [
+    { value: 'store_manager', label: 'Store Manager / District Manager', departmentSlug: 'store_operations' },
+    { value: 'merchandiser', label: 'Merchandiser / Buyer', departmentSlug: 'merchandising' },
+    { value: 'marketing', label: 'Marketing / Digital', departmentSlug: 'marketing' },
+    { value: 'supply_chain', label: 'Supply Chain / Logistics', departmentSlug: 'supply_chain' },
+    { value: 'customer_experience', label: 'Customer Experience', departmentSlug: 'customer_experience' },
+    { value: 'other', label: 'Other' },
+  ],
+  departments: [
+    { slug: 'store_operations', name: 'Store Operations', description: 'Store management, staffing, visual merchandising, and daily operations' },
+    { slug: 'merchandising', name: 'Merchandising & Buying', description: 'Product selection, pricing, promotions, and assortment planning' },
+    { slug: 'marketing', name: 'Marketing & Digital', description: 'Brand marketing, e-commerce, social media, and customer engagement' },
+    { slug: 'supply_chain', name: 'Supply Chain & Logistics', description: 'Inventory management, distribution, vendor relations, and fulfillment' },
+    { slug: 'customer_experience', name: 'Customer Experience', description: 'Customer service, loyalty programs, and experience design' },
+  ],
+  complianceContext: 'Key frameworks: PCI-DSS (payment security), consumer protection laws, FTC regulations, state consumer privacy laws. Prohibited data: customer payment information, PII, purchase history linked to individuals.',
+  scenarioGenerationContext: 'Retail professionals manage store operations, merchandising, marketing, supply chain, and customer experience. Typical AI use cases include writing product descriptions, analyzing sales trends, creating marketing content, optimizing inventory, drafting staff communications, and improving customer service responses.',
+  uiCopyOverrides: {
+    policiesLabel: 'Company Policies',
+    certificateDescription: 'role-specific AI applications for retail professionals',
+    communityPlaceholder: 'Start a discussion with your fellow retail professionals.',
+    policyTypeName: 'Company Policy',
+  },
 };
 
 const manufacturing: IndustryConfig = {
@@ -107,6 +259,31 @@ const manufacturing: IndustryConfig = {
     'You speak manufacturing naturally. You reference production planning, quality control (SPC, FMEA), supply chain, preventive maintenance, safety compliance, and continuous improvement (Lean/Six Sigma). Use real manufacturing vocabulary — say "root cause analysis" not "problem investigation."',
   onboardingMicroTask:
     'Write the actual prompt you would type into an AI tool to draft a root cause analysis report for a recurring defect found during final inspection on the production line.',
+  roles: [
+    { value: 'plant_manager', label: 'Plant Manager / Operations Director', departmentSlug: 'production' },
+    { value: 'quality', label: 'Quality Manager / Engineer', departmentSlug: 'quality' },
+    { value: 'supply_chain', label: 'Supply Chain / Procurement', departmentSlug: 'supply_chain' },
+    { value: 'maintenance', label: 'Maintenance / Reliability', departmentSlug: 'maintenance' },
+    { value: 'safety', label: 'Safety / EHS', departmentSlug: 'safety' },
+    { value: 'engineering', label: 'Engineering', departmentSlug: 'engineering' },
+    { value: 'other', label: 'Other' },
+  ],
+  departments: [
+    { slug: 'production', name: 'Production & Operations', description: 'Production planning, scheduling, shop floor management, and throughput optimization' },
+    { slug: 'quality', name: 'Quality', description: 'Quality control, SPC, FMEA, CAPA, and continuous improvement' },
+    { slug: 'supply_chain', name: 'Supply Chain & Procurement', description: 'Vendor management, material planning, logistics, and inventory control' },
+    { slug: 'maintenance', name: 'Maintenance & Reliability', description: 'Preventive maintenance, equipment reliability, and downtime reduction' },
+    { slug: 'safety', name: 'Safety & EHS', description: 'Workplace safety, environmental compliance, and health programs' },
+    { slug: 'engineering', name: 'Engineering', description: 'Process engineering, tooling, automation, and new product introduction' },
+  ],
+  complianceContext: 'Regulatory bodies: OSHA, EPA, FDA (if applicable), ISO certification bodies. Key frameworks: ISO 9001, ISO 14001, OSHA standards, GMP (if applicable). Prohibited data: proprietary process specifications, trade secrets, customer-specific pricing.',
+  scenarioGenerationContext: 'Manufacturing professionals manage production operations, quality systems, supply chain logistics, maintenance programs, and safety compliance. Typical AI use cases include drafting root cause analyses, creating standard operating procedures, analyzing production data, writing safety incident reports, preparing audit responses, and optimizing maintenance schedules.',
+  uiCopyOverrides: {
+    policiesLabel: 'Company Policies',
+    certificateDescription: 'role-specific AI applications for manufacturing professionals',
+    communityPlaceholder: 'Start a discussion with your fellow manufacturing professionals.',
+    policyTypeName: 'Company Policy',
+  },
 };
 
 // ── Consumer industries ──────────────────────────────────────────────────────
@@ -125,6 +302,29 @@ const general: IndustryConfig = {
     'Write the actual prompt you would type into an AI tool to help you draft a professional email or message for a real situation you face regularly.',
   welcomeMessage:
     "Welcome! You're here to build practical AI skills that work in any area of life or work.",
+  roles: [
+    { value: 'professional', label: 'Working Professional' },
+    { value: 'manager', label: 'Manager / Team Lead' },
+    { value: 'freelancer', label: 'Freelancer / Consultant' },
+    { value: 'student', label: 'Student' },
+    { value: 'career_changer', label: 'Career Changer' },
+    { value: 'other', label: 'Other' },
+  ],
+  departments: [
+    { slug: 'writing_communication', name: 'Writing & Communication', description: 'Emails, reports, presentations, and professional communication' },
+    { slug: 'research_analysis', name: 'Research & Analysis', description: 'Information gathering, data analysis, and decision support' },
+    { slug: 'productivity', name: 'Productivity & Organization', description: 'Task management, planning, workflow optimization, and automation' },
+    { slug: 'creative', name: 'Creative & Content', description: 'Content creation, brainstorming, design briefs, and storytelling' },
+    { slug: 'learning', name: 'Learning & Development', description: 'Skill building, study aids, career growth, and self-improvement' },
+  ],
+  complianceContext: 'General best practices: avoid sharing personal identifiers, financial account details, passwords, or confidential employer information with AI tools. Follow your organization\'s acceptable-use policies if applicable.',
+  scenarioGenerationContext: 'Individual learners use AI for a wide range of everyday tasks: drafting emails, summarizing articles, brainstorming ideas, planning projects, analyzing data, creating presentations, writing cover letters, studying new topics, and automating repetitive work. Scenarios should feel practical and immediately useful — things a real person would actually want to do with AI today.',
+  uiCopyOverrides: {
+    policiesLabel: 'Guidelines',
+    certificateDescription: 'practical AI skills for everyday work and life',
+    communityPlaceholder: 'Start a discussion with fellow learners.',
+    policyTypeName: 'Guideline',
+  },
 };
 
 // ── Config map & helpers ─────────────────────────────────────────────────────
