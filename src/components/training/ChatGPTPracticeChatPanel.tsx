@@ -84,6 +84,7 @@ export function ChatGPTPracticeChatPanel({
 }: ChatGPTPracticeChatPanelProps) {
   const { toast } = useToast();
   const [input, setInput] = useState('');
+  const inputBeforeRecordingRef = useRef('');
   const [plusMenuOpen, setPlusMenuOpen] = useState(false);
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [incognito, setIncognito] = useState(false);
@@ -395,7 +396,17 @@ export function ChatGPTPracticeChatPanel({
 
             {/* Mic */}
             <VoiceMicButton
-              onTranscript={text => setInput(prev => (prev ? prev + ' ' : '') + text)}
+              onTranscript={(text) => {
+                const base = inputBeforeRecordingRef.current;
+                setInput((base ? base + ' ' : '') + text);
+              }}
+              onInterimTranscript={(text) => {
+                if (!inputBeforeRecordingRef.current && input) {
+                  inputBeforeRecordingRef.current = input;
+                }
+                const base = inputBeforeRecordingRef.current;
+                setInput((base ? base + ' ' : '') + text);
+              }}
               disabled={isLoading}
               size="default"
             />

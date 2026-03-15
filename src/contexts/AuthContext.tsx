@@ -90,6 +90,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // signUp sets profile/progress directly; the auth listener must not race it.
   const signupInProgressRef = useRef(false);
 
+  // Track whether profile has been loaded at least once, so we can skip showing
+  // the full-page loading spinner on subsequent auth events (e.g. tab focus).
+  const hasProfileRef = useRef(false);
+  useEffect(() => { hasProfileRef.current = !!profile; }, [profile]);
+
   // Super admin "view as org" state — persisted to sessionStorage
   const [viewAsOrg, setViewAsOrgState] = useState<ViewAsOrg | null>(() => {
     try {
@@ -206,11 +211,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Defer profile fetch with setTimeout to avoid deadlock
         if (session?.user) {
-          // Keep loading=true until profile is fetched.  On page load this is
-          // already true; on login, loading may be false from the initial no-op,
-          // which causes a render with user=truthy + profile=null + loading=false
-          // — downstream components (Auth, ProtectedRoute) navigate prematurely.
-          setLoading(true);
+          // Only show the loading spinner when we don't yet have a profile
+          // (initial load or login). When profile already exists (e.g. INITIAL_SESSION
+          // fires on page visibility change), skip the spinner to avoid unmounting
+          // the current page and losing UI state.
+          if (!hasProfileRef.current) {
+            setLoading(true);
+          }
 
           setTimeout(async () => {
             // During signup, signUp() sets profile/progress directly.

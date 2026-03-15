@@ -3,14 +3,21 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface UseVoiceToTextOptions {
   onTranscript?: (text: string) => void;
+  onInterimTranscript?: (text: string) => void;
   onError?: (error: string) => void;
 }
 
-export function useVoiceToText({ onTranscript, onError }: UseVoiceToTextOptions = {}) {
+// Browser SpeechRecognition polyfill
+const SpeechRecognition =
+  (window as unknown as Record<string, unknown>).SpeechRecognition ||
+  (window as unknown as Record<string, unknown>).webkitSpeechRecognition;
+
+export function useVoiceToText({ onTranscript, onInterimTranscript, onError }: UseVoiceToTextOptions = {}) {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const recognitionRef = useRef<InstanceType<typeof SpeechRecognition> | null>(null);
 
   const startRecording = useCallback(async () => {
     try {
@@ -69,17 +76,47 @@ export function useVoiceToText({ onTranscript, onError }: UseVoiceToTextOptions 
         }
       };
 
+      // Start live transcription via Web Speech API (if available)
+      if (SpeechRecognition) {
+        try {
+          const recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = 'en-US';
+          recognition.onresult = (event: { resultIndex: number; results: SpeechRecognitionResultList }) => {
+            let interim = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              interim += event.results[i][0].transcript;
+            }
+            if (interim) {
+              onInterimTranscript?.(interim);
+            }
+          };
+          recognition.onerror = () => {
+            // Silently ignore — we still have the MediaRecorder backend fallback
+          };
+          recognition.start();
+          recognitionRef.current = recognition;
+        } catch {
+          // SpeechRecognition not available — no live preview
+        }
+      }
+
       recorder.start();
       setIsRecording(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Microphone access denied';
       onError?.(msg);
     }
-  }, [onTranscript, onError]);
+  }, [onTranscript, onInterimTranscript, onError]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
+    }
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch { /* ignore */ }
+      recognitionRef.current = null;
     }
     setIsRecording(false);
   }, []);

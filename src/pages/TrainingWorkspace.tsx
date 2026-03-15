@@ -254,12 +254,29 @@ export default function TrainingWorkspace() {
 
   useEffect(() => {
     if (session?.modules?.length && !selectedModule) {
-      // Restore persisted module if available, otherwise prefer the next unfinished
+      // Restore persisted module if available
       const restoredModule = persistedModuleId
         ? session.modules.find((m) => m.id === persistedModuleId)
         : null;
+
+      // Find the furthest-along module: the last module with any engagement,
+      // then advance to the next incomplete one (or stay if it's incomplete itself).
+      let furthestIdx = -1;
+      for (let i = session.modules.length - 1; i >= 0; i--) {
+        const m = session.modules[i];
+        if (completedModules.has(m.id) || moduleEngagement[m.id]) {
+          furthestIdx = i;
+          break;
+        }
+      }
+      // If furthest module is completed, advance to the next one
+      const furthest = furthestIdx >= 0 ? session.modules[furthestIdx] : null;
+      const resumeModule = furthest && completedModules.has(furthest.id) && furthestIdx + 1 < session.modules.length
+        ? session.modules[furthestIdx + 1]
+        : furthest;
+
       const nextModule =
-        restoredModule ?? session.modules.find((m) => !completedModules.has(m.id)) ?? session.modules[0];
+        restoredModule ?? resumeModule ?? session.modules[0];
       setSelectedModule(nextModule);
       if (nextModule.type === 'video') {
         setVideoModalOpen(true);
@@ -695,8 +712,12 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
     // Mark conversation as submitted in database
     await markSubmitted();
 
-    // All modules now require reasonable quality to advance
-    const gatePassed = gateResult?.passed === true;
+    // Gate modules require explicit quality pass. Non-gate modules pass by default
+    // if the gate evaluation was unavailable (e.g. edge function failure).
+    const isGate = !!selectedModule.isGateModule;
+    const gatePassed = gateResult
+      ? gateResult.passed === true
+      : !isGate; // non-gate modules pass when gate result is unavailable
 
     // Mark module as completed only if quality gate passed
     const newCompletedModules = new Set(completedModules);
@@ -1184,7 +1205,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
             ) : selectedModule && isPersonalizationModule && workspaceMode === 'practice' ? (
               <PersonalizationPractice
                 hasNextModule={!!nextModule}
-                onContinueToNext={nextModule ? () => setSelectedModule(nextModule) : undefined}
+                onContinueToNext={nextModule ? () => handleModuleSelect(nextModule) : undefined}
                 onSaved={(prefs) => {
                   // Send Andrea a message about the personalization for feedback
                   const feedbackPrompt = `The user just completed their personalization setup. Here are their choices:\n\n- **Tone:** ${prefs.tone}\n- **Verbosity:** ${prefs.verbosity}\n- **Formatting:** ${prefs.formatting_preference}\n- **Role Context:** ${prefs.role_context || '(not set)'}\n- **Custom Instructions:** ${prefs.additional_instructions || '(not set)'}\n\nPlease provide structured, specific feedback on their personalization choices. Focus on the Role Context and Custom Instructions fields — are they specific enough? If they're well-crafted, congratulate them. If they could be improved, give concrete suggestions based on their role/department. Do NOT be generic.`;
@@ -1246,7 +1267,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   isCompleted={moduleCompleted}
                   isSubmitted={isActiveConversationSubmitted}
                   onSubmitForReview={handleSubmitForReview}
-                  onContinueToNext={nextModule ? () => setSelectedModule(nextModule) : undefined}
+                  onContinueToNext={nextModule ? () => handleModuleSelect(nextModule) : undefined}
                   onCompleteSession={!nextModule ? handleCompleteSession : undefined}
                   hasNextModule={!!nextModule}
                   conversations={practiceConversations}
@@ -1272,7 +1293,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   isCompleted={moduleCompleted}
                   isSubmitted={isActiveConversationSubmitted}
                   onSubmitForReview={handleSubmitForReview}
-                  onContinueToNext={nextModule ? () => setSelectedModule(nextModule) : undefined}
+                  onContinueToNext={nextModule ? () => handleModuleSelect(nextModule) : undefined}
                   onCompleteSession={!nextModule ? handleCompleteSession : undefined}
                   hasNextModule={!!nextModule}
                   conversations={practiceConversations}

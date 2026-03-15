@@ -157,6 +157,7 @@ export function TrainerChatPanel({
   onSaveToPromptLibrary,
 }: TrainerChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputBeforeRecordingRef = useRef('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [activeQuickAction, setActiveQuickAction] = useState<QuickActionType>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
@@ -631,7 +632,17 @@ export function TrainerChatPanel({
                   <span className="text-[10px] text-muted-foreground/50">Enter to send</span>
                   <div className="flex items-center gap-1.5">
                     <VoiceMicButton
-                      onTranscript={(text) => onInputChange(input ? input + ' ' + text : text)}
+                      onTranscript={(text) => {
+                        const base = inputBeforeRecordingRef.current;
+                        onInputChange((base ? base + ' ' : '') + text);
+                      }}
+                      onInterimTranscript={(text) => {
+                        if (!inputBeforeRecordingRef.current && input) {
+                          inputBeforeRecordingRef.current = input;
+                        }
+                        const base = inputBeforeRecordingRef.current;
+                        onInputChange((base ? base + ' ' : '') + text);
+                      }}
                       disabled={isLoading}
                     />
                     <Button
