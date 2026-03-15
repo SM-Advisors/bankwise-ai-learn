@@ -62,7 +62,7 @@ export function AgentTemplateBuilder({
                 onChange={(e) =>
                   handleChange((prev) => ({ ...prev, identity: e.target.value }))
                 }
-                placeholder="You are a [Role] for [Department] at [Bank]. You help [Audience] with [Primary Purpose]."
+                placeholder="You are a [Role] for [Department] at [Organization]. You help [Audience] with [Primary Purpose]."
                 rows={3}
                 className="text-sm"
               />
@@ -111,7 +111,7 @@ export function AgentTemplateBuilder({
                         ),
                       }))
                     }
-                    placeholder="Task name (e.g., 30-Day Past-Due Letters)"
+                    placeholder="Task name (e.g., Weekly Status Report)"
                     className="text-sm"
                   />
                   <div className="grid grid-cols-2 gap-2">
@@ -329,7 +329,7 @@ export function AgentTemplateBuilder({
                         ),
                       }))
                     }
-                    placeholder={`Exact phrase to include in outputs (e.g., FDCPA disclosure)`}
+                    placeholder={`Exact phrase to include in outputs (e.g., required disclaimer)`}
                     className="text-sm"
                   />
                   {templateData.complianceAnchors.length > 1 && (
@@ -392,7 +392,7 @@ export function AgentTemplateBuilder({
                         ),
                       }))
                     }
-                    placeholder={`Starter ${idx + 1} (e.g., "Summarise this loan file for me")`}
+                    placeholder={`Starter ${idx + 1} (e.g., "Summarise this document for me")`}
                     className="text-sm"
                   />
                   {(templateData.conversation_starters || []).length > 1 && (

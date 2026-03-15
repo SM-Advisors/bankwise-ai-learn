@@ -1069,7 +1069,7 @@ export default function AdminDashboard() {
                     <div>
                       <CardTitle className="flex items-center gap-2">
                         <Shield className="h-5 w-5 text-primary" />
-                        Bank Policy Management
+                        Policy Management
                       </CardTitle>
                       <CardDescription>
                         Configure AI usage policies, data security guidelines, and best practices
