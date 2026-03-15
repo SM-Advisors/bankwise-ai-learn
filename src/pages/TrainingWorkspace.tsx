@@ -81,6 +81,7 @@ export default function TrainingWorkspace() {
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
   const [moduleCompleted, setModuleCompleted] = useState(false);
   const [lastGateMessage, setLastGateMessage] = useState<string | null>(null);
+  const [priorModuleContext, setPriorModuleContext] = useState<string | null>(null);
   // 'learn' shows the content panel; 'practice' shows the chat
   const [workspaceMode, setWorkspaceModeRaw] = useState<'learn' | 'practice'>(persistedMode || 'learn');
 
@@ -294,6 +295,47 @@ export default function TrainingWorkspace() {
     setModuleCompleted(selectedModule ? completedModules.has(selectedModule.id) : false);
     setLastGateMessage(null);
   }, [selectedModule, completedModules]);
+
+  // Load prior module context for carryover (e.g., module 1-5 uses 1-4's conversation)
+  useEffect(() => {
+    if (!selectedModule || !user?.id) {
+      setPriorModuleContext(null);
+      return;
+    }
+
+    // Define carryover mappings: target module → source module
+    const carryoverMap: Record<string, string> = {
+      '1-5': '1-4',
+    };
+
+    const sourceModuleId = carryoverMap[selectedModule.id];
+    if (!sourceModuleId) {
+      setPriorModuleContext(null);
+      return;
+    }
+
+    // Query the submitted conversation from the source module
+    supabase
+      .from('practice_conversations')
+      .select('messages')
+      .eq('user_id', user.id)
+      .eq('session_id', sessionId || '1')
+      .eq('module_id', sourceModuleId)
+      .eq('is_submitted', true)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.messages && Array.isArray(data.messages) && data.messages.length > 0) {
+          const transcript = (data.messages as Array<{ role: string; content: string }>)
+            .map(m => `[${m.role === 'user' ? 'Learner' : 'AI'}]: ${m.content}`)
+            .join('\n\n');
+          setPriorModuleContext(transcript);
+        } else {
+          setPriorModuleContext(null);
+        }
+      });
+  }, [selectedModule?.id, user?.id, sessionId]);
 
   // Load completed modules and engagement data from database progress.
   // Guard against setting identical values to avoid cascading re-renders
@@ -530,6 +572,8 @@ export default function TrainingWorkspace() {
         jobRole: profile?.job_role,
         departmentLob: profile?.department,
         interests: profile?.interests || undefined,
+        // Prior module context carryover (e.g., 1-4 → 1-5)
+        ...(priorModuleContext ? { priorModuleContext } : {}),
       };
 
       // Retry up to 2 times on network/connection errors (handles tab-away browser throttling)
@@ -589,9 +633,18 @@ export default function TrainingWorkspace() {
     let structuredFeedback: Message['structuredFeedback'] | undefined;
     let gateResult: import('@/types/progress').GateResult | null = null;
     try {
-      // Call both trainer_chat (Andrea) and submission_review (structured) in parallel
-      const [trainerResponse, reviewResponse] = await Promise.allSettled([
-        supabase.functions.invoke('trainer_chat', {
+      // ── Step 1: Call trainer_chat (Andrea's coaching response) ──────────
+      let replyText = 'I\'ve reviewed your practice conversation. Let me know if you have questions!';
+      let prompts: string[] = [];
+      let coachingAction: string | undefined = 'review';
+      let hintAvailable: boolean | undefined;
+      let memorySuggestion: { content: string; reason: string } | undefined;
+      let shareSuggestion: Message['shareSuggestion'] | undefined;
+      let promptSaveSuggestion: Message['promptSaveSuggestion'] | undefined;
+      let levelSuggestion: Message['levelSuggestion'] | undefined;
+
+      try {
+        const trainerResult = await supabase.functions.invoke('trainer_chat', {
           body: {
             lessonId: sessionId || '1',
             moduleId: selectedModule.id,
@@ -614,13 +667,50 @@ export default function TrainingWorkspace() {
               departmentLob: profile?.department || undefined,
             },
           },
-        }),
-        supabase.functions.invoke('submission_review', {
+        });
+
+        if (!trainerResult.error && trainerResult.data) {
+          const replyData = trainerResult.data;
+          replyText = replyData?.reply || replyText;
+          prompts = replyData?.suggestedPrompts || [];
+          coachingAction = replyData?.coachingAction || 'review';
+          hintAvailable = replyData?.hintAvailable;
+          memorySuggestion = replyData?.memorySuggestion;
+          shareSuggestion = replyData?.shareSuggestion;
+          promptSaveSuggestion = replyData?.promptSaveSuggestion;
+          levelSuggestion = replyData?.levelSuggestion;
+        }
+      } catch (trainerErr) {
+        console.error('Trainer chat error during review:', trainerErr);
+      }
+
+      // Append Andrea's coaching message immediately so the learner sees it
+      setTrainerMessages(prev => [...prev,
+        { role: 'user' as const, content: `Please review my practice conversation (${activeMessages.filter(m => m.role === 'user').length} prompts submitted).` },
+        {
+          role: 'assistant' as const,
+          content: replyText,
+          suggestedPrompts: prompts,
+          coachingAction: coachingAction as Message['coachingAction'],
+          hintAvailable,
+          memorySuggestion,
+          shareSuggestion,
+          promptSaveSuggestion,
+          levelSuggestion,
+        },
+      ]);
+      setSuggestedPrompts(prompts);
+
+      // ── Step 2: Call submission_review (structured gate evaluation) ─────
+      // Include Andrea's coaching response as context for the reviewer
+      try {
+        const reviewResult = await supabase.functions.invoke('submission_review', {
           body: {
             lessonId: sessionId || '1',
             moduleId: selectedModule.id,
-            isGateModule: true,  // Always evaluate quality — all modules require reasonable scores
+            isGateModule: true,  // All modules now gate progression
             submission: conversationTranscript,
+            trainerCoaching: replyText,
             rubric,
             // Pass agent template for modules 2-3 and 2-5 for agent-specific rubrics
             ...(isAgentModule && currentAgent?.template_data ? { agentTemplate: currentAgent.template_data } : {}),
@@ -636,62 +726,32 @@ export default function TrainingWorkspace() {
               progressSummary: `Submitted ${activeMessages.filter(m => m.role === 'user').length} prompts`,
             },
           },
-        }),
-      ]);
+        });
 
-      // Extract Andrea's conversational response
-      let replyText = 'I\'ve reviewed your practice conversation. Let me know if you have questions!';
-      let prompts: string[] = [];
-      let coachingAction: string | undefined = 'review';
-      let hintAvailable: boolean | undefined;
-      let memorySuggestion: { content: string; reason: string } | undefined;
-      let shareSuggestion: Message['shareSuggestion'] | undefined;
-      let promptSaveSuggestion: Message['promptSaveSuggestion'] | undefined;
-      let levelSuggestion: Message['levelSuggestion'] | undefined;
-
-      if (trainerResponse.status === 'fulfilled' && !trainerResponse.value.error) {
-        const replyData = trainerResponse.value.data;
-        replyText = replyData?.reply || replyText;
-        prompts = replyData?.suggestedPrompts || [];
-        coachingAction = replyData?.coachingAction || 'review';
-        hintAvailable = replyData?.hintAvailable;
-        memorySuggestion = replyData?.memorySuggestion;
-        shareSuggestion = replyData?.shareSuggestion;
-        promptSaveSuggestion = replyData?.promptSaveSuggestion;
-        levelSuggestion = replyData?.levelSuggestion;
-      } else {
-        console.error('Trainer chat error during review:', trainerResponse);
+        if (!reviewResult.error && reviewResult.data) {
+          const feedbackData = reviewResult.data;
+          if (feedbackData?.feedback) {
+            structuredFeedback = feedbackData.feedback;
+          }
+          if (feedbackData?.gateResult) {
+            gateResult = feedbackData.gateResult;
+          }
+        }
+      } catch (reviewErr) {
+        console.error('Submission review error:', reviewErr);
       }
 
-      // Extract structured feedback and gate result from submission_review
-      if (reviewResponse.status === 'fulfilled' && !reviewResponse.value.error) {
-        const feedbackData = reviewResponse.value.data;
-        if (feedbackData?.feedback) {
-          structuredFeedback = feedbackData.feedback;
-        }
-        if (feedbackData?.gateResult) {
-          gateResult = feedbackData.gateResult;
-        }
-      } else {
-        console.error('Submission review error:', reviewResponse);
+      // Append structured feedback to the last trainer message if available
+      if (structuredFeedback) {
+        setTrainerMessages(prev => {
+          const updated = [...prev];
+          const lastMsg = updated[updated.length - 1];
+          if (lastMsg?.role === 'assistant') {
+            updated[updated.length - 1] = { ...lastMsg, structuredFeedback };
+          }
+          return updated;
+        });
       }
-
-      setTrainerMessages(prev => [...prev,
-        { role: 'user' as const, content: `Please review my practice conversation (${activeMessages.filter(m => m.role === 'user').length} prompts submitted).` },
-        {
-          role: 'assistant' as const,
-          content: replyText,
-          suggestedPrompts: prompts,
-          coachingAction: coachingAction as Message['coachingAction'],
-          hintAvailable,
-          memorySuggestion,
-          shareSuggestion,
-          promptSaveSuggestion,
-          levelSuggestion,
-          structuredFeedback,
-        },
-      ]);
-      setSuggestedPrompts(prompts);
     } catch (error) {
       console.error('Review error:', error);
       // Offline fallback

@@ -6,6 +6,10 @@ export interface GateResult {
   criteriaMetCount: number;
   criteriaTotalCount: number;
   gateMessage: string;
+  /** Blocking criteria the learner must satisfy to progress */
+  requiredToProgress?: string[];
+  /** Non-blocking growth areas for improvement */
+  areasToStrengthen?: string[];
 }
 
 export interface ModuleEngagement {
@@ -23,7 +27,7 @@ export interface ModuleEngagement {
     issues: string[];
     summary: string;
   };
-  // Quality gate fields (only set for isGateModule modules)
+  // Quality gate fields (set for all modules — strict sequential gating)
   gatePassed?: boolean;
   gateAttempts?: number;
   lastGateResult?: GateResult;

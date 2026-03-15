@@ -100,7 +100,6 @@ export const SESSION_1_CONTENT: SessionContent = {
           successCriteria: [
             'Profile includes specific role, department, and employer context',
             'At least one preference is configured (tone, detail level, or output style)',
-            'User can articulate what changed between a generic and personalized response',
           ],
         },
       },
@@ -139,7 +138,6 @@ export const SESSION_1_CONTENT: SessionContent = {
           successCriteria: [
             'User has sent at least one message and received a response',
             'User has started a new conversation thread',
-            'User can explain the difference between continuing a thread and starting a new one',
           ],
         },
       },
@@ -204,7 +202,8 @@ export const SESSION_1_CONTENT: SessionContent = {
             'The goal is a useful back-and-forth, not a perfect first response',
           ],
           successCriteria: [
-            'User pasted or described a real work task (not a test prompt)',
+            'User pasted or described a work-related task (not a test prompt)',
+            'User used the Dirty Paste pattern — handed over real or realistic work material as their starting point',
             'User evaluated the first response and identified at least one gap or assumption',
             'User followed up at least twice to refine the output',
             'User attempted the Flipped Interaction Pattern or Outline Expander at least once',
@@ -288,7 +287,7 @@ export const SESSION_1_CONTENT: SessionContent = {
           ],
           successCriteria: [
             'User selected a task directly relevant to their actual work',
-            'User produced an output they describe as usable (not just interesting)',
+            'User produced an output that could be used with minimal revision — includes all required sections, uses appropriate professional terminology, and addresses the stated audience',
             'Output reflects the user\'s professional context (role, department, terminology)',
             'User iterated at least once to refine the output before calling it done',
           ],
@@ -433,10 +432,10 @@ export const SESSION_1_CONTENT: SessionContent = {
             'Notice that the critique format (criteria → assessment → revision) works for any type of output',
           ],
           successCriteria: [
-            'User defined at least 2 specific review criteria (not generic)',
-            'User requested and received a self-critique from the AI',
-            'User compared the original and revised versions and articulated a preference',
-            'User made an independent judgment — did not blindly accept the revision',
+            'User defined at least 2 specific review criteria relevant to their output',
+            'User requested a self-critique from the AI using those criteria',
+            'User placed original and revised versions side-by-side for comparison',
+            'User made an independent judgment about which version is better and why',
           ],
         },
       },

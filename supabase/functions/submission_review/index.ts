@@ -10,6 +10,7 @@ interface SubmissionReviewRequest {
   moduleId?: string;
   isGateModule?: boolean;
   submission: string;
+  trainerCoaching?: string;
   rubric?: string | Record<string, unknown>;
   agentTemplate?: {
     identity?: string;
@@ -49,6 +50,8 @@ interface GateResult {
   criteriaMetCount: number;
   criteriaTotalCount: number;
   gateMessage: string;
+  requiredToProgress?: string[];
+  areasToStrengthen?: string[];
 }
 
 interface FeedbackResponse {
@@ -733,7 +736,9 @@ ${isGateModule ? `{
     "passed": true or false,
     "criteriaMetCount": number of learning objectives clearly demonstrated in the submission,
     "criteriaTotalCount": total number of learning objectives for this module,
-    "gateMessage": "1-2 sentences explaining the gate decision — what was strong or what must be demonstrated to pass"
+    "gateMessage": "1-2 sentences explaining the gate decision — what was strong or what must be demonstrated to pass",
+    "requiredToProgress": ["blocking criteria not yet met — ONLY include if passed=false"],
+    "areasToStrengthen": ["non-blocking growth areas — include regardless of pass/fail"]
   }
 }
 
@@ -836,8 +841,8 @@ GATE EVALUATION RULES:
     return new Response(
       JSON.stringify({
         ...feedbackData,
-        // Pass through gateResult if present (gate modules only)
-        ...(isGateModule && feedbackData.gateResult
+        // All modules now gate progression — always pass through gateResult
+        ...(feedbackData.gateResult
           ? { gateResult: feedbackData.gateResult }
           : {}),
       }),

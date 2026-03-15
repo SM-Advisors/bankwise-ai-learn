@@ -21,6 +21,7 @@ interface PracticeChatRequest {
   model?: string; // Selected model (defaults to claude-sonnet-4-6)
   jobRole?: string; // User's job role from profile
   departmentLob?: string; // Alias for lineOfBusiness from frontend
+  priorModuleContext?: string; // Transcript from a prior module for context carryover
 }
 
 interface AIMemory {
@@ -264,6 +265,7 @@ serve(async (req) => {
       model: requestedModel,
       jobRole: requestedJobRole,
       departmentLob,
+      priorModuleContext,
     }: PracticeChatRequest = await req.json();
 
     const model = requestedModel || "claude-sonnet-4-6";
@@ -426,9 +428,19 @@ Use these facts naturally when relevant — do not list them back to the user.` 
       displayName ? `\nThe user's name is ${displayName}. You may use it naturally when appropriate.` : "",
     ].filter(Boolean).join("\n");
 
-    const fullSystemPrompt = personalizationBlock
-      ? systemPrompt + "\n" + personalizationBlock
-      : systemPrompt;
+    // Inject prior module context if available (e.g., module 1-4 conversation for 1-5)
+    const priorContextBlock = priorModuleContext ? `
+
+PRIOR MODULE CONTEXT:
+The learner completed a previous module where they had this conversation. Use this as background context to make your responses more personalized and build on what they already practiced:
+
+${priorModuleContext}
+
+Do NOT reference this prior conversation directly unless the learner brings it up. Just use it to inform your understanding of their skill level and work context.` : "";
+
+    const fullSystemPrompt = [systemPrompt, priorContextBlock, personalizationBlock]
+      .filter(Boolean)
+      .join("\n");
 
     // ── PII / Compliance pre-check ──────────────────────────────────────────
     const latestUserMessage = [...messages].reverse().find(m => m.role === "user")?.content || "";
