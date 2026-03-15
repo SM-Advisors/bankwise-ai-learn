@@ -44,9 +44,9 @@ export default function Policies() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-display font-bold mb-2">Bank Policies</h1>
+          <h1 className="text-2xl font-display font-bold mb-2">Organization Policies</h1>
           <p className="text-muted-foreground">
-            Review your institution's AI usage policies and guidelines.
+            Review your organization's AI usage policies and guidelines.
           </p>
         </div>
 

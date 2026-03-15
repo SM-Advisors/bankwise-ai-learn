@@ -7,6 +7,7 @@ import {
   FileText, Lightbulb, Play, CheckCircle, Clock, Target, MessageSquare,
 } from 'lucide-react';
 import type { ModuleContent } from '@/data/trainingContent';
+import type { GeneratedModuleContent } from '@/hooks/useGeneratedModuleContent';
 
 // ─── Paragraph splitting helper ──────────────────────────────────────────────
 // Splits text on double-newlines first; if none, splits long text into
@@ -38,9 +39,11 @@ function splitIntoParagraphs(text: string): string[] {
 interface ModuleContentPanelProps {
   module: ModuleContent;
   onStartPractice: () => void;
+  /** Industry-specific generated content (examples, scenarios). Falls back to static content. */
+  generatedContent?: GeneratedModuleContent | null;
 }
 
-export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPanelProps) {
+export function ModuleContentPanel({ module, onStartPractice, generatedContent }: ModuleContentPanelProps) {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [showExamples, setShowExamples] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -65,7 +68,11 @@ export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPan
   const cfg = typeConfig[module.type as keyof typeof typeConfig] ?? typeConfig.document;
   const TypeIcon = cfg.icon;
 
-  const hasExamples = !!(module.content.examples && module.content.examples.length > 0);
+  // Merge: use generated examples when available, fall back to static
+  const resolvedExamples = generatedContent?.examples?.length
+    ? generatedContent.examples
+    : module.content.examples;
+  const hasExamples = !!(resolvedExamples && resolvedExamples.length > 0);
   const overviewParagraphs = splitIntoParagraphs(module.content.overview);
 
   return (
@@ -172,7 +179,7 @@ export function ModuleContentPanel({ module, onStartPractice }: ModuleContentPan
               <h3 className="text-sm font-semibold">
                 {module.type === 'example' ? 'Examples' : 'Example'}
               </h3>
-              {module.content.examples!.map((example, idx) => (
+              {resolvedExamples!.map((example, idx) => (
                 <Card key={idx} className="overflow-hidden">
                   <div className="bg-muted/50 px-4 py-2.5 border-b text-sm font-medium">
                     {example.title}

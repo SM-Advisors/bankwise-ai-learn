@@ -83,8 +83,10 @@ const getStateLabel = (state: ModuleState, engagement?: ModuleEngagement): { tex
 };
 
 /**
- * Returns true if a module is gated (locked) because a prior gate module hasn't been passed.
- * A gate module itself is never locked — it must remain accessible to attempt.
+ * Strict sequential gating: module at index i is locked if the previous module
+ * (i-1) is not completed. Grandfather fallback: if the user has engagement with
+ * ANY module at index > i, the module is unlocked (prevents lockout for existing
+ * users who advanced under the old gating rules).
  */
 function isModuleLocked(
   module: ModuleContent,
@@ -93,15 +95,28 @@ function isModuleLocked(
   completedModules: Set<string>,
 ): boolean {
   const moduleIndex = allModules.findIndex(m => m.id === module.id);
-  for (let i = 0; i < moduleIndex; i++) {
-    const candidate = allModules[i];
-    if (!candidate.isGateModule) continue;
-    // Gate not cleared if not passed and not legacy-completed
-    const eng = moduleEngagement[candidate.id];
-    const passed = eng?.gatePassed === true || completedModules.has(candidate.id);
-    if (!passed) return true;
+  // First module is never locked
+  if (moduleIndex <= 0) return false;
+
+  // Check if the immediately preceding module is completed
+  const prevModule = allModules[moduleIndex - 1];
+  const prevEng = moduleEngagement[prevModule.id];
+  const prevCompleted =
+    completedModules.has(prevModule.id) ||
+    prevEng?.completed === true ||
+    prevEng?.gatePassed === true;
+
+  if (prevCompleted) return false;
+
+  // Grandfather fallback: if user has any engagement beyond this module, unlock it
+  for (let i = moduleIndex + 1; i < allModules.length; i++) {
+    const laterModule = allModules[i];
+    if (moduleEngagement[laterModule.id] || completedModules.has(laterModule.id)) {
+      return false;
+    }
   }
-  return false;
+
+  return true;
 }
 
 export function ModuleListSidebar({
@@ -254,13 +269,13 @@ export function ModuleListSidebar({
               );
 
               if (locked) {
-                // Find which gate is blocking this module
-                const blockingGate = [...modules.slice(0, idx)].reverse().find(m => m.isGateModule && !moduleEngagement[m.id]?.gatePassed && !completedModules.has(m.id));
+                // The previous module is the one blocking
+                const prevModule = idx > 0 ? modules[idx - 1] : null;
                 return (
                   <Tooltip key={module.id}>
                     <TooltipTrigger asChild>{button}</TooltipTrigger>
                     <TooltipContent side="right" className="max-w-48">
-                      <p className="text-xs">Complete and pass the Quality Gate in <strong>{blockingGate?.title ?? 'a previous module'}</strong> to unlock this module.</p>
+                      <p className="text-xs">Complete <strong>{prevModule?.title ?? 'the previous module'}</strong> to unlock this module.</p>
                     </TooltipContent>
                   </Tooltip>
                 );

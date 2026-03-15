@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Bot, Send, Loader2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { UserAgent } from '@/types/agent';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 
 // ─── SharedAgentChat ─────────────────────────────────────────────────────────
 //
@@ -22,6 +23,7 @@ type Message = { role: 'user' | 'assistant'; content: string };
 export default function SharedAgentChat() {
   const { agentId } = useParams<{ agentId: string }>();
   const { profile } = useAuth();
+  const { industrySlug } = useIndustryContent();
 
   const [agent, setAgent] = useState<UserAgent | null>(null);
   const [isLoadingAgent, setIsLoadingAgent] = useState(true);
@@ -79,6 +81,7 @@ export default function SharedAgentChat() {
           jobRole: profile?.job_role,
           departmentLob: profile?.department,
           interests: profile?.interests || undefined,
+          industrySlug,
         },
       });
 

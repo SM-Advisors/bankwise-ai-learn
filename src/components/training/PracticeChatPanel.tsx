@@ -13,6 +13,7 @@ import { VoiceMicButton } from '@/components/VoiceMicButton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { type ModuleContent } from '@/data/trainingContent';
 import { getRoleScenario } from '@/data/roleScenarioBanks';
+import type { GeneratedModuleContent } from '@/hooks/useGeneratedModuleContent';
 import { type PracticeConversation } from '@/hooks/usePracticeConversations';
 import { AVAILABLE_MODELS, PROVIDER_COLORS, type ModelDefinition } from '@/lib/models';
 
@@ -49,7 +50,9 @@ interface PracticeChatPanelProps {
   selectedModel?: string;
   onModelChange?: (modelId: string) => void;
   gateMessage?: string | null;
+  lastGateResult?: import('@/types/progress').GateResult | null;
   completedModules?: Set<string>;
+  generatedContent?: GeneratedModuleContent | null;
 }
 
 export function PracticeChatPanel({
@@ -74,7 +77,9 @@ export function PracticeChatPanel({
   selectedModel,
   onModelChange,
   gateMessage,
+  lastGateResult,
   completedModules = new Set(),
+  generatedContent,
 }: PracticeChatPanelProps) {
   const [input, setInput] = useState('');
   const inputBeforeRecordingRef = useRef('');
@@ -93,15 +98,20 @@ export function PracticeChatPanel({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Department-specific scenario and hints (inline departmentScenarios → role scenario bank → default)
+  // Department-specific scenario and hints: generated → inline departmentScenarios → role scenario bank → default
+  const genDeptScenario = lineOfBusiness && generatedContent?.departmentScenarios?.[lineOfBusiness];
   const deptScenarios = module.content.practiceTask.departmentScenarios;
   const roleScenario = lineOfBusiness ? getRoleScenario(module.id, lineOfBusiness) : null;
-  const activeScenario = (deptScenarios && lineOfBusiness && deptScenarios[lineOfBusiness]?.scenario)
-    ? deptScenarios[lineOfBusiness].scenario
-    : roleScenario?.scenario ?? module.content.practiceTask.scenario;
-  const activeHints = (deptScenarios && lineOfBusiness && deptScenarios[lineOfBusiness]?.hints)
-    ? deptScenarios[lineOfBusiness].hints
-    : roleScenario?.hints ?? module.content.practiceTask.hints;
+  const activeScenario = genDeptScenario?.scenario
+    || generatedContent?.practiceScenario
+    || (deptScenarios && lineOfBusiness && deptScenarios[lineOfBusiness]?.scenario)
+    || roleScenario?.scenario
+    || module.content.practiceTask.scenario;
+  const activeHints = genDeptScenario?.hints
+    || (generatedContent?.hints?.length ? generatedContent.hints : undefined)
+    || (deptScenarios && lineOfBusiness && deptScenarios[lineOfBusiness]?.hints)
+    || roleScenario?.hints
+    || module.content.practiceTask.hints;
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -349,14 +359,42 @@ export function PracticeChatPanel({
                   </div>
                 ) : (
                   /* Not yet passed — show feedback and encourage retry */
-                  <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-center">
+                  <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
                     <div className="flex items-center justify-center gap-2 text-amber-600 dark:text-amber-400 font-medium">
                       <AlertCircle className="h-5 w-5" />
                       Almost there!
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-sm text-muted-foreground mt-1 text-center">
                       {gateMessage || "Your conversation needs a bit more work before you can move on. Check Andrea's feedback in the coach panel for details."}
                     </p>
+                    {/* Required to progress (blocking) */}
+                    {lastGateResult?.requiredToProgress && lastGateResult.requiredToProgress.length > 0 && (
+                      <div className="mt-3 p-2.5 bg-red-500/10 border border-red-500/20 rounded-xl">
+                        <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-1">Must address:</p>
+                        <ul className="text-xs text-muted-foreground space-y-0.5">
+                          {lastGateResult.requiredToProgress.map((item, i) => (
+                            <li key={i} className="flex items-start gap-1.5">
+                              <span className="text-red-500 mt-0.5 shrink-0">•</span>
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {/* Areas to strengthen (non-blocking) */}
+                    {lastGateResult?.areasToStrengthen && lastGateResult.areasToStrengthen.length > 0 && (
+                      <div className="mt-2 p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                        <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">Growth areas:</p>
+                        <ul className="text-xs text-muted-foreground space-y-0.5">
+                          {lastGateResult.areasToStrengthen.map((item, i) => (
+                            <li key={i} className="flex items-start gap-1.5">
+                              <span className="text-blue-500 mt-0.5 shrink-0">•</span>
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                     <div className="mt-3 flex items-center justify-center gap-2">
                       <Button variant="outline" size="sm" onClick={onNewChat} className="gap-2 rounded-full">
                         <RotateCcw className="h-4 w-4" />

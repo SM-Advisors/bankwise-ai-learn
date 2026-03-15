@@ -12,6 +12,7 @@ import {
 import { VoiceMicButton } from '@/components/VoiceMicButton';
 import { type ModuleContent } from '@/data/trainingContent';
 import { getRoleScenario } from '@/data/roleScenarioBanks';
+import type { GeneratedModuleContent } from '@/hooks/useGeneratedModuleContent';
 import { type PracticeConversation } from '@/hooks/usePracticeConversations';
 import { AVAILABLE_MODELS, PROVIDER_COLORS, type ModelDefinition } from '@/lib/models';
 import { useToast } from '@/hooks/use-toast';
@@ -44,9 +45,11 @@ interface ChatGPTPracticeChatPanelProps {
   selectedModel?: string;
   onModelChange?: (modelId: string) => void;
   gateMessage?: string | null;
+  lastGateResult?: import('@/types/progress').GateResult | null;
   // Edge extras
   orgName?: string;
   policies?: BankPolicy[];
+  generatedContent?: GeneratedModuleContent | null;
 }
 
 const PLUS_MENU_ITEMS = [
@@ -79,8 +82,10 @@ export function ChatGPTPracticeChatPanel({
   selectedModel,
   onModelChange,
   gateMessage,
+  lastGateResult,
   orgName,
   policies = [],
+  generatedContent,
 }: ChatGPTPracticeChatPanelProps) {
   const { toast } = useToast();
   const [input, setInput] = useState('');
@@ -97,12 +102,15 @@ export function ChatGPTPracticeChatPanel({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Department-specific scenario and hints
+  // Department-specific hints: generated → inline departmentScenarios → role scenario bank → default
+  const genDeptScenario = lineOfBusiness && generatedContent?.departmentScenarios?.[lineOfBusiness];
   const deptScenarios = module.content.practiceTask.departmentScenarios;
   const roleScenario = lineOfBusiness ? getRoleScenario(module.id, lineOfBusiness) : null;
-  const activeHints = (deptScenarios && lineOfBusiness && deptScenarios[lineOfBusiness]?.hints)
-    ? deptScenarios[lineOfBusiness].hints
-    : roleScenario?.hints ?? module.content.practiceTask.hints;
+  const activeHints = genDeptScenario?.hints
+    || (generatedContent?.hints?.length ? generatedContent.hints : undefined)
+    || (deptScenarios && lineOfBusiness && deptScenarios[lineOfBusiness]?.hints)
+    || roleScenario?.hints
+    || module.content.practiceTask.hints;
 
   const hasConversation = messages.length > 0;
   const isSandbox = module.type === 'sandbox';
@@ -297,14 +305,42 @@ export function ChatGPTPracticeChatPanel({
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-2xl text-center">
+                  <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-2xl">
                     <div className="flex items-center justify-center gap-2 text-amber-600 dark:text-amber-400 font-medium">
                       <AlertCircle className="h-5 w-5" />
                       Almost there!
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 text-center">
                       {gateMessage || "Your conversation needs a bit more work. Check Andrea's feedback in the coach panel."}
                     </p>
+                    {/* Required to progress (blocking) */}
+                    {lastGateResult?.requiredToProgress && lastGateResult.requiredToProgress.length > 0 && (
+                      <div className="mt-3 p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-xl">
+                        <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-1">Must address:</p>
+                        <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-0.5">
+                          {lastGateResult.requiredToProgress.map((item, i) => (
+                            <li key={i} className="flex items-start gap-1.5">
+                              <span className="text-red-500 mt-0.5 shrink-0">•</span>
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {/* Areas to strengthen (non-blocking) */}
+                    {lastGateResult?.areasToStrengthen && lastGateResult.areasToStrengthen.length > 0 && (
+                      <div className="mt-2 p-2.5 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-xl">
+                        <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">Growth areas:</p>
+                        <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-0.5">
+                          {lastGateResult.areasToStrengthen.map((item, i) => (
+                            <li key={i} className="flex items-start gap-1.5">
+                              <span className="text-blue-500 mt-0.5 shrink-0">•</span>
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                     <div className="mt-3">
                       <button
                         onClick={onNewChat}

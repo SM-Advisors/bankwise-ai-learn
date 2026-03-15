@@ -43,10 +43,10 @@ export function DepartmentsManager() {
     if (!deptForm.name.trim()) return;
     setSaving(true);
     try {
-      // Get the banking industry ID
-      const { data: industries } = await supabase.from('industries' as never).select('id').eq('slug', 'banking').single();
+      // Get the first available industry ID
+      const { data: industries } = await supabase.from('industries' as never).select('id').limit(1).single();
       const industryId = (industries as { id?: string } | null)?.id;
-      if (!industryId) throw new Error('Banking industry not found');
+      if (!industryId) throw new Error('No industry found');
 
       const slug = deptForm.slug.trim() || deptForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
       await createDepartment({

@@ -29,7 +29,8 @@ import {
   Zap, Award, ArrowRight, Sliders, User, RefreshCw, Shield,
 } from 'lucide-react';
 import { ALL_SESSION_CONTENT } from '@/data/trainingContent';
-import { ROLE_OPTIONS } from '@/data/intakeQuestions';
+import { ROLE_OPTIONS as FALLBACK_ROLE_OPTIONS } from '@/data/intakeQuestions';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 import {
   computeOverallProgress, computeSessionProgress,
   getCompletedModuleCount, getSessionModuleTotal,
@@ -158,6 +159,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const { user, profile, progress, loading: authLoading, updateProfile } = useAuth();
   const { toast } = useToast();
+  const { config: industryConfig } = useIndustryContent();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab') as ProfileTab | null;
   const [activeTab, setActiveTab] = useState<ProfileTab>(
@@ -309,7 +311,8 @@ export default function Profile() {
   const completedSessions = sessionIds.filter((sid) => !!prog[`session_${sid}_completed`]).length;
 
   // ── Derived profile info ──────────────────────────────────────────────────
-  const roleOption = ROLE_OPTIONS.find((r) => r.key === profile?.intake_role_key);
+  const roleOption = industryConfig.roles.find((r) => r.value === profile?.intake_role_key)
+    || FALLBACK_ROLE_OPTIONS.find((r) => r.key === profile?.intake_role_key);
   const roleLabel = roleOption?.label || profile?.job_role || 'Not set';
   const levelLabel = PLACEMENT_LABELS[profile?.ai_proficiency_level || 1] || 'Observer';
 

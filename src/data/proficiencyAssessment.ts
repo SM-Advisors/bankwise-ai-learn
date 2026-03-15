@@ -85,7 +85,7 @@ export const PROFICIENCY_QUESTIONS: ProficiencyQuestion[] = [
   {
     id: 'prompt_specificity',
     dimension: 'Prompt Approach',
-    scenario: 'Imagine you need AI to draft talking points for a customer meeting about a loan renewal. Which approach would you take?',
+    scenario: 'Imagine you need AI to draft talking points for a client meeting about a contract renewal. Which approach would you take?',
     options: [
       {
         label: 'Type a short request',
@@ -94,12 +94,12 @@ export const PROFICIENCY_QUESTIONS: ProficiencyQuestion[] = [
       },
       {
         label: 'Include the topic and context',
-        description: 'Mention it\'s a loan renewal and describe the type of customer',
+        description: 'Mention it\'s a contract renewal and describe the type of client',
         score: 2,
       },
       {
         label: 'Specify role, details, and format',
-        description: 'State your role, the loan amount, customer segment, and what format you want the output in',
+        description: 'State your role, the key details, client type, and what format you want the output in',
         score: 5,
       },
       {
@@ -112,7 +112,7 @@ export const PROFICIENCY_QUESTIONS: ProficiencyQuestion[] = [
   {
     id: 'context_setting',
     dimension: 'Data Sensitivity Awareness',
-    scenario: 'You want AI to analyze a borrower\'s financial statements, but the documents contain real account numbers and a Social Security number. What would you do?',
+    scenario: 'You want AI to analyze a client\'s financial documents, but they contain real account numbers and a Social Security number. What would you do?',
     options: [
       {
         label: 'Share the documents as-is',
@@ -172,7 +172,7 @@ export const PERFORMANCE_ITEMS: PerformanceItem[] = [
     id: 'prompt_evaluation',
     type: 'multi_select_evaluate',
     dimension: 'Prompt Evaluation',
-    scenario: 'Review this prompt: "Write me something about our loan portfolio."',
+    scenario: 'Review this prompt: "Write me something about our quarterly report."',
     instructions: 'Select ALL the issues you can identify with this prompt (select all that apply):',
     options: [
       { id: 'missing_role', label: 'Missing specific role/audience context', isCorrect: true, points: 2 },
@@ -188,25 +188,25 @@ export const PERFORMANCE_ITEMS: PerformanceItem[] = [
     id: 'prompt_ranking',
     type: 'drag_rank',
     dimension: 'Prompt Quality Ranking',
-    scenario: 'Rank these three prompts for a credit memo task from weakest (1) to strongest (3):',
+    scenario: 'Rank these three prompts for a project summary task from weakest (1) to strongest (3):',
     instructions: 'Drag to reorder — 1 is weakest, 3 is strongest.',
     prompts: [
       {
         id: 'prompt_a',
         label: 'Prompt A',
-        text: 'Write a credit memo.',
+        text: 'Write a project summary.',
         correctRank: 1,
       },
       {
         id: 'prompt_b',
         label: 'Prompt B',
-        text: 'Write a credit memo for a $2M commercial real estate loan. Include financial analysis.',
+        text: 'Write a project summary for a major client engagement. Include status, risks, and next steps.',
         correctRank: 2,
       },
       {
         id: 'prompt_c',
         label: 'Prompt C',
-        text: 'Act as a senior credit analyst at a community bank. Draft a credit memo for a $2M owner-occupied commercial real estate loan to ABC Properties LLC. Include: executive summary, borrower background, financial analysis (DSCR, LTV, debt-to-equity from the attached financials), risk factors, and recommendation. Format as a one-page memo for the credit committee. Do not include any actual customer PII — use the placeholder data provided.',
+        text: 'Act as a senior project manager at a professional services firm. Draft an executive summary for the Q3 client engagement with Acme Corp. Include: project objectives, current status against milestones, key risks and mitigations, resource utilization, and recommended next steps. Format as a one-page memo for the steering committee. Do not include any actual client PII — use placeholder data.',
         correctRank: 3,
       },
     ],

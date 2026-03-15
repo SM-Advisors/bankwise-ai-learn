@@ -77,15 +77,15 @@ export const SESSION_1_CONTENT: SessionContent = {
         examples: [
           {
             title: 'Role Context — Poor vs. Well-Crafted',
-            bad: '"I work at a bank."',
-            good: '"I\'m a credit analyst who reviews commercial loan applications for a $2B community bank. I evaluate financials for CRE, C&I, and construction loans, and present findings to our credit committee."',
-            explanation: 'The specific version gives Andrea enough context to tailor every response — she\'ll reference the right regulatory frameworks, use appropriate terminology, and frame advice for your actual workflow.',
+            bad: '"I work at a company."',
+            good: '"I\'m a senior analyst who reviews and evaluates proposals for a mid-size professional services firm. I assess data, prepare findings summaries, and present recommendations to our leadership committee."',
+            explanation: 'The specific version gives the AI enough context to tailor every response — it will use appropriate terminology, reference relevant frameworks, and frame advice for your actual workflow.',
           },
           {
             title: 'Custom Instructions — Poor vs. Well-Crafted',
             bad: '"Be helpful."',
-            good: '"Always relate examples to banking and lending. When explaining complex concepts, use analogies. Include regulatory references (OCC, FDIC) when relevant. Format action items as numbered lists."',
-            explanation: 'Generic instructions add nothing — the AI is already trying to be helpful. Specific instructions shape how Andrea communicates, what she references, and how she structures output for your daily work.',
+            good: '"Always relate examples to my industry and role. When explaining complex concepts, use analogies. Include references to relevant regulatory bodies or standards when applicable. Format action items as numbered lists."',
+            explanation: 'Generic instructions add nothing — the AI is already trying to be helpful. Specific instructions shape how it communicates, what it references, and how it structures output for your daily work.',
           },
         ],
         practiceTask: {
@@ -93,14 +93,13 @@ export const SESSION_1_CONTENT: SessionContent = {
           instructions: 'Configure your professional context: role, department, employer type, and preferences. Then ask the AI a simple work question and observe how the response reflects your context.',
           scenario: 'You are setting up your AI profile for the first time. Enter your role, department, and the type of institution you work at. Set your preferred tone (formal, conversational, or direct) and detail level (brief, standard, or thorough). Once configured, ask: "What are the top three things I should be thinking about this quarter?" — and notice how the response reflects your specific context.',
           hints: [
-            'Be specific about your role — "Loan Officer" is better than "Banking Professional"',
+            'Be specific about your role — "Project Manager" is better than "Professional"',
             'Your department context helps the AI choose relevant examples and terminology',
             'Try changing one preference (like tone) and re-asking the same question to see the difference',
           ],
           successCriteria: [
             'Profile includes specific role, department, and employer context',
             'At least one preference is configured (tone, detail level, or output style)',
-            'User can articulate what changed between a generic and personalized response',
           ],
         },
       },
@@ -139,7 +138,6 @@ export const SESSION_1_CONTENT: SessionContent = {
           successCriteria: [
             'User has sent at least one message and received a response',
             'User has started a new conversation thread',
-            'User can explain the difference between continuing a thread and starting a new one',
           ],
         },
       },
@@ -179,17 +177,17 @@ export const SESSION_1_CONTENT: SessionContent = {
         examples: [
           {
             title: 'The Dirty Paste',
-            good: '"Here are my notes from yesterday\'s loan committee meeting [paste notes]. Can you turn these into a structured summary I can send to the team? Include action items at the end."',
+            good: '"Here are my notes from yesterday\'s team meeting [paste notes]. Can you turn these into a structured summary I can send to the team? Include action items at the end."',
             explanation: 'No special formatting. No framework. Just real work handed over with a clear description of what you want back. This is how most productive AI interactions start.',
           },
           {
             title: 'The Flipped Interaction Pattern',
-            good: '"I need to write a memo about our Q1 lending performance for the board. Before you start writing, ask me five questions that will help you write a better memo."',
+            good: '"I need to write a memo about our Q1 performance for leadership. Before you start writing, ask me five questions that will help you write a better memo."',
             explanation: 'Instead of guessing what context the AI needs, you let it tell you. The AI might ask about your audience, the key metrics, what changed from last quarter, and what tone you want. This produces a better result with less guesswork.',
           },
           {
             title: 'The Outline Expander',
-            good: '"I want a training outline for new loan officers. Here is my rough structure:\n1. Introduction to our lending philosophy\n2. Credit analysis basics\n3. Documentation requirements\n4. Compliance essentials\n5. First 30 days checklist\n\nExpand each section into 3-5 bullet points with the key topics to cover."',
+            good: '"I want a training outline for new team members. Here is my rough structure:\n1. Introduction to our team\'s mission and approach\n2. Core processes and tools\n3. Documentation standards\n4. Key stakeholders and workflows\n5. First 30 days checklist\n\nExpand each section into 3-5 bullet points with the key topics to cover."',
             explanation: 'You provide the skeleton. The AI fills in the substance. You iterate on the result. This teaches you that you control the shape of the output — the AI fills in the details.',
           },
         ],
@@ -204,45 +202,12 @@ export const SESSION_1_CONTENT: SessionContent = {
             'The goal is a useful back-and-forth, not a perfect first response',
           ],
           successCriteria: [
-            'User pasted or described a real work task (not a test prompt)',
+            'User pasted or described a work-related task (not a test prompt)',
+            'User used the Dirty Paste pattern — handed over real or realistic work material as their starting point',
             'User evaluated the first response and identified at least one gap or assumption',
             'User followed up at least twice to refine the output',
             'User attempted the Flipped Interaction Pattern or Outline Expander at least once',
           ],
-          departmentScenarios: {
-            'Commercial Lending': {
-              scenario: 'You have rough notes from a recent borrower site visit. Hand them to the AI and ask it to create a structured site visit summary you can attach to the credit file. Use the Flipped Interaction Pattern to help the AI understand your documentation standards.',
-              hints: [
-                'Paste your actual notes (or realistic ones) — messy is fine',
-                'Ask the AI to include sections for: business observations, financial discussion points, collateral condition, and follow-up items',
-                'Try: "Before you write this summary, ask me what our credit committee expects to see in a site visit report"',
-              ],
-            },
-            'Retail Banking': {
-              scenario: 'You need to draft a customer communication about a new product or service change. Hand the AI your internal announcement or bullet points and ask it to create a customer-facing version. Use the Outline Expander to define the structure first.',
-              hints: [
-                'Start with the internal version and ask for a customer-friendly rewrite',
-                'Give an outline: greeting, what is changing, what it means for them, what they need to do, who to contact',
-                'Try: "Before you write this, ask me three questions about our customer base"',
-              ],
-            },
-            'Compliance': {
-              scenario: 'You have a regulatory update or guidance document that needs to be summarized for the team. Paste the relevant section and ask the AI to create a plain-language summary with action items. Use the Flipped Interaction Pattern.',
-              hints: [
-                'Paste the actual regulatory text — the AI handles dense language well',
-                'Ask for a summary that separates "what changed" from "what we need to do"',
-                'Try: "Before you summarize, ask me what our team already knows about this topic"',
-              ],
-            },
-            'Risk Management': {
-              scenario: 'You need to document a risk assessment finding or create a risk summary for a committee. Hand the AI your notes and ask it to structure them into a formal risk assessment format.',
-              hints: [
-                'Include the risk category, current controls, and any gaps you have identified',
-                'Ask for a format that includes: risk description, likelihood, impact, mitigating controls, and residual risk',
-                'Try: "Before you format this, ask me about our risk appetite framework"',
-              ],
-            },
-          },
         },
       },
     },
@@ -272,7 +237,7 @@ export const SESSION_1_CONTENT: SessionContent = {
         examples: [
           {
             title: 'What a First Win Looks Like',
-            good: 'A Commercial Lending officer drafts a credit memo summary from their existing notes and loan data. The output is structured, uses the right terminology, and could be pasted into their actual credit file with minor edits.\n\nA Compliance officer takes a regulatory update and produces a one-page summary with action items that they email to their team that afternoon.\n\nA Retail Banking manager creates a coaching template for teller performance conversations that they use in their next one-on-one.',
+            good: 'A project manager drafts a status report summary from their existing notes and project data. The output is structured, uses the right terminology, and could be pasted into their actual project file with minor edits.\n\nA team lead takes a policy update and produces a one-page summary with action items that they email to their team that afternoon.\n\nA department manager creates a coaching template for performance conversations that they use in their next one-on-one.',
             explanation: 'Each of these is something the person would actually use. The AI did not create something impressive but useless — it created something practical that saved time on real work.',
           },
         ],
@@ -288,52 +253,10 @@ export const SESSION_1_CONTENT: SessionContent = {
           ],
           successCriteria: [
             'User selected a task directly relevant to their actual work',
-            'User produced an output they describe as usable (not just interesting)',
+            'User produced an output that could be used with minimal revision — includes all required sections, uses appropriate professional terminology, and addresses the stated audience',
             'Output reflects the user\'s professional context (role, department, terminology)',
             'User iterated at least once to refine the output before calling it done',
           ],
-          departmentScenarios: {
-            'Commercial Lending': {
-              scenario: 'Draft a credit memo summary, borrower outreach letter, or loan committee talking points from your existing notes or data. Produce something you could paste into your actual workflow today.',
-              hints: [
-                'Start with your raw notes or data and ask for a structured output',
-                'Specify the audience: credit committee, borrower, internal team',
-                'Ask the AI to flag any assumptions it made so you can verify them',
-              ],
-            },
-            'Retail Banking': {
-              scenario: 'Create a customer communication, branch meeting agenda, coaching template, or product comparison sheet. Produce something you would use in your next interaction with your team or customers.',
-              hints: [
-                'If writing for customers, specify the tone and reading level',
-                'For internal documents, mention your bank\'s typical format or style',
-                'Ask the AI to include a section you might forget (like next steps or FAQs)',
-              ],
-            },
-            'Compliance': {
-              scenario: 'Summarize a regulatory update, draft a policy section, create a compliance checklist, or produce training talking points for staff. Make it something your team actually needs this week.',
-              hints: [
-                'Regulatory language is dense — ask the AI to produce a plain-language version alongside the formal one',
-                'Include specific regulation references so the output is traceable',
-                'Ask for action items separated from informational content',
-              ],
-            },
-            'Risk Management': {
-              scenario: 'Structure a risk assessment, draft a findings summary, create a risk register entry, or produce a committee presentation outline. Use real data or realistic scenarios.',
-              hints: [
-                'Include the risk framework your institution uses (if applicable)',
-                'Ask for a format that separates inherent risk from residual risk',
-                'Request that the AI flag areas where it is making assumptions vs. using your data',
-              ],
-            },
-            'Operations': {
-              scenario: 'Document a process, create a procedure checklist, draft an SOP section, or produce a workflow description. Pick something your team references regularly.',
-              hints: [
-                'Start with a verbal description of the process and let the AI structure it',
-                'Ask for numbered steps with decision points called out',
-                'Include exception handling: what happens when the normal process does not apply',
-              ],
-            },
-          },
         },
       },
     },
@@ -418,7 +341,7 @@ export const SESSION_1_CONTENT: SessionContent = {
         examples: [
           {
             title: 'Self-Review in Action',
-            good: 'Step 1: "Draft a customer notification about our new mobile deposit limits."\n\nStep 2: "Review what you just wrote against these three criteria: (1) Is it clear enough for a customer with no banking background? (2) Does it explain what they need to do? (3) Is the tone reassuring, not alarming?"\n\nStep 3: "Based on your review, produce a revised version that addresses any weaknesses you identified."\n\nStep 4: Compare both versions. The user notices the revision simplified the language and added a clear call-to-action, but made the tone too casual — so they take the structure of the revision but restore the professional tone from the original.',
+            good: 'Step 1: "Draft a staff notification about our updated remote work policy."\n\nStep 2: "Review what you just wrote against these three criteria: (1) Is it clear enough for someone who has not read the previous policy? (2) Does it explain what they need to do? (3) Is the tone reassuring, not alarming?"\n\nStep 3: "Based on your review, produce a revised version that addresses any weaknesses you identified."\n\nStep 4: Compare both versions. The user notices the revision simplified the language and added a clear call-to-action, but made the tone too casual — so they take the structure of the revision but restore the professional tone from the original.',
             explanation: 'The user did not blindly accept the revision. They used the AI\'s critique as input, compared both versions, and made a judgment call. That is the skill — not outsourcing quality control, but using the AI to surface issues you then decide how to handle.',
           },
         ],
@@ -433,10 +356,10 @@ export const SESSION_1_CONTENT: SessionContent = {
             'Notice that the critique format (criteria → assessment → revision) works for any type of output',
           ],
           successCriteria: [
-            'User defined at least 2 specific review criteria (not generic)',
-            'User requested and received a self-critique from the AI',
-            'User compared the original and revised versions and articulated a preference',
-            'User made an independent judgment — did not blindly accept the revision',
+            'User defined at least 2 specific review criteria relevant to their output',
+            'User requested a self-critique from the AI using those criteria',
+            'User placed original and revised versions side-by-side for comparison',
+            'User made an independent judgment about which version is better and why',
           ],
         },
       },
@@ -523,8 +446,8 @@ export const SESSION_2_CONTENT: SessionContent = {
         examples: [
           {
             title: 'Before and After CLEAR',
-            bad: '"Write me a memo about our lending performance."',
-            good: '"Context: You are a senior credit analyst at a $500M community bank. Length: One-page executive summary with a data table. Examples: Our previous quarterly memo used bullet points for key metrics and a narrative paragraph for outlook. Audience: Board of directors — they want high-level trends, not granular data. Requirements: Include loan growth YoY, delinquency rate trend, CRE concentration ratio, and a 1-paragraph outlook."',
+            bad: '"Write me a memo about our quarterly performance."',
+            good: '"Context: You are a senior analyst at a mid-size professional services firm. Length: One-page executive summary with a data table. Examples: Our previous quarterly memo used bullet points for key metrics and a narrative paragraph for outlook. Audience: Board of directors — they want high-level trends, not granular data. Requirements: Include revenue growth YoY, key performance trend, utilization rate, and a 1-paragraph outlook."',
             explanation: 'The CLEAR version is not harder to write — it just makes explicit what the user already knows. The result requires fewer rounds of iteration because the AI has everything it needs upfront.',
           },
         ],
@@ -634,7 +557,7 @@ export const SESSION_2_CONTENT: SessionContent = {
         examples: [
           {
             title: 'Multi-Shot for Client Communications',
-            good: '"I need to write a follow-up letter to a borrower about a documentation request. Here are two examples of letters our team has written that match our style:\n\n[Example 1: Past letter with warm but professional tone, specific document list, clear deadline]\n[Example 2: Past letter with similar structure but different document requirements]\n\nNow write a new letter for this borrower: [details]. Match the tone and format of my examples."',
+            good: '"I need to write a follow-up letter to a client about a documentation request. Here are two examples of letters our team has written that match our style:\n\n[Example 1: Past letter with warm but professional tone, specific document list, clear deadline]\n[Example 2: Past letter with similar structure but different document requirements]\n\nNow write a new letter for this client: [details]. Match the tone and format of my examples."',
             explanation: 'The AI extracts the pattern from the examples: greeting style, tone, how documents are listed, how deadlines are stated, closing format. The user did not have to describe any of this — the examples did the work.',
           },
         ],
@@ -683,7 +606,7 @@ export const SESSION_2_CONTENT: SessionContent = {
         examples: [
           {
             title: 'Model Selection in Practice',
-            good: 'Quick draft of a meeting agenda → Default mode (fast, good enough)\n\nAnalyzing three vendor proposals against your compliance requirements → Reasoning mode (needs to hold multiple factors, compare systematically)\n\nResearching regulatory implications of a new lending product across multiple guidance documents → Extended/Pro mode (needs depth, nuance, comprehensive coverage)',
+            good: 'Quick draft of a meeting agenda → Default mode (fast, good enough)\n\nAnalyzing three vendor proposals against your requirements → Reasoning mode (needs to hold multiple factors, compare systematically)\n\nResearching implications of a new initiative across multiple policy and guidance documents → Extended/Pro mode (needs depth, nuance, comprehensive coverage)',
             explanation: 'Each task gets the model it deserves. Using a reasoning model for a meeting agenda wastes time. Using a default model for regulatory analysis risks missing important nuances. Matching is the skill.',
           },
         ],
@@ -741,7 +664,7 @@ export const SESSION_2_CONTENT: SessionContent = {
         examples: [
           {
             title: 'Designing a Reasoning Chain',
-            good: '"Analyze whether we should increase our CRE concentration limit. Work through this step by step:\n\n1. First, summarize our current CRE concentration ratio and the regulatory guidance threshold\n2. Then, assess our historical CRE performance over the last 3 years (delinquency, charge-offs)\n3. Then, evaluate the current market conditions in our lending area\n4. Then, identify the top 3 risks of increasing the limit and the top 3 risks of not increasing it\n5. Finally, make a recommendation with your confidence level and the key assumption behind it"',
+            good: '"Analyze whether we should expand our service capacity in this region. Work through this step by step:\n\n1. First, summarize our current capacity utilization and the relevant industry benchmark\n2. Then, assess our historical performance over the last 3 years (quality metrics, delivery times)\n3. Then, evaluate the current market conditions in our service area\n4. Then, identify the top 3 risks of expanding capacity and the top 3 risks of not expanding\n5. Finally, make a recommendation with your confidence level and the key assumption behind it"',
             explanation: 'Each step is explicit. The AI cannot jump to a conclusion without showing the reasoning path. The user can review each step independently and challenge step 4 (the risk assessment) if it seems weak. This is auditable analysis, not a summary with a recommendation bolted on.',
           },
         ],
@@ -894,8 +817,8 @@ export const SESSION_3_CONTENT: SessionContent = {
         examples: [
           {
             title: 'Conversation vs. Agent',
-            bad: 'Every Monday, you open a new chat and type: "You are a credit analyst at a community bank. I need you to review loan applications using our credit policy. Always flag CRE concentration issues. Format your review as: Summary, Key Risks, Recommendation, Conditions." You do this every single time.',
-            good: 'You build an agent called "Credit Review Assistant" with those instructions baked in. Every Monday, you open it, paste the application data, and get a structured review instantly. No re-explaining. No forgotten instructions.',
+            bad: 'Every Monday, you open a new chat and type: "You are a senior analyst at our firm. I need you to review project proposals using our evaluation criteria. Always flag resource and timeline risks. Format your review as: Summary, Key Risks, Recommendation, Conditions." You do this every single time.',
+            good: 'You build an agent called "Proposal Review Assistant" with those instructions baked in. Every Monday, you open it, paste the proposal data, and get a structured review instantly. No re-explaining. No forgotten instructions.',
             explanation: 'The agent does not do anything the conversation cannot do. The difference is persistence — the agent remembers so you do not have to. For tasks you do repeatedly with the same structure, that persistence is the value.',
           },
         ],
@@ -944,7 +867,7 @@ export const SESSION_3_CONTENT: SessionContent = {
         examples: [
           {
             title: 'The Four Levels in Practice',
-            good: 'Level 1: You open ChatGPT and ask "What are the current FDIC insurance limits?" — a one-off question.\n\nLevel 2: You build a Credit Review Agent with your bank\'s credit policy embedded. Every review follows your standards automatically.\n\nLevel 3: Your Credit Review Agent is connected to your loan origination system. It can pull application data directly and post its review to the file.\n\nLevel 4: When a new loan application enters the system, a trigger automatically runs the Credit Review Agent and flags high-risk items for human review.',
+            good: 'Level 1: You open ChatGPT and ask "What are the current industry benchmarks for this metric?" — a one-off question.\n\nLevel 2: You build a Proposal Review Agent with your organization\'s evaluation criteria embedded. Every review follows your standards automatically.\n\nLevel 3: Your Proposal Review Agent is connected to your project management system. It can pull submission data directly and post its review to the record.\n\nLevel 4: When a new project proposal enters the system, a trigger automatically runs the Proposal Review Agent and flags high-risk items for human review.',
             explanation: 'Each level adds capability — and complexity. Level 2 is already transformative for most users. Level 3 requires tool connections. Level 4 requires triggers and governance. Build up deliberately, not all at once.',
           },
         ],
@@ -1003,8 +926,8 @@ export const SESSION_3_CONTENT: SessionContent = {
         examples: [
           {
             title: 'Agent Instructions Example',
-            good: 'Role: You are a Loan Documentation Checklist Agent for a community bank. You help loan officers ensure all required documentation is identified before closing.\n\nScope: You review loan type, amount, collateral type, and borrower type, then produce a customized documentation checklist. You do NOT make credit decisions or assess borrower creditworthiness.\n\nStyle: Professional, direct, checklist format. Use banking terminology. Each item should include the document name and why it is required.\n\nConstraints: Always include regulatory requirements (Reg B, HMDA if applicable, flood determination). Flag any items that require attorney review. If the loan type is unfamiliar, say so rather than guessing.',
-            explanation: 'These instructions are specific enough that the agent produces consistent, useful output. The constraints prevent it from overstepping (no credit decisions) and ensure it flags uncertainty rather than guessing. This is a well-written job description for an AI.',
+            good: 'Role: You are a Project Intake Checklist Agent for a professional services firm. You help project managers ensure all required information is gathered before a project kicks off.\n\nScope: You review project type, scope, deliverables, and stakeholder context, then produce a customized intake checklist. You do NOT make resource allocation decisions or assess team capacity.\n\nStyle: Professional, direct, checklist format. Use project management terminology. Each item should include the information needed and why it is required.\n\nConstraints: Always include standard governance requirements (approvals, compliance sign-offs if applicable, budget confirmation). Flag any items that require leadership review. If the project type is unfamiliar, say so rather than guessing.',
+            explanation: 'These instructions are specific enough that the agent produces consistent, useful output. The constraints prevent it from overstepping (no resource allocation decisions) and ensure it flags uncertainty rather than guessing. This is a well-written job description for an AI.',
           },
         ],
         practiceTask: {
@@ -1012,7 +935,7 @@ export const SESSION_3_CONTENT: SessionContent = {
           instructions: 'Define a job, write instructions, test, and iterate. Build a Level 2 agent for something you do at work.',
           scenario: 'Build an agent for a task you do regularly:\n\n1. Define the job: what will this agent do? Be specific.\n2. Write the instructions using the framework: Role, Scope, Style, Constraints\n3. Test with a real or realistic task\n4. Review: did the agent follow your instructions? What did it miss or misinterpret?\n5. Revise your instructions and test again\n6. Aim for an agent that works consistently on the second or third test',
           hints: [
-            'Start with something narrow — "Credit Memo Summarizer" is better than "Banking Assistant"',
+            'Start with something narrow — "Meeting Summary Assistant" is better than "General Work Assistant"',
             'Constraints are the most important part — they prevent the agent from doing things you do not want',
             'If the agent ignores an instruction, it is usually because the instruction is too vague — be more specific',
             'Test with edge cases: what happens when the input is unusual or incomplete?',
@@ -1024,32 +947,6 @@ export const SESSION_3_CONTENT: SessionContent = {
             'User iterated on instructions at least once based on test results',
             'Agent produces consistent, useful output on repeated tests',
           ],
-          departmentScenarios: {
-            'Commercial Lending': {
-              scenario: 'Build a Credit Memo Summarizer, Loan Documentation Checklist Agent, or Borrower Communication Drafter. Choose the task you do most often.',
-              hints: [
-                'For a Credit Memo Summarizer: define what sections the summary must include',
-                'For a Documentation Agent: specify the loan types it should handle',
-                'Include a constraint: "Always flag missing documentation rather than assuming it exists"',
-              ],
-            },
-            'Compliance': {
-              scenario: 'Build a Regulatory Update Summarizer, Policy Checklist Agent, or Compliance Training Q&A Agent. Pick the task that saves you the most time.',
-              hints: [
-                'For a Reg Summarizer: define the output format (plain language + action items)',
-                'Include a constraint: "Always cite the specific regulation or guidance section"',
-                'For training Q&A: define the tone (helpful, not intimidating) and scope (your policies only)',
-              ],
-            },
-            'Retail Banking': {
-              scenario: 'Build a Customer Communication Drafter, Product FAQ Agent, or Branch Meeting Agenda Generator. Choose something your team uses weekly.',
-              hints: [
-                'For customer communications: define the tone (warm, professional) and compliance requirements',
-                'Include a constraint: "Never make promises about rates, fees, or approval"',
-                'For FAQ agents: define the scope — what questions it answers vs. refers to a human',
-              ],
-            },
-          },
         },
       },
     },
@@ -1082,8 +979,8 @@ export const SESSION_3_CONTENT: SessionContent = {
           scenario: 'Return to the agent you built in Module 3:\n\n1. Identify 1-3 documents that are most relevant to its job (policies, guidelines, templates, examples)\n2. Add them to the agent\'s knowledge base\n3. Run the same test task from Module 3 — compare the output\n4. How did the output change? Is it more specific? More accurate? Does it reference your actual standards?\n5. Try a new task that specifically requires knowledge from your documents',
           hints: [
             'Start with your most-used reference document — the one you check most often',
-            'If you are in lending: credit policy, documentation requirements, or underwriting guidelines',
-            'If you are in compliance: relevant regulations, your policy manual, or examination procedures',
+            'Good candidates: your team\'s standards guide, process documentation, templates, or relevant policy materials',
+            'Start focused — 1 to 2 documents that directly relate to the agent\'s job',
             'The before/after comparison is the key insight — run the same task with and without knowledge',
           ],
           successCriteria: [
@@ -1110,7 +1007,7 @@ export const SESSION_3_CONTENT: SessionContent = {
       ],
       learningOutcome: 'After this module, your agent can accept files from users and process them according to its instructions and knowledge base.',
       content: {
-        overview: 'Same agent, another layer. Knowledge is the reference material your agent always has access to. Files are the work input users bring to each interaction — the documents, spreadsheets, or data the agent needs to process.\n\nThe distinction matters: knowledge is permanent context (your credit policy). Files are session input (this specific loan application). Your agent uses both together.',
+        overview: 'Same agent, another layer. Knowledge is the reference material your agent always has access to. Files are the work input users bring to each interaction — the documents, spreadsheets, or data the agent needs to process.\n\nThe distinction matters: knowledge is permanent context (your standards or policy guide). Files are session input (this specific document or dataset). Your agent uses both together.',
         keyPoints: [
           'Knowledge = permanent reference material (always available to the agent)',
           'Files = session input (provided by the user for a specific task)',
@@ -1124,7 +1021,7 @@ export const SESSION_3_CONTENT: SessionContent = {
           scenario: 'Take your agent (now with instructions + knowledge) and give it a file to work with:\n\n1. Choose a file type you work with regularly (a document, spreadsheet, report, or data export)\n2. Upload it to the agent and ask it to process the file according to its job\n3. Evaluate: did the agent apply its instructions? Did it reference its knowledge?\n4. Test with a different file type — how does the agent handle variety?\n5. Try an edge case: what happens with an incomplete or messy file?',
           hints: [
             'Use real files when possible (redact sensitive data if needed)',
-            'If your agent is a Credit Memo Summarizer, give it an actual credit memo',
+            'Give the agent a file that matches its actual job — the kind of document it will process regularly',
             'Test the boundaries: what happens when the file format is unexpected?',
             'The agent should ask for clarification when the file is ambiguous — if it guesses instead, tighten your instructions',
           ],
@@ -1291,7 +1188,7 @@ export const SESSION_4_CONTENT: SessionContent = {
       ],
       learningOutcome: 'After this module, you can use AI features in your spreadsheet tool to accelerate data work you already do.',
       content: {
-        overview: 'Your spreadsheet tool has AI built in. You can describe what you want in plain language — "Create a pivot table showing loan volume by month and type" — and the AI generates it. This is not about replacing your spreadsheet skills. It is about accelerating the work you already do.\n\nThe key to using AI in spreadsheets: be specific about what you want, verify the formulas it generates, and watch for errors in complex calculations.',
+        overview: 'Your spreadsheet tool has AI built in. You can describe what you want in plain language — "Create a pivot table showing revenue by month and category" — and the AI generates it. This is not about replacing your spreadsheet skills. It is about accelerating the work you already do.\n\nThe key to using AI in spreadsheets: be specific about what you want, verify the formulas it generates, and watch for errors in complex calculations.',
         keyPoints: [
           'Describe what you want in plain language: "Sum column B where column A equals X"',
           'AI can generate formulas, create charts, build pivot tables, and spot patterns',
@@ -1483,7 +1380,7 @@ export const SESSION_5_CONTENT: SessionContent = {
           instructions: 'Choose a multi-step workflow from your work and map it. Identify where AI fits at each step.',
           scenario: 'Pick a workflow you do at least weekly:\n\n1. List every step from start to finish (even the ones you do on autopilot)\n2. For each step: what goes in? What comes out? Who does it? How long does it take?\n3. Identify the bottlenecks: which steps slow things down or cause errors?\n4. For each step, decide: Automate (AI does it), Assist (AI helps you do it faster), or Human (no AI)\n5. Sketch the improved workflow — what does it look like with AI integrated?',
           hints: [
-            'Common workflows: loan origination, compliance review, report generation, customer onboarding',
+            'Common workflows: new project intake, policy review, report generation, client onboarding',
             'Bottlenecks are often in handoffs between people or systems — those are high-value targets for AI',
             'Do not try to automate everything — the best workflows have clear human checkpoints',
             'Ask a colleague to review your map — they may see steps you forgot or bottlenecks you missed',
@@ -1523,7 +1420,7 @@ export const SESSION_5_CONTENT: SessionContent = {
         practiceTask: {
           title: 'Build a Prototype Workflow',
           instructions: 'Using the Workflow Builder, design a multi-step AI workflow based on your map from Module 1. Include at least one human review checkpoint.',
-          scenario: 'Turn your workflow map into a working design:\n\n1. Define the trigger: what starts this workflow? (a new loan application, a customer email, a regulatory update)\n2. Design each step: what AI component handles it? What is the input and output?\n3. Add human review checkpoints: where does a person need to verify, approve, or decide?\n4. Connect the steps: how does output from one step flow into the next?\n5. Test with a realistic scenario: walk through the workflow mentally or with sample data',
+          scenario: 'Turn your workflow map into a working design:\n\n1. Define the trigger: what starts this workflow? (a new project submission, a client request, a policy update)\n2. Design each step: what AI component handles it? What is the input and output?\n3. Add human review checkpoints: where does a person need to verify, approve, or decide?\n4. Connect the steps: how does output from one step flow into the next?\n5. Test with a realistic scenario: walk through the workflow mentally or with sample data',
           hints: [
             'Start with 3-5 steps — you can always add complexity later',
             'Every step that touches customers, finances, or compliance needs a human checkpoint',

@@ -22,8 +22,8 @@ export const DASHBOARD_STEPS: DriveStep[] = [
   {
     element: '[data-tour="bank-policies-btn"]',
     popover: {
-      title: 'Bank Policies',
-      description: "Your bank's AI governance and usage policies live here. Check back as your institution updates its guidelines — knowing the guardrails makes you a more confident AI user.",
+      title: 'Organization Policies',
+      description: "Your organization's AI governance and usage policies live here. Check back as your institution updates its guidelines — knowing the guardrails makes you a more confident AI user.",
       side: 'bottom' as const,
       align: 'start' as const,
     },
@@ -133,7 +133,7 @@ export const ADMIN_STEPS: DriveStep[] = [
     element: '[data-tour="admin-training-tab"]',
     popover: {
       title: 'Training',
-      description: 'Schedule live sessions, manage bank AI policies, configure learning styles, and review curriculum content.',
+      description: 'Schedule live sessions, manage AI policies, configure learning styles, and review curriculum content.',
       side: 'bottom' as const,
       align: 'start' as const,
     },
@@ -191,7 +191,7 @@ export const ANDREA_STEPS: DriveStep[] = [
     element: '[data-tour="andrea-panel-input"]',
     popover: {
       title: 'Ask Anything',
-      description: 'Type any question — about your training progress, AI concepts, or how to apply AI to your day-to-day banking tasks.',
+      description: 'Type any question — about your training progress, AI concepts, or how to apply AI to your day-to-day professional tasks.',
       side: 'top' as const,
       align: 'center' as const,
     },

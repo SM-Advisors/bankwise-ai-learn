@@ -12,6 +12,7 @@ import { useDashboardConversations } from '@/hooks/useDashboardConversations';
 import { useUserIdeas } from '@/hooks/useUserIdeas';
 import { useCommunityTopics } from '@/hooks/useCommunityTopics';
 import andreaCoach from '@/assets/andrea-coach.png';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 
 type Phase = 'input' | 'chat';
 type SubmitMode = null | 'ideas' | 'community' | 'csuite';
@@ -20,6 +21,7 @@ type LocalMessage = { role: 'user' | 'assistant'; content: string };
 export function BrainstormPanel({ compact = false }: { compact?: boolean }) {
   const { user, profile } = useAuth();
   const { toast } = useToast();
+  const { industrySlug } = useIndustryContent();
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<Phase>('input');
   const [taskInput, setTaskInput] = useState('');
@@ -80,6 +82,7 @@ Return ONLY valid JSON with no extra text:
           customSystemPrompt: summaryPrompt,
           moduleTitle: 'Brainstorm Summary',
           scenario: 'Generate a professional submission summary from a brainstorm conversation.',
+          industrySlug,
           messages: [
             ...localMessages,
             { role: 'user', content: `Summarize this brainstorm conversation for a ${destinationLabel} submission. Return JSON only.` },
@@ -271,6 +274,7 @@ Enterprise ($$$$$): Full RPA platforms (UiPath, Automation Anywhere), custom ven
           bankRole: profile?.job_role || undefined,
           lineOfBusiness: isFF ? undefined : (profile?.department || undefined),
           interests: profile?.interests || undefined,
+          industrySlug,
         },
       });
 

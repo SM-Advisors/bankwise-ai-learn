@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { ROLE_OPTIONS } from '@/data/intakeQuestions';
+import { ROLE_OPTIONS as FALLBACK_ROLE_OPTIONS } from '@/data/intakeQuestions';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowRight, ArrowLeft, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -165,6 +165,11 @@ export default function Onboarding() {
 
   const industryConfig: IndustryConfig = getIndustryConfig(orgIndustry, isEnterprise ? 'enterprise' : 'consumer');
 
+  // Derive role options from industry config; fall back to hardcoded list
+  const roleOptions = industryConfig.roles.length > 0
+    ? industryConfig.roles.map(r => ({ key: r.value, label: r.label, lobSlug: r.departmentSlug }))
+    : FALLBACK_ROLE_OPTIONS;
+
   useEffect(() => {
     if (orgTypeResolved) return;
     if (loading) return;
@@ -265,7 +270,7 @@ export default function Onboarding() {
   const handleComplete = async () => {
     setIsSubmitting(true);
 
-    const selectedRole = ROLE_OPTIONS.find(r => r.key === roleKey);
+    const selectedRole = roleOptions.find(r => r.key === roleKey);
     const level = computedLevel;
 
     const { error } = await updateProfile({
@@ -379,7 +384,7 @@ export default function Onboarding() {
               <CardContent>
                 {isEnterprise ? (
                   <div className="grid gap-2">
-                    {ROLE_OPTIONS.map(role => (
+                    {roleOptions.map(role => (
                       <button
                         key={role.key}
                         type="button"

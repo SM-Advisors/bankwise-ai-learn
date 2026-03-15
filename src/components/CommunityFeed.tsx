@@ -314,7 +314,7 @@ export function CommunityFeed() {
             <DialogHeader>
               <DialogTitle>New Topic</DialogTitle>
               <DialogDescription>
-                Start a discussion with your fellow banking professionals.
+                Start a discussion with your fellow professionals.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-2">
@@ -339,7 +339,7 @@ export function CommunityFeed() {
               <div>
                 <label className="text-sm font-medium mb-1.5 block">Title</label>
                 <Input
-                  placeholder="e.g., Best practices for AI-assisted loan review"
+                  placeholder="e.g., Best practices for AI-assisted document review"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                 />

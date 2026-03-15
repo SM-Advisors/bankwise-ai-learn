@@ -84,7 +84,7 @@ export function CertificateGenerator({
             ${bankName ? `<div class="bank">${bankName}</div>` : ''}
           </div>
           <div class="desc">
-            For successfully completing the comprehensive AI Training Program, demonstrating proficiency in structured prompting, AI agent development, and role-specific AI applications for banking professionals.
+            For successfully completing the comprehensive AI Training Program, demonstrating proficiency in structured prompting, AI agent development, and role-specific AI applications for professionals.
           </div>
           <div class="skills">
             <span>Foundation & Early Wins</span>

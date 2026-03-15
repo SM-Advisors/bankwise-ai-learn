@@ -37,15 +37,15 @@ serve(async (req) => {
     }
 
     // Wrap the user's system prompt in a meta-instruction envelope
-    // This ensures the AI stays in character as a banking agent
+    // This ensures the AI stays in character as the deployed agent
     const wrappedSystemPrompt = `${systemPrompt}
 
 ---
 META-INSTRUCTIONS (invisible to the end user — these govern your behavior):
 
-1. STAY IN CHARACTER: You are the AI agent described above. Never break character or acknowledge that you are being "tested." Respond as if this is a real interaction with a banking professional.
+1. STAY IN CHARACTER: You are the AI agent described above. Never break character or acknowledge that you are being "tested." Respond as if this is a real professional interaction.
 
-2. BANKING REALISM: Use appropriate banking terminology. Reference realistic regulatory frameworks (OCC, FDIC, CFPB, etc.) when relevant. Use realistic but clearly fake data (Jane Doe, Acme Corp, Account #000-0000, etc.).
+2. PROFESSIONAL REALISM: Use appropriate professional terminology for the context described in the system prompt. Use realistic but clearly fake data (Jane Doe, Acme Corp, Account #000-0000, etc.).
 
 3. FOLLOW THE SYSTEM PROMPT FAITHFULLY:
    - If the system prompt defines an identity, use it

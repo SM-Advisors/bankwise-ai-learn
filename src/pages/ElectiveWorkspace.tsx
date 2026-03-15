@@ -30,6 +30,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/s
 import { AppShell, type BreadcrumbItem } from '@/components/shell';
 import { type ProgressModule } from '@/components/smile';
 import { useValueSignals } from '@/hooks/useValueSignals';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 
 export default function ElectiveWorkspace() {
   const isMobile = useIsMobile();
@@ -39,6 +40,7 @@ export default function ElectiveWorkspace() {
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
   const { toast } = useToast();
+  const { industrySlug } = useIndustryContent();
   const contentScrollRef = useRef<HTMLDivElement>(null);
 
   const [leftCollapsed, setLeftCollapsed] = useState(false);
@@ -125,6 +127,7 @@ export default function ElectiveWorkspace() {
               sessionNumber: 4, // Electives use ADVISOR coaching depth
               messages: [],
               greeting: true,
+              industrySlug,
               learnerState: {
                 currentCardTitle: selectedModule.title,
                 learningObjectives: selectedModule.learningObjectives,
@@ -230,6 +233,7 @@ export default function ElectiveWorkspace() {
           scenario: selectedModule.content.practiceTask.scenario,
           sessionNumber: 4, // Electives use Session 4 level
           model: preferredModel,
+          industrySlug,
         },
       });
 
@@ -278,6 +282,7 @@ export default function ElectiveWorkspace() {
             sessionNumber: 4,
             messages: [...trainerMessages, { role: 'user', content: reviewRequest }],
             practiceConversation: activeMessages,
+            industrySlug,
             learnerState: {
               currentCardTitle: selectedModule.title,
               learningObjectives: selectedModule.learningObjectives,
@@ -298,6 +303,7 @@ export default function ElectiveWorkspace() {
             isGateModule: true,  // Always evaluate quality
             submission: conversationTranscript,
             rubric,
+            industrySlug,
             learnerState: {
               currentCardTitle: selectedModule.title,
               learningObjectives: selectedModule.learningObjectives,
@@ -445,6 +451,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           sessionNumber: 4,
           messages: [...trainerMessages, apiMessage],
           practiceConversation: activeMessages.length > 0 ? activeMessages : undefined,
+          industrySlug,
           learnerState: {
             currentCardTitle: selectedModule?.title,
             learningObjectives: selectedModule?.learningObjectives,
@@ -513,6 +520,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           sessionNumber: 4,
           messages: [...trainerMessages, apiMessage],
           practiceConversation: activeMessages.length > 0 ? activeMessages : undefined,
+          industrySlug,
           learnerState: {
             currentCardTitle: selectedModule?.title,
             learningObjectives: selectedModule?.learningObjectives,

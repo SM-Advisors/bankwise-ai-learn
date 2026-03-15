@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Bot, Send, Pencil, Loader2, ArrowRight, Share2, Copy, Check, Globe, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 
 // ─── AgentsZone ──────────────────────────────────────────────────────────────
 //
@@ -21,6 +22,7 @@ type Message = { role: 'user' | 'assistant'; content: string };
 export default function AgentsZone() {
   const navigate = useNavigate();
   const { profile } = useAuth();
+  const { industrySlug } = useIndustryContent();
   const { activeAgent, isLoading: agentsLoading, shareAgent, unshareAgent } = useUserAgents();
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -57,6 +59,7 @@ export default function AgentsZone() {
           jobRole: profile?.job_role,
           departmentLob: profile?.department,
           interests: profile?.interests || undefined,
+          industrySlug,
         },
       });
 

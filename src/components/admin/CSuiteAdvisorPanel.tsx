@@ -10,6 +10,7 @@ import { useCSuiteKPIs, getLobLabel } from '@/hooks/useReporting';
 import { useAdminAndreaChat, type LocalMessage } from '@/hooks/useAdminAndreaChat';
 import { buildKPISnapshot, buildSystemPrompt } from './csuite-advisor/prompts';
 import andreaCoach from '@/assets/andrea-coach.png';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 
 interface CSuiteAdvisorPanelProps {
   organizationId?: string | null;
@@ -19,6 +20,7 @@ interface CSuiteAdvisorPanelProps {
 export function CSuiteAdvisorPanel({ organizationId, onSummarize }: CSuiteAdvisorPanelProps) {
   const { profile } = useAuth();
   const { toast } = useToast();
+  const { industrySlug } = useIndustryContent();
   const kpis = useCSuiteKPIs(organizationId || null);
   const {
     messages: localMessages,
@@ -66,6 +68,7 @@ export function CSuiteAdvisorPanel({ organizationId, onSummarize }: CSuiteAdviso
           scenario: 'Executive AI enablement advisory session with live KPI data.',
           messages: [...history, userMsg],
           bankRole: profile?.job_role || 'Executive',
+          industrySlug,
         },
       });
 
@@ -108,6 +111,7 @@ export function CSuiteAdvisorPanel({ organizationId, onSummarize }: CSuiteAdviso
             { role: 'user', content: `Please summarize this conversation:\n\n${localMessages.map(m => `${m.role === 'user' ? 'Executive' : 'Andrea'}: ${m.content}`).join('\n\n')}` },
           ],
           bankRole: 'Executive',
+          industrySlug,
         },
       });
 

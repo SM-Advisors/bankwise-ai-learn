@@ -87,20 +87,20 @@ export const Q6_OPTIONS: AnswerOption[] = [
 export const Q7_OPTIONS: AnswerOption[] = [
   { key: 'A', label: 'Use it — my colleague already reviewed it',                                   d4: 1,   d2: 1 },
   { key: 'B', label: 'Skim it quickly and proceed',                                                  d4: 2 },
-  { key: 'C', label: 'Review key figures against the actual loan file',                              d4: 3,   d2: 3 },
-  { key: 'D', label: 'Use it as a starting point, then verify anything affecting the credit decision', d4: 3.5, d2: 3.5 },
-  { key: 'E', label: 'Check policy before using AI-generated content in loan decisions',             d2: 4,   d4: 4, d6: 3 },
+  { key: 'C', label: 'Review key figures against the actual source documents',                       d4: 3,   d2: 3 },
+  { key: 'D', label: 'Use it as a starting point, then verify anything affecting a key decision',    d4: 3.5, d2: 3.5 },
+  { key: 'E', label: 'Check policy before using AI-generated content in important decisions',        d2: 4,   d4: 4, d6: 3 },
 ];
 
 export const Q8_OPTIONS: AnswerOption[] = [
   { key: 'A', label: 'Paste everything in — the context helps the AI',              d2: 1, triggerSafeUse: true },
   { key: 'B', label: 'Check with IT before proceeding',                              d2: 2 },
-  { key: 'C', label: 'Remove customer-specific data and describe the pattern instead', d2: 3.5 },
+  { key: 'C', label: 'Remove personally identifiable data and describe the pattern instead', d2: 3.5 },
   { key: 'D', label: 'Check the acceptable use policy before doing anything',         d2: 4, d6: 3 },
 ];
 
 export const Q9_OPTIONS: AnswerOption[] = [
-  { key: 'A', label: 'The lending team',                          d6: 2 },
+  { key: 'A', label: 'The operations team',                        d6: 2 },
   { key: 'B', label: 'IT / InfoSec',                              d6: 2 },
   { key: 'C', label: 'Compliance / Risk',                         d6: 3 },
   { key: 'D', label: 'Legal and Vendor Management',               d6: 3 },
@@ -119,39 +119,39 @@ export interface SJTScenario {
 export const SJT_SCENARIOS: SJTScenario[] = [
   {
     id: 'sjt1',
-    scenario: 'Your AI tool drafts a follow-up email to a customer after a loan meeting. It looks polished, but includes a specific interest rate that hasn\'t been finalized yet. A customer is waiting. What do you do?',
+    scenario: 'Your AI tool drafts a follow-up email to a client after a meeting. It looks polished, but includes a specific figure that hasn\'t been finalized yet. The client is waiting. What do you do?',
     options: [
-      { key: 'A', label: 'Send it — the rate is probably right and we need to move fast',                    strength: 'weak',     d4: 1,   d2: 1 },
-      { key: 'B', label: 'Remove the rate, send the rest',                                                    strength: 'moderate', d4: 2.5 },
-      { key: 'C', label: 'Rewrite the rate section yourself and do a full review before sending',            strength: 'strong',   d4: 3.5 },
+      { key: 'A', label: 'Send it — the figure is probably right and we need to move fast',                  strength: 'weak',     d4: 1,   d2: 1 },
+      { key: 'B', label: 'Remove the figure, send the rest',                                                  strength: 'moderate', d4: 2.5 },
+      { key: 'C', label: 'Correct the section yourself and do a full review before sending',                 strength: 'strong',   d4: 3.5 },
       { key: 'D', label: 'Discard it and write the email yourself',                                          strength: 'moderate', d4: 3,   d7: 2 },
       { key: 'E', label: 'Check compliance guidance before using AI for customer-facing communications',     strength: 'strong',   d2: 4,   d4: 4 },
     ],
   },
   {
     id: 'sjt2',
-    scenario: 'A colleague suggests copying a customer\'s financial data into ChatGPT to help summarize their account history for a meeting. What do you do?',
+    scenario: 'A colleague suggests copying a client\'s confidential data into ChatGPT to help summarize their case history for a meeting. What do you do?',
     options: [
       { key: 'A', label: 'Try it — sounds like a great time-saver',                                          strength: 'weak',     d2: 1,   d6: 1, triggerSafeUse: true },
       { key: 'B', label: 'Interested but check with IT first',                                               strength: 'moderate', d2: 2 },
-      { key: 'C', label: 'Flag concerns about customer data in an external tool — check with compliance',    strength: 'strong',   d2: 3.5, d6: 3, d7: 3 },
+      { key: 'C', label: 'Flag concerns about confidential data in an external tool — check with compliance',strength: 'strong',   d2: 3.5, d6: 3, d7: 3 },
       { key: 'D', label: 'Decline and flag it as a potential compliance violation',                          strength: 'strong',   d2: 4,   d6: 4, d7: 4 },
       { key: 'E', label: 'Stay out of it — seems too risky',                                                 strength: 'weak',     d6: 1.5 },
     ],
   },
   {
     id: 'sjt3',
-    scenario: 'Your BSA officer shares an AI-generated summary of FinCEN guidance on beneficial ownership. She says "AI did the heavy lifting — looks comprehensive." A colleague asks you to forward it to the team.',
+    scenario: 'Your compliance lead shares an AI-generated summary of new regulatory guidance. She says "AI did the heavy lifting — looks comprehensive." A colleague asks you to forward it to the team.',
     options: [
-      { key: 'A', label: 'Forward it — the BSA officer reviewed it',                                          strength: 'moderate', d4: 2 },
-      { key: 'B', label: 'Read the original FinCEN guidance before forwarding anything',                      strength: 'strong',   d4: 3.5 },
+      { key: 'A', label: 'Forward it — the compliance lead reviewed it',                                      strength: 'moderate', d4: 2 },
+      { key: 'B', label: 'Read the original regulatory guidance before forwarding anything',                   strength: 'strong',   d4: 3.5 },
       { key: 'C', label: 'Share it with a clear note that it\'s AI-generated and urge verification',         strength: 'strong',   d4: 3,   d2: 3 },
       { key: 'D', label: 'Have compliance confirm the key action items first',                                strength: 'strong',   d4: 3,   d6: 3 },
     ],
   },
   {
     id: 'sjt4',
-    scenario: 'Your CEO needs an "AI readiness brief" for a board presentation by end of day. Your bank doesn\'t have a formal AI inventory yet. What do you do?',
+    scenario: 'Your CEO needs an "AI readiness brief" for a board presentation by end of day. Your organization doesn\'t have a formal AI inventory yet. What do you do?',
     options: [
       { key: 'A', label: 'Use AI to generate an authoritative-sounding brief quickly',                       strength: 'weak',     d4: 1,   d6: 1 },
       { key: 'B', label: 'Draft it yourself to avoid the irony of using AI',                                 strength: 'moderate', d7: 2 },
@@ -162,7 +162,7 @@ export const SJT_SCENARIOS: SJTScenario[] = [
   },
   {
     id: 'sjt5',
-    scenario: 'A fintech vendor demos an AI-powered cross-sell recommendation tool. The results look impressive. Your business line wants to move fast. IT hasn\'t reviewed it yet.',
+    scenario: 'A vendor demos an AI-powered recommendation tool. The results look impressive. Your business line wants to move fast. IT hasn\'t reviewed it yet.',
     options: [
       { key: 'A', label: 'Encourage moving forward — the results speak for themselves',                       strength: 'weak',     d6: 1,   d2: 1 },
       { key: 'B', label: 'Ask IT to do a quick review but otherwise support the fast timeline',              strength: 'moderate', d6: 2 },

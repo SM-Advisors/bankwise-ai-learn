@@ -60,6 +60,9 @@ export interface BankPolicy {
   is_active: boolean | null;
 }
 
+// Industry-neutral alias — use OrgPolicy for new code; BankPolicy kept for backward compat
+export type OrgPolicy = BankPolicy;
+
 export interface TrainingWorkspaceState {
   leftCollapsed: boolean;
   rightCollapsed: boolean;

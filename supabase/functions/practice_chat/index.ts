@@ -2,6 +2,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { checkRateLimit } from "../_shared/rateLimiter.ts";
+import { getIndustryContext } from "../_shared/industryContext.ts";
 
 
 
@@ -15,6 +16,7 @@ interface PracticeChatRequest {
   moduleTitle: string;
   scenario: string;
   sessionNumber?: number;
+  industrySlug?: string;
 }
 
 serve(async (req) => {
@@ -56,7 +58,7 @@ serve(async (req) => {
       throw new Error("ANTHROPIC_API_KEY is not configured");
     }
 
-    const { messages, moduleTitle, scenario, sessionNumber }: PracticeChatRequest = await req.json();
+    const { messages, moduleTitle, scenario, sessionNumber, industrySlug }: PracticeChatRequest = await req.json();
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
@@ -65,10 +67,12 @@ serve(async (req) => {
       );
     }
 
-    const systemPrompt = `You are an AI assistant being used by a banking professional as part of their day-to-day work. You are NOT a coach or tutor — you are the actual AI tool they are practicing with.
+    const industryCtx = getIndustryContext(industrySlug);
+
+    const systemPrompt = `You are an AI assistant being used by a ${industryCtx.professionalLabel} as part of their day-to-day work. You are NOT a coach or tutor — you are the actual AI tool they are practicing with.
 
 ## YOUR ROLE
-You are a general-purpose AI assistant (like ChatGPT or Claude) that a banker is using at their desk. Respond naturally and helpfully to whatever they ask.
+You are a general-purpose AI assistant (like ChatGPT or Claude) that a professional is using at their desk. Respond naturally and helpfully to whatever they ask.
 
 ## SCENARIO CONTEXT
 The user is working on: "${moduleTitle}"
@@ -89,12 +93,7 @@ ${scenario ? `\nSituation: ${scenario}` : ""}
    - Do NOT break the fourth wall or reference "the module" or "the exercise"
    - If they ask you something outside the scenario, respond naturally
 
-3. BANKING REALISM:
-   - Use appropriate banking terminology in your responses
-   - If they ask you to draft something, draft it properly
-   - If they ask for analysis, provide realistic analysis
-   - Reference realistic regulatory frameworks (OCC, FDIC, etc.) when relevant
-   - Use realistic but clearly fake data (Jane Doe, Acme Corp, etc.)
+3. ${industryCtx.realismInstructions}
 
 4. RESPONSE LENGTH:
    - Match response length to what a real AI tool would provide

@@ -147,7 +147,7 @@ export default function Community() {
                 <DialogHeader>
                   <DialogTitle>New Topic</DialogTitle>
                   <DialogDescription>
-                    Start a discussion with your fellow banking professionals.
+                    Start a discussion with your fellow professionals.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-2">
