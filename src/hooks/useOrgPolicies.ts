@@ -23,8 +23,8 @@ export function useOrgPolicies() {
     try {
       setLoading(true);
       // Use type assertion since the types file is auto-generated and may not include new tables yet
-      const { data, error: fetchError } = await supabase
-        .from('org_policies')
+      const { data, error: fetchError } = await (supabase
+        .from('bank_policies') as any)
         .select('*')
         .eq('is_active', true)
         .order('display_order', { ascending: true });
@@ -54,8 +54,8 @@ export function useAllOrgPolicies() {
   const fetchPolicies = async () => {
     try {
       setLoading(true);
-      const { data, error: fetchError } = await supabase
-        .from('org_policies')
+      const { data, error: fetchError } = await (supabase
+        .from('bank_policies') as any)
         .select('*')
         .order('display_order', { ascending: true });
 
@@ -71,8 +71,8 @@ export function useAllOrgPolicies() {
 
   const updatePolicy = async (id: string, updates: Partial<OrgPolicy>) => {
     try {
-      const { error: updateError } = await supabase
-        .from('org_policies')
+      const { error: updateError } = await (supabase
+        .from('bank_policies') as any)
         .update(updates)
         .eq('id', id);
 
@@ -87,8 +87,8 @@ export function useAllOrgPolicies() {
 
   const createPolicy = async (policy: Omit<OrgPolicy, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      const { error: insertError } = await supabase
-        .from('org_policies')
+      const { error: insertError } = await (supabase
+        .from('bank_policies') as any)
         .insert(policy);
 
       if (insertError) throw insertError;

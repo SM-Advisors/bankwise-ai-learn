@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -12,10 +12,9 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  Building2, Loader2, RotateCcw, Undo2, AlertTriangle, Search,
+  Building2, Loader2, RotateCcw, AlertTriangle, Search,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
 
 interface UserRow {
   user_id: string;
@@ -29,19 +28,9 @@ interface UserRow {
   session_4_completed: boolean;
 }
 
-interface ResetSnapshot {
-  id: string;
-  user_id: string;
-  reset_at: string;
-  reversed_at: string | null;
-  expires_at: string;
-  display_name?: string;
-}
-
 export function TrainingResetManager() {
   const { user } = useAuth();
   const [users, setUsers] = useState<UserRow[]>([]);
-  const [snapshots, setSnapshots] = useState<ResetSnapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
@@ -50,20 +39,14 @@ export function TrainingResetManager() {
   const [confirmName, setConfirmName] = useState('');
   const [resetting, setResetting] = useState(false);
 
-  // Reverse dialog state
-  const [reverseTarget, setReverseTarget] = useState<ResetSnapshot | null>(null);
-  const [reversing, setReversing] = useState(false);
-
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch all profiles with org names
       const { data: profiles } = await supabase
         .from('user_profiles')
         .select('user_id, display_name, organization_id, current_session')
         .order('display_name', { ascending: true });
 
-      // Fetch org names
       const { data: orgs } = await supabase
         .from('organizations')
         .select('id, name');
@@ -71,7 +54,6 @@ export function TrainingResetManager() {
       const orgMap: Record<string, string> = {};
       (orgs || []).forEach((o) => { orgMap[o.id] = o.name; });
 
-      // Fetch training progress
       const { data: progress } = await supabase
         .from('training_progress')
         .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed');
@@ -92,21 +74,6 @@ export function TrainingResetManager() {
       }));
 
       setUsers(mapped);
-
-      // Fetch active snapshots (not reversed, not expired)
-      const { data: snaps } = await (supabase
-        .from('training_reset_snapshots')
-        .select('id, user_id, reset_at, reversed_at, expires_at')
-        .is('reversed_at', null)
-        .gte('expires_at', new Date().toISOString())
-        .order('reset_at', { ascending: false }));
-
-      const snapsWithNames: ResetSnapshot[] = (snaps || []).map((s) => {
-        const profile = (profiles || []).find((p) => p.user_id === s.user_id);
-        return { ...s, display_name: profile?.display_name || 'Unknown' };
-      });
-
-      setSnapshots(snapsWithNames);
     } catch (err) {
       console.error('Error fetching data:', err);
     } finally {
@@ -120,44 +87,22 @@ export function TrainingResetManager() {
     if (!resetTarget || !user) return;
     setResetting(true);
     try {
-      // 1. Snapshot current training_progress
-      const { data: currentProgress } = await supabase
+      // Reset training_progress
+      await supabase
         .from('training_progress')
-        .select('*')
-        .eq('user_id', resetTarget.user_id)
-        .maybeSingle();
+        .update({
+          session_1_completed: false,
+          session_1_progress: {},
+          session_2_completed: false,
+          session_2_progress: {},
+          session_3_completed: false,
+          session_3_progress: {},
+          session_4_completed: false,
+          session_4_progress: {},
+        })
+        .eq('user_id', resetTarget.user_id);
 
-      // Also snapshot current_session from profile
-      const snapshotData = {
-        training_progress: currentProgress || {},
-        current_session: resetTarget.current_session,
-      };
-
-      // 2. Save snapshot
-      await supabase.from('training_reset_snapshots').insert({
-        user_id: resetTarget.user_id,
-        reset_by: user.id,
-        snapshot_data: snapshotData,
-      });
-
-      // 3. Reset training_progress
-      if (currentProgress) {
-        await supabase
-          .from('training_progress')
-          .update({
-            session_1_completed: false,
-            session_1_progress: {},
-            session_2_completed: false,
-            session_2_progress: {},
-            session_3_completed: false,
-            session_3_progress: {},
-            session_4_completed: false,
-            session_4_progress: {},
-          })
-          .eq('user_id', resetTarget.user_id);
-      }
-
-      // 4. Reset current_session to 1
+      // Reset current_session to 1
       await supabase
         .from('user_profiles')
         .update({ current_session: 1 })
@@ -167,67 +112,10 @@ export function TrainingResetManager() {
       setResetTarget(null);
       setConfirmName('');
       await fetchData();
-    } catch (err) {
+    } catch (err: any) {
       toast.error('Failed to reset training: ' + err.message);
     } finally {
       setResetting(false);
-    }
-  };
-
-  const handleReverse = async () => {
-    if (!reverseTarget) return;
-    setReversing(true);
-    try {
-      // 1. Get snapshot data
-      const { data: snap } = await supabase
-        .from('training_reset_snapshots')
-        .select('snapshot_data')
-        .eq('id', reverseTarget.id)
-        .single();
-
-      if (!snap) throw new Error('Snapshot not found');
-
-      const snapshotData = snap.snapshot_data as any;
-
-      // 2. Restore training_progress
-      if (snapshotData.training_progress && Object.keys(snapshotData.training_progress).length > 0) {
-        const tp = snapshotData.training_progress;
-        await supabase
-          .from('training_progress')
-          .update({
-            session_1_completed: tp.session_1_completed ?? false,
-            session_1_progress: tp.session_1_progress ?? {},
-            session_2_completed: tp.session_2_completed ?? false,
-            session_2_progress: tp.session_2_progress ?? {},
-            session_3_completed: tp.session_3_completed ?? false,
-            session_3_progress: tp.session_3_progress ?? {},
-            session_4_completed: tp.session_4_completed ?? false,
-            session_4_progress: tp.session_4_progress ?? {},
-          })
-          .eq('user_id', reverseTarget.user_id);
-      }
-
-      // 3. Restore current_session
-      if (snapshotData.current_session != null) {
-        await supabase
-          .from('user_profiles')
-          .update({ current_session: snapshotData.current_session })
-          .eq('user_id', reverseTarget.user_id);
-      }
-
-      // 4. Mark snapshot as reversed
-      await (supabase
-        .from('training_reset_snapshots')
-        .update({ reversed_at: new Date().toISOString() })
-        .eq('id', reverseTarget.id));
-
-      toast.success(`Training restored for ${reverseTarget.display_name}`);
-      setReverseTarget(null);
-      await fetchData();
-    } catch (err) {
-      toast.error('Failed to reverse reset: ' + err.message);
-    } finally {
-      setReversing(false);
     }
   };
 
@@ -266,45 +154,6 @@ export function TrainingResetManager() {
 
   return (
     <div className="space-y-6">
-      {/* Pending reversals */}
-      {snapshots.length > 0 && (
-        <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Undo2 className="h-4 w-4 text-amber-600" />
-              Reversible Resets ({snapshots.length})
-            </CardTitle>
-            <CardDescription>These resets can be undone within 30 days</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {snapshots.map((snap) => (
-                <div key={snap.id} className="flex items-center justify-between text-sm bg-background rounded-md px-3 py-2 border">
-                  <div>
-                    <span className="font-medium">{snap.display_name}</span>
-                    <span className="text-muted-foreground ml-2">
-                      reset {format(new Date(snap.reset_at), 'MMM d, yyyy')}
-                    </span>
-                    <span className="text-muted-foreground ml-1">
-                      · expires {format(new Date(snap.expires_at), 'MMM d')}
-                    </span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setReverseTarget(snap)}
-                    className="gap-1.5"
-                  >
-                    <Undo2 className="h-3 w-3" />
-                    Undo Reset
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Search */}
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -339,34 +188,29 @@ export function TrainingResetManager() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orgUsers.map((u) => {
-                  const hasActiveReset = snapshots.some(s => s.user_id === u.user_id);
-                  return (
-                    <TableRow key={u.user_id}>
-                      <TableCell className="font-medium">
-                        {u.display_name || 'Unnamed User'}
+                {orgUsers.map((u) => (
+                  <TableRow key={u.user_id}>
+                    <TableCell className="font-medium">
+                      {u.display_name || 'Unnamed User'}
+                    </TableCell>
+                    {[u.session_1_completed, u.session_2_completed, u.session_3_completed, u.session_4_completed].map((done, i) => (
+                      <TableCell key={i} className="text-center">
+                        <span className={`inline-block h-2.5 w-2.5 rounded-full ${done ? 'bg-green-500' : 'bg-red-400/70'}`} />
                       </TableCell>
-                      {[u.session_1_completed, u.session_2_completed, u.session_3_completed, u.session_4_completed].map((done, i) => (
-                        <TableCell key={i} className="text-center">
-                          <span className={`inline-block h-2.5 w-2.5 rounded-full ${done ? 'bg-green-500' : 'bg-red-400/70'}`} />
-                        </TableCell>
-                      ))}
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setResetTarget(u)}
-                          className="gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          disabled={hasActiveReset}
-                          title={hasActiveReset ? 'Already has a pending reset' : 'Reset training'}
-                        >
-                          <RotateCcw className="h-3 w-3" />
-                          Reset
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                    ))}
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setResetTarget(u)}
+                        className="gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        Reset
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </CardContent>
@@ -409,10 +253,6 @@ export function TrainingResetManager() {
                 autoFocus
               />
             </div>
-
-            <p className="text-xs text-muted-foreground">
-              You can reverse this reset within 30 days.
-            </p>
           </div>
 
           <DialogFooter>
@@ -426,30 +266,6 @@ export function TrainingResetManager() {
             >
               {resetting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               Reset Training
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Reverse Confirmation Dialog */}
-      <Dialog open={!!reverseTarget} onOpenChange={(open) => { if (!open) setReverseTarget(null); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Undo2 className="h-5 w-5 text-amber-600" />
-              Undo Training Reset
-            </DialogTitle>
-            <DialogDescription>
-              This will restore {reverseTarget?.display_name}'s training progress to what it was before the reset on {reverseTarget && format(new Date(reverseTarget.reset_at), 'MMM d, yyyy')}.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setReverseTarget(null)}>
-              Cancel
-            </Button>
-            <Button onClick={handleReverse} disabled={reversing}>
-              {reversing && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Restore Training
             </Button>
           </DialogFooter>
         </DialogContent>
