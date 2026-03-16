@@ -84,7 +84,7 @@ export function TrainingResetManager() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
