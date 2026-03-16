@@ -54,6 +54,8 @@ export function useSuperAdminKPIs() {
           throw new Error('Authentication session is not ready. Please refresh and try again.');
         }
 
+        console.log('[SuperAdminKPIs] Fetching data for user:', authData.user.id);
+
         const [
           { data: orgsData, error: orgsErr },
           { data: profiles, error: profilesErr },
@@ -75,6 +77,11 @@ export function useSuperAdminKPIs() {
             .from('user_profiles')
             .select('user_id, organization_id, ai_proficiency_level'),
         ]);
+
+        console.log('[SuperAdminKPIs] orgsData:', orgsData?.length, 'orgsErr:', orgsErr);
+        console.log('[SuperAdminKPIs] profiles:', profiles?.length, 'profilesErr:', profilesErr);
+        console.log('[SuperAdminKPIs] progressRows:', progressRows?.length, 'progressErr:', progressErr);
+        console.log('[SuperAdminKPIs] allProfiles:', allProfiles?.length, 'allProfilesErr:', allProfilesErr);
 
         if (orgsErr) throw orgsErr;
         if (profilesErr) throw profilesErr;
