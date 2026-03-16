@@ -121,7 +121,12 @@ export default function TrainingWorkspace() {
     overview: selectedModule.content.overview,
     practiceTaskTitle: selectedModule.content.practiceTask.title,
     practiceTaskInstructions: selectedModule.content.practiceTask.instructions,
-    successCriteria: selectedModule.content.practiceTask.successCriteria || { primary: [], supporting: [] },
+    successCriteria: Array.isArray(selectedModule.content.practiceTask.successCriteria)
+      ? selectedModule.content.practiceTask.successCriteria
+      : [
+          ...(selectedModule.content.practiceTask.successCriteria?.primary || []),
+          ...(selectedModule.content.practiceTask.successCriteria?.supporting || []),
+        ],
   } : null;
   const departmentSlug = profile?.department || null;
   const departmentName = departmentSlug

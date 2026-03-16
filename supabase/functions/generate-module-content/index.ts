@@ -199,7 +199,7 @@ serve(async (req: Request) => {
   } catch (err) {
     console.error("generate-module-content error:", err);
     return new Response(
-      JSON.stringify({ error: err.message || "Internal error", content: null }),
+      JSON.stringify({ error: (err as Error).message || "Internal error", content: null }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
