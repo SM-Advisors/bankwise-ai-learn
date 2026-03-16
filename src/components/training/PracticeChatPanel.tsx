@@ -19,8 +19,8 @@ import { AVAILABLE_MODELS, PROVIDER_COLORS, type ModelDefinition } from '@/lib/m
 
 // Map of features to the module that teaches them. Button is disabled until the module is completed.
 const FEATURE_MODULE_MAP: Record<string, string> = {
-  tools: '2-6',       // Tool Selection module
-  modelSelector: '2-4', // Model Selection module
+  tools: '2-9',       // Tool Selection module
+  modelSelector: '2-7', // Model Selection module
 };
 
 interface PracticeMessage {

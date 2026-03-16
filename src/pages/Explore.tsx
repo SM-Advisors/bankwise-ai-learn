@@ -54,7 +54,7 @@ const FEATURES = [
 
 const SANDBOXES = [
   { session: 1, moduleId: '1-7', label: 'Session 1 — Free Exploration', description: 'Apply conversation-first patterns independently' },
-  { session: 2, moduleId: '2-7', label: 'Session 2 — Structured Practice', description: 'Experiment with frameworks on tasks you care about' },
+  { session: 2, moduleId: '2-10', label: 'Session 2 — Structured Practice', description: 'Experiment with frameworks on tasks you care about' },
   { session: 3, moduleId: '3-7', label: 'Session 3 — Build Your Agent', description: 'Build your own agent for a real use case' },
   { session: 4, moduleId: '4-5', label: 'Session 4 — Functional Agents', description: 'Go deeper on the tools that matter most' },
   { session: 5, moduleId: '5-5', label: 'Session 5 — Present & Reflect', description: 'Present what you built and what comes next' },

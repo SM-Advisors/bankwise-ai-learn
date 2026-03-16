@@ -781,7 +781,7 @@ GREETING RULES:
 
 ${(() => {
   // Knowledge checks happen at END of session (sandbox module), not start of next
-  const sandboxModules: Record<number, string> = { 1: "1-7", 2: "2-7", 3: "3-7", 4: "4-5" };
+  const sandboxModules: Record<number, string> = { 1: "1-7", 2: "2-10", 3: "3-7", 4: "4-5" };
   const isSandboxModule = moduleId === sandboxModules[effectiveSessionNumber];
   if (!isSandboxModule) return "";
   const questions: Record<number, string> = {

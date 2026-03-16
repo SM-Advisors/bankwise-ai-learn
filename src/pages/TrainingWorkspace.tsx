@@ -121,7 +121,7 @@ export default function TrainingWorkspace() {
     overview: selectedModule.content.overview,
     practiceTaskTitle: selectedModule.content.practiceTask.title,
     practiceTaskInstructions: selectedModule.content.practiceTask.instructions,
-    successCriteria: selectedModule.content.practiceTask.successCriteria || [],
+    successCriteria: selectedModule.content.practiceTask.successCriteria || { primary: [], supporting: [] },
   } : null;
   const departmentSlug = profile?.department || null;
   const departmentName = departmentSlug
@@ -704,7 +704,7 @@ export default function TrainingWorkspace() {
     // Build rubric from module success criteria
     const rubric = {
       task: selectedModule.content.practiceTask.title,
-      criteria: selectedModule.content.practiceTask.successCriteria,
+      criteria: [...selectedModule.content.practiceTask.successCriteria.primary, ...selectedModule.content.practiceTask.successCriteria.supporting],
       instructions: selectedModule.content.practiceTask.instructions,
     };
 
@@ -838,7 +838,7 @@ export default function TrainingWorkspace() {
       const offlineFeedback = `I've reviewed your practice conversation (${activeMessages.filter(m => m.role === 'user').length} prompts).
 
 **Quick Assessment:**
-${selectedModule.content.practiceTask.successCriteria.map((c, i) => `${i + 1}. ${c}`).join('\n')}
+${[...selectedModule.content.practiceTask.successCriteria.primary, ...selectedModule.content.practiceTask.successCriteria.supporting].map((c, i) => `${i + 1}. ${c}`).join('\n')}
 
 I'm having a connection issue for detailed feedback. Ask me specific questions about your prompts!`;
       setTrainerMessages(prev => [...prev,

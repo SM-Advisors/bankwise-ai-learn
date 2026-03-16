@@ -384,7 +384,7 @@ ${contextSection}
 
 ${policiesSection}
 
-${moduleId === "1-5" ? `## MODULE 1-5 RUBRIC: ITERATION
+${moduleId === "1-6" ? `## MODULE 1-6 RUBRIC: ITERATION
 This submission tests the learner's ability to treat AI output as a starting draft and refine it through directed iteration rather than accepting or rejecting the first result.
 
 3-LEVEL RUBRIC:
@@ -399,7 +399,7 @@ EVALUATION FOCUS:
 - Does the submission show at least 2 distinct iterations, not just one prompt and one result?
 - Does each iteration build on the previous one — or is the learner starting over?
 - Is the learner diagnosing and directing, or just hoping the next attempt is better?
-- Does the final output look like it was refined through deliberate effort?` : moduleId === "1-6" ? `## MODULE 1-6 RUBRIC: SELF-REVIEW LOOPS
+- Does the final output look like it was refined through deliberate effort?` : moduleId === "2-2" ? `## MODULE 2-2 RUBRIC: SELF-REVIEW LOOPS
 This submission tests the learner's ability to build a two-prompt generate-then-critique workflow.
 
 3-LEVEL RUBRIC:
@@ -429,7 +429,7 @@ EVALUATION FOCUS:
 - Is this a real work task, not a training exercise invented for the assignment?
 - Are there at least 2 iterations showing directed improvement?
 - Did the learner apply any form of self-review before submitting?
-- Would the final output hold up in a real professional context?` : moduleId === "2-1" ? `## MODULE 2-1 RUBRIC: STRUCTURED PROMPTING (CLEAR FRAMEWORK)
+- Would the final output hold up in a real professional context?` : moduleId === "2-3" ? `## MODULE 2-3 RUBRIC: STRUCTURED PROMPTING (CLEAR FRAMEWORK)
 This submission tests the learner's ability to apply the CLEAR Framework to write a precise, structured prompt for a specific, high-stakes, or complex task.
 
 CLEAR Framework: Context → Length/Format → Examples → Audience → Requirements
@@ -448,7 +448,7 @@ EVALUATION FOCUS:
 - Are all 5 CLEAR elements present — Context, Length/Format, Examples, Audience, Requirements?
 - Are elements specific to the learner's professional context, not generic placeholders?
 - Does the prompt produce a different (better) output than a casual ask would?
-- Are requirements specific enough that the learner could tell if they were met?` : moduleId === "2-3" ? `## MODULE 2-3 RUBRIC: MULTI-SHOT PROMPTING
+- Are requirements specific enough that the learner could tell if they were met?` : moduleId === "2-6" ? `## MODULE 2-6 RUBRIC: MULTI-SHOT PROMPTING
 This submission tests the learner's ability to use examples to teach an AI consistent output patterns.
 
 3-LEVEL RUBRIC:
@@ -463,7 +463,7 @@ This submission tests the learner's ability to use examples to teach an AI consi
 EVALUATION FOCUS:
 - Do the examples teach a reusable pattern, not just provide templates?
 - Is there enough variation to prevent overfitting to one scenario?
-- Does the new request test pattern recognition — not just produce another copy of the examples?` : moduleId === "2-5" ? `## MODULE 2-5 RUBRIC: CHAIN-OF-THOUGHT MASTERY
+- Does the new request test pattern recognition — not just produce another copy of the examples?` : moduleId === "2-8" ? `## MODULE 2-8 RUBRIC: CHAIN-OF-THOUGHT REASONING
 This submission tests the learner's ability to design multi-step reasoning prompts that produce auditable, traceable analysis.
 
 3-LEVEL RUBRIC:
@@ -479,7 +479,7 @@ EVALUATION FOCUS:
 - Does the prompt force sequential reasoning rather than a single-pass summary?
 - Are step dependencies explicit (e.g., "Using the analysis from Step 2, evaluate...")?
 - Would someone else be able to audit the chain of reasoning?
-- Does the final output look different from what a single-step prompt would produce?` : moduleId === "2-6" ? `## MODULE 2-6 RUBRIC: TOOL SELECTION
+- Does the final output look different from what a single-step prompt would produce?` : moduleId === "2-9" ? `## MODULE 2-9 RUBRIC: TOOL SELECTION
 This submission tests the learner's ability to identify when an AI tool is the right choice for a task — and how to interrogate a new tool using the same criteria.
 
 3-LEVEL RUBRIC:
@@ -495,7 +495,7 @@ EVALUATION FOCUS:
 - Does the analysis start with the task, not the tool?
 - Is data privacy assessed before capabilities — or as an afterthought?
 - Is the final decision specific enough to act on (not just "it looks useful")?
-- Does the learner understand the difference between functional agents and custom agents?` : moduleId === "2-7" ? `## MODULE 2-7 RUBRIC: SESSION 2 SANDBOX (CAPSTONE)
+- Does the learner understand the difference between functional agents and custom agents?` : moduleId === "2-10" ? `## MODULE 2-10 RUBRIC: SESSION 2 SANDBOX (CAPSTONE)
 This is the Session 2 Sandbox. Evaluate independent application of Session 2 techniques to a real work task — structured prompting, output templating, multi-shot, chain-of-thought, or tool selection.
 
 3-LEVEL RUBRIC:
