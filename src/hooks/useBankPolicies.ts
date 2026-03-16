@@ -23,8 +23,8 @@ export function useBankPolicies() {
     try {
       setLoading(true);
       // Use type assertion since the types file is auto-generated and may not include new tables yet
-      const { data, error: fetchError } = await supabase
-        .from('org_policies')
+      const { data, error: fetchError } = await (supabase
+        .from('bank_policies') as any)
         .select('*')
         .eq('is_active', true)
         .order('display_order', { ascending: true });
