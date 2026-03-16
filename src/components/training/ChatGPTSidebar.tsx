@@ -37,14 +37,28 @@ function isModuleLocked(
   completedModules: Set<string>,
 ): boolean {
   const moduleIndex = allModules.findIndex(m => m.id === module.id);
-  for (let i = 0; i < moduleIndex; i++) {
-    const candidate = allModules[i];
-    if (!candidate.isGateModule) continue;
-    const eng = moduleEngagement[candidate.id];
-    const passed = eng?.gatePassed === true || completedModules.has(candidate.id);
-    if (!passed) return true;
+  // First module is never locked
+  if (moduleIndex <= 0) return false;
+
+  // Check if the immediately preceding module is completed
+  const prevModule = allModules[moduleIndex - 1];
+  const prevEng = moduleEngagement[prevModule.id];
+  const prevCompleted =
+    completedModules.has(prevModule.id) ||
+    prevEng?.completed === true ||
+    prevEng?.gatePassed === true;
+
+  if (prevCompleted) return false;
+
+  // Grandfather fallback: if user has any engagement beyond this module, unlock it
+  for (let i = moduleIndex + 1; i < allModules.length; i++) {
+    const laterModule = allModules[i];
+    if (moduleEngagement[laterModule.id] || completedModules.has(laterModule.id)) {
+      return false;
+    }
   }
-  return false;
+
+  return true;
 }
 
 function formatRelativeTime(dateStr: string): string {
