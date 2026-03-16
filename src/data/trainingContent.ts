@@ -560,7 +560,7 @@ export const SESSION_2_CONTENT: SessionContent = {
     {
       id: '2-3',
       title: 'Structured Prompting',
-      type: 'document',
+      type: 'exercise',
       description: 'Learn the CLEAR Framework for high-stakes, precision tasks — structure as a tool, not a requirement',
       estimatedTime: '15 min',
       isGateModule: true,
