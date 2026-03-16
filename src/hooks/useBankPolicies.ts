@@ -71,8 +71,8 @@ export function useAllBankPolicies() {
 
   const updatePolicy = async (id: string, updates: Partial<BankPolicy>) => {
     try {
-      const { error: updateError } = await supabase
-        .from('org_policies')
+      const { error: updateError } = await (supabase
+        .from('bank_policies') as any)
         .update(updates)
         .eq('id', id);
 
