@@ -49,7 +49,7 @@ export interface Message {
   };
 }
 
-export interface OrgPolicy {
+export interface BankPolicy {
   id: string;
   title: string;
   content: string;
@@ -59,6 +59,9 @@ export interface OrgPolicy {
   display_order: number | null;
   is_active: boolean | null;
 }
+
+// Industry-neutral alias — use OrgPolicy for new code; BankPolicy kept for backward compat
+export type OrgPolicy = BankPolicy;
 
 export interface TrainingWorkspaceState {
   leftCollapsed: boolean;
@@ -74,6 +77,6 @@ export interface TrainingWorkspaceState {
   contentModalModule: ModuleContent | null;
   videoModalOpen: boolean;
   policyModalOpen: boolean;
-  selectedPolicy: OrgPolicy | null;
+  selectedPolicy: BankPolicy | null;
   completedModules: Set<string>;
 }

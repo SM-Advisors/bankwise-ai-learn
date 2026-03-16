@@ -66,7 +66,7 @@ const initialState: TrainingState = {
 
 const TrainingContext = createContext<TrainingContextType | undefined>(undefined);
 
-export function calculateLearningStyle(answers: QuestionnaireAnswer[]): LearningStyle {
+function calculateLearningStyle(answers: QuestionnaireAnswer[]): LearningStyle {
   const scores: Record<LearningStyle, number> = {
     'example-based': 0,
     'explanation-based': 0,
