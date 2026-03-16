@@ -53,9 +53,27 @@ export function useSuperAdminKPIs() {
         setLoading(true);
         setError(null);
 
-        const { data, error: fnError } = await supabase.functions.invoke<SuperAdminKpiResponse>('superadmin-kpis', {
-          method: 'GET',
-        });
+        const invokeKpis = async (token: string) => {
+          return supabase.functions.invoke<SuperAdminKpiResponse>('superadmin-kpis', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: {},
+          });
+        };
+
+        let { data, error: fnError } = await invokeKpis(session.access_token);
+
+        if (fnError) {
+          const { data: refreshed } = await supabase.auth.refreshSession();
+          const refreshedToken = refreshed.session?.access_token;
+          if (refreshedToken) {
+            const retry = await invokeKpis(refreshedToken);
+            data = retry.data;
+            fnError = retry.error;
+          }
+        }
 
         if (fnError) {
           throw new Error(fnError.message || 'Failed to load super admin KPIs');
