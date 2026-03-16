@@ -175,8 +175,9 @@ export function useSuperAdminKPIs() {
           ff_user_count: ffCount,
           bank_user_count: totalUsers - ffCount,
         });
-      } catch (err) {
-        setError(err.message);
+      } catch (err: any) {
+        console.error('SuperAdminKPIs error:', err);
+        setError(err?.message || 'Unknown error');
       } finally {
         setLoading(false);
       }
