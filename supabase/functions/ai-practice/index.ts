@@ -370,7 +370,7 @@ META-INSTRUCTIONS:
 - Follow all guard rails, output rules, and compliance anchors defined in the system prompt above`
       : (() => {
         const industryCtx = getIndustryContext(industrySlug);
-        const realismBlock = getRealismBlock(industryCtx, isFF, interests);
+        const realismBlock = getRealismBlock(industryCtx, isFF ?? false, interests);
         return `You are an AI assistant being used by a ${industryCtx.professionalLabel} as part of their day-to-day work. You are NOT a coach or tutor — you are the actual AI tool they are practicing with.
 
 ## YOUR ROLE
