@@ -63,7 +63,6 @@ export const SESSION_1_CONTENT: SessionContent = {
       type: 'exercise',
       description: 'Shape the system around who you are and how you work — before you do anything else',
       estimatedTime: '10 min',
-      isGateModule: true,
       learningObjectives: [
         'Configure your role, department, and employer context so AI responses are relevant from the start',
         'Set basic preferences for tone, output style, and level of detail',
@@ -121,7 +120,6 @@ export const SESSION_1_CONTENT: SessionContent = {
       type: 'document',
       description: 'Learn the basics of your AI interface — just enough to begin, not a feature walkthrough',
       estimatedTime: '8 min',
-      isGateModule: true,
       learningObjectives: [
         'Identify the core interface elements: conversation area, input field, and file attachments',
         'Send a message and read the AI response',
@@ -229,7 +227,7 @@ export const SESSION_1_CONTENT: SessionContent = {
       title: 'Your First Win',
       type: 'exercise',
       description: 'Complete one practical task that fits your actual work — and produce something you could use',
-      estimatedTime: '20 min',
+      estimatedTime: '15 min',
       isGateModule: true,
       learningObjectives: [
         'Apply conversation-first computing to a real task from your department',
@@ -283,7 +281,6 @@ export const SESSION_1_CONTENT: SessionContent = {
       type: 'exercise',
       description: 'Let the AI ask you questions instead of crafting the perfect prompt — the most powerful move in conversational AI',
       estimatedTime: '15 min',
-      isGateModule: true,
       learningObjectives: [
         'Use the Flipped Interaction Pattern: ask the AI to interview you before it starts working',
         'Observe how the AI\'s questions surface context you would not have thought to provide',
@@ -342,7 +339,6 @@ export const SESSION_1_CONTENT: SessionContent = {
       type: 'exercise',
       description: 'Learn that value comes from refining the conversation — not from getting it right the first time',
       estimatedTime: '15 min',
-      isGateModule: true,
       learningObjectives: [
         'Take a completed task and make it more complex by adding a constraint or requirement',
         'Reshape AI output mid-conversation: change format, add sections, adjust tone',
@@ -396,7 +392,6 @@ export const SESSION_1_CONTENT: SessionContent = {
       type: 'sandbox',
       description: 'Free exploration — apply the patterns from this session to anything you want',
       estimatedTime: '15 min',
-      isGateModule: true,
       learningObjectives: [
         'Apply conversation-first patterns (dirty paste, Flipped Interaction, iteration) independently',
         'Choose your own task and work through it without guided instruction',
@@ -1865,7 +1860,7 @@ export const KNOWLEDGE_CHECKS: Record<number, string[]> = {
   1: [
     'What is the Flipped Interaction Pattern, and when would you use it?',
     'Describe the difference between the first AI response and a useful final output — what happens in between?',
-    'What is a self-review loop? Walk through the steps.',
+    'What is the Dirty Paste technique, and why is it an effective way to start an AI interaction?',
   ],
   2: [
     'Name the 5 elements of the CLEAR Framework and what each stands for.',
