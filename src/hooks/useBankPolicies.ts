@@ -87,8 +87,8 @@ export function useAllBankPolicies() {
 
   const createPolicy = async (policy: Omit<BankPolicy, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      const { error: insertError } = await supabase
-        .from('org_policies')
+      const { error: insertError } = await (supabase
+        .from('bank_policies') as any)
         .insert(policy);
 
       if (insertError) throw insertError;

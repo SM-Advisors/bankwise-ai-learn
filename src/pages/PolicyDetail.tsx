@@ -38,8 +38,8 @@ export default function PolicyDetail() {
     const fetchPolicy = async () => {
       if (!id) return;
       try {
-        const { data, error: fetchError } = await supabase
-          .from('org_policies')
+        const { data, error: fetchError } = await (supabase
+          .from('bank_policies') as any)
           .select('*')
           .eq('id', id)
           .single();
