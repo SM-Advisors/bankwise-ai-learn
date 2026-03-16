@@ -199,12 +199,20 @@ export function useSuperAdminKPIs() {
       };
     }
 
+    if (!session?.access_token) {
+      setLoading(true);
+      setError(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+
     load();
 
     return () => {
       cancelled = true;
     };
-  }, [user?.id, authLoading]);
+  }, [user?.id, session?.access_token, authLoading]);
 
   return { orgs, platform, loading, error };
 }
