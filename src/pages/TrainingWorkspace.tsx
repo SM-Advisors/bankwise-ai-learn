@@ -1378,8 +1378,9 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                     const progressKey = `session_${sessionId}_progress` as const;
                     const currentProgress = (progress?.[progressKey] as SessionProgressData) || { completedModules: [] };
                     const engagement = { ...(currentProgress.moduleEngagement || {}), ...moduleEngagement };
+                    const existing = engagement['1-1'] || { ...DEFAULT_ENGAGEMENT };
                     engagement['1-1'] = {
-                      ...(engagement['1-1'] || {}),
+                      ...existing,
                       contentViewed: true,
                       chatStarted: true,
                       submitted: true,
