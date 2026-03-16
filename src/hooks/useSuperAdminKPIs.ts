@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface OrgSummary {
@@ -33,42 +34,51 @@ export interface PlatformKPIs {
 }
 
 export function useSuperAdminKPIs() {
+  const { user, loading: authLoading } = useAuth();
   const [orgs, setOrgs] = useState<OrgSummary[]>([]);
   const [platform, setPlatform] = useState<PlatformKPIs | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function load() {
       try {
-        // Fetch all organizations
-        const { data: orgsData, error: orgsErr } = await supabase
-          .from('organizations')
-          .select('id, name, slug, audience_type, industry, created_at')
-          .order('created_at', { ascending: false });
+        setLoading(true);
+        setError(null);
+
+        // Ensure session token is available before querying RLS-protected tables.
+        const { data: authData, error: authErr } = await supabase.auth.getUser();
+        if (authErr || !authData.user) {
+          throw new Error('Authentication session is not ready. Please refresh and try again.');
+        }
+
+        const [
+          { data: orgsData, error: orgsErr },
+          { data: profiles, error: profilesErr },
+          { data: progressRows, error: progressErr },
+          { data: allProfiles, error: allProfilesErr },
+        ] = await Promise.all([
+          supabase
+            .from('organizations')
+            .select('id, name, slug, audience_type, industry, created_at')
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('user_profiles')
+            .select('organization_id, ai_proficiency_level, is_active')
+            .eq('onboarding_completed', true),
+          supabase
+            .from('training_progress')
+            .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed'),
+          supabase
+            .from('user_profiles')
+            .select('user_id, organization_id, ai_proficiency_level'),
+        ]);
 
         if (orgsErr) throw orgsErr;
-
-        // Fetch all user profiles with training progress
-        const { data: profiles, error: profilesErr } = await supabase
-          .from('user_profiles')
-          .select('organization_id, ai_proficiency_level, is_active')
-          .eq('onboarding_completed', true);
-
         if (profilesErr) throw profilesErr;
-
-        // Fetch training progress
-        const { data: progressRows, error: progressErr } = await supabase
-          .from('training_progress')
-          .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed');
-
         if (progressErr) throw progressErr;
-
-        // Map user_id -> profile for join
-        const { data: allProfiles, error: allProfilesErr } = await supabase
-          .from('user_profiles')
-          .select('user_id, organization_id, ai_proficiency_level');
-
         if (allProfilesErr) throw allProfilesErr;
 
         type ProfileRow = NonNullable<typeof allProfiles>[number];
@@ -76,7 +86,6 @@ export function useSuperAdminKPIs() {
           (allProfiles || []).map((p) => [p.user_id, p])
         );
 
-        // Build per-org stats
         const orgMap = new Map<string, OrgSummary>();
         for (const org of orgsData || []) {
           orgMap.set(org.id, {
@@ -97,26 +106,28 @@ export function useSuperAdminKPIs() {
           });
         }
 
-        // Count users per org from onboarded profiles
         const proficiencyByOrg = new Map<string, number[]>();
         for (const p of profiles || []) {
           if (!p.organization_id) continue;
           const org = orgMap.get(p.organization_id);
           if (!org) continue;
+
           org.user_count++;
           if (p.is_active !== false) org.active_user_count++;
+
           if (p.ai_proficiency_level != null) {
             if (!proficiencyByOrg.has(p.organization_id)) proficiencyByOrg.set(p.organization_id, []);
             proficiencyByOrg.get(p.organization_id)!.push(p.ai_proficiency_level);
           }
         }
 
-        // Count completions per org from progress
         for (const row of progressRows || []) {
           const profile = profileByUserId.get(row.user_id);
           if (!profile?.organization_id) continue;
+
           const org = orgMap.get(profile.organization_id);
           if (!org) continue;
+
           if (row.session_1_completed) org.s1_completed++;
           if (row.session_2_completed) org.s2_completed++;
           if (row.session_3_completed) org.s3_completed++;
@@ -124,7 +135,6 @@ export function useSuperAdminKPIs() {
           if (row.session_5_completed) org.s5_completed++;
         }
 
-        // Compute per-org avg proficiency
         for (const [orgId, scores] of proficiencyByOrg.entries()) {
           const org = orgMap.get(orgId);
           if (org && scores.length > 0) {
@@ -133,25 +143,17 @@ export function useSuperAdminKPIs() {
         }
 
         const orgList = Array.from(orgMap.values());
-        setOrgs(orgList);
 
-        // Platform-wide KPIs
         const totalUsers = (profiles || []).length;
         const activeUsers = (profiles || []).filter((p) => p.is_active !== false).length;
         const allScores = (profiles || [])
           .map((p) => p.ai_proficiency_level)
-          .filter((v) => v != null);
-
-        // Get org types for user breakdown
-        const { data: orgTypeProfiles } = await supabase
-          .from('user_profiles')
-          .select('organization_id')
-          .eq('onboarding_completed', true);
+          .filter((v): v is number => v != null);
 
         const ffOrgIds = new Set(
           (orgsData || []).filter((o) => o.audience_type === 'consumer').map((o) => o.id)
         );
-        const ffCount = (orgTypeProfiles || []).filter((p) => ffOrgIds.has(p.organization_id)).length;
+        const ffCount = (profiles || []).filter((p) => !!p.organization_id && ffOrgIds.has(p.organization_id)).length;
 
         const s1Total = (progressRows || []).filter((r) => r.session_1_completed).length;
         const s2Total = (progressRows || []).filter((r) => r.session_2_completed).length;
@@ -160,31 +162,55 @@ export function useSuperAdminKPIs() {
         const s5Total = (progressRows || []).filter((r) => r.session_5_completed).length;
         const progressTotal = (progressRows || []).length;
 
-        setPlatform({
-          total_orgs: (orgsData || []).length,
-          total_users: totalUsers,
-          total_active_users: activeUsers,
-          s1_completion_rate: progressTotal > 0 ? Math.round((s1Total / progressTotal) * 100) : 0,
-          s2_completion_rate: progressTotal > 0 ? Math.round((s2Total / progressTotal) * 100) : 0,
-          s3_completion_rate: progressTotal > 0 ? Math.round((s3Total / progressTotal) * 100) : 0,
-          s4_completion_rate: progressTotal > 0 ? Math.round((s4Total / progressTotal) * 100) : 0,
-          s5_completion_rate: progressTotal > 0 ? Math.round((s5Total / progressTotal) * 100) : 0,
-          avg_proficiency: allScores.length > 0
-            ? Math.round(allScores.reduce((a: number, b: number) => a + b, 0) / allScores.length)
-            : null,
-          ff_user_count: ffCount,
-          bank_user_count: totalUsers - ffCount,
-        });
-      } catch (err: any) {
+        if (!cancelled) {
+          setOrgs(orgList);
+          setPlatform({
+            total_orgs: (orgsData || []).length,
+            total_users: totalUsers,
+            total_active_users: activeUsers,
+            s1_completion_rate: progressTotal > 0 ? Math.round((s1Total / progressTotal) * 100) : 0,
+            s2_completion_rate: progressTotal > 0 ? Math.round((s2Total / progressTotal) * 100) : 0,
+            s3_completion_rate: progressTotal > 0 ? Math.round((s3Total / progressTotal) * 100) : 0,
+            s4_completion_rate: progressTotal > 0 ? Math.round((s4Total / progressTotal) * 100) : 0,
+            s5_completion_rate: progressTotal > 0 ? Math.round((s5Total / progressTotal) * 100) : 0,
+            avg_proficiency: allScores.length > 0
+              ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length)
+              : null,
+            ff_user_count: ffCount,
+            bank_user_count: totalUsers - ffCount,
+          });
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
         console.error('SuperAdminKPIs error:', err);
-        setError(err?.message || 'Unknown error');
+        if (!cancelled) setError(message);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
+    if (authLoading) {
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    if (!user) {
+      setOrgs([]);
+      setPlatform(null);
+      setError('Not authenticated');
+      setLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
+
     load();
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, authLoading]);
 
   return { orgs, platform, loading, error };
 }
