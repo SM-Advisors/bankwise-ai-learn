@@ -67,7 +67,7 @@ interface LessonChunk {
   metadata: Record<string, unknown>;
 }
 
-interface BankPolicy {
+interface OrgPolicy {
   id: string;
   title: string;
   content: string;
@@ -442,7 +442,7 @@ async function retrieveLessonContext(
   return data || [];
 }
 
-async function retrieveBankPolicies(supabaseUrl: string): Promise<BankPolicy[]> {
+async function retrieveOrgPolicies(supabaseUrl: string): Promise<OrgPolicy[]> {
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!serviceRoleKey) {
     console.error("SUPABASE_SERVICE_ROLE_KEY not available for policy retrieval");
@@ -935,7 +935,7 @@ To navigate there, they click the session card on the dashboard.`;
         learningStyle,
       });
 
-      const policies = await retrieveBankPolicies(supabaseUrl);
+      const policies = await retrieveOrgPolicies(supabaseUrl);
 
       // Build context section from chunks
       if (chunks.length > 0) {

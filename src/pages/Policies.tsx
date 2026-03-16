@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useBankPolicies } from '@/hooks/useBankPolicies';
+import { useOrgPolicies } from '@/hooks/useOrgPolicies';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,7 @@ const policyIconMap: Record<string, React.ElementType> = {
 
 export default function Policies() {
   const navigate = useNavigate();
-  const { policies, loading, error } = useBankPolicies();
+  const { policies, loading, error } = useOrgPolicies();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string | null>(null);
 

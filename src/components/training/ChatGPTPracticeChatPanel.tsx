@@ -16,7 +16,7 @@ import type { GeneratedModuleContent } from '@/hooks/useGeneratedModuleContent';
 import { type PracticeConversation } from '@/hooks/usePracticeConversations';
 import { AVAILABLE_MODELS, PROVIDER_COLORS, type ModelDefinition } from '@/lib/models';
 import { useToast } from '@/hooks/use-toast';
-import { type BankPolicy } from '@/types/training';
+import { type OrgPolicy } from '@/types/training';
 
 interface PracticeMessage {
   role: 'user' | 'assistant';
@@ -48,7 +48,7 @@ interface ChatGPTPracticeChatPanelProps {
   lastGateResult?: import('@/types/progress').GateResult | null;
   // Edge extras
   orgName?: string;
-  policies?: BankPolicy[];
+  policies?: OrgPolicy[];
   generatedContent?: GeneratedModuleContent | null;
 }
 

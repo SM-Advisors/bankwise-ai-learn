@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-interface BankPolicy {
+interface OrgPolicy {
   id: string;
   policy_type: string;
   title: string;
@@ -14,8 +14,8 @@ interface BankPolicy {
   updated_at: string | null;
 }
 
-export function useBankPolicies() {
-  const [policies, setPolicies] = useState<BankPolicy[]>([]);
+export function useOrgPolicies() {
+  const [policies, setPolicies] = useState<OrgPolicy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,8 +46,8 @@ export function useBankPolicies() {
   return { policies, loading, error, refetch: fetchPolicies };
 }
 
-export function useAllBankPolicies() {
-  const [policies, setPolicies] = useState<BankPolicy[]>([]);
+export function useAllOrgPolicies() {
+  const [policies, setPolicies] = useState<OrgPolicy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,7 +69,7 @@ export function useAllBankPolicies() {
     }
   };
 
-  const updatePolicy = async (id: string, updates: Partial<BankPolicy>) => {
+  const updatePolicy = async (id: string, updates: Partial<OrgPolicy>) => {
     try {
       const { error: updateError } = await supabase
         .from('org_policies')
@@ -85,7 +85,7 @@ export function useAllBankPolicies() {
     }
   };
 
-  const createPolicy = async (policy: Omit<BankPolicy, 'id' | 'created_at' | 'updated_at'>) => {
+  const createPolicy = async (policy: Omit<OrgPolicy, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       const { error: insertError } = await supabase
         .from('org_policies')
