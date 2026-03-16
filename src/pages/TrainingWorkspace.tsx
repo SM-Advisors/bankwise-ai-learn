@@ -121,7 +121,7 @@ export default function TrainingWorkspace() {
     overview: selectedModule.content.overview,
     practiceTaskTitle: selectedModule.content.practiceTask.title,
     practiceTaskInstructions: selectedModule.content.practiceTask.instructions,
-    successCriteria: selectedModule.successCriteria || [],
+    successCriteria: selectedModule.content.practiceTask.successCriteria || [],
   } : null;
   const departmentSlug = profile?.department || null;
   const departmentName = departmentSlug
