@@ -34,7 +34,7 @@ export interface PlatformKPIs {
 }
 
 export function useSuperAdminKPIs() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
   const [orgs, setOrgs] = useState<OrgSummary[]>([]);
   const [platform, setPlatform] = useState<PlatformKPIs | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,14 +47,6 @@ export function useSuperAdminKPIs() {
       try {
         setLoading(true);
         setError(null);
-
-        // Ensure session token is available before querying RLS-protected tables.
-        const { data: authData, error: authErr } = await supabase.auth.getUser();
-        if (authErr || !authData.user) {
-          throw new Error('Authentication session is not ready. Please refresh and try again.');
-        }
-
-        console.log('[SuperAdminKPIs] Fetching data for user:', authData.user.id);
 
         const [
           { data: orgsData, error: orgsErr },
@@ -77,11 +69,6 @@ export function useSuperAdminKPIs() {
             .from('user_profiles')
             .select('user_id, organization_id, ai_proficiency_level'),
         ]);
-
-        console.log('[SuperAdminKPIs] orgsData:', orgsData?.length, 'orgsErr:', orgsErr);
-        console.log('[SuperAdminKPIs] profiles:', profiles?.length, 'profilesErr:', profilesErr);
-        console.log('[SuperAdminKPIs] progressRows:', progressRows?.length, 'progressErr:', progressErr);
-        console.log('[SuperAdminKPIs] allProfiles:', allProfiles?.length, 'allProfilesErr:', allProfilesErr);
 
         if (orgsErr) throw orgsErr;
         if (profilesErr) throw profilesErr;
