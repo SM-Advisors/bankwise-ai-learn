@@ -54,8 +54,8 @@ export function useAllBankPolicies() {
   const fetchPolicies = async () => {
     try {
       setLoading(true);
-      const { data, error: fetchError } = await supabase
-        .from('org_policies')
+      const { data, error: fetchError } = await (supabase
+        .from('bank_policies') as any)
         .select('*')
         .order('display_order', { ascending: true });
 
