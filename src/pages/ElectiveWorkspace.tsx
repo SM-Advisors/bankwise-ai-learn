@@ -267,7 +267,7 @@ export default function ElectiveWorkspace() {
 
     const rubric = {
       task: selectedModule.content.practiceTask.title,
-      criteria: selectedModule.content.practiceTask.successCriteria,
+      criteria: [...selectedModule.content.practiceTask.successCriteria.primary, ...selectedModule.content.practiceTask.successCriteria.supporting],
       instructions: selectedModule.content.practiceTask.instructions,
     };
 
@@ -362,7 +362,7 @@ export default function ElectiveWorkspace() {
       const offlineFeedback = `I've reviewed your practice conversation (${activeMessages.filter((m) => m.role === 'user').length} prompts).
 
 **Quick Assessment:**
-${selectedModule.content.practiceTask.successCriteria.map((c, i) => `${i + 1}. ${c}`).join('\n')}
+${[...selectedModule.content.practiceTask.successCriteria.primary, ...selectedModule.content.practiceTask.successCriteria.supporting].map((c, i) => `${i + 1}. ${c}`).join('\n')}
 
 I'm having a connection issue for detailed feedback. Ask me specific questions about your prompts!`;
       setTrainerMessages((prev) => [

@@ -51,7 +51,7 @@ describe('module required fields', () => {
     for (const mod of allModules) {
       expect(mod.content.practiceTask).toBeDefined();
       expect(mod.content.practiceTask.instructions).toBeTruthy();
-      expect(mod.content.practiceTask.successCriteria.length).toBeGreaterThan(0);
+      expect(mod.content.practiceTask.successCriteria.primary.length + mod.content.practiceTask.successCriteria.supporting.length).toBeGreaterThan(0);
     }
   });
 });
@@ -89,7 +89,7 @@ describe('gate modules', () => {
     // These are the documented gate positions
     expect(gateIds).toContain('1-3');
     expect(gateIds).toContain('1-4');
-    expect(gateIds).toContain('2-1');
+    expect(gateIds).toContain('2-3');
     expect(gateIds).toContain('3-3');
   });
 });

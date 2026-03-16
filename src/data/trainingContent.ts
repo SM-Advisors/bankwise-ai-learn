@@ -28,7 +28,10 @@ export interface ModuleContent {
       instructions: string;
       scenario: string;
       hints: string[];
-      successCriteria: string[];
+      successCriteria: {
+        primary: string[];
+        supporting: string[];
+      };
       departmentScenarios?: Record<string, { scenario: string; hints: string[] }>;
     };
   };
@@ -60,6 +63,7 @@ export const SESSION_1_CONTENT: SessionContent = {
       type: 'exercise',
       description: 'Shape the system around who you are and how you work — before you do anything else',
       estimatedTime: '10 min',
+      isGateModule: true,
       learningObjectives: [
         'Configure your role, department, and employer context so AI responses are relevant from the start',
         'Set basic preferences for tone, output style, and level of detail',
@@ -97,10 +101,15 @@ export const SESSION_1_CONTENT: SessionContent = {
             'Your department context helps the AI choose relevant examples and terminology',
             'Try changing one preference (like tone) and re-asking the same question to see the difference',
           ],
-          successCriteria: [
-            'Profile includes specific role, department, and employer context',
-            'At least one preference is configured (tone, detail level, or output style)',
-          ],
+          successCriteria: {
+            primary: [
+              'Profile includes specific role, department, and employer context — not generic placeholders',
+            ],
+            supporting: [
+              'At least one preference is configured (tone, detail level, or output style)',
+              'User asked a work-related question and received a contextually relevant response',
+            ],
+          },
         },
       },
     },
@@ -112,33 +121,39 @@ export const SESSION_1_CONTENT: SessionContent = {
       type: 'document',
       description: 'Learn the basics of your AI interface — just enough to begin, not a feature walkthrough',
       estimatedTime: '8 min',
+      isGateModule: true,
       learningObjectives: [
-        'Identify the core interface elements: conversation area, input field, attachments, and new thread control',
-        'Start a new conversation and understand when to start fresh vs. continue',
-        'Know where to find your conversation history',
+        'Identify the core interface elements: conversation area, input field, and file attachments',
+        'Send a message and read the AI response',
+        'Attach a file to a conversation and understand why file sharing matters',
       ],
       learningOutcome: 'After this module, you can navigate the AI interface confidently enough to start your first real interaction without feeling lost.',
       content: {
-        overview: 'This is not a feature walkthrough. You do not need to know every button and setting right now. This module covers the three things you need to know to get started: where to type, how to share a file, and how to start over. Everything else comes later, when you need it.',
+        overview: 'This is not a feature walkthrough. You do not need to know every button and setting right now. This module covers the three things you need to know to get started: where to type, how to share a file, and how to read what comes back. Everything else comes later, when you need it.',
         keyPoints: [
           'The conversation area is where you and the AI exchange messages — it remembers context within a thread',
-          'Starting a new thread resets context — useful when switching tasks, not when refining one',
           'Attaching a file lets you share documents, spreadsheets, or notes for the AI to work with',
+          'Starting a new thread resets context — useful when switching tasks, not when refining one',
           'You do not need to understand models, tools, or settings right now — those are Session 2 topics',
         ],
         practiceTask: {
           title: 'Navigate the Basics',
-          instructions: 'Start a conversation, send a message, and start a new thread. That is the entire exercise.',
-          scenario: 'Open your AI interface. Send a simple message like "What can you help me with today?" Read the response. Then start a new conversation thread. Notice that the new thread has no memory of the previous one. That distinction — same thread vs. new thread — is the most important interface concept in this module.',
+          instructions: 'Send a message, read the response, and attach a file. That is the entire exercise.',
+          scenario: 'Open your AI interface. Send a simple message like "What can you help me with today?" Read the response. Then attach a file — any file from your computer (a document, a spreadsheet, even a photo) — and ask the AI to describe what you shared. The goal is to confirm that you can communicate with the AI and share files with it. That is all you need right now.',
           hints: [
-            'Look for a "New Chat" or "+" button to start a fresh thread',
-            'The conversation history panel (usually on the left) shows your past threads',
+            'Look for a paperclip icon or "Attach" button to share a file',
+            'Any file works for this exercise — a simple document or image is fine',
             'Do not worry about settings or model options right now — you will learn those in Session 2',
           ],
-          successCriteria: [
-            'User has sent at least one message and received a response',
-            'User demonstrates awareness that starting a new conversation resets context',
-          ],
+          successCriteria: {
+            primary: [
+              'User sent at least one message and received a response',
+              'User attached a file to the conversation',
+            ],
+            supporting: [
+              'User can describe where to find the conversation area, input field, and attachment button',
+            ],
+          },
         },
       },
     },
@@ -154,25 +169,23 @@ export const SESSION_1_CONTENT: SessionContent = {
       learningObjectives: [
         'Describe a work task to AI the way you would describe it to a smart colleague who is new to your work',
         'Evaluate whether a response is useful, what is missing, and what the AI assumed',
-        'Use the Flipped Interaction Pattern: let the AI ask you questions instead of crafting the perfect prompt',
-        'Use the Outline Expander technique to guide the AI with a rough structure and let it fill in the details',
+        'Follow up to correct assumptions and refine the output through back-and-forth conversation',
       ],
       learningOutcome: 'After this module, you can have a productive back-and-forth conversation with AI — starting rough, recognizing gaps, and refining until the output is useful.',
       content: {
-        overview: 'This is not prompting. This is a conversation. You describe what you need the way you would describe it to a smart colleague who just joined your team. They are capable but they do not know your specific work yet. Your job is to give them enough context to be helpful — and then keep the conversation going when they get something wrong or miss something.\n\nThe most powerful move you will learn here is the Flipped Interaction Pattern: instead of trying to craft the perfect ask, you let the AI ask you questions first. This works because the AI often knows what information it needs better than you know what to provide.',
+        overview: 'This is not prompting. This is a conversation. You describe what you need the way you would describe it to a smart colleague who just joined your team. They are capable but they do not know your specific work yet. Your job is to give them enough context to be helpful — and then keep the conversation going when they get something wrong or miss something.\n\nThe most important pattern here is what we call the Dirty Paste: take real work — notes, an email, a document — and hand it to the AI with a plain description of what you want. No special formatting. No framework. Just real work, real words.',
         keyPoints: [
           'Start messy — take real work (an old email, notes, a document) and hand it over with a plain description of what you want',
           'The first response is never the final output — it is a starting point for conversation',
           'When something is off, say what is off: "That is too formal" or "You assumed X but actually Y"',
-          'The Flipped Interaction Pattern: "Before you give me X, ask me three questions that will help you do this better"',
-          'The Outline Expander: give the AI a rough outline and let it fill in the details — then iterate on the structure together',
+          'Follow-up is the skill — the first ask gets you started, the follow-up gets you something useful',
+          'You do not need a framework or special syntax — plain language works',
         ],
         steps: [
           'Dirty paste: take something real from your work and hand it to the AI with a plain description of what you want',
           'Recognize the response: is it useful? What is missing? What did the AI assume?',
           'Follow up: ask for what is missing, correct any wrong assumptions, and ask again',
-          'Try the Flipped Interaction Pattern: ask the AI to ask you questions before it starts working',
-          'Try the Outline Expander: give a rough outline of what you want and let the AI fill it in',
+          'Repeat: keep the conversation going until the output is something you could use',
         ],
         examples: [
           {
@@ -181,33 +194,31 @@ export const SESSION_1_CONTENT: SessionContent = {
             explanation: 'No special formatting. No framework. Just real work handed over with a clear description of what you want back. This is how most productive AI interactions start.',
           },
           {
-            title: 'The Flipped Interaction Pattern',
-            good: '"I need to write a memo about our Q1 performance for leadership. Before you start writing, ask me five questions that will help you write a better memo."',
-            explanation: 'Instead of guessing what context the AI needs, you let it tell you. The AI might ask about your audience, the key metrics, what changed from last quarter, and what tone you want. This produces a better result with less guesswork.',
-          },
-          {
-            title: 'The Outline Expander',
-            good: '"I want a training outline for new team members. Here is my rough structure:\n1. Introduction to our team\'s mission and approach\n2. Core processes and tools\n3. Documentation standards\n4. Key stakeholders and workflows\n5. First 30 days checklist\n\nExpand each section into 3-5 bullet points with the key topics to cover."',
-            explanation: 'You provide the skeleton. The AI fills in the substance. You iterate on the result. This teaches you that you control the shape of the output — the AI fills in the details.',
+            title: 'The Follow-Up',
+            good: '"That summary is close, but you assumed the project deadline is next month — it is actually next quarter. Also, the tone is too casual for our leadership team. Can you revise with a more professional tone and correct the timeline?"',
+            explanation: 'The user identified two specific issues: a wrong assumption and a tone mismatch. They told the AI exactly what was wrong instead of starting over. This is the core skill of conversational AI — correction and refinement, not perfection on the first try.',
           },
         ],
         practiceTask: {
           title: 'Your First Real Conversation',
-          instructions: 'Take a real piece of work — notes, an email, a document — and have a back-and-forth conversation with the AI about it. Use at least one of the three techniques: dirty paste, Flipped Interaction Pattern, or Outline Expander.',
-          scenario: 'Pick something real from your work this week: meeting notes that need summarizing, an email that needs drafting, a process that needs documenting, or a question you have been meaning to research. Hand it to the AI with a plain description of what you want. Evaluate the first response. Then follow up at least twice to refine the result. Try using the Flipped Interaction Pattern on your second or third exchange.',
+          instructions: 'Take a real piece of work — notes, an email, a document — and have a back-and-forth conversation with the AI about it. Use the Dirty Paste technique: hand over real material with a plain description of what you want.',
+          scenario: 'Pick something real from your work this week: meeting notes that need summarizing, an email that needs drafting, a process that needs documenting, or a question you have been meaning to research. Hand it to the AI with a plain description of what you want. Evaluate the first response. Then follow up at least twice to refine the result.',
           hints: [
             'Start with something low-stakes — notes, a draft, a question — not something mission-critical',
             'If the first response is off, say exactly what is wrong rather than rephrasing your whole ask',
-            'Try: "Before you revise, ask me two questions about what I need"',
             'The goal is a useful back-and-forth, not a perfect first response',
+            'Do not worry about structure or frameworks — that comes in Session 2',
           ],
-          successCriteria: [
-            'User pasted or described a work-related task (not a test prompt)',
-            'User used the Dirty Paste pattern — handed over real or realistic work material as their starting point',
-            'User evaluated the first response and identified at least one gap or assumption',
-            'User followed up at least twice to refine the output',
-            'User attempted the Flipped Interaction Pattern or Outline Expander at least once',
-          ],
+          successCriteria: {
+            primary: [
+              'User pasted or described a work-related task using real or realistic material — not a test prompt like "tell me a joke"',
+              'User followed up at least twice to refine the output, demonstrating back-and-forth conversation',
+            ],
+            supporting: [
+              'User identified at least one gap or incorrect assumption in the AI response',
+              'Final output is noticeably better than the first response',
+            ],
+          },
         },
       },
     },
@@ -251,23 +262,87 @@ export const SESSION_1_CONTENT: SessionContent = {
             'Do not overthink the ask — start messy and refine',
             'The goal is "I would actually use this" not "this is impressive"',
           ],
-          successCriteria: [
-            'User selected a task directly relevant to their actual work',
-            'User produced an output that could be used with minimal revision — includes all required sections, uses appropriate professional terminology, and addresses the stated audience',
-            'Output reflects the user\'s professional context (role, department, terminology)',
-            'User iterated at least once to refine the output before calling it done',
-          ],
+          successCriteria: {
+            primary: [
+              'User produced an output that is directly relevant to their actual work and could be used with minimal revision',
+            ],
+            supporting: [
+              'Output reflects the user\'s professional context (role, department, terminology)',
+              'User iterated at least once to refine the output before calling it done',
+              'User can describe why the output is good enough to use (or what would need to change)',
+            ],
+          },
         },
       },
     },
 
-    // ─── Module 1-5: Iteration ────────────────────────────────────────────
+    // ─── Module 1-5: The Flipped Interaction ──────────────────────────────
     {
       id: '1-5',
+      title: 'The Flipped Interaction',
+      type: 'exercise',
+      description: 'Let the AI ask you questions instead of crafting the perfect prompt — the most powerful move in conversational AI',
+      estimatedTime: '15 min',
+      isGateModule: true,
+      learningObjectives: [
+        'Use the Flipped Interaction Pattern: ask the AI to interview you before it starts working',
+        'Observe how the AI\'s questions surface context you would not have thought to provide',
+        'Apply the pattern to a real task and compare the output to a direct ask',
+      ],
+      learningOutcome: 'After this module, you can use the Flipped Interaction Pattern to get better AI output by letting the AI ask you the right questions first — instead of guessing what context to provide.',
+      content: {
+        overview: 'In Module 3, you learned to describe what you need and follow up when the response is off. That works. But there is a faster path: instead of guessing what context the AI needs, let it ask you.\n\nThis is the Flipped Interaction Pattern. Instead of "Here is what I want, go," you say: "Before you start, ask me questions that will help you do this better." The AI often knows what information it needs more precisely than you know what to provide. The result: better output with less guesswork.\n\nThis is not a shortcut — it is a collaboration technique. You still evaluate, refine, and make the final call. But the starting point is dramatically better because the AI gathered the right context before it began.',
+        keyPoints: [
+          'The Flipped Interaction Pattern: "Before you do X, ask me questions that will help you do it better"',
+          'The AI surfaces context you would not have thought to provide — roles, constraints, audience, format preferences',
+          'This works because the AI has seen thousands of similar tasks and knows what information leads to better results',
+          'You still control the conversation — answer selectively, push back on irrelevant questions, and redirect',
+          'The pattern works for any task: drafting, analysis, planning, brainstorming, problem-solving',
+        ],
+        examples: [
+          {
+            title: 'The Flipped Interaction in Action',
+            good: '"I need to write a memo about our Q1 performance for leadership. Before you start writing, ask me five questions that will help you write a better memo."',
+            explanation: 'Instead of guessing what context the AI needs, you let it tell you. The AI might ask about your audience, the key metrics, what changed from last quarter, and what tone you want. This produces a better result with less guesswork.',
+          },
+          {
+            title: 'Flipped Interaction for Problem-Solving',
+            good: '"I need to figure out why our team\'s turnaround time has increased this quarter. Before you help me analyze this, ask me questions about our process, team, and recent changes that would help you identify the root cause."',
+            explanation: 'The AI asks targeted questions: What is the turnaround time for? What was it before? What changed recently? How many people are on the team? These questions frame the analysis in a way that a direct ask like "Why is our turnaround time slow?" never would.',
+          },
+        ],
+        practiceTask: {
+          title: 'Let the AI Interview You',
+          instructions: 'Pick a real task from your work. Instead of describing everything upfront, ask the AI to interview you first. Answer its questions, then let it produce the output. Compare the result to what you would have gotten with a direct ask.',
+          scenario: 'Choose a task you need to do this week — something with enough complexity that context matters (not "what time is it" but "help me draft a communication" or "help me think through a decision").\n\n1. First, write a direct ask — the way you would have in Module 3. Save the output.\n2. Now try the Flipped Interaction: "Before you start on this, ask me 5 questions that will help you do a better job."\n3. Answer the AI\'s questions honestly and specifically.\n4. Let the AI produce its output based on your answers.\n5. Compare: which output is better? What context did the AI surface that you would not have provided on your own?',
+          hints: [
+            'The magic is in the AI\'s questions — pay attention to what it asks, because those questions reveal what context matters most',
+            'You do not have to answer every question — skip ones that are not relevant and tell the AI why',
+            'Try varying the number: "Ask me 3 questions" for quick tasks, "Ask me 7 questions" for complex ones',
+            'If the AI\'s questions are too generic, redirect: "Those questions are too broad — ask me about the specific constraints and audience"',
+          ],
+          successCriteria: {
+            primary: [
+              'User used the Flipped Interaction Pattern on a real or realistic work task — asked the AI to ask questions before producing output',
+              'User answered the AI\'s questions and received an output based on those answers',
+            ],
+            supporting: [
+              'User compared a direct-ask output with a flipped-interaction output and articulated the difference',
+              'User identified at least one piece of context the AI surfaced that they would not have provided unprompted',
+            ],
+          },
+        },
+      },
+    },
+
+    // ─── Module 1-6: Iteration ────────────────────────────────────────────
+    {
+      id: '1-6',
       title: 'Iteration',
       type: 'exercise',
       description: 'Learn that value comes from refining the conversation — not from getting it right the first time',
       estimatedTime: '15 min',
+      isGateModule: true,
       learningObjectives: [
         'Take a completed task and make it more complex by adding a constraint or requirement',
         'Reshape AI output mid-conversation: change format, add sections, adjust tone',
@@ -281,6 +356,7 @@ export const SESSION_1_CONTENT: SessionContent = {
           'Output format is something you control in real time: "Give me the same answer but as a table" or "Now make it a one-page executive summary"',
           'Each round of refinement builds on the last — the AI remembers the full conversation',
           'The best AI users are not better at asking — they are better at refining',
+          'Try combining iteration with the Flipped Interaction from Module 5 — ask the AI what else it needs to know before revising',
         ],
         examples: [
           {
@@ -292,26 +368,142 @@ export const SESSION_1_CONTENT: SessionContent = {
         practiceTask: {
           title: 'Push Your First Win Further',
           instructions: 'Take your output from Module 4 and iterate on it. Add complexity, change the format, adjust for a different audience, or ask for something the original version was missing.',
-          scenario: 'Return to the work product you created in Module 4. Now make it harder:\n\n1. Add a constraint: "Now make this compliant with [specific regulation]" or "Adapt this for a board-level audience"\n2. Change the format: "Convert this to a table" or "Turn this into talking points for a 5-minute presentation"\n3. Layer in complexity: "Now add a risk analysis section" or "Include counterarguments"\n\nDo at least three rounds of refinement. Notice how each round builds on what came before.',
+          scenario: 'Return to the work product you created in Module 4. Now make it harder:\n\n1. Add a constraint: "Now make this compliant with [specific standard]" or "Adapt this for an executive audience"\n2. Change the format: "Convert this to a table" or "Turn this into talking points for a 5-minute presentation"\n3. Layer in complexity: "Now add a risk analysis section" or "Include counterarguments"\n\nDo at least three rounds of refinement. Notice how each round builds on what came before.',
           hints: [
             'You do not need to start a new conversation — continue from where you left off in Module 4',
-            'Try changing the audience: same content, but for your CEO, your team, or a regulator',
+            'Try changing the audience: same content, but for your CEO, your team, or an external stakeholder',
             'Ask for a format change mid-conversation: bullets to table, memo to email, summary to presentation',
-            'If you get stuck, ask the AI: "What else could I add to make this more useful for my work?"',
+            'If you get stuck, try the Flipped Interaction: "Before you revise this, ask me what I want to be different"',
           ],
-          successCriteria: [
-            'User completed at least three rounds of refinement on their Module 4 output',
-            'At least one round changed the output format (not just content)',
-            'User can describe how the final version is better than the first version',
-            'User attempted reshaping mid-conversation rather than starting over',
-          ],
+          successCriteria: {
+            primary: [
+              'User completed at least three rounds of refinement on their Module 4 output, with each round building on the last',
+            ],
+            supporting: [
+              'At least one round changed the output format (not just content edits)',
+              'User can describe how the final version is better than the first version and why',
+              'User reshaped mid-conversation rather than starting over',
+            ],
+          },
         },
       },
     },
 
-    // ─── Module 1-6: Self-Review Loops ────────────────────────────────────
+    // ─── Module 1-7: Sandbox ──────────────────────────────────────────────
     {
-      id: '1-6',
+      id: '1-7',
+      title: 'Sandbox',
+      type: 'sandbox',
+      description: 'Free exploration — apply the patterns from this session to anything you want',
+      estimatedTime: '15 min',
+      isGateModule: true,
+      learningObjectives: [
+        'Apply conversation-first patterns (dirty paste, Flipped Interaction, iteration) independently',
+        'Choose your own task and work through it without guided instruction',
+        'Identify which patterns feel natural and which need more practice',
+      ],
+      learningOutcome: 'After this module, you can independently apply Session 1 techniques to any work task without step-by-step guidance.',
+      content: {
+        overview: 'The Sandbox is your open practice space. Nothing new is taught here — this is practice. Choose a task from the suggested starting points or bring your own. Andrea is available but will not lead — she responds to what you initiate.',
+        keyPoints: [
+          'No new concepts — apply what you learned in Modules 1 through 6',
+          'Suggested tasks available if you want a starting point',
+          'Bring your own work if you have something specific in mind',
+          'This is your space to experiment — there is no wrong approach here',
+        ],
+        practiceTask: {
+          title: 'Free Exploration',
+          instructions: 'Pick any task and work through it using the patterns from this session. No structure required — just practice.',
+          scenario: 'This is your free-form practice space. Use it however helps you learn best. Some ideas:\n\n- Take a task you have been putting off and use AI to get a first draft done\n- Try the Flipped Interaction Pattern on a complex question from your work\n- Use the dirty paste technique on a document you need to rework\n- Practice reshaping output: take one result and convert it into three different formats\n- Combine techniques: dirty paste an email, then use Flipped Interaction to refine it, then iterate on format\n\nOr bring your own task — anything goes.',
+          hints: [
+            'If you are not sure what to try, ask the AI: "Based on my role as a [role], what is a task I could practice right now?"',
+            'Try combining techniques: dirty paste → Flipped Interaction → iteration',
+            'Practice anything you did not feel fully confident about in earlier modules',
+            'This is a good time to explore — there is no grading here',
+          ],
+          successCriteria: {
+            primary: [
+              'User initiated at least one task independently and completed a meaningful exchange (not just a single message)',
+            ],
+            supporting: [
+              'User applied at least two techniques from this session (dirty paste, Flipped Interaction, iteration)',
+              'User can identify which technique feels most natural and which needs more practice',
+            ],
+          },
+        },
+      },
+    },
+  ],
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// SESSION 2: STRUCTURED INTERACTION, MODELS & TOOLS
+// Andrea Tier: Collaborative — guided discovery, probing questions, less directive
+// Design constraint: Everything must still work. More complexity, no unpredictability.
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const SESSION_2_CONTENT: SessionContent = {
+  id: 2,
+  title: 'Structured Interaction, Models & Tools',
+  description: 'Move from casual conversation to professional-grade AI use — understand limitations, add structure, and choose the right model and tools for each task',
+  modules: [
+    // ─── Module 2-1: AI Limitations & Critical Evaluation (NEW) ───────────
+    {
+      id: '2-1',
+      title: 'AI Limitations & Critical Evaluation',
+      type: 'document',
+      description: 'Understand where AI confidently gets things wrong — and build the habit of verification before trust',
+      estimatedTime: '15 min',
+      learningObjectives: [
+        'Identify the three most common AI failure modes: hallucination, confident incorrectness, and context drift',
+        'Develop a personal verification habit for AI output — especially for facts, figures, and claims',
+        'Distinguish between tasks where AI is reliable and tasks where human verification is essential',
+      ],
+      learningOutcome: 'After this module, you instinctively verify AI output before trusting it — and you know where AI is most likely to get things wrong.',
+      content: {
+        overview: 'Before you learn to make AI more powerful (which is the rest of this session), you need to understand where it fails. AI does not signal uncertainty the way a human colleague would. It does not say "I am not sure about this" — it says wrong things with the same confidence as right things. This module teaches you to recognize that pattern and build the habit of verification.\n\nThis is not about being skeptical of AI. It is about being calibrated. You should trust AI where it is reliable and verify where it is not.',
+        keyPoints: [
+          'Hallucination: AI generates plausible-sounding information that is completely fabricated — names, dates, statistics, citations',
+          'Confident incorrectness: AI presents wrong information with the same tone and structure as correct information — there is no visual signal',
+          'Context drift: in long conversations, the AI may lose track of earlier constraints or requirements you set',
+          'Verification is not optional for professional use — especially for facts, figures, regulatory references, and citations',
+          'AI is most reliable for structure, drafting, and reasoning scaffolding — least reliable for specific facts, numbers, and references',
+        ],
+        examples: [
+          {
+            title: 'Hallucination in Action',
+            bad: 'You ask AI to cite industry standards for a report. It produces three standard references with realistic-looking numbers and titles. Two of them do not exist — the AI fabricated them because they sounded plausible.',
+            good: 'You ask AI to cite industry standards, then verify each reference independently. You find one is fabricated and replace it with a real citation. The final report is accurate because you verified before using it.',
+            explanation: 'The AI did not signal that it was unsure. The fabricated references looked identical to the real ones. The only difference was the human verification step.',
+          },
+        ],
+        practiceTask: {
+          title: 'Test the Limits',
+          instructions: 'Ask the AI for specific factual claims related to your work. Then verify at least two of those claims independently. Document what was accurate and what was not.',
+          scenario: 'Choose a topic you know well from your professional domain:\n\n1. Ask the AI for 5 specific facts, statistics, or references related to that topic\n2. Independently verify at least 2 of the claims (search online, check your reference materials)\n3. Were any claims wrong? Were they presented with the same confidence as the correct ones?\n4. Ask the AI a question where the answer is "I do not know" — does it admit uncertainty or confabulate?\n5. Reflect: how would you build verification into your workflow for AI-assisted work?',
+          hints: [
+            'Ask about specific numbers, dates, or standards — these are the most common hallucination targets',
+            'Try asking the AI for a citation or reference — then look it up. Does it exist?',
+            'The goal is not to catch the AI being wrong — it is to build the verification habit',
+            'In professional contexts, one fabricated statistic in a report can undermine the entire document',
+          ],
+          successCriteria: {
+            primary: [
+              'User asked the AI for specific factual claims and independently verified at least two',
+              'User identified at least one instance where the AI was wrong or fabricated information, or confirmed all claims were accurate through verification',
+            ],
+            supporting: [
+              'User can describe the difference between tasks where AI is reliable vs. where verification is essential',
+              'User articulated how they would build verification into their professional workflow',
+            ],
+          },
+        },
+      },
+    },
+
+    // ─── Module 2-2: Self-Review Loops (Moved from Session 1) ─────────────
+    {
+      id: '2-2',
       title: 'Self-Review Loops',
       type: 'exercise',
       description: 'Prompt the AI to critique, score, and improve its own output — before you act on it',
@@ -324,7 +516,7 @@ export const SESSION_1_CONTENT: SessionContent = {
       ],
       learningOutcome: 'After this module, you can prompt the AI to critique and revise its own work before you review it — producing higher-quality output without starting over.',
       content: {
-        overview: 'After iterating, you have a natural question you have not named yet: "How do I know when what I have is actually good?" Self-review loops answer that question with a technique instead of a checklist. You ask the AI to score its own output against criteria you define, identify weaknesses, and produce a revised version. Then you — not the AI — decide whether the revision is actually better.\n\nThis replaces the instinct to paste the output into a new conversation and start fresh. Self-review loops keep the context and compound it.',
+        overview: 'After learning about AI limitations in Module 1, you have a natural question: "How do I improve the quality of what I get?" Self-review loops answer that question with a technique instead of a checklist. You ask the AI to score its own output against criteria you define, identify weaknesses, and produce a revised version. Then you — not the AI — decide whether the revision is actually better.\n\nThis replaces the instinct to paste the output into a new conversation and start fresh. Self-review loops keep the context and compound it.',
         keyPoints: [
           'Generate a draft, then ask the AI to critique it against specific criteria you define',
           'The AI identifies what is weak or missing — then produces a revised version',
@@ -347,80 +539,31 @@ export const SESSION_1_CONTENT: SessionContent = {
         ],
         practiceTask: {
           title: 'Critique and Revise',
-          instructions: 'Take any output from this session (Modules 3, 4, or 5) and run a self-review loop. Define your criteria, ask for a critique, request a revision, and compare.',
-          scenario: 'Pick the best output you have generated so far in this session. Now:\n\n1. Define 2-3 criteria that matter for this specific output (e.g., accuracy, clarity, appropriate tone, completeness, actionability)\n2. Ask the AI: "Review this output against these criteria and identify what is weak or missing"\n3. Ask: "Now produce a revised version that addresses your critique"\n4. Compare the original and the revision — what improved? What did the AI miss? What would you change yourself?',
+          instructions: 'Take any output from Session 1 or create a new draft. Run a self-review loop: define criteria, ask for critique, request revision, compare.',
+          scenario: 'Pick the best output you have generated so far. Now:\n\n1. Define 2-3 criteria that matter for this specific output (e.g., accuracy, clarity, appropriate tone, completeness, actionability)\n2. Ask the AI: "Review this output against these criteria and identify what is weak or missing"\n3. Ask: "Now produce a revised version that addresses your critique"\n4. Compare the original and the revision — what improved? What did the AI miss? What would you change yourself?',
           hints: [
             'Be specific with your criteria — "Is it good?" is too vague; "Is it clear enough for someone with no context?" is useful',
             'If the AI\'s critique seems off, push back: "I disagree with point 2 — here is why"',
             'The revision is not always better — sometimes the original was fine and the AI over-corrected',
             'Notice that the critique format (criteria → assessment → revision) works for any type of output',
           ],
-          successCriteria: [
-            'User defined at least 2 specific review criteria relevant to their output',
-            'User requested a self-critique from the AI using those criteria',
-            'User placed original and revised versions side-by-side for comparison',
-            'User made an independent judgment about which version is better and why',
-          ],
+          successCriteria: {
+            primary: [
+              'User defined at least 2 specific review criteria relevant to their output',
+              'User requested a self-critique from the AI using those criteria',
+            ],
+            supporting: [
+              'User compared original and revised versions and articulated preference',
+              'User made an independent judgment about which version is better and why',
+            ],
+          },
         },
       },
     },
 
-    // ─── Module 1-7: Sandbox ──────────────────────────────────────────────
+    // ─── Module 2-3: Structured Prompting (CLEAR Framework) ───────────────
     {
-      id: '1-7',
-      title: 'Sandbox',
-      type: 'sandbox',
-      description: 'Free exploration — apply the patterns from this session to anything you want',
-      estimatedTime: '15 min',
-      learningObjectives: [
-        'Apply conversation-first patterns (dirty paste, Flipped Interaction, Outline Expander, self-review) independently',
-        'Choose your own task and work through it without guided instruction',
-        'Identify which patterns feel natural and which need more practice',
-      ],
-      learningOutcome: 'After this module, you can independently apply Session 1 techniques to any work task without step-by-step guidance.',
-      content: {
-        overview: 'The Sandbox is your open practice space. Nothing new is taught here — this is practice. Choose a task from the suggested starting points or bring your own. Andrea is available but will not lead — she responds to what you initiate.',
-        keyPoints: [
-          'No new concepts — apply what you learned in Modules 1 through 6',
-          'Suggested tasks available if you want a starting point',
-          'Bring your own work if you have something specific in mind',
-          'This is your space to experiment — there is no wrong approach here',
-        ],
-        practiceTask: {
-          title: 'Free Exploration',
-          instructions: 'Pick any task and work through it using the patterns from this session. No structure required — just practice.',
-          scenario: 'This is your free-form practice space. Use it however helps you learn best. Some ideas:\n\n- Take a task you have been putting off and use AI to get a first draft done\n- Try the Flipped Interaction Pattern on a complex question from your work\n- Use the Outline Expander on a document you need to write\n- Run a self-review loop on something you produced earlier\n- Practice reshaping output: take one result and convert it into three different formats\n\nOr bring your own task — anything goes.',
-          hints: [
-            'If you are not sure what to try, ask the AI: "Based on my role as a [role], what is a task I could practice right now?"',
-            'Try combining techniques: dirty paste → Flipped Interaction → self-review loop',
-            'Practice anything you did not feel fully confident about in earlier modules',
-            'This is a good time to explore — there is no grading here',
-          ],
-          successCriteria: [
-            'User initiated at least one task independently',
-            'User applied at least one technique from this session (dirty paste, Flipped Interaction, Outline Expander, iteration, or self-review)',
-            'User completed a meaningful exchange (not just a single message)',
-          ],
-        },
-      },
-    },
-  ],
-};
-
-// ═════════════════════════════════════════════════════════════════════════════
-// SESSION 2: STRUCTURED INTERACTION, MODELS & TOOLS
-// Andrea Tier: Collaborative — guided discovery, probing questions, less directive
-// Design constraint: Everything must still work. More complexity, no unpredictability.
-// ═════════════════════════════════════════════════════════════════════════════
-
-export const SESSION_2_CONTENT: SessionContent = {
-  id: 2,
-  title: 'Structured Interaction, Models & Tools',
-  description: 'Move from casual conversation to professional-grade AI use — shape, direct, and aim your interactions intentionally',
-  modules: [
-    // ─── Module 2-1: Structured Prompting (CLEAR Framework) ───────────────
-    {
-      id: '2-1',
+      id: '2-3',
       title: 'Structured Prompting',
       type: 'document',
       description: 'Learn the CLEAR Framework for high-stakes, precision tasks — structure as a tool, not a requirement',
@@ -467,19 +610,23 @@ export const SESSION_2_CONTENT: SessionContent = {
             'If you are not sure what Examples to provide, skip it — or ask the AI to suggest the format',
             'The goal is not to always use CLEAR — it is to know when it helps',
           ],
-          successCriteria: [
-            'User wrote both a casual and CLEAR-structured version of the same ask',
-            'User compared the two outputs and articulated the difference',
-            'User identified at least one CLEAR element that had the biggest impact on quality',
-            'User can explain when they would use CLEAR vs. casual conversation',
-          ],
+          successCriteria: {
+            primary: [
+              'User wrote both a casual and CLEAR-structured version of the same ask',
+              'User compared the two outputs and articulated the difference',
+            ],
+            supporting: [
+              'User identified at least one CLEAR element that had the biggest impact on quality',
+              'User can explain when they would use CLEAR vs. casual conversation',
+            ],
+          },
         },
       },
     },
 
-    // ─── Module 2-2: Output Templating (Explicit) ─────────────────────────
+    // ─── Module 2-4: Output Templating (Explicit) ─────────────────────────
     {
-      id: '2-2',
+      id: '2-4',
       title: 'Output Templating',
       type: 'exercise',
       description: 'Deliberately define the shape of what you want back — before you write a single word of the ask',
@@ -516,19 +663,76 @@ export const SESSION_2_CONTENT: SessionContent = {
             'If you are not sure what sections to include, ask the AI: "What sections should a [document type] typically have?"',
             'Try: define the template, then use the Flipped Interaction Pattern to fill it',
           ],
-          successCriteria: [
-            'User defined an output template before writing the ask',
-            'Template includes at least 3 distinct sections or format specifications',
-            'Output closely matches the defined template structure',
-            'User can explain why template-first produces better results than ask-first',
-          ],
+          successCriteria: {
+            primary: [
+              'User defined an output template before writing the ask',
+              'Template includes at least 3 distinct sections or format specifications',
+            ],
+            supporting: [
+              'Output closely matches the defined template structure',
+              'User can explain why template-first produces better results than ask-first',
+            ],
+          },
         },
       },
     },
 
-    // ─── Module 2-3: Multi-Shot Prompting ─────────────────────────────────
+    // ─── Module 2-5: Outline Expander (NEW) ───────────────────────────────
     {
-      id: '2-3',
+      id: '2-5',
+      title: 'Outline Expander',
+      type: 'exercise',
+      description: 'Guide the AI with a rough structure and let it fill in the details — control shape, delegate substance',
+      estimatedTime: '15 min',
+      learningObjectives: [
+        'Provide a rough outline or skeleton and let the AI expand each section with relevant content',
+        'Control the shape of the output (sections, order, emphasis) while delegating the substance',
+        'Combine the Outline Expander with output templating for maximum control over AI output',
+      ],
+      learningOutcome: 'After this module, you can hand the AI a rough skeleton and get back structured, expanded content that matches your vision — without writing every word yourself.',
+      content: {
+        overview: 'You learned in Session 1 to have a conversation and iterate. Now you learn to control the shape of what comes back before the AI writes a single word. The Outline Expander technique works like this: you provide the skeleton, the AI fills in the substance. You iterate on the structure, not the content.\n\nThis is different from output templating (Module 4) — templates define format, outlines define content structure. Together they give you full control.',
+        keyPoints: [
+          'Give the AI a numbered outline — even a rough one — and ask it to expand each section',
+          'The outline is your control mechanism: you decide what comes first, what gets emphasis, what is included or excluded',
+          'You can adjust the outline mid-conversation: "Move section 3 before section 2" or "Add a section on risks"',
+          'Combine with output templating: the outline controls content, the template controls format',
+          'This works for any structured document: reports, memos, proposals, training materials, presentations',
+        ],
+        examples: [
+          {
+            title: 'The Outline Expander in Practice',
+            good: '"I want a training outline for new team members. Here is my rough structure:\n1. Introduction to our team\'s mission and approach\n2. Core processes and tools\n3. Documentation standards\n4. Key stakeholders and workflows\n5. First 30 days checklist\n\nExpand each section into 3-5 bullet points with the key topics to cover."',
+            explanation: 'You provide the skeleton. The AI fills in the substance. You iterate on the result. This teaches you that you control the shape of the output — the AI fills in the details.',
+          },
+        ],
+        practiceTask: {
+          title: 'Expand Your Outline',
+          instructions: 'Create a rough outline for a real work document. Ask the AI to expand it. Iterate on the structure until you have a complete first draft.',
+          scenario: 'Choose a document you need to create for work — a report, proposal, memo, training guide, or plan:\n\n1. Write a rough outline with 4-7 sections (just the headers and maybe a one-line description of each)\n2. Ask the AI: "Expand each section into detailed content"\n3. Review: does the expanded version match your intent? Are the sections in the right order?\n4. Adjust the outline: add, remove, or reorder sections. Ask the AI to re-expand.\n5. Try combining with a template: "Now format this as a formal memo with executive summary"',
+          hints: [
+            'Start rough — even single-word section headers work as a starting point',
+            'If a section is too long, split it: "Break section 3 into two separate sections"',
+            'If a section is off-target, give a one-sentence description of what it should cover',
+            'Try: "Expand section 2 in more detail and keep section 5 brief"',
+          ],
+          successCriteria: {
+            primary: [
+              'User provided a rough outline with at least 4 sections',
+              'User asked the AI to expand the outline into detailed content',
+            ],
+            supporting: [
+              'User iterated on the structure at least once (reordered, added, or removed sections)',
+              'User can explain how outline-first differs from asking the AI to "write a document about X"',
+            ],
+          },
+        },
+      },
+    },
+
+    // ─── Module 2-6: Multi-Shot Prompting ─────────────────────────────────
+    {
+      id: '2-6',
       title: 'Multi-Shot Prompting',
       type: 'exercise',
       description: 'Use examples to train the AI on exact format, style, and quality — showing beats telling',
@@ -571,19 +775,23 @@ export const SESSION_2_CONTENT: SessionContent = {
             'This technique is especially powerful for anything that goes to customers, regulators, or the board',
             'Try it without examples first, then with — the comparison is the lesson',
           ],
-          successCriteria: [
-            'User provided at least one example of existing work to the AI',
-            'AI output visibly matched the style, tone, or format of the provided examples',
-            'User identified at least one element the examples communicated that words alone could not',
-            'User can explain when multi-shot is more efficient than detailed instructions',
-          ],
+          successCriteria: {
+            primary: [
+              'User provided at least one example of existing work to the AI',
+              'AI output visibly matched the style, tone, or format of the provided examples',
+            ],
+            supporting: [
+              'User identified at least one element the examples communicated that words alone could not',
+              'User can explain when multi-shot is more efficient than detailed instructions',
+            ],
+          },
         },
       },
     },
 
-    // ─── Module 2-4: Model Selection ──────────────────────────────────────
+    // ─── Module 2-7: Model Selection ──────────────────────────────────────
     {
-      id: '2-4',
+      id: '2-7',
       title: 'Model Selection',
       type: 'document',
       description: 'Learn that different models exist for different tasks — discernment, not preference',
@@ -620,24 +828,27 @@ export const SESSION_2_CONTENT: SessionContent = {
             'For the comparison: focus on what changed in the reasoning quality, not just the length',
             'Not every task needs the most powerful model — the skill is matching, not maximizing',
           ],
-          successCriteria: [
-            'User ran the same task through two different model modes',
-            'User articulated a specific difference in output quality between the two modes',
-            'User identified at least one task from their work that should use each mode',
-            'User demonstrated discernment — not just always choosing the most powerful model',
-          ],
+          successCriteria: {
+            primary: [
+              'User ran the same task through two different model modes',
+              'User articulated a specific difference in output quality between the two modes',
+            ],
+            supporting: [
+              'User identified at least one task from their work that should use each mode',
+              'User demonstrated discernment — not just always choosing the most powerful model',
+            ],
+          },
         },
       },
     },
 
-    // ─── Module 2-5: Chain-of-Thought Mastery ─────────────────────────────
+    // ─── Module 2-8: Chain-of-Thought Reasoning ───────────────────────────
     {
-      id: '2-5',
-      title: 'Chain-of-Thought Mastery',
+      id: '2-8',
+      title: 'Chain-of-Thought Reasoning',
       type: 'exercise',
       description: 'Design prompts that produce auditable, traceable reasoning chains — not just summaries dressed as analysis',
       estimatedTime: '20 min',
-      isGateModule: true,
       learningObjectives: [
         'Prompt the AI to reason step-by-step through complex problems',
         'Design a 3-to-5 step reasoning chain explicitly in the prompt',
@@ -678,19 +889,23 @@ export const SESSION_2_CONTENT: SessionContent = {
             'The weakest step is often where the AI makes an assumption without stating it',
             'Try combining this with a self-review loop: "Now review your own reasoning chain for logical gaps"',
           ],
-          successCriteria: [
-            'User designed a reasoning chain with at least 3 explicit steps',
-            'AI output followed the step-by-step structure',
-            'User identified the weakest step in the chain and articulated why',
-            'User challenged or refined at least one step in the reasoning',
-          ],
+          successCriteria: {
+            primary: [
+              'User designed a reasoning chain with at least 3 explicit steps',
+              'AI output followed the step-by-step structure',
+            ],
+            supporting: [
+              'User identified the weakest step in the chain and articulated why',
+              'User challenged or refined at least one step in the reasoning',
+            ],
+          },
         },
       },
     },
 
-    // ─── Module 2-6: Tool Selection ───────────────────────────────────────
+    // ─── Module 2-9: Tool Selection ───────────────────────────────────────
     {
-      id: '2-6',
+      id: '2-9',
       title: 'Tool Selection',
       type: 'exercise',
       description: 'Learn to recognize when a tool applies — not just how to operate it',
@@ -728,19 +943,23 @@ export const SESSION_2_CONTENT: SessionContent = {
             'Try the Flipped Interaction Pattern: upload a tool or document and ask "What could I do with this?"',
             'Verify any tool-generated facts before using them in professional output',
           ],
-          successCriteria: [
-            'User identified at least 3 tasks and correctly matched each to tool vs. no-tool',
-            'User used at least one tool (web search, file upload, etc.) on a real task',
-            'User verified at least one piece of tool-generated information',
-            'User can explain why a specific tool was the right choice for a specific task',
-          ],
+          successCriteria: {
+            primary: [
+              'User identified at least 3 tasks and correctly matched each to tool vs. no-tool',
+              'User used at least one tool (web search, file upload, etc.) on a real task',
+            ],
+            supporting: [
+              'User verified at least one piece of tool-generated information',
+              'User can explain why a specific tool was the right choice for a specific task',
+            ],
+          },
         },
       },
     },
 
-    // ─── Module 2-7: Sandbox ──────────────────────────────────────────────
+    // ─── Module 2-10: Sandbox ─────────────────────────────────────────────
     {
-      id: '2-7',
+      id: '2-10',
       title: 'Sandbox',
       type: 'sandbox',
       description: 'Structured practice — experiment with prompting frameworks, models, and tools on tasks you care about',
@@ -769,11 +988,15 @@ export const SESSION_2_CONTENT: SessionContent = {
             'Try the most complex combination you can: CLEAR + multi-shot + chain-of-thought + self-review',
             'Note which techniques you find most useful — those are the ones to make habitual',
           ],
-          successCriteria: [
-            'User applied at least two Session 2 techniques in combination',
-            'User used at least one tool (web search, file upload) on a task',
-            'User can articulate which techniques they found most useful for their role',
-          ],
+          successCriteria: {
+            primary: [
+              'User applied at least two Session 2 techniques in combination',
+              'User used at least one tool (web search, file upload) on a task',
+            ],
+            supporting: [
+              'User can articulate which techniques they found most useful for their role',
+            ],
+          },
         },
       },
     },
@@ -832,11 +1055,15 @@ export const SESSION_3_CONTENT: SessionContent = {
             'Think about tasks in your work where re-explaining context every time is friction',
             'This is a starting point — you will build your own agent in Module 3',
           ],
-          successCriteria: [
-            'User interacted with a pre-built agent and observed its behavior',
-            'User can articulate at least one difference between an agent and a default conversation',
-            'User identified at least one task from their work where an agent might add value',
-          ],
+          successCriteria: {
+            primary: [
+              'User interacted with a pre-built agent and observed its behavior',
+              'User can articulate at least one difference between an agent and a default conversation',
+            ],
+            supporting: [
+              'User identified at least one task from their work where an agent might add value',
+            ],
+          },
         },
       },
     },
@@ -881,11 +1108,15 @@ export const SESSION_3_CONTENT: SessionContent = {
             'Level 4 is powerful but requires governance: who monitors the autonomous agent?',
             'If you cannot identify a Level 4 task, that is fine — most professionals do not need one yet',
           ],
-          successCriteria: [
-            'User mapped at least one task to each of the four levels',
-            'User identified which level they would start building at (and it is probably Level 2)',
-            'User can explain why Level 2 is the recommended starting point',
-          ],
+          successCriteria: {
+            primary: [
+              'User mapped at least one task to each of the four levels',
+              'User identified which level they would start building at (and it is probably Level 2)',
+            ],
+            supporting: [
+              'User can explain why Level 2 is the recommended starting point',
+            ],
+          },
         },
       },
     },
@@ -940,13 +1171,17 @@ export const SESSION_3_CONTENT: SessionContent = {
             'If the agent ignores an instruction, it is usually because the instruction is too vague — be more specific',
             'Test with edge cases: what happens when the input is unusual or incomplete?',
           ],
-          successCriteria: [
-            'User defined a specific job for the agent (not a general assistant)',
-            'Instructions include all four elements: role, scope, style, constraints',
-            'User tested the agent with at least one real or realistic task',
-            'User iterated on instructions at least once based on test results',
-            'Agent produces consistent, useful output on repeated tests',
-          ],
+          successCriteria: {
+            primary: [
+              'User defined a specific job for the agent (not a general assistant)',
+              'Instructions include all four elements: role, scope, style, constraints',
+            ],
+            supporting: [
+              'User tested the agent with at least one real or realistic task',
+              'User iterated on instructions at least once based on test results',
+              'Agent produces consistent, useful output on repeated tests',
+            ],
+          },
         },
       },
     },
@@ -983,12 +1218,16 @@ export const SESSION_3_CONTENT: SessionContent = {
             'Start focused — 1 to 2 documents that directly relate to the agent\'s job',
             'The before/after comparison is the key insight — run the same task with and without knowledge',
           ],
-          successCriteria: [
-            'User added at least one knowledge document to their agent',
-            'User tested the agent with and without knowledge and observed the difference',
-            'Agent output references or applies information from the knowledge documents',
-            'User can explain how knowledge changed the quality or specificity of the output',
-          ],
+          successCriteria: {
+            primary: [
+              'User added at least one knowledge document to their agent',
+              'User tested the agent with and without knowledge and observed the difference',
+            ],
+            supporting: [
+              'Agent output references or applies information from the knowledge documents',
+              'User can explain how knowledge changed the quality or specificity of the output',
+            ],
+          },
         },
       },
     },
@@ -1025,12 +1264,16 @@ export const SESSION_3_CONTENT: SessionContent = {
             'Test the boundaries: what happens when the file format is unexpected?',
             'The agent should ask for clarification when the file is ambiguous — if it guesses instead, tighten your instructions',
           ],
-          successCriteria: [
-            'User uploaded at least one file to the agent',
-            'Agent processed the file using its instructions and knowledge',
-            'User tested at least two different interactions with files',
-            'User identified at least one way to improve the agent\'s file handling (through instruction updates)',
-          ],
+          successCriteria: {
+            primary: [
+              'User uploaded at least one file to the agent',
+              'Agent processed the file using its instructions and knowledge',
+            ],
+            supporting: [
+              'User tested at least two different interactions with files',
+              'User identified at least one way to improve the agent\'s file handling (through instruction updates)',
+            ],
+          },
         },
       },
     },
@@ -1067,12 +1310,16 @@ export const SESSION_3_CONTENT: SessionContent = {
             'If connecting to other tools (email, calendar, data systems), start with read-only access before write access',
             'The key question: would you trust this agent to take this action without your review?',
           ],
-          successCriteria: [
-            'User connected at least one tool to their agent',
-            'Agent used the tool to complete a task (not just conversation)',
-            'User verified the output from the tool-connected interaction',
-            'User can explain the difference between an advisor agent and an executor agent',
-          ],
+          successCriteria: {
+            primary: [
+              'User connected at least one tool to their agent',
+              'Agent used the tool to complete a task (not just conversation)',
+            ],
+            supporting: [
+              'User verified the output from the tool-connected interaction',
+              'User can explain the difference between an advisor agent and an executor agent',
+            ],
+          },
         },
       },
     },
@@ -1109,13 +1356,17 @@ export const SESSION_3_CONTENT: SessionContent = {
             'Ask yourself: "Would I use this tomorrow?" If not, pick a different use case.',
             'Share your agent with a colleague and get their feedback — does it work for them too?',
           ],
-          successCriteria: [
-            'User designed an agent for a real work use case',
-            'Agent has at least instructions and one additional layer (knowledge, files, or tools)',
-            'User tested the agent with realistic inputs and iterated at least once',
-            'User can articulate what they would change to make the agent more useful',
-            'User describes the agent as something they plan to actually use',
-          ],
+          successCriteria: {
+            primary: [
+              'User designed an agent for a real work use case',
+              'Agent has at least instructions and one additional layer (knowledge, files, or tools)',
+            ],
+            supporting: [
+              'User tested the agent with realistic inputs and iterated at least once',
+              'User can articulate what they would change to make the agent more useful',
+              'User describes the agent as something they plan to actually use',
+            ],
+          },
         },
       },
     },
@@ -1165,11 +1416,15 @@ export const SESSION_4_CONTENT: SessionContent = {
             'If you are not sure what is available, ask your IT department or check the tool\'s help section',
             'The goal is awareness — you do not need to master every tool right now',
           ],
-          successCriteria: [
-            'User identified at least 3 tools with functional AI agents or features',
-            'User can describe what each functional agent does (even if they have not used it)',
-            'User identified at least one task they could use a functional agent for this week',
-          ],
+          successCriteria: {
+            primary: [
+              'User identified at least 3 tools with functional AI agents or features',
+              'User can describe what each functional agent does (even if they have not used it)',
+            ],
+            supporting: [
+              'User identified at least one task they could use a functional agent for this week',
+            ],
+          },
         },
       },
     },
@@ -1206,12 +1461,16 @@ export const SESSION_4_CONTENT: SessionContent = {
             'Try: "What patterns do you see in this data?" — the AI may spot something you missed',
             'If the AI generates an error, describe the problem in more detail and try again',
           ],
-          successCriteria: [
-            'User generated at least one formula using AI',
-            'User created at least one visualization (chart or pivot table) using AI',
-            'User verified at least one AI-generated output for accuracy',
-            'User identified at least one limitation or error in the AI\'s spreadsheet work',
-          ],
+          successCriteria: {
+            primary: [
+              'User generated at least one formula using AI',
+              'User created at least one visualization (chart or pivot table) using AI',
+            ],
+            supporting: [
+              'User verified at least one AI-generated output for accuracy',
+              'User identified at least one limitation or error in the AI\'s spreadsheet work',
+            ],
+          },
         },
       },
     },
@@ -1248,12 +1507,16 @@ export const SESSION_4_CONTENT: SessionContent = {
             'Speaker notes are a great place to start — let the AI draft them from your slide content',
             'Try: "Make this slide more concise — I have 30 seconds to present it"',
           ],
-          successCriteria: [
-            'User generated an outline or slide content using AI',
-            'User created speaker notes for at least one slide',
-            'User reviewed AI-generated content and identified improvements needed',
-            'User can describe when AI presentation features save time vs. when they do not',
-          ],
+          successCriteria: {
+            primary: [
+              'User generated an outline or slide content using AI',
+              'User created speaker notes for at least one slide',
+            ],
+            supporting: [
+              'User reviewed AI-generated content and identified improvements needed',
+              'User can describe when AI presentation features save time vs. when they do not',
+            ],
+          },
         },
       },
     },
@@ -1290,11 +1553,15 @@ export const SESSION_4_CONTENT: SessionContent = {
             'Thread summarization is especially valuable for emails where you were CC\'d and need to catch up quickly',
             'If the AI draft sounds too generic, add one personal detail to make it yours',
           ],
-          successCriteria: [
-            'User drafted at least one email response using AI assistance',
-            'User adjusted the AI draft for tone, accuracy, or context',
-            'User can identify at least one email type where AI saves time and one where it should not be used',
-          ],
+          successCriteria: {
+            primary: [
+              'User drafted at least one email response using AI assistance',
+              'User adjusted the AI draft for tone, accuracy, or context',
+            ],
+            supporting: [
+              'User can identify at least one email type where AI saves time and one where it should not be used',
+            ],
+          },
         },
       },
     },
@@ -1330,11 +1597,15 @@ export const SESSION_4_CONTENT: SessionContent = {
             'Try combining: generate content with your custom agent, then format it using the tool\'s AI features',
             'Share what you learn with a colleague — they may benefit from the same workflow',
           ],
-          successCriteria: [
-            'User explored at least one functional agent in depth beyond the guided exercises',
-            'User identified the most time-saving AI feature for their specific role',
-            'User can describe a workflow that combines custom and functional agents',
-          ],
+          successCriteria: {
+            primary: [
+              'User explored at least one functional agent in depth beyond the guided exercises',
+              'User identified the most time-saving AI feature for their specific role',
+            ],
+            supporting: [
+              'User can describe a workflow that combines custom and functional agents',
+            ],
+          },
         },
       },
     },
@@ -1385,12 +1656,16 @@ export const SESSION_5_CONTENT: SessionContent = {
             'Do not try to automate everything — the best workflows have clear human checkpoints',
             'Ask a colleague to review your map — they may see steps you forgot or bottlenecks you missed',
           ],
-          successCriteria: [
-            'User mapped a multi-step workflow with at least 5 steps',
-            'Each step has identified inputs, outputs, and current owner',
-            'User classified each step as Automate, Assist, or Human',
-            'User identified at least 2 steps where AI adds clear value',
-          ],
+          successCriteria: {
+            primary: [
+              'User mapped a multi-step workflow with at least 5 steps',
+              'Each step has identified inputs, outputs, and current owner',
+            ],
+            supporting: [
+              'User classified each step as Automate, Assist, or Human',
+              'User identified at least 2 steps where AI adds clear value',
+            ],
+          },
         },
       },
     },
@@ -1427,12 +1702,16 @@ export const SESSION_5_CONTENT: SessionContent = {
             'The trigger is critical — a good trigger means the workflow runs without you remembering to start it',
             'If a step is too complex for one AI component, break it into two simpler steps',
           ],
-          successCriteria: [
-            'User designed a workflow with at least 3 steps',
-            'Workflow includes at least one human review checkpoint',
-            'Each step has a defined trigger, input, AI component, and output',
-            'User can walk through the workflow with a realistic scenario',
-          ],
+          successCriteria: {
+            primary: [
+              'User designed a workflow with at least 3 steps',
+              'Workflow includes at least one human review checkpoint',
+            ],
+            supporting: [
+              'Each step has a defined trigger, input, AI component, and output',
+              'User can walk through the workflow with a realistic scenario',
+            ],
+          },
         },
       },
     },
@@ -1469,12 +1748,16 @@ export const SESSION_5_CONTENT: SessionContent = {
             'The first end-to-end run always reveals surprises — that is expected and valuable',
             'Focus on the critical path: what is the minimum that must work for the workflow to be useful?',
           ],
-          successCriteria: [
-            'User connected at least 2 components into a working workflow',
-            'User ran the workflow end to end with a realistic scenario',
-            'User documented what worked and what broke',
-            'User identified the highest-impact improvement',
-          ],
+          successCriteria: {
+            primary: [
+              'User connected at least 2 components into a working workflow',
+              'User ran the workflow end to end with a realistic scenario',
+            ],
+            supporting: [
+              'User documented what worked and what broke',
+              'User identified the highest-impact improvement',
+            ],
+          },
         },
       },
     },
@@ -1511,12 +1794,16 @@ export const SESSION_5_CONTENT: SessionContent = {
             'Share with a colleague: "Try this workflow on your version of this task — does it work?"',
             'Good enough is the goal — you can always iterate later',
           ],
-          successCriteria: [
-            'User fixed at least one issue from end-to-end testing',
-            'User re-ran the workflow after fixes and verified improvement',
-            'User made a judgment call: is this ready for real use?',
-            'User documented remaining known issues for future iteration',
-          ],
+          successCriteria: {
+            primary: [
+              'User fixed at least one issue from end-to-end testing',
+              'User re-ran the workflow after fixes and verified improvement',
+            ],
+            supporting: [
+              'User made a judgment call: is this ready for real use?',
+              'User documented remaining known issues for future iteration',
+            ],
+          },
         },
       },
     },
@@ -1553,12 +1840,16 @@ export const SESSION_5_CONTENT: SessionContent = {
             'Think about team scale: could others use your stack? Could you teach them?',
             'Andrea will push you on ambition — be ready for "what is the bigger version of this?"',
           ],
-          successCriteria: [
-            'User presented a clear description of their AI stack',
-            'Presentation includes the problem solved and value provided',
-            'User reflected on what they learned across all 5 sessions',
-            'User identified at least one concrete next step for improvement or expansion',
-          ],
+          successCriteria: {
+            primary: [
+              'User presented a clear description of their AI stack',
+              'Presentation includes the problem solved and value provided',
+            ],
+            supporting: [
+              'User reflected on what they learned across all 5 sessions',
+              'User identified at least one concrete next step for improvement or expansion',
+            ],
+          },
         },
       },
     },
