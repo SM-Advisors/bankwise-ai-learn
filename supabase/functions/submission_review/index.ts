@@ -744,9 +744,11 @@ ${isGateModule ? `{
 
 GATE EVALUATION RULES:
 - Evaluate each learning objective listed under "This Module's Objectives" above
-- passed = true if criteriaMetCount >= 60% of criteriaTotalCount (round up) AND no critical compliance issues are present
-- The submission must show actual performance of the skills, not just awareness of them
-- Be fair but rigorous — vague or surface-level submissions that don't demonstrate the specific skills should not pass
+- passed = true if criteriaMetCount >= 50% of criteriaTotalCount (round up) AND no critical compliance issues are present
+- For Session 1 early modules (lesson ID "1", modules like 1-1, 1-2, 1-3): be LENIENT. These are introductory and the learner is just getting started. If they show genuine effort and basic engagement with the task, pass them. Do not require perfection for foundational modules.
+- If this is attempt #2 or higher, be MORE lenient — the learner has already received feedback and is trying again. Give credit for effort and improvement over the prior attempt.
+- The submission must show actual engagement with the task, not just awareness of the topic
+- Be supportive — the goal is to help learners progress, not to block them on technicalities
 - CRITICAL DISTINCTION: Only flag as "issues" things that directly fail the task criteria for THIS module. Everything else (general best practices, advanced techniques not yet taught, style preferences) should go in "areasForImprovement" — these are informational and do NOT block the learner from passing. The learner should be able to read them, learn from them, and still move forward.` : `{
   "feedback": {
     "summary": "2-3 sentence overall assessment",

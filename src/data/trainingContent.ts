@@ -137,7 +137,7 @@ export const SESSION_1_CONTENT: SessionContent = {
           ],
           successCriteria: [
             'User has sent at least one message and received a response',
-            'User has started a new conversation thread',
+            'User demonstrates awareness that starting a new conversation resets context',
           ],
         },
       },

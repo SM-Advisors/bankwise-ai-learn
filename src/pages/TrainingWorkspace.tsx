@@ -279,9 +279,22 @@ export default function TrainingWorkspace() {
 
   useEffect(() => {
     if (session?.modules?.length && !selectedModule) {
-      // Restore persisted module if available
-      const restoredModule = persistedModuleId
+      // Helper: check if a module would be locked based on current progress
+      const wouldBeLocked = (mod: ModuleContent) => {
+        const idx = session.modules.findIndex(m => m.id === mod.id);
+        if (idx <= 0) return false;
+        const prev = session.modules[idx - 1];
+        const prevEng = moduleEngagement[prev.id];
+        return !(completedModules.has(prev.id) || prevEng?.completed || prevEng?.gatePassed);
+      };
+
+      // Restore persisted module if available AND not locked (prevents stale sessionStorage
+      // from auto-selecting a locked module after a training reset)
+      const restoredCandidate = persistedModuleId
         ? session.modules.find((m) => m.id === persistedModuleId)
+        : null;
+      const restoredModule = restoredCandidate && !wouldBeLocked(restoredCandidate)
+        ? restoredCandidate
         : null;
 
       // Find the furthest-along module: the last module with any engagement,
@@ -516,6 +529,17 @@ export default function TrainingWorkspace() {
   // Practice instructions popup state
   const [practicePopupOpen, setPracticePopupOpen] = useState(false);
   const [practiceInstructionContent, setPracticeInstructionContent] = useState('');
+
+  // Wrap startNewChat to also reset review/trainer state so the reviewer sees fresh context
+  const handleNewChat = () => {
+    startNewChat();
+    setModuleCompleted(false);
+    setLastGateMessage(null);
+    setLastGateResult(null);
+    // Clear trainer messages so the review evaluates only the new conversation
+    setTrainerMessages([]);
+    hasGreetedRef.current = false;
+  };
 
   // When the user clicks "Start Practice", show a popup with instructions.
   // When they click "Begin", the popup closes and instructions appear as Andrea message.
@@ -1251,7 +1275,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
             conversations={practiceConversations}
             activeConversationId={activeConversationId}
             onSelectConversation={selectConversation}
-            onNewChat={startNewChat}
+            onNewChat={handleNewChat}
             displayName={profile?.display_name || undefined}
             orgName={profile?.employer_name || undefined}
           />
@@ -1414,7 +1438,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   hasNextModule={!!nextModule}
                   conversations={practiceConversations}
                   activeConversationId={activeConversationId}
-                  onNewChat={startNewChat}
+                  onNewChat={handleNewChat}
                   onSelectConversation={selectConversation}
                   departmentLabel={departmentLabel || undefined}
                   lineOfBusiness={profile?.department || undefined}
@@ -1442,7 +1466,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   hasNextModule={!!nextModule}
                   conversations={practiceConversations}
                   activeConversationId={activeConversationId}
-                  onNewChat={startNewChat}
+                  onNewChat={handleNewChat}
                   onSelectConversation={selectConversation}
                   departmentLabel={departmentLabel || undefined}
                   lineOfBusiness={profile?.department || undefined}

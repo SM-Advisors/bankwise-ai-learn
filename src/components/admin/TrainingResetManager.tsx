@@ -87,7 +87,7 @@ export function TrainingResetManager() {
     if (!resetTarget || !user) return;
     setResetting(true);
     try {
-      // Reset training_progress
+      // Reset training_progress (including session 5)
       await supabase
         .from('training_progress')
         .update({
@@ -99,7 +99,15 @@ export function TrainingResetManager() {
           session_3_progress: {},
           session_4_completed: false,
           session_4_progress: {},
+          session_5_completed: false,
+          session_5_progress: {},
         })
+        .eq('user_id', resetTarget.user_id);
+
+      // Delete practice conversations so stale data doesn't affect module engagement
+      await supabase
+        .from('practice_conversations')
+        .delete()
         .eq('user_id', resetTarget.user_id);
 
       // Reset current_session to 1
