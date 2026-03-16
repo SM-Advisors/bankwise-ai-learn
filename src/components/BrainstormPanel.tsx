@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Lightbulb, Send, Loader2, Sparkles, Bookmark, Users, TrendingUp, X, Check, Brain } from 'lucide-react';
+import { Lightbulb, Send, Loader2, Sparkles, Bookmark, Users, TrendingUp, X, Check, Brain, MessageSquarePlus, History, Clock } from 'lucide-react';
 import { VoiceMicButton } from '@/components/VoiceMicButton';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -39,9 +39,14 @@ export function BrainstormPanel({ compact = false }: { compact?: boolean }) {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { createConversation, appendMessage } = useDashboardConversations();
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  const { conversations, createConversation, appendMessage, selectConversation } = useDashboardConversations();
   const { createIdea } = useUserIdeas();
   const { createTopic } = useCommunityTopics();
+
+  // Filter to brainstorm-related conversations (those with messages)
+  const brainstormConversations = conversations.filter(c => c.messages.length > 0);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -50,12 +55,34 @@ export function BrainstormPanel({ compact = false }: { compact?: boolean }) {
   }, [localMessages, isLoading]);
 
   const handleOpen = () => {
+    // If there's an active conversation, resume it; otherwise show input
+    if (activeConvId && localMessages.length > 0) {
+      setPhase('chat');
+    } else {
+      setPhase('input');
+      setTaskInput('');
+      setLocalMessages([]);
+      setActiveConvId(null);
+    }
+    setSubmitMode(null);
+    setOpen(true);
+  };
+
+  const handleNewChat = () => {
     setPhase('input');
     setTaskInput('');
     setLocalMessages([]);
     setActiveConvId(null);
     setSubmitMode(null);
-    setOpen(true);
+    setHistoryOpen(false);
+  };
+
+  const handleSelectConversation = (conv: typeof conversations[number]) => {
+    setActiveConvId(conv.id);
+    setLocalMessages(conv.messages.map(m => ({ role: m.role, content: m.content })));
+    setPhase('chat');
+    setHistoryOpen(false);
+    selectConversation(conv.id);
   };
 
   const openSubmitForm = async (mode: SubmitMode) => {
@@ -375,11 +402,66 @@ Enterprise ($$$$$): Full RPA platforms (UiPath, Automation Anywhere), custom ven
               alt="Andrea"
               className="h-10 w-10 rounded-full object-cover border-2 border-primary-foreground/30"
             />
-            <div>
+            <div className="flex-1">
               <SheetTitle className="text-primary-foreground text-sm font-semibold leading-none">
                 AI Brainstorm
               </SheetTitle>
               <p className="text-xs text-primary-foreground/80 mt-0.5">with Andrea — your AI coach</p>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleNewChat}
+                className="p-1.5 rounded-md hover:bg-primary-foreground/15 transition-colors"
+                title="New conversation"
+              >
+                <MessageSquarePlus className="h-4 w-4" />
+              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setHistoryOpen(!historyOpen)}
+                  className="p-1.5 rounded-md hover:bg-primary-foreground/15 transition-colors"
+                  title="Conversation history"
+                  disabled={brainstormConversations.length === 0}
+                >
+                  <History className="h-4 w-4" />
+                  {brainstormConversations.length > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-primary-foreground text-primary text-[9px] font-bold flex items-center justify-center">
+                      {brainstormConversations.length}
+                    </span>
+                  )}
+                </button>
+                {/* History dropdown */}
+                {historyOpen && brainstormConversations.length > 0 && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setHistoryOpen(false)} />
+                    <div className="absolute right-0 top-full mt-1 w-64 bg-popover text-popover-foreground border rounded-xl shadow-lg z-50 overflow-hidden">
+                      <div className="px-3 py-2 border-b">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Past Conversations</p>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto p-1.5 space-y-0.5">
+                        {brainstormConversations.map((conv) => (
+                          <button
+                            key={conv.id}
+                            onClick={() => handleSelectConversation(conv)}
+                            className={`w-full text-left px-3 py-2 rounded-lg hover:bg-muted transition-colors ${conv.id === activeConvId ? 'bg-muted' : ''}`}
+                          >
+                            <p className="text-sm font-medium text-foreground truncate">{conv.title}</p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <Clock className="h-3 w-3 text-muted-foreground/60" />
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(conv.updated_at).toLocaleDateString()}
+                              </span>
+                              <span className="text-xs text-muted-foreground/60">
+                                · {conv.messages.length} msgs
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 

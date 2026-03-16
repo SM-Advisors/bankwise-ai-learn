@@ -308,7 +308,7 @@ export default function Auth() {
                   <Input
                     id="reset-email"
                     type="email"
-                    placeholder="you@bank.com"
+                    placeholder="you@abc.com"
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
                     required
@@ -363,7 +363,7 @@ export default function Auth() {
                   <Input
                     id="login-email"
                     type="email"
-                    placeholder="you@bank.com"
+                    placeholder="you@abc.com"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     required
@@ -450,7 +450,7 @@ export default function Auth() {
                   <Input
                     id="signup-email"
                     type="email"
-                    placeholder="you@bank.com"
+                    placeholder="you@abc.com"
                     value={signupEmail}
                     onChange={(e) => setSignupEmail(e.target.value)}
                     required

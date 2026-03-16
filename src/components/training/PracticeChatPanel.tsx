@@ -413,13 +413,37 @@ export function PracticeChatPanel({
 
       {/* Welcome greeting — shown above input when no conversation has started */}
       {!hasConversation && !isSandbox && (
-        <div className="flex-1 flex flex-col items-center justify-center w-full max-w-2xl mx-auto px-4 text-center gap-3">
+        <div className="flex-1 flex flex-col items-center justify-center w-full max-w-2xl mx-auto px-4 text-center gap-4">
           <p className="text-3xl font-light text-muted-foreground">
             Welcome {displayName ? <span className="font-medium text-foreground">{displayName}</span> : 'there'} — let's get started.
           </p>
           <p className="text-sm text-muted-foreground/70">
             Practice the task below, then submit your conversation to get feedback from Andrea.
           </p>
+          {/* Task description */}
+          <div className="w-full text-left bg-card border border-border rounded-xl p-4 space-y-2">
+            <p className="text-sm font-semibold text-foreground">{module.content.practiceTask.title}</p>
+            {module.content.practiceTask.instructions && (
+              <p className="text-sm text-muted-foreground leading-relaxed">{module.content.practiceTask.instructions}</p>
+            )}
+            <p className="text-sm text-muted-foreground leading-relaxed"><span className="font-medium text-foreground">Your scenario: </span>{activeScenario}</p>
+            {activeHints && activeHints.length > 0 && (
+              <div className="pt-1">
+                <p className="text-xs font-medium text-muted-foreground mb-1">Hints to get started:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {activeHints.map((hint, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleHintClick(hint)}
+                      className="text-xs px-2.5 py-1 rounded-full border border-border bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors cursor-pointer"
+                    >
+                      {hint}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

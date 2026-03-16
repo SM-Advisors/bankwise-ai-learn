@@ -203,6 +203,7 @@ export default function Onboarding() {
 
   // Step 2: Role
   const [roleKey, setRoleKey] = useState(profile?.intake_role_key || '');
+  const [customRoleText, setCustomRoleText] = useState('');
   const [consumerJobTitle, setConsumerJobTitle] = useState(profile?.job_role || '');
 
   // Step 3: AI Skill Assessment (6 multiple-choice questions)
@@ -234,9 +235,11 @@ export default function Onboarding() {
     }
 
     if (step === 2) {
-      const hasRole = isEnterprise ? !!roleKey : !!consumerJobTitle.trim();
+      const hasRole = isEnterprise
+        ? (roleKey === 'other' ? !!customRoleText.trim() : !!roleKey)
+        : !!consumerJobTitle.trim();
       if (!hasRole) {
-        toast({ title: 'Required', description: 'Please select your role', variant: 'destructive' });
+        toast({ title: 'Required', description: roleKey === 'other' ? 'Please enter your role' : 'Please select your role', variant: 'destructive' });
         return;
       }
     }
@@ -275,7 +278,7 @@ export default function Onboarding() {
 
     const { error } = await updateProfile({
       display_name: displayName.trim(),
-      job_role: isEnterprise ? (selectedRole?.label || roleKey) : consumerJobTitle.trim(),
+      job_role: isEnterprise ? (roleKey === 'other' ? customRoleText.trim() : (selectedRole?.label || roleKey)) : consumerJobTitle.trim(),
       department: isEnterprise ? (selectedRole?.lobSlug || null) : null,
       ai_proficiency_level: level,
       learning_style: learningStyle,
@@ -399,6 +402,15 @@ export default function Onboarding() {
                         {role.label}
                       </button>
                     ))}
+                    {roleKey === 'other' && (
+                      <Input
+                        placeholder="Enter your role"
+                        value={customRoleText}
+                        onChange={(e) => setCustomRoleText(e.target.value)}
+                        className="mt-1"
+                        autoFocus
+                      />
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-3">
