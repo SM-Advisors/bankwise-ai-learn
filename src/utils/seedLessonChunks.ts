@@ -145,7 +145,15 @@ export async function seedElectiveChunks(): Promise<{
           keyPoints: mod.content.keyPoints,
           examples: mod.content.examples,
           steps: mod.content.steps,
-          practiceTask: mod.content.practiceTask,
+          practiceTask: {
+            ...mod.content.practiceTask,
+            successCriteria: Array.isArray(mod.content.practiceTask.successCriteria)
+              ? mod.content.practiceTask.successCriteria
+              : [
+                  ...(mod.content.practiceTask.successCriteria?.primary || []),
+                  ...(mod.content.practiceTask.successCriteria?.supporting || []),
+                ],
+          },
         },
       })),
     };
