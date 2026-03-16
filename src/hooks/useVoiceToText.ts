@@ -90,9 +90,9 @@ export function useVoiceToText({ onTranscript, onInterimTranscript, onError }: U
       };
 
       // Start live transcription via Web Speech API (if available)
-      if (SpeechRecognition) {
+      if (SpeechRecognitionCtor) {
         try {
-          const recognition = new SpeechRecognition();
+          const recognition = new SpeechRecognitionCtor();
           recognition.continuous = true;
           recognition.interimResults = true;
           recognition.lang = 'en-US';
