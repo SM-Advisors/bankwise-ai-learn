@@ -76,18 +76,32 @@ export function SessionSwitcher({
     onSelectModule?.(module);
   };
 
-  // Check if a module is locked
+  // Check if a module is locked — strict sequential: previous module must be completed
   const isModuleLocked = (module: ModuleContent, allModules: ModuleContent[]): boolean => {
     if (!moduleEngagement || !completedModules) return false;
-    const idx = allModules.findIndex(m => m.id === module.id);
-    for (let i = 0; i < idx; i++) {
-      const candidate = allModules[i];
-      if (!candidate.isGateModule) continue;
-      const eng = moduleEngagement[candidate.id];
-      const passed = eng?.gatePassed === true || completedModules.has(candidate.id);
-      if (!passed) return true;
+    const moduleIndex = allModules.findIndex(m => m.id === module.id);
+    // First module is never locked
+    if (moduleIndex <= 0) return false;
+
+    // Check if the immediately preceding module is completed
+    const prevModule = allModules[moduleIndex - 1];
+    const prevEng = moduleEngagement[prevModule.id];
+    const prevCompleted =
+      completedModules.has(prevModule.id) ||
+      prevEng?.completed === true ||
+      prevEng?.gatePassed === true;
+
+    if (prevCompleted) return false;
+
+    // Grandfather fallback: if user has any engagement beyond this module, unlock it
+    for (let i = moduleIndex + 1; i < allModules.length; i++) {
+      const laterModule = allModules[i];
+      if (moduleEngagement[laterModule.id] || completedModules.has(laterModule.id)) {
+        return false;
+      }
     }
-    return false;
+
+    return true;
   };
 
   return (
