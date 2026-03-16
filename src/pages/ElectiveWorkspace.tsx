@@ -7,12 +7,12 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ELECTIVE_PATHS, type ModuleContent } from '@/data/trainingContent';
 import { ModuleContentModal } from '@/components/ModuleContentModal';
-import { BankPolicyModal } from '@/components/BankPolicyModal';
-import { useBankPolicies } from '@/hooks/useBankPolicies';
+import { OrgPolicyModal } from '@/components/OrgPolicyModal';
+import { useOrgPolicies } from '@/hooks/useOrgPolicies';
 import { TrainerChatPanel } from '@/components/training/TrainerChatPanel';
 import { PracticeChatPanel } from '@/components/training/PracticeChatPanel';
 import { ModuleListSidebar } from '@/components/training/ModuleListSidebar';
-import { type Message, type BankPolicy } from '@/types/training';
+import { type Message, type OrgPolicy } from '@/types/training';
 import type { ModuleEngagement } from '@/types/progress';
 import { DEFAULT_ENGAGEMENT } from '@/types/progress';
 import { deriveSkillSignals } from '@/utils/deriveSkillSignals';
@@ -55,7 +55,7 @@ export default function ElectiveWorkspace() {
   const [contentModalOpen, setContentModalOpen] = useState(false);
   const [contentModalModule, setContentModalModule] = useState<ModuleContent | null>(null);
   const [policyModalOpen, setPolicyModalOpen] = useState(false);
-  const [selectedPolicy, setSelectedPolicy] = useState<BankPolicy | null>(null);
+  const [selectedPolicy, setSelectedPolicy] = useState<OrgPolicy | null>(null);
   const [completedModules, setCompletedModules] = useState<Set<string>>(new Set());
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
   const [policyDropdownOpen, setPolicyDropdownOpen] = useState(false);
@@ -63,7 +63,7 @@ export default function ElectiveWorkspace() {
   const [mobileModulesOpen, setMobileModulesOpen] = useState(false);
   const [moduleEngagement, setModuleEngagement] = useState<Record<string, ModuleEngagement>>({});
 
-  const { policies } = useBankPolicies();
+  const { policies } = useOrgPolicies();
   const { createMemory } = useAIMemories();
   const { getPathProgress, markModuleComplete, updateModuleProgress } = useElectiveProgress();
   const { createPrompt } = useUserPrompts();
@@ -618,7 +618,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                       key={policy.id}
                       className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
                       onClick={() => {
-                        setSelectedPolicy(policy as BankPolicy);
+                        setSelectedPolicy(policy as OrgPolicy);
                         setPolicyModalOpen(true);
                         setPolicyDropdownOpen(false);
                       }}
@@ -644,7 +644,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      <BankPolicyModal
+      <OrgPolicyModal
         open={policyModalOpen}
         onOpenChange={setPolicyModalOpen}
         policy={selectedPolicy}
@@ -713,7 +713,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                           key={policy.id}
                           className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
                           onClick={() => {
-                            setSelectedPolicy(policy as BankPolicy);
+                            setSelectedPolicy(policy as OrgPolicy);
                             setPolicyModalOpen(true);
                             setPolicyDropdownOpen(false);
                           }}

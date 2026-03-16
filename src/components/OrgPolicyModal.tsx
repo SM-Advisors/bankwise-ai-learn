@@ -5,7 +5,7 @@ import { BookOpen, Shield, Lightbulb, FileText } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-interface BankPolicy {
+interface OrgPolicy {
   id: string;
   policy_type: string;
   title: string;
@@ -14,10 +14,10 @@ interface BankPolicy {
   icon: string | null;
 }
 
-interface BankPolicyModalProps {
+interface OrgPolicyModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  policy: BankPolicy | null;
+  policy: OrgPolicy | null;
 }
 
 const iconMap: Record<string, React.ElementType> = {
@@ -27,7 +27,7 @@ const iconMap: Record<string, React.ElementType> = {
   FileText,
 };
 
-export function BankPolicyModal({ open, onOpenChange, policy }: BankPolicyModalProps) {
+export function OrgPolicyModal({ open, onOpenChange, policy }: OrgPolicyModalProps) {
   if (!policy) return null;
 
   const IconComponent = iconMap[policy.icon || 'BookOpen'] || BookOpen;
