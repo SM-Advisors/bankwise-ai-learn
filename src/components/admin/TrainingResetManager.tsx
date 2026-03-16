@@ -40,12 +40,17 @@ export function TrainingResetManager() {
   const [resetting, setResetting] = useState(false);
 
   const fetchData = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
     try {
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profilesError } = await supabase
         .from('user_profiles')
         .select('user_id, display_name, organization_id, current_session')
         .order('display_name', { ascending: true });
+
+      if (profilesError) {
+        console.error('TrainingResetManager profiles error:', profilesError);
+      }
 
       const { data: orgs } = await supabase
         .from('organizations')
