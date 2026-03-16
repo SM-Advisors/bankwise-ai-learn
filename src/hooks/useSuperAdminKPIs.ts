@@ -54,7 +54,11 @@ export function useSuperAdminKPIs() {
         setError(null);
 
         const { data, error: fnError } = await supabase.functions.invoke<SuperAdminKpiResponse>('superadmin-kpis', {
-          method: 'GET',
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: {},
         });
 
         if (fnError) {
