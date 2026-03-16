@@ -14,7 +14,7 @@ import { ModuleListSidebar } from '@/components/training/ModuleListSidebar';
 import { ChatGPTSidebar } from '@/components/training/ChatGPTSidebar';
 import { ChatGPTPracticeChatPanel } from '@/components/training/ChatGPTPracticeChatPanel';
 import { useOrgPlatform } from '@/hooks/useOrgPlatform';
-import { type Message, type OrgPolicy } from '@/types/training';
+import { type Message, type BankPolicy } from '@/types/training';
 import type { SessionProgressData, ModuleEngagement } from '@/types/progress';
 import { DEFAULT_ENGAGEMENT } from '@/types/progress';
 import { deriveSkillSignals } from '@/utils/deriveSkillSignals';
@@ -30,7 +30,7 @@ import { useUserPrompts } from '@/hooks/useUserPrompts';
 import { useOrgModelSettings } from '@/hooks/useOrgModelSettings';
 import { usePreferredModel } from '@/hooks/usePreferredModel';
 import { useWorkspaceTour } from '@/hooks/useWorkspaceTour';
-import { useOrgPolicies } from '@/hooks/useOrgPolicies';
+import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { AgentStudioPanel } from '@/components/agent-studio/AgentStudioPanel';
 import { WorkflowStudioPanel } from '@/components/workflow-studio/WorkflowStudioPanel';
 import { CapstonePanel } from '@/components/capstone/CapstonePanel';
@@ -107,7 +107,7 @@ export default function TrainingWorkspace() {
   const [mobileTab, setMobileTab] = useState<'practice' | 'coach'>('practice');
   const [mobileModulesOpen, setMobileModulesOpen] = useState(false);
 
-  const { policies } = useOrgPolicies();
+  const { policies } = useBankPolicies();
   const { emitSignal } = useValueSignals();
   const { industrySlug, config: industryConfig } = useIndustryContent();
   const { createMemory } = useAIMemories();
@@ -121,7 +121,7 @@ export default function TrainingWorkspace() {
     overview: selectedModule.content.overview,
     practiceTaskTitle: selectedModule.content.practiceTask.title,
     practiceTaskInstructions: selectedModule.content.practiceTask.instructions,
-    successCriteria: selectedModule.successCriteria || { primary: [], supporting: [] },
+    successCriteria: selectedModule.content.practiceTask.successCriteria || { primary: [], supporting: [] },
   } : null;
   const departmentSlug = profile?.department || null;
   const departmentName = departmentSlug
@@ -1402,8 +1402,9 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                     const progressKey = `session_${sessionId}_progress` as const;
                     const currentProgress = (progress?.[progressKey] as SessionProgressData) || { completedModules: [] };
                     const engagement = { ...(currentProgress.moduleEngagement || {}), ...moduleEngagement };
+                    const existing = engagement['1-1'] || { ...DEFAULT_ENGAGEMENT };
                     engagement['1-1'] = {
-                      ...(engagement['1-1'] || {}),
+                      ...existing,
                       contentViewed: true,
                       chatStarted: true,
                       submitted: true,

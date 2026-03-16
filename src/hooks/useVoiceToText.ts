@@ -7,17 +7,30 @@ interface UseVoiceToTextOptions {
   onError?: (error: string) => void;
 }
 
+type SpeechRecognitionInstance = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: { resultIndex: number; results: SpeechRecognitionResultList }) => void) | null;
+  onerror: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
+
 // Browser SpeechRecognition polyfill
-const SpeechRecognition =
-  (window as unknown as Record<string, unknown>).SpeechRecognition ||
-  (window as unknown as Record<string, unknown>).webkitSpeechRecognition;
+const SpeechRecognitionCtor = ((window as unknown as Record<string, unknown>).SpeechRecognition ||
+  (window as unknown as Record<string, unknown>).webkitSpeechRecognition) as
+  | SpeechRecognitionConstructor
+  | undefined;
 
 export function useVoiceToText({ onTranscript, onInterimTranscript, onError }: UseVoiceToTextOptions = {}) {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const recognitionRef = useRef<InstanceType<typeof SpeechRecognition> | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   const startRecording = useCallback(async () => {
     try {
@@ -77,9 +90,9 @@ export function useVoiceToText({ onTranscript, onInterimTranscript, onError }: U
       };
 
       // Start live transcription via Web Speech API (if available)
-      if (SpeechRecognition) {
+      if (SpeechRecognitionCtor) {
         try {
-          const recognition = new SpeechRecognition();
+          const recognition = new SpeechRecognitionCtor();
           recognition.continuous = true;
           recognition.interimResults = true;
           recognition.lang = 'en-US';

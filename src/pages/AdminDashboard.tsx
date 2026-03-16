@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useAllOrgPolicies } from '@/hooks/useOrgPolicies';
+import { useAllBankPolicies } from '@/hooks/useBankPolicies';
 import { useAllLiveTrainingSessions, type LiveTrainingSessionInsert, type LiveTrainingSession } from '@/hooks/useLiveTrainingSessions';
 import { useAdminAppSettings } from '@/hooks/useAppSettings';
 import { useAllEvents, type EventInsert, type Event } from '@/hooks/useEvents';
@@ -186,7 +186,7 @@ export default function AdminDashboard() {
 
   // Admin tour — auto-trigger on first visit or ?tour=admin param
   const { isCompleted: adminTourDone, startTour: startAdminTour } = useTour('admin');
-  const { policies, loading: policiesLoading, updatePolicy, createPolicy } = useAllOrgPolicies();
+  const { policies, loading: policiesLoading, updatePolicy, createPolicy } = useAllBankPolicies();
   const { sessions: liveSessions, loading: liveSessionsLoading, createSession, updateSession, deleteSession } = useAllLiveTrainingSessions();
   const { settings: appSettings, loading: settingsLoading, updateSetting, getSetting } = useAdminAppSettings();
   
