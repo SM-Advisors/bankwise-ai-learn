@@ -709,18 +709,19 @@ RESPONSE FORMAT — MANDATORY:
   "coachingAction": "celebrate"
 }`;
 
-        const sandboxGreetingResponse = await fetch("https://api.anthropic.com/v1/messages", {
+        const sandboxGreetingResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: {
-            "x-api-key": ANTHROPIC_API_KEY,
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "claude-sonnet-4-6",
+            model: "openai/gpt-5",
             max_tokens: 300,
-            system: sandboxGreetingPrompt,
-            messages: [{ role: "user", content: "Generate my sandbox greeting." }],
+            messages: [
+              { role: "system", content: sandboxGreetingPrompt },
+              { role: "user", content: "Generate my sandbox greeting." },
+            ],
           }),
         });
 
