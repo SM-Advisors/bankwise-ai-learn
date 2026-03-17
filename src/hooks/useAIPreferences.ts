@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -39,7 +39,7 @@ export function useAIPreferences() {
   const [preferences, setPreferences] = useState<AIPreferences | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchPreferences = async () => {
+  const fetchPreferences = useCallback(async () => {
     if (!user) {
       setPreferences(null);
       setLoading(false);
@@ -60,9 +60,9 @@ export function useAIPreferences() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const savePreferences = async (updates: Partial<Omit<AIPreferences, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => {
+  const savePreferences = useCallback(async (updates: Partial<Omit<AIPreferences, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => {
     if (!user) return { success: false, error: 'Not authenticated' };
     try {
       const payload = {
@@ -71,21 +71,24 @@ export function useAIPreferences() {
         user_id: user.id,
         updated_at: new Date().toISOString(),
       };
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('ai_user_preferences')
-        .upsert(payload, { onConflict: 'user_id' });
+        .upsert(payload, { onConflict: 'user_id' })
+        .select()
+        .single();
       if (error) throw error;
-      await fetchPreferences();
+      // Update state directly instead of refetching to avoid re-render cascade
+      if (data) setPreferences(data);
       return { success: true };
     } catch (err) {
       console.error('Error saving AI preferences:', err);
       return { success: false, error: 'Failed to save preferences' };
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchPreferences();
-  }, [user]);
+  }, [fetchPreferences]);
 
   return { preferences, loading, savePreferences, refetch: fetchPreferences };
 }

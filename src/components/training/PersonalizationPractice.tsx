@@ -56,13 +56,15 @@ export function PersonalizationPractice({ onSaved, hasNextModule, onContinueToNe
   // Track whether form has been modified since last save (for auto-save)
   const [isDirty, setIsDirty] = useState(false);
   const lastSavedRef = useRef<string>('');
+  const initializedRef = useRef(false);
 
   // Build a snapshot string to detect changes
   const currentSnapshot = `${tone}|${verbosity}|${formatting}|${roleContext}|${customInstructions}`;
 
-  // Pre-fill from existing preferences
+  // Pre-fill from existing preferences — only on initial load to avoid overwriting edits
   useEffect(() => {
-    if (preferences) {
+    if (preferences && !initializedRef.current) {
+      initializedRef.current = true;
       setTone(preferences.tone || 'professional');
       setVerbosity(preferences.verbosity || 'balanced');
       setFormatting(preferences.formatting_preference || 'mixed');
