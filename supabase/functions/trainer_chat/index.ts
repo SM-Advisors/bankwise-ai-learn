@@ -848,7 +848,7 @@ RESPONSE FORMAT — MANDATORY:
       }
 
       const greetingData = await greetingResponse.json();
-      const greetingRaw = greetingData.content?.[0]?.text || "";
+      const greetingRaw = greetingData.choices?.[0]?.message?.content || "";
       const parsed = parseAndreaResponse(greetingRaw);
       return new Response(
         JSON.stringify(parsed),
