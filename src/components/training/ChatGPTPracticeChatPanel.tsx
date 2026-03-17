@@ -514,14 +514,14 @@ export function ChatGPTPracticeChatPanel({
             {/* Send / Audio circle button */}
             <button
               type="button"
-              onClick={input.trim() ? handleSend : undefined}
+              onClick={(input.trim() || attachedFile) ? handleSend : undefined}
               disabled={isLoading}
-              aria-label={input.trim() ? 'Send message' : 'Voice input'}
+              aria-label={(input.trim() || attachedFile) ? 'Send message' : 'Voice input'}
               className="w-8 h-8 rounded-full bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white flex items-center justify-center shrink-0 transition-colors"
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
-              ) : input.trim() ? (
+              ) : (input.trim() || attachedFile) ? (
                 <ArrowUp className="h-4 w-4" />
               ) : (
                 <AudioLines className="h-4 w-4" />
