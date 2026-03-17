@@ -6,13 +6,13 @@ export interface ModelDefinition {
 }
 
 export const AVAILABLE_MODELS: ModelDefinition[] = [
-  { id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6', provider: 'anthropic', description: 'Fast, intelligent — recommended' },
+  { id: 'gpt-5.4',            label: 'GPT 5.4',            provider: 'openai',    description: 'OpenAI flagship — recommended' },
+  { id: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6', provider: 'anthropic', description: 'Fast, intelligent' },
   { id: 'claude-opus-4-6',   label: 'Claude Opus 4.6',   provider: 'anthropic', description: 'Most capable Claude model' },
-  { id: 'gpt-5.4',            label: 'GPT 5.4',            provider: 'openai',    description: 'OpenAI flagship model' },
   { id: 'gemini-3',           label: 'Gemini 3',           provider: 'google',    description: 'Google — fast & efficient' },
 ];
 
-export const DEFAULT_MODEL = 'claude-sonnet-4-6';
+export const DEFAULT_MODEL = 'gpt-5.4';
 
 export const PROVIDER_COLORS: Record<ModelDefinition['provider'], string> = {
   anthropic: 'bg-purple-100 text-purple-700',
