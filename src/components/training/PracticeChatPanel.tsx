@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Loader2, Send, CheckCircle, AlertCircle,
   ChevronRight, ChevronDown, Bot, User, AudioLines, Plus, SlidersHorizontal,
-  MessageSquarePlus, History, Clock, ChevronUp, Sparkles, RotateCcw,
+  MessageSquarePlus, History, Clock, ChevronUp, Sparkles, RotateCcw, X, FileText,
 } from 'lucide-react';
 import { VoiceMicButton } from '@/components/VoiceMicButton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -22,6 +22,9 @@ const FEATURE_MODULE_MAP: Record<string, string> = {
   tools: '2-9',       // Tool Selection module
   modelSelector: '2-7', // Model Selection module
 };
+
+// Attachments are unlocked from module 1-2 onward (module 1-1 is the only one without)
+const isAttachmentsAvailable = (moduleId: string) => moduleId !== '1-1';
 
 interface PracticeMessage {
   role: 'user' | 'assistant';
@@ -86,8 +89,11 @@ export function PracticeChatPanel({
   const [historyOpen, setHistoryOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'work' | 'web'>('work');
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+  const [attachedFile, setAttachedFile] = useState<{ name: string; content: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Feature gating: check if features are unlocked based on completed modules
+  const isAttachmentsUnlocked = isAttachmentsAvailable(module.id);
   const isToolsUnlocked = completedModules.has(FEATURE_MODULE_MAP.tools);
   const isModelSelectorUnlocked = completedModules.has(FEATURE_MODULE_MAP.modelSelector);
   const lockedTooltip = "This feature will be available after the module where it is taught.";
@@ -119,11 +125,35 @@ export function PracticeChatPanel({
   }, [messages]);
 
   const handleSend = () => {
-    if (!input.trim() || isLoading) return;
-    onSendMessage(input.trim());
+    if ((!input.trim() && !attachedFile) || isLoading) return;
+    let message = input.trim();
+    if (attachedFile) {
+      message = `[Attached file: ${attachedFile.name}]\n\n${attachedFile.content}${message ? '\n\n' + message : ''}`;
+      setAttachedFile(null);
+    }
+    onSendMessage(message);
     setInput('');
     // Re-focus input after sending
     setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 512_000) {
+      alert('File is too large. Please select a file under 500KB.');
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAttachedFile({ name: file.name, content: reader.result as string });
+    };
+    reader.onerror = () => {
+      alert('Could not read the file. Please try again.');
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -463,6 +493,30 @@ export function PracticeChatPanel({
       {/* Copilot-Style Composer Bar */}
       <div className="w-full max-w-2xl mx-auto px-4 pb-3 pt-2">
         <div className="rounded-2xl border border-border bg-card shadow-sm">
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".txt,.csv,.md,.json,.xml,.html,.log,.ts,.js,.py,.sql,.css,.yml,.yaml"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          {/* Attached file preview */}
+          {attachedFile && (
+            <div className="px-4 pt-3 pb-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted border border-border text-sm">
+                <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <span className="text-xs text-foreground truncate max-w-[200px]">{attachedFile.name}</span>
+                <button
+                  type="button"
+                  onClick={() => setAttachedFile(null)}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
           <Textarea
             ref={inputRef}
             value={input}
@@ -478,12 +532,18 @@ export function PracticeChatPanel({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted" disabled={!isToolsUnlocked}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
+                      disabled={!isAttachmentsUnlocked}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
                       <Plus className="h-5 w-5" />
                     </Button>
                   </span>
                 </TooltipTrigger>
-                {!isToolsUnlocked && <TooltipContent side="top"><p className="text-xs">{lockedTooltip}</p></TooltipContent>}
+                {!isAttachmentsUnlocked && <TooltipContent side="top"><p className="text-xs">{lockedTooltip}</p></TooltipContent>}
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -563,7 +623,7 @@ export function PracticeChatPanel({
                 disabled={isLoading}
                 size="default"
               />
-              {input.trim() ? (
+              {(input.trim() || attachedFile) ? (
                 <Button
                   size="icon"
                   onClick={handleSend}

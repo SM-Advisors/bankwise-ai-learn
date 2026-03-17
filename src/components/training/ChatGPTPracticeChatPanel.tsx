@@ -7,7 +7,7 @@ import {
   Loader2, ChevronRight, ChevronDown, ChevronUp,
   Bot, AudioLines, Plus, CheckCircle, AlertCircle,
   RotateCcw, ArrowUp, EyeOff, Eye, Building2,
-  Palette, ImageIcon, Paperclip, Globe, Wrench, FileText,
+  Palette, ImageIcon, Paperclip, Globe, Wrench, FileText, X,
 } from 'lucide-react';
 import { VoiceMicButton } from '@/components/VoiceMicButton';
 import { type ModuleContent } from '@/data/trainingContent';
@@ -55,7 +55,7 @@ interface ChatGPTPracticeChatPanelProps {
 const PLUS_MENU_ITEMS = [
   { icon: Palette, label: 'Canvas', action: 'coming_soon' },
   { icon: ImageIcon, label: 'Create Image', action: 'coming_soon' },
-  { icon: Paperclip, label: 'Upload File', action: 'coming_soon' },
+  { icon: Paperclip, label: 'Upload File', action: 'upload_file' },
   { icon: Globe, label: 'Search the Web', action: 'coming_soon' },
   { icon: Building2, label: 'Company knowledge', action: 'knowledge' },
   { icon: Wrench, label: 'Use a Tool', action: 'coming_soon' },
@@ -94,6 +94,11 @@ export function ChatGPTPracticeChatPanel({
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [incognito, setIncognito] = useState(false);
   const [knowledgeOpen, setKnowledgeOpen] = useState(false);
+  const [attachedFile, setAttachedFile] = useState<{ name: string; content: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isAttachmentsAvailable = (moduleId: string) => moduleId !== '1-1';
+  const isAttachmentsUnlocked = isAttachmentsAvailable(module.id);
 
   const showModelSelector = allowedModels.length > 1 && !!selectedModel && !!onModelChange;
   const selectedModelDef: ModelDefinition | undefined = AVAILABLE_MODELS.find(m => m.id === selectedModel);
@@ -123,10 +128,31 @@ export function ChatGPTPracticeChatPanel({
   }, [messages]);
 
   const handleSend = () => {
-    if (!input.trim() || isLoading) return;
-    onSendMessage(input.trim());
+    if ((!input.trim() && !attachedFile) || isLoading) return;
+    let finalMessage = input.trim();
+    if (attachedFile) {
+      finalMessage = `[Attached file: ${attachedFile.name}]\n\n${attachedFile.content}\n\n${finalMessage}`;
+      setAttachedFile(null);
+    }
+    onSendMessage(finalMessage);
     setInput('');
     setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 500 * 1024) {
+      toast({ title: 'File too large', description: 'Please select a file under 500 KB.' });
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAttachedFile({ name: file.name, content: reader.result as string });
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -142,6 +168,12 @@ export function ChatGPTPracticeChatPanel({
       toast({ title: 'Coming soon', description: 'This feature will be available shortly.' });
     } else if (action === 'knowledge') {
       setKnowledgeOpen(true);
+    } else if (action === 'upload_file') {
+      if (isAttachmentsUnlocked) {
+        fileInputRef.current?.click();
+      } else {
+        toast({ title: 'Not available yet', description: 'File uploads unlock after Module 1-1.' });
+      }
     }
   };
 
@@ -383,6 +415,32 @@ export function ChatGPTPracticeChatPanel({
           </div>
         )}
 
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          accept=".txt,.csv,.md,.json,.xml,.html,.log,.ts,.js,.py,.sql,.css,.yml,.yaml"
+          onChange={handleFileSelect}
+        />
+
+        {/* Attached file preview */}
+        {attachedFile && (
+          <div className="flex items-center gap-2 mb-2 px-1">
+            <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-1.5 text-xs text-gray-600 dark:text-gray-300">
+              <FileText className="h-3.5 w-3.5" />
+              {attachedFile.name}
+              <button
+                type="button"
+                onClick={() => setAttachedFile(null)}
+                className="ml-1 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Pill input bar */}
         <div className="relative">
           {/* + menu popover */}
@@ -450,14 +508,14 @@ export function ChatGPTPracticeChatPanel({
             {/* Send / Audio circle button */}
             <button
               type="button"
-              onClick={input.trim() ? handleSend : undefined}
+              onClick={(input.trim() || attachedFile) ? handleSend : undefined}
               disabled={isLoading}
-              aria-label={input.trim() ? 'Send message' : 'Voice input'}
+              aria-label={(input.trim() || attachedFile) ? 'Send message' : 'Voice input'}
               className="w-8 h-8 rounded-full bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white flex items-center justify-center shrink-0 transition-colors"
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
-              ) : input.trim() ? (
+              ) : (input.trim() || attachedFile) ? (
                 <ArrowUp className="h-4 w-4" />
               ) : (
                 <AudioLines className="h-4 w-4" />

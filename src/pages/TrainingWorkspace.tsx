@@ -592,13 +592,24 @@ export default function TrainingWorkspace() {
 
     const userMsg = { role: 'user' as const, content: message };
 
+    // Strip file content before DB storage — full content still sent to AI
+    const filePrefix = message.match(/^\[Attached file: (.+?)\]\n\n/);
+    let dbContent = message;
+    if (filePrefix) {
+      const afterPrefix = message.slice(filePrefix[0].length);
+      const lastDoubleLine = afterPrefix.lastIndexOf('\n\n');
+      const userText = lastDoubleLine >= 0 ? afterPrefix.slice(lastDoubleLine + 2) : '';
+      dbContent = `[Attached file: ${filePrefix[1]}]${userText ? '\n\n' + userText : ''}`;
+    }
+    const userMsgForDb = { role: 'user' as const, content: dbContent };
+
     // Track the conversation ID and messages for this send operation
     let convId = activeConversationId;
     let messagesForApi = [...activeMessages, userMsg];
 
     if (!convId) {
       // Create a new conversation with the first message
-      convId = await createConversation(userMsg);
+      convId = await createConversation(userMsgForDb);
       if (!convId) return;
       // For a brand new conversation, the only message is the user's first one
       messagesForApi = [userMsg];
@@ -617,8 +628,8 @@ export default function TrainingWorkspace() {
         });
       }
     } else {
-      // Append user message to existing conversation
-      await appendMessage(userMsg);
+      // Append user message to existing conversation (stripped of file content)
+      await appendMessage(userMsgForDb);
 
       // Increment practice message count (debounced — every 3rd message)
       const current = moduleEngagement[selectedModule.id]?.practiceMessageCount || 0;

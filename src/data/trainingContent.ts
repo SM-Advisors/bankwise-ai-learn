@@ -136,20 +136,20 @@ export const SESSION_1_CONTENT: SessionContent = {
         ],
         practiceTask: {
           title: 'Navigate the Basics',
-          instructions: 'Send a message, read the response, and attach a file. That is the entire exercise.',
-          scenario: 'Open your AI interface. Send a simple message like "What can you help me with today?" Read the response. Then attach a file — any file from your computer (a document, a spreadsheet, even a photo) — and ask the AI to describe what you shared. The goal is to confirm that you can communicate with the AI and share files with it. That is all you need right now.',
+          instructions: 'Upload a text document using the + button and ask the AI to review or summarize it.',
+          scenario: 'Click the + button at the left of the input bar to attach a text file from your computer (.txt, .csv, .md, .json, or similar). Once attached, ask the AI to summarize it, extract key points, or identify anything interesting. Read the response. That is the entire exercise — upload a document, ask about it, and read what comes back.',
           hints: [
-            'Look for a paperclip icon or "Attach" button to share a file',
-            'Any file works for this exercise — a simple document or image is fine',
-            'Do not worry about settings or model options right now — you will learn those in Session 2',
+            'Click the + button at the left of the input bar to upload a file',
+            'Supported file types include .txt, .csv, .md, .json, .xml, .html, .log, and more',
+            'Try asking the AI to summarize, extract key points, or identify patterns in your document',
           ],
           successCriteria: {
             primary: [
-              'User sent at least one message and received a response',
-              'User attached a file to the conversation',
+              'User uploaded a document using the + button',
+              'User received an AI response about the uploaded document',
             ],
             supporting: [
-              'User can describe where to find the conversation area, input field, and attachment button',
+              'User can locate the + button and understands how to attach files',
             ],
           },
         },
