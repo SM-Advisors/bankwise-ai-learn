@@ -727,7 +727,7 @@ RESPONSE FORMAT — MANDATORY:
 
         if (sandboxGreetingResponse.ok) {
           const sandboxGreetingData = await sandboxGreetingResponse.json();
-          const rawText = sandboxGreetingData.content?.[0]?.text || "";
+          const rawText = sandboxGreetingData.choices?.[0]?.message?.content || "";
           try {
             const jsonMatch = rawText.match(/\{[\s\S]*\}/);
             const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
