@@ -717,7 +717,7 @@ RESPONSE FORMAT — MANDATORY:
           },
           body: JSON.stringify({
             model: "gpt-5.4",
-            max_tokens: 300,
+            max_completion_tokens: 300,
             messages: [
               { role: "system", content: sandboxGreetingPrompt },
               { role: "user", content: "Generate my sandbox greeting." },
@@ -825,7 +825,7 @@ RESPONSE FORMAT — MANDATORY:
         },
         body: JSON.stringify({
           model: "gpt-5.4",
-          max_tokens: 400,
+          max_completion_tokens: 400,
           messages: [
             { role: "system", content: greetingPrompt },
             { role: "user", content: "Generate my greeting." },
@@ -1242,7 +1242,7 @@ ${effectiveSessionNumber >= 2 ? `11. VERIFY INTEGRATION: When reviewing any AI-g
       },
       body: JSON.stringify({
         model: "gpt-5.4",
-        max_tokens: 1000,
+        max_completion_tokens: 1000,
         messages: chatMessages,
       }),
     });
