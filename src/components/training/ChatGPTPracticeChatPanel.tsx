@@ -55,7 +55,7 @@ interface ChatGPTPracticeChatPanelProps {
 const PLUS_MENU_ITEMS = [
   { icon: Palette, label: 'Canvas', action: 'coming_soon' },
   { icon: ImageIcon, label: 'Create Image', action: 'coming_soon' },
-  { icon: Paperclip, label: 'Upload File', action: 'coming_soon' },
+  { icon: Paperclip, label: 'Upload File', action: 'upload_file' },
   { icon: Globe, label: 'Search the Web', action: 'coming_soon' },
   { icon: Building2, label: 'Company knowledge', action: 'knowledge' },
   { icon: Wrench, label: 'Use a Tool', action: 'coming_soon' },
