@@ -521,9 +521,9 @@ serve(async (req) => {
   }
 
   try {
-    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!ANTHROPIC_API_KEY) {
-      throw new Error("ANTHROPIC_API_KEY is not configured");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
     const requestBody: TrainerChatRequest = await req.json();
@@ -709,24 +709,25 @@ RESPONSE FORMAT — MANDATORY:
   "coachingAction": "celebrate"
 }`;
 
-        const sandboxGreetingResponse = await fetch("https://api.anthropic.com/v1/messages", {
+        const sandboxGreetingResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: {
-            "x-api-key": ANTHROPIC_API_KEY,
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "claude-sonnet-4-6",
+            model: "openai/gpt-5",
             max_tokens: 300,
-            system: sandboxGreetingPrompt,
-            messages: [{ role: "user", content: "Generate my sandbox greeting." }],
+            messages: [
+              { role: "system", content: sandboxGreetingPrompt },
+              { role: "user", content: "Generate my sandbox greeting." },
+            ],
           }),
         });
 
         if (sandboxGreetingResponse.ok) {
           const sandboxGreetingData = await sandboxGreetingResponse.json();
-          const rawText = sandboxGreetingData.content?.[0]?.text || "";
+          const rawText = sandboxGreetingData.choices?.[0]?.message?.content || "";
           try {
             const jsonMatch = rawText.match(/\{[\s\S]*\}/);
             const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
@@ -816,18 +817,19 @@ RESPONSE FORMAT — MANDATORY:
   "coachingAction": "celebrate"
 }`;
 
-      const greetingResponse = await fetch("https://api.anthropic.com/v1/messages", {
+      const greetingResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
-          "x-api-key": ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
-          "content-type": "application/json",
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-6",
+          model: "openai/gpt-5",
           max_tokens: 400,
-          system: greetingPrompt,
-          messages: [{ role: "user", content: "Generate my greeting." }],
+          messages: [
+            { role: "system", content: greetingPrompt },
+            { role: "user", content: "Generate my greeting." },
+          ],
         }),
       });
 
@@ -846,7 +848,7 @@ RESPONSE FORMAT — MANDATORY:
       }
 
       const greetingData = await greetingResponse.json();
-      const greetingRaw = greetingData.content?.[0]?.text || "";
+      const greetingRaw = greetingData.choices?.[0]?.message?.content || "";
       const parsed = parseAndreaResponse(greetingRaw);
       return new Response(
         JSON.stringify(parsed),
@@ -1222,31 +1224,32 @@ ${userInterests?.length ? `- USE these interests for all examples and analogies:
 ${effectiveSessionNumber >= 2 ? `11. VERIFY INTEGRATION: When reviewing any AI-generated output the learner shows you in Sessions 2-4, check whether they applied VERIFY. If they present output without verification commentary, ask: "Before we move on — did you run VERIFY on this? What would you check first?" Reinforce the habit across all sessions.` : ""}
 12. PROMPT LIBRARY: When the learner crafts a prompt that is well-structured, reusable, and professionally relevant — especially prompts that use CLEAR framework elements, include guard rails, or demonstrate advanced techniques — suggest they save it to their Prompt Library. Frame it naturally: "That prompt is solid and reusable — you might want to save it to your Prompt Library so you can pull it up next time you need a [task type]." Do NOT suggest this for every prompt — only genuinely reusable, high-quality ones (roughly 1 in 5-10 messages).`;
 
-    // Convert messages to Claude format
-    const claudeMessages = messages.map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    }));
+    // Convert messages for OpenAI format
+    const chatMessages = [
+      { role: "system" as const, content: systemPrompt },
+      ...messages.map((m) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      })),
+    ];
 
-    // Call Claude API
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    // Call Lovable AI Gateway (GPT 5.4)
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
+        model: "openai/gpt-5",
         max_tokens: 1000,
-        system: systemPrompt,
-        messages: claudeMessages,
+        messages: chatMessages,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Claude API error:", response.status, errorText);
+      console.error("AI Gateway error:", response.status, errorText);
 
       if (response.status === 429) {
         return new Response(
@@ -1254,12 +1257,18 @@ ${effectiveSessionNumber >= 2 ? `11. VERIFY INTEGRATION: When reviewing any AI-g
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "AI credits exhausted. Please add funds in Settings." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
-      throw new Error(`Claude API error: ${response.status}`);
+      throw new Error(`AI Gateway error: ${response.status}`);
     }
 
-    const claudeResponse = await response.json();
-    const rawText = claudeResponse.content?.[0]?.text || "";
+    const aiResponse = await response.json();
+    const rawText = aiResponse.choices?.[0]?.message?.content || "";
 
     // Parse Andrea's structured response
     const parsed = parseAndreaResponse(rawText);
