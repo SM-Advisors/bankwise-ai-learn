@@ -113,6 +113,7 @@ export function CSuiteAdvisorPanel({ organizationId, onSummarize }: CSuiteAdviso
           ],
           bankRole: 'Executive',
           industrySlug,
+          model: 'gpt-5.4',
         },
       });
 
