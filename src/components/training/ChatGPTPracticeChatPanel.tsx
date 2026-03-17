@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import {
   Loader2, ChevronRight, ChevronDown, ChevronUp,
   Bot, AudioLines, Plus, CheckCircle, AlertCircle,
-  RotateCcw, ArrowUp, EyeOff, Eye, Building2,
+  RotateCcw, ArrowUp, EyeOff, Eye, Building2, X,
   Palette, ImageIcon, Paperclip, Globe, Wrench, FileText,
 } from 'lucide-react';
 import { VoiceMicButton } from '@/components/VoiceMicButton';
