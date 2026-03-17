@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import {
   Loader2, ChevronRight, ChevronDown, ChevronUp,
   Bot, AudioLines, Plus, CheckCircle, AlertCircle,
-  RotateCcw, ArrowUp, EyeOff, Eye, Building2,
+  RotateCcw, ArrowUp, EyeOff, Eye, Building2, X,
   Palette, ImageIcon, Paperclip, Globe, Wrench, FileText,
 } from 'lucide-react';
 import { VoiceMicButton } from '@/components/VoiceMicButton';
@@ -55,7 +55,7 @@ interface ChatGPTPracticeChatPanelProps {
 const PLUS_MENU_ITEMS = [
   { icon: Palette, label: 'Canvas', action: 'coming_soon' },
   { icon: ImageIcon, label: 'Create Image', action: 'coming_soon' },
-  { icon: Paperclip, label: 'Upload File', action: 'coming_soon' },
+  { icon: Paperclip, label: 'Upload File', action: 'upload_file' },
   { icon: Globe, label: 'Search the Web', action: 'coming_soon' },
   { icon: Building2, label: 'Company knowledge', action: 'knowledge' },
   { icon: Wrench, label: 'Use a Tool', action: 'coming_soon' },
@@ -94,6 +94,8 @@ export function ChatGPTPracticeChatPanel({
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [incognito, setIncognito] = useState(false);
   const [knowledgeOpen, setKnowledgeOpen] = useState(false);
+  const [attachedFile, setAttachedFile] = useState<{ name: string; content: string; type: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showModelSelector = allowedModels.length > 1 && !!selectedModel && !!onModelChange;
   const selectedModelDef: ModelDefinition | undefined = AVAILABLE_MODELS.find(m => m.id === selectedModel);
@@ -123,8 +125,16 @@ export function ChatGPTPracticeChatPanel({
   }, [messages]);
 
   const handleSend = () => {
-    if (!input.trim() || isLoading) return;
-    onSendMessage(input.trim());
+    if ((!input.trim() && !attachedFile) || isLoading) return;
+    
+    let messageContent = input.trim();
+    if (attachedFile) {
+      const filePrefix = `[Attached file: ${attachedFile.name}]\n\n--- File Content ---\n${attachedFile.content}\n--- End File ---\n\n`;
+      messageContent = filePrefix + messageContent;
+      setAttachedFile(null);
+    }
+    
+    onSendMessage(messageContent);
     setInput('');
     setTimeout(() => inputRef.current?.focus(), 100);
   };
@@ -142,7 +152,34 @@ export function ChatGPTPracticeChatPanel({
       toast({ title: 'Coming soon', description: 'This feature will be available shortly.' });
     } else if (action === 'knowledge') {
       setKnowledgeOpen(true);
+    } else if (action === 'upload_file') {
+      fileInputRef.current?.click();
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_SIZE) {
+      toast({ title: 'File too large', description: 'Please select a file under 5MB.', variant: 'destructive' });
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result as string;
+      // Truncate very large files so the AI context isn't overwhelmed
+      const truncated = text.length > 8000 ? text.slice(0, 8000) + '\n\n[...file truncated]' : text;
+      setAttachedFile({ name: file.name, content: truncated, type: file.type });
+    };
+    reader.onerror = () => {
+      toast({ title: 'Could not read file', description: 'Try a text-based file like .txt, .csv, or .docx.', variant: 'destructive' });
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const handleToggleIncognito = () => {
@@ -383,6 +420,33 @@ export function ChatGPTPracticeChatPanel({
           </div>
         )}
 
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          accept=".txt,.csv,.json,.md,.xml,.html,.css,.js,.ts,.py,.doc,.docx,.pdf,.xls,.xlsx,.log,.yaml,.yml,.toml"
+          onChange={handleFileChange}
+        />
+
+        {/* Attached file chip */}
+        {attachedFile && (
+          <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-xs text-gray-600 dark:text-gray-300 pl-3 pr-1.5 py-1.5">
+              <Paperclip className="h-3 w-3 text-gray-400 shrink-0" />
+              <span className="truncate max-w-[200px]">{attachedFile.name}</span>
+              <button
+                type="button"
+                onClick={() => setAttachedFile(null)}
+                className="p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                aria-label="Remove attachment"
+              >
+                <X className="h-3 w-3 text-gray-400" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Pill input bar */}
         <div className="relative">
           {/* + menu popover */}
@@ -450,14 +514,14 @@ export function ChatGPTPracticeChatPanel({
             {/* Send / Audio circle button */}
             <button
               type="button"
-              onClick={input.trim() ? handleSend : undefined}
+              onClick={(input.trim() || attachedFile) ? handleSend : undefined}
               disabled={isLoading}
-              aria-label={input.trim() ? 'Send message' : 'Voice input'}
+              aria-label={(input.trim() || attachedFile) ? 'Send message' : 'Voice input'}
               className="w-8 h-8 rounded-full bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white flex items-center justify-center shrink-0 transition-colors"
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
-              ) : input.trim() ? (
+              ) : (input.trim() || attachedFile) ? (
                 <ArrowUp className="h-4 w-4" />
               ) : (
                 <AudioLines className="h-4 w-4" />
