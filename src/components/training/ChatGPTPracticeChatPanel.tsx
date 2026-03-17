@@ -152,7 +152,34 @@ export function ChatGPTPracticeChatPanel({
       toast({ title: 'Coming soon', description: 'This feature will be available shortly.' });
     } else if (action === 'knowledge') {
       setKnowledgeOpen(true);
+    } else if (action === 'upload_file') {
+      fileInputRef.current?.click();
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_SIZE) {
+      toast({ title: 'File too large', description: 'Please select a file under 5MB.', variant: 'destructive' });
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result as string;
+      // Truncate very large files so the AI context isn't overwhelmed
+      const truncated = text.length > 8000 ? text.slice(0, 8000) + '\n\n[...file truncated]' : text;
+      setAttachedFile({ name: file.name, content: truncated, type: file.type });
+    };
+    reader.onerror = () => {
+      toast({ title: 'Could not read file', description: 'Try a text-based file like .txt, .csv, or .docx.', variant: 'destructive' });
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const handleToggleIncognito = () => {
