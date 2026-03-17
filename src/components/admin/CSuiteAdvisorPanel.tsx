@@ -69,6 +69,7 @@ export function CSuiteAdvisorPanel({ organizationId, onSummarize }: CSuiteAdviso
           messages: [...history, userMsg],
           bankRole: profile?.job_role || 'Executive',
           industrySlug,
+          model: 'gpt-5.4',
         },
       });
 
