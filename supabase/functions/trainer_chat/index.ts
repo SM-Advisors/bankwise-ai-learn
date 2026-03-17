@@ -1242,7 +1242,7 @@ ${effectiveSessionNumber >= 2 ? `11. VERIFY INTEGRATION: When reviewing any AI-g
       },
       body: JSON.stringify({
         model: "gpt-5.4",
-        max_tokens: 1000,
+        max_completion_tokens: 1000,
         messages: chatMessages,
       }),
     });
