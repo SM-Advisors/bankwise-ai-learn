@@ -420,6 +420,33 @@ export function ChatGPTPracticeChatPanel({
           </div>
         )}
 
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          accept=".txt,.csv,.json,.md,.xml,.html,.css,.js,.ts,.py,.doc,.docx,.pdf,.xls,.xlsx,.log,.yaml,.yml,.toml"
+          onChange={handleFileChange}
+        />
+
+        {/* Attached file chip */}
+        {attachedFile && (
+          <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-xs text-gray-600 dark:text-gray-300 pl-3 pr-1.5 py-1.5">
+              <Paperclip className="h-3 w-3 text-gray-400 shrink-0" />
+              <span className="truncate max-w-[200px]">{attachedFile.name}</span>
+              <button
+                type="button"
+                onClick={() => setAttachedFile(null)}
+                className="p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                aria-label="Remove attachment"
+              >
+                <X className="h-3 w-3 text-gray-400" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Pill input bar */}
         <div className="relative">
           {/* + menu popover */}
