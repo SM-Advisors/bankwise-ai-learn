@@ -94,6 +94,8 @@ export function ChatGPTPracticeChatPanel({
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [incognito, setIncognito] = useState(false);
   const [knowledgeOpen, setKnowledgeOpen] = useState(false);
+  const [attachedFile, setAttachedFile] = useState<{ name: string; content: string; type: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showModelSelector = allowedModels.length > 1 && !!selectedModel && !!onModelChange;
   const selectedModelDef: ModelDefinition | undefined = AVAILABLE_MODELS.find(m => m.id === selectedModel);
