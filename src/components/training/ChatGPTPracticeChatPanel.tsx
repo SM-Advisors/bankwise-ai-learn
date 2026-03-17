@@ -125,8 +125,16 @@ export function ChatGPTPracticeChatPanel({
   }, [messages]);
 
   const handleSend = () => {
-    if (!input.trim() || isLoading) return;
-    onSendMessage(input.trim());
+    if ((!input.trim() && !attachedFile) || isLoading) return;
+    
+    let messageContent = input.trim();
+    if (attachedFile) {
+      const filePrefix = `[Attached file: ${attachedFile.name}]\n\n--- File Content ---\n${attachedFile.content}\n--- End File ---\n\n`;
+      messageContent = filePrefix + messageContent;
+      setAttachedFile(null);
+    }
+    
+    onSendMessage(messageContent);
     setInput('');
     setTimeout(() => inputRef.current?.focus(), 100);
   };
