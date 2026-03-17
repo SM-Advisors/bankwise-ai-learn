@@ -717,7 +717,7 @@ RESPONSE FORMAT — MANDATORY:
           },
           body: JSON.stringify({
             model: "gpt-5.4",
-            max_tokens: 300,
+            max_completion_tokens: 300,
             messages: [
               { role: "system", content: sandboxGreetingPrompt },
               { role: "user", content: "Generate my sandbox greeting." },
