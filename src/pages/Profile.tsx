@@ -171,7 +171,7 @@ export default function Profile() {
       setActiveTab('personalization');
       setSearchParams({ tab: 'personalization' }, { replace: true });
     }
-  }, [tabParam]);
+  }, [tabParam, setSearchParams]);
 
   const [personalizationSubtab, setPersonalizationSubtab] = useState<PersonalizationSubtab>('preferences');
   const [journeySubtab, setJourneySubtab] = useState<JourneySubtab>('progress');

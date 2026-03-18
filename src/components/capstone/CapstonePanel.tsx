@@ -86,6 +86,7 @@ export function CapstonePanel({
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Restore step from saved data
+   
   useEffect(() => {
     if (capstoneData?.completedAt) {
       setCurrentStep('complete');
@@ -97,6 +98,7 @@ export function CapstonePanel({
     } else if (capstoneData?.selectedOption) {
       setCurrentStep('practice');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Scroll to bottom when messages change

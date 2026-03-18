@@ -63,7 +63,7 @@ export function TrainingResetManager() {
         .from('training_progress')
         .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed');
 
-      const progressMap: Record<string, any> = {};
+      const progressMap: Record<string, { user_id: string; session_1_completed: boolean; session_2_completed: boolean; session_3_completed: boolean; session_4_completed: boolean }> = {};
       (progress || []).forEach((p) => { progressMap[p.user_id] = p; });
 
       const mapped: UserRow[] = (profiles || []).map((p) => ({
@@ -125,8 +125,8 @@ export function TrainingResetManager() {
       setResetTarget(null);
       setConfirmName('');
       await fetchData();
-    } catch (err: any) {
-      toast.error('Failed to reset training: ' + err.message);
+    } catch (err: unknown) {
+      toast.error('Failed to reset training: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setResetting(false);
     }

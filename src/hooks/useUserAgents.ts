@@ -24,7 +24,7 @@ export function useUserAgents() {
 
       if (error) throw error;
 
-      const parsed: UserAgent[] = (data || []).map((row: any) => ({
+      const parsed: UserAgent[] = (data || []).map((row: Record<string, unknown>) => ({
         ...row,
         template_data: (row.template_data || EMPTY_TEMPLATE) as AgentTemplateData,
       }));
@@ -53,7 +53,7 @@ export function useUserAgents() {
 
     try {
       const { data: result, error } = await (supabase
-        .from('user_agents') as any)
+        .from('user_agents' as never))
         .insert({
           user_id: user.id,
           name: data?.name || 'My Agent',
@@ -83,7 +83,7 @@ export function useUserAgents() {
 
     try {
       const { error } = await (supabase
-        .from('user_agents') as any)
+        .from('user_agents' as never))
         .update(updates)
         .eq('id', id)
         .eq('user_id', user.id);
@@ -251,9 +251,9 @@ export function useUserAgents() {
 
       if (fetchError) throw fetchError;
 
-      const updatedMessages = [...((current?.messages as any[]) || []), message];
+      const updatedMessages = [...((current?.messages as unknown as Record<string, unknown>[]) || []), message];
       const { error } = await (supabase
-        .from('agent_test_conversations') as any)
+        .from('agent_test_conversations' as never))
         .update({ messages: updatedMessages })
         .eq('id', conversationId);
 

@@ -98,7 +98,7 @@ export function useAIMemories() {
   const [memories, setMemories] = useState<AIMemory[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchMemories = async () => {
+  const fetchMemories = useCallback(async () => {
     if (!user) {
       setMemories([]);
       setLoading(false);
@@ -121,7 +121,7 @@ export function useAIMemories() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const createMemory = async (memory: { content: string; source?: string; context?: string }) => {
     if (!user) return { success: false, error: 'Not authenticated' };
@@ -172,7 +172,7 @@ export function useAIMemories() {
 
   useEffect(() => {
     fetchMemories();
-  }, [user]);
+  }, [fetchMemories]);
 
   return { memories, loading, createMemory, togglePin, deleteMemory, refetch: fetchMemories };
 }

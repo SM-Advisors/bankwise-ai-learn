@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -278,7 +278,7 @@ export default function AdminDashboard() {
     if (!settingsLoading) {
       setCommunityUrl(getSetting('community_slack_url'));
     }
-  }, [settingsLoading, appSettings]);
+  }, [settingsLoading, appSettings, getSetting]);
 
   // Handle ?tour= URL params (triggered by HelpPanel replay)
   useEffect(() => {

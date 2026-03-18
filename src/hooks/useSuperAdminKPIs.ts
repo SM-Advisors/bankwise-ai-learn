@@ -125,6 +125,7 @@ export function useSuperAdminKPIs() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- user?.id is sufficient; adding `user` object would cause unnecessary re-runs
   }, [user?.id, session?.access_token, authLoading]);
 
   return { orgs, platform, loading, error };

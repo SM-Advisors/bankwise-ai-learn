@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Tables } from '@/integrations/supabase/types';
@@ -60,7 +60,7 @@ export function useAllUsersWithRoles(organizationId?: string | null) {
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setLoading(true);
 
     // Fetch profiles scoped to organization (RLS also enforces this at DB level)
@@ -120,13 +120,13 @@ export function useAllUsersWithRoles(organizationId?: string | null) {
       };
     }) || [];
 
-    setUsers(combinedUsers as any);
+    setUsers(combinedUsers as UserWithRole[]);
     setLoading(false);
-  };
+  }, [organizationId]);
 
   useEffect(() => {
     fetchUsers();
-  }, [organizationId]);
+  }, [fetchUsers]);
 
   const updateUserProfile = async (userId: string, updates: Record<string, unknown>) => {
     const { error } = await supabase

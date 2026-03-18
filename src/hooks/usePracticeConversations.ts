@@ -86,7 +86,7 @@ export function usePracticeConversations(sessionId: string, moduleId: string | n
         : 'New Conversation';
 
       const { data, error } = await (supabase
-        .from('practice_conversations') as any)
+        .from('practice_conversations' as never))
         .insert({
           user_id: user.id,
           session_id: sessionId,

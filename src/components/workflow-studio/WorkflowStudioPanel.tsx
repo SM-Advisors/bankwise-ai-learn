@@ -38,6 +38,7 @@ export function WorkflowStudioPanel({ onSubmitForReview }: WorkflowStudioPanelPr
       setLocalData(currentWorkflow.workflow_data || EMPTY_WORKFLOW);
       setLocalName(currentWorkflow.name || 'My Workflow');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentWorkflow?.id]);
 
   // Auto-create draft workflow if none exists

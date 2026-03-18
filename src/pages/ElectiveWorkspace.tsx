@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth, type UserProfile } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -71,7 +71,7 @@ export default function ElectiveWorkspace() {
 
   // Find the elective path and module
   const electivePath = ELECTIVE_PATHS.find((p) => p.id === pathId);
-  const modules = electivePath?.modules || [];
+  const modules = useMemo(() => electivePath?.modules || [], [electivePath]);
 
   // Use a synthetic session ID for practice conversations (elective paths are separate from core sessions)
   const syntheticSessionId = `elective_${pathId}`;
@@ -166,7 +166,7 @@ export default function ElectiveWorkspace() {
 
       fetchGreeting();
     }
-  }, [profile, electivePath, selectedModule]);
+  }, [profile, electivePath, selectedModule, completedModules, industrySlug, syntheticSessionId]);
 
   // Reset when module changes
   const prevModuleRef = useRef<string | null>(null);

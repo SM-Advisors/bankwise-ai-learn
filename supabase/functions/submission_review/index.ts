@@ -172,7 +172,7 @@ async function generateQueryEmbedding(text: string): Promise<number[] | null> {
 
 // Retrieve lesson content chunks from database (vector similarity with sequential fallback)
 async function retrieveLessonContext(
-  supabase: any,
+  supabase: ReturnType<typeof createClient>,
   params: { lessonId: string; moduleId?: string; query: string; topK?: number }
 ): Promise<LessonChunk[]> {
   const { lessonId, moduleId, query: ragQuery, topK = 6 } = params;
