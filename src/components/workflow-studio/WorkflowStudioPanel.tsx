@@ -33,12 +33,12 @@ export function WorkflowStudioPanel({ onSubmitForReview }: WorkflowStudioPanelPr
   const [localName, setLocalName] = useState(currentWorkflow?.name || 'My Workflow');
 
   // Sync local state when workflow loads from DB
-   
   useEffect(() => {
     if (currentWorkflow) {
       setLocalData(currentWorkflow.workflow_data || EMPTY_WORKFLOW);
       setLocalName(currentWorkflow.name || 'My Workflow');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentWorkflow?.id]);
 
   // Auto-create draft workflow if none exists

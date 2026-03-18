@@ -117,7 +117,6 @@ export function AgentStudioPanel({
   }, [localTemplate, mode]);
 
   // Auto-save in advanced mode: debounced save for freeform textarea
-   
   useEffect(() => {
     if (mode === 'advanced' && currentAgent?.id && advancedPrompt !== localSystemPrompt) {
       const timeout = setTimeout(() => {
@@ -126,6 +125,7 @@ export function AgentStudioPanel({
       }, 1500);
       return () => clearTimeout(timeout);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advancedPrompt, mode, currentAgent?.id, updateAgent]);
 
   // Handle template changes (debounced save)

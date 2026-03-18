@@ -98,6 +98,7 @@ export function CapstonePanel({
     } else if (capstoneData?.selectedOption) {
       setCurrentStep('practice');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Scroll to bottom when messages change
