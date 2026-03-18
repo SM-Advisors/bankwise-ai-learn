@@ -113,11 +113,6 @@ export function PracticeChatPanel({
     || (deptScenarios && lineOfBusiness && deptScenarios[lineOfBusiness]?.scenario)
     || roleScenario?.scenario
     || module.content.practiceTask.scenario;
-  const activeHints = genDeptScenario?.hints
-    || (generatedContent?.hints?.length ? generatedContent.hints : undefined)
-    || (deptScenarios && lineOfBusiness && deptScenarios[lineOfBusiness]?.hints)
-    || roleScenario?.hints
-    || module.content.practiceTask.hints;
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -161,10 +156,6 @@ export function PracticeChatPanel({
       e.preventDefault();
       handleSend();
     }
-  };
-
-  const handleHintClick = (hint: string) => {
-    onSendMessage(hint);
   };
 
   const hasConversation = messages.length > 0;
@@ -458,22 +449,6 @@ export function PracticeChatPanel({
                 <p className="text-sm text-muted-foreground leading-relaxed">{module.content.practiceTask.instructions}</p>
               )}
               <p className="text-sm text-muted-foreground leading-relaxed"><span className="font-medium text-foreground">Your scenario: </span>{activeScenario}</p>
-              {activeHints && activeHints.length > 0 && (
-                <div className="pt-1">
-                  <p className="text-xs font-medium text-muted-foreground mb-1">Hints to get started:</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {activeHints.map((hint, i) => (
-                      <button
-                        key={i}
-                        onClick={() => handleHintClick(hint)}
-                        className="text-xs px-2.5 py-1 rounded-full border border-border bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors cursor-pointer"
-                      >
-                        {hint}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
