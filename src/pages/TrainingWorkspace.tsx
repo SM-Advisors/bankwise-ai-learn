@@ -330,7 +330,6 @@ export default function TrainingWorkspace() {
         setVideoModalOpen(true);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- moduleEngagement is intentionally excluded to avoid re-selecting module on engagement updates; !selectedModule guard prevents re-execution
   }, [session, selectedModule, completedModules, persistedModuleId, moduleEngagement]);
 
   // Reset when module changes

@@ -14,6 +14,7 @@ export function usePreferredModel(allowedModels: string[]): UsePreferredModelRes
 
   // Stabilize allowedModels to avoid re-running effect on every render
   const allowedModelsKey = allowedModels.join(',');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const stableAllowedModels = useMemo(() => allowedModels, [allowedModelsKey]);
 
   // Validate stored preference against current allowed list; fall back to default
