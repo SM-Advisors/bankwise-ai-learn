@@ -355,7 +355,7 @@ export default function TrainingWorkspace() {
     // Define carryover mappings: target module → source module
     const carryoverMap: Record<string, string> = {
       '1-5': '1-4',
-      '1-6': '1-5',
+      '1-6': '1-4',
     };
 
     const sourceModuleId = carryoverMap[selectedModule.id];
@@ -388,7 +388,7 @@ export default function TrainingWorkspace() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- selectedModule?.id is sufficient; adding the full object would cause unnecessary re-runs
   }, [selectedModule?.id, user?.id, sessionId]);
 
-  // Seed module 1-6's chat with the actual messages from module 1-5's submitted conversation.
+  // Seed module 1-6's chat with the actual messages from module 1-4's submitted conversation.
   // This lets the user continue the conversation (not just have invisible AI context).
   const hasSeedAttemptedRef = useRef<string | null>(null);
   useEffect(() => {
@@ -396,7 +396,7 @@ export default function TrainingWorkspace() {
 
     // Define which modules should have their chat seeded with prior module messages
     const conversationSeedMap: Record<string, string> = {
-      '1-6': '1-5',
+      '1-6': '1-4',
     };
 
     const sourceModuleId = conversationSeedMap[selectedModule.id];
@@ -425,7 +425,7 @@ export default function TrainingWorkspace() {
       .then(({ data }) => {
         if (data?.messages && Array.isArray(data.messages) && data.messages.length > 0) {
           const priorMessages = data.messages as Array<{ role: 'user' | 'assistant'; content: string }>;
-          seedFromPriorModule(priorMessages, 'Continued from The Flipped Interaction');
+          seedFromPriorModule(priorMessages, 'Continued from Your First Win');
         }
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
