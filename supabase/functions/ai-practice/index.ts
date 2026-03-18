@@ -427,14 +427,16 @@ Use these facts naturally when relevant — do not list them back to the user.` 
     ].filter(Boolean).join("\n");
 
     // Inject prior module context if available (e.g., module 1-4 conversation for 1-5)
+    // For modules like 1-6 that seed the actual messages into the chat, this context
+    // is supplementary — the AI already sees the prior messages in the conversation history.
     const priorContextBlock = priorModuleContext ? `
 
 PRIOR MODULE CONTEXT:
-The learner completed a previous module where they had this conversation. Use this as background context to make your responses more personalized and build on what they already practiced:
+The learner completed a previous module where they had this conversation. Their conversation history has been carried forward so they can continue iterating on their work. Use this context to make your responses more personalized and build on what they already practiced. Treat this as a natural continuation — the learner should feel like they are picking up right where they left off.
 
 ${priorModuleContext}
 
-Do NOT reference this prior conversation directly unless the learner brings it up. Just use it to inform your understanding of their skill level and work context.` : "";
+Continue the conversation naturally. If the learner sends a new refinement request, respond as if you remember the full conversation above.` : "";
 
     const fullSystemPrompt = [systemPrompt, priorContextBlock, personalizationBlock]
       .filter(Boolean)
@@ -461,22 +463,39 @@ Do NOT reference this prior conversation directly unless the learner brings it u
 
     console.log(`[ai-practice] Routing to model: ${model}`);
 
-    let reply: string;
-    try {
-      reply = await callModel(model, fullSystemPrompt, claudeMessages);
-    } catch (modelError) {
-      const errMsg = modelError instanceof Error ? modelError.message : String(modelError);
-      if (errMsg === "rate_limit") {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+    let reply = "";
+    let lastModelError: unknown;
+    // Retry up to 3 attempts — handles transient empty responses from the model
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        reply = await callModel(model, fullSystemPrompt, claudeMessages);
+        if (reply && reply.trim().length > 0) break; // got a real response
+        console.warn(`[ai-practice] Empty response from model on attempt ${attempt + 1}`);
+      } catch (modelError) {
+        lastModelError = modelError;
+        const errMsg = modelError instanceof Error ? modelError.message : String(modelError);
+        if (errMsg === "rate_limit") {
+          return new Response(
+            JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        console.warn(`[ai-practice] Model error on attempt ${attempt + 1}: ${errMsg}`);
       }
-      throw modelError;
+      // Brief pause before retry (500ms, 1s)
+      if (attempt < 2) await new Promise(r => setTimeout(r, (attempt + 1) * 500));
+    }
+
+    if (!reply || reply.trim().length === 0) {
+      console.error("[ai-practice] All retries returned empty response", lastModelError);
+      return new Response(
+        JSON.stringify({ error: "The AI model returned an empty response. Please try sending your message again." }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     return new Response(
-      JSON.stringify({ reply: reply || "I'd be happy to help. Could you provide more details about what you need?" }),
+      JSON.stringify({ reply }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

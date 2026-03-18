@@ -140,7 +140,15 @@ ${scenario ? `\nSituation: ${scenario}` : ""}
     }
 
     const claudeResponse = await response.json();
-    const reply = claudeResponse.content?.[0]?.text || "I'd be happy to help. Could you provide more details about what you need?";
+    const reply = claudeResponse.content?.[0]?.text;
+
+    if (!reply) {
+      console.error("[practice_chat] Empty response from model");
+      return new Response(
+        JSON.stringify({ error: "The AI model returned an empty response. Please try again." }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     return new Response(
       JSON.stringify({ reply }),

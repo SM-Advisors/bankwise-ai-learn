@@ -366,7 +366,7 @@ export const SESSION_1_CONTENT: SessionContent = {
           instructions: 'Take your output from Module 4 and iterate on it. Add complexity, change the format, adjust for a different audience, or ask for something the original version was missing.',
           scenario: 'Return to the work product you created in Module 4. Now make it harder:\n\n1. Add a constraint: "Now make this compliant with [specific standard]" or "Adapt this for an executive audience"\n2. Change the format: "Convert this to a table" or "Turn this into talking points for a 5-minute presentation"\n3. Layer in complexity: "Now add a risk analysis section" or "Include counterarguments"\n\nDo at least three rounds of refinement. Notice how each round builds on what came before.',
           hints: [
-            'You do not need to start a new conversation — continue from where you left off in Module 4',
+            'Your conversation from Module 5 has been carried over — just pick up where you left off and push the output further',
             'Try changing the audience: same content, but for your CEO, your team, or an external stakeholder',
             'Ask for a format change mid-conversation: bullets to table, memo to email, summary to presentation',
             'If you get stuck, try the Flipped Interaction: "Before you revise this, ask me what I want to be different"',

@@ -178,6 +178,43 @@ export function usePracticeConversations(sessionId: string, moduleId: string | n
     }
   }, [activeConversationId]);
 
+  // Seed a conversation with messages from a prior module (e.g., carry 1-5 messages into 1-6)
+  // Returns the new conversation ID, or null if seeding was skipped (e.g., already exists)
+  const seedFromPriorModule = useCallback(async (
+    priorMessages: PracticeMessage[],
+    title: string = 'Continued from prior module',
+  ): Promise<string | null> => {
+    if (!user?.id || !moduleId || priorMessages.length === 0) return null;
+
+    try {
+      const { data, error } = await (supabase
+        .from('practice_conversations' as never))
+        .insert({
+          user_id: user.id,
+          session_id: sessionId,
+          module_id: moduleId,
+          title,
+          messages: priorMessages as unknown as Record<string, unknown>[],
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newConv: PracticeConversation = {
+        ...data,
+        messages: priorMessages,
+      };
+
+      setConversations(prev => [newConv, ...prev]);
+      setActiveConversationId(data.id);
+      return data.id;
+    } catch (err) {
+      console.error('Error seeding conversation from prior module:', err);
+      return null;
+    }
+  }, [user?.id, sessionId, moduleId]);
+
   // Start a new chat (deselect current, will create on first message)
   const startNewChat = useCallback(() => {
     setActiveConversationId(null);
@@ -195,6 +232,7 @@ export function usePracticeConversations(sessionId: string, moduleId: string | n
     activeMessages,
     isLoading,
     createConversation,
+    seedFromPriorModule,
     appendMessage,
     markSubmitted,
     startNewChat,
