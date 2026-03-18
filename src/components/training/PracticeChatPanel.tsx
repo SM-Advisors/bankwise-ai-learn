@@ -128,6 +128,7 @@ export function PracticeChatPanel({
     }
     onSendMessage(message);
     setInput('');
+    if (inputRef.current) inputRef.current.style.height = 'auto';
     // Re-focus input after sending
     setTimeout(() => inputRef.current?.focus(), 100);
   };

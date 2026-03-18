@@ -17,7 +17,7 @@ const SESSION_LABELS: Record<number, { title: string; skills: string[] }> = {
     skills: ['Basic Interaction', 'Flipped Interaction Pattern', 'Iteration', 'Self-Review Loops'],
   },
   2: {
-    title: 'Structured Interaction, Models & Tools',
+    title: 'AI 201',
     skills: ['CLEAR Framework', 'Output Templating', 'Multi-Shot Prompting', 'Chain-of-Thought', 'Model & Tool Selection'],
   },
   3: {
@@ -145,6 +145,7 @@ export default function Certificates() {
         <div className="grid gap-6 md:grid-cols-2">
           {sessionIds.map((sessionId) => {
             const isCompleted = !!prog[`session_${sessionId}_completed`];
+            const isAccessible = sessionId === 1 || !!prog[`session_${sessionId - 1}_completed`];
             const label = SESSION_LABELS[sessionId];
             const data = getSessionProgressData(sessionId);
             const completedAt = data?.capstoneData?.completedAt;
@@ -207,9 +208,14 @@ export default function Certificates() {
                         Print / PDF
                       </Button>
                     </div>
-                  ) : (
+                  ) : isAccessible ? (
                     <Button className="w-full gap-2" variant="outline" onClick={() => navigate(`/training/${sessionId}`)}>
                       Go to Session {sessionId}
+                    </Button>
+                  ) : (
+                    <Button className="w-full gap-2" variant="outline" disabled>
+                      <Lock className="h-4 w-4" />
+                      Complete previous session to unlock
                     </Button>
                   )}
                 </CardContent>
