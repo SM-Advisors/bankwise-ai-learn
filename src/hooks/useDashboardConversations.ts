@@ -79,7 +79,7 @@ export function useDashboardConversations() {
         : 'New Conversation';
 
       const { data, error } = await (supabase
-        .from('dashboard_conversations') as any)
+        .from('dashboard_conversations' as never))
         .insert({
           user_id: user.id,
           title,

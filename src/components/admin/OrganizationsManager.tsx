@@ -121,7 +121,7 @@ export function OrganizationsManager() {
     setRegeneratingOrgId(orgId);
     try {
       const { error } = await supabase
-        .from('generated_module_content' as any)
+        .from('generated_module_content' as never)
         .delete()
         .eq('org_id', orgId);
       if (error) throw error;

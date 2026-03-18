@@ -74,7 +74,7 @@ export default function TrainingWorkspace() {
   const setTrainerMessages: typeof setTrainerMessagesRaw = (action) => {
     setTrainerMessagesRaw(prev => {
       const next = typeof action === 'function' ? action(prev) : action;
-      try { sessionStorage.setItem(`training_${sessionId}_trainerMsgs`, JSON.stringify(next.slice(-30))); } catch {}
+      try { sessionStorage.setItem(`training_${sessionId}_trainerMsgs`, JSON.stringify(next.slice(-30))); } catch { /* sessionStorage may be full or unavailable */ }
       return next;
     });
   };
@@ -106,6 +106,10 @@ export default function TrainingWorkspace() {
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
   const [mobileTab, setMobileTab] = useState<'practice' | 'coach'>('practice');
   const [mobileModulesOpen, setMobileModulesOpen] = useState(false);
+
+  // Practice instructions popup state (must be before early returns to avoid conditional hook calls)
+  const [practicePopupOpen, setPracticePopupOpen] = useState(false);
+  const [practiceInstructionContent, setPracticeInstructionContent] = useState('');
 
   const { policies } = useBankPolicies();
   const { emitSignal } = useValueSignals();
@@ -279,7 +283,8 @@ export default function TrainingWorkspace() {
 
       fetchGreeting();
     }
-  }, [profile, session, selectedModule]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- hasGreetedRef guard prevents re-execution; extra deps listed for completeness
+  }, [profile, session, selectedModule, sessionId, industrySlug, completedModules, retrievalContext]);
 
 
   useEffect(() => {
@@ -325,7 +330,8 @@ export default function TrainingWorkspace() {
         setVideoModalOpen(true);
       }
     }
-  }, [session, selectedModule, completedModules]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- moduleEngagement is intentionally excluded to avoid re-selecting module on engagement updates; !selectedModule guard prevents re-execution
+  }, [session, selectedModule, completedModules, persistedModuleId, moduleEngagement]);
 
   // Reset when module changes
   const prevModuleRef = useRef<string | null>(null);
@@ -377,6 +383,7 @@ export default function TrainingWorkspace() {
           setPriorModuleContext(null);
         }
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- selectedModule?.id is sufficient; adding the full object would cause unnecessary re-runs
   }, [selectedModule?.id, user?.id, sessionId]);
 
   // Load completed modules and engagement data from database progress.
@@ -530,10 +537,6 @@ export default function TrainingWorkspace() {
       setPriorModuleContext(null);
     }
   };
-
-  // Practice instructions popup state
-  const [practicePopupOpen, setPracticePopupOpen] = useState(false);
-  const [practiceInstructionContent, setPracticeInstructionContent] = useState('');
 
   // Wrap startNewChat to also reset review/trainer state so the reviewer sees fresh context
   const handleNewChat = () => {

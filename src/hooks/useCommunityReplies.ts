@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -17,7 +17,7 @@ export function useCommunityReplies(topicId: string | null) {
   const [replies, setReplies] = useState<CommunityReply[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchReplies = async () => {
+  const fetchReplies = useCallback(async () => {
     if (!topicId) {
       setReplies([]);
       return;
@@ -37,11 +37,11 @@ export function useCommunityReplies(topicId: string | null) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [topicId]);
 
   useEffect(() => {
     fetchReplies();
-  }, [topicId]);
+  }, [fetchReplies]);
 
   const createReply = async (body: string) => {
     if (!user || !topicId) return { success: false, error: 'Not authenticated or no topic selected' };

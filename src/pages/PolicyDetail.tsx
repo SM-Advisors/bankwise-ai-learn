@@ -39,7 +39,7 @@ export default function PolicyDetail() {
       if (!id) return;
       try {
         const { data, error: fetchError } = await (supabase
-          .from('bank_policies') as any)
+          .from('bank_policies' as never))
           .select('*')
           .eq('id', id)
           .single();

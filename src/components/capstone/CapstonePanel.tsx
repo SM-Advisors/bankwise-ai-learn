@@ -86,6 +86,7 @@ export function CapstonePanel({
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Restore step from saved data
+   
   useEffect(() => {
     if (capstoneData?.completedAt) {
       setCurrentStep('complete');

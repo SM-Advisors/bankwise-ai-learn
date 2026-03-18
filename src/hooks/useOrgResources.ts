@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface OrgResource {
@@ -17,7 +17,7 @@ export function useOrgResources(organizationId: string | null = null) {
   const [resources, setResources] = useState<OrgResource[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchResources = async () => {
+  const fetchResources = useCallback(async () => {
     if (!organizationId) {
       setResources([]);
       setLoading(false);
@@ -37,11 +37,11 @@ export function useOrgResources(organizationId: string | null = null) {
     }
     setResources((data || []) as OrgResource[]);
     setLoading(false);
-  };
+  }, [organizationId]);
 
   useEffect(() => {
     fetchResources();
-  }, [organizationId]);
+  }, [fetchResources]);
 
   const addResource = async (
     resource: Omit<OrgResource, 'id' | 'created_at' | 'organization_id'>,

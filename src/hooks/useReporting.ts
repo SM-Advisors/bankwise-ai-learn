@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 
 export interface UserProgressRow {
   user_id: string;
@@ -165,7 +166,7 @@ export function useReporting(organizationId: string | null = null) {
   });
   const [loading, setLoading] = useState(true);
 
-  const fetchReporting = async () => {
+  const fetchReporting = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -246,9 +247,9 @@ export function useReporting(organizationId: string | null = null) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId]);
 
-  useEffect(() => { fetchReporting(); }, [organizationId]);
+  useEffect(() => { fetchReporting(); }, [fetchReporting]);
   return { userProgress, promptStats, loading, refetch: fetchReporting };
 }
 
@@ -281,7 +282,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
     loading: true,
   });
 
-  const fetchKPIs = async () => {
+  const fetchKPIs = useCallback(async () => {
     try {
       // Build queries with optional org filter
       let allProfilesQuery = supabase.from('user_profiles').select('user_id');
@@ -416,7 +417,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
       }));
 
       // Department breakdowns
-      const deptMap: Record<string, any[]> = {};
+      const deptMap: Record<string, typeof combined> = {};
       combined.forEach((u) => {
         const dept = u.department || 'unknown';
         if (!deptMap[dept]) deptMap[dept] = [];
@@ -552,9 +553,9 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
       console.error('Error fetching C-suite KPIs:', err);
       setKpis((prev) => ({ ...prev, loading: false }));
     }
-  };
+  }, [organizationId]);
 
-  useEffect(() => { fetchKPIs(); }, [organizationId]);
+  useEffect(() => { fetchKPIs(); }, [fetchKPIs]);
   return kpis;
 }
 
@@ -563,10 +564,10 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
 // ---------------------------------------------------------------------------
 
 export function useAllIdeas(organizationId?: string | null) {
-  const [ideas, setIdeas] = useState<any[]>([]);
+  const [ideas, setIdeas] = useState<Tables<'user_ideas'>[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchIdeas = async () => {
+  const fetchIdeas = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -595,7 +596,7 @@ export function useAllIdeas(organizationId?: string | null) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId]);
 
   const updateIdeaStatus = async (id: string, status: string) => {
     try {
@@ -627,6 +628,6 @@ export function useAllIdeas(organizationId?: string | null) {
     }
   };
 
-  useEffect(() => { fetchIdeas(); }, [organizationId]);
+  useEffect(() => { fetchIdeas(); }, [fetchIdeas]);
   return { ideas, loading, updateIdeaStatus, updateIdeaROI, refetch: fetchIdeas };
 }

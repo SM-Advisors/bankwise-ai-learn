@@ -128,7 +128,7 @@ export function useGeneratedModuleContent(
 
     setIsGenerating(true);
     fetchOrGenerate(false);
-  }, [moduleId, departmentSlug, effectiveOrgId]);
+  }, [moduleId, modulePedagogy, departmentSlug, effectiveOrgId, fetchOrGenerate]);
 
   const regenerate = useCallback(async () => {
     setIsGenerating(true);

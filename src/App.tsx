@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,36 +11,37 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ViewAsBanner } from "@/components/ViewAsBanner";
 import { AppShell } from "@/components/shell";
+import { Loader2 } from "lucide-react";
 
-// Pages
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Onboarding from "./pages/Onboarding";
-import Dashboard from "./pages/Dashboard";
-import TrainingWorkspace from "./pages/TrainingWorkspace";
-import Questionnaire from "./pages/Questionnaire";
-import TopicSelection from "./pages/TopicSelection";
-import Lesson from "./pages/Lesson";
-import AdminDashboard from "./pages/AdminDashboard";
-import SuperAdminDashboard from "./pages/SuperAdminDashboard";
-import Ideas from "./pages/Ideas";
-import Policies from "./pages/Policies";
-import PolicyDetail from "./pages/PolicyDetail";
-import Settings from "./pages/Settings";
-import AIMemories from "./pages/AIMemories";
-import ResetPassword from "./pages/ResetPassword";
-import PromptLibrary from "./pages/PromptLibrary";
-import Electives from "./pages/Electives";
-import ElectiveWorkspace from "./pages/ElectiveWorkspace";
-import Certificates from "./pages/Certificates";
-import AIJourney from "./pages/AIJourney";
-import Profile from "./pages/Profile";
-import NotFound from "./pages/NotFound";
-import ShellPreview from "./pages/ShellPreview";
-import Explore from "./pages/Explore";
-import CommunityZone from "./pages/CommunityZone";
-import AgentsZone from "./pages/AgentsZone";
-import SharedAgentChat from "./pages/SharedAgentChat";
+// Pages (lazy-loaded for route-based code splitting)
+const Index = lazy(() => import("./pages/Index"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const TrainingWorkspace = lazy(() => import("./pages/TrainingWorkspace"));
+const Questionnaire = lazy(() => import("./pages/Questionnaire"));
+const TopicSelection = lazy(() => import("./pages/TopicSelection"));
+const Lesson = lazy(() => import("./pages/Lesson"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const SuperAdminDashboard = lazy(() => import("./pages/SuperAdminDashboard"));
+const Ideas = lazy(() => import("./pages/Ideas"));
+const Policies = lazy(() => import("./pages/Policies"));
+const PolicyDetail = lazy(() => import("./pages/PolicyDetail"));
+const Settings = lazy(() => import("./pages/Settings"));
+const AIMemories = lazy(() => import("./pages/AIMemories"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const PromptLibrary = lazy(() => import("./pages/PromptLibrary"));
+const Electives = lazy(() => import("./pages/Electives"));
+const ElectiveWorkspace = lazy(() => import("./pages/ElectiveWorkspace"));
+const Certificates = lazy(() => import("./pages/Certificates"));
+const AIJourney = lazy(() => import("./pages/AIJourney"));
+const Profile = lazy(() => import("./pages/Profile"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const ShellPreview = lazy(() => import("./pages/ShellPreview"));
+const Explore = lazy(() => import("./pages/Explore"));
+const CommunityZone = lazy(() => import("./pages/CommunityZone"));
+const AgentsZone = lazy(() => import("./pages/AgentsZone"));
+const SharedAgentChat = lazy(() => import("./pages/SharedAgentChat"));
 
 const queryClient = new QueryClient();
 
@@ -54,6 +56,7 @@ const App = () => (
             <BrowserRouter>
               <SessionProvider>
                 <ViewAsBanner />
+                <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
                 <Routes>
                   {/* Public routes */}
                   <Route path="/" element={<Index />} />
@@ -232,6 +235,7 @@ const App = () => (
                   {/* Catch-all */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                </Suspense>
               </SessionProvider>
             </BrowserRouter>
           </TrainingProvider>

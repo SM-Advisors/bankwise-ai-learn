@@ -49,8 +49,8 @@ export function useSkillAssessment() {
         .limit(1)),
     ]);
 
-    if (obsResult.data) setObservations(obsResult.data as any);
-    if (reqResult.data?.length) setPendingRequest(reqResult.data[0] as any);
+    if (obsResult.data) setObservations(obsResult.data as unknown as SkillObservation[]);
+    if (reqResult.data?.length) setPendingRequest(reqResult.data[0] as unknown as LevelChangeRequest);
     setLoading(false);
   }, [user?.id]);
 

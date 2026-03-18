@@ -33,6 +33,7 @@ export function WorkflowStudioPanel({ onSubmitForReview }: WorkflowStudioPanelPr
   const [localName, setLocalName] = useState(currentWorkflow?.name || 'My Workflow');
 
   // Sync local state when workflow loads from DB
+   
   useEffect(() => {
     if (currentWorkflow) {
       setLocalData(currentWorkflow.workflow_data || EMPTY_WORKFLOW);

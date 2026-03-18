@@ -41,7 +41,7 @@ export function useCommunityTopics() {
         reply_count: t.community_replies?.[0]?.count ?? t.reply_count ?? 0,
         community_replies: undefined, // remove the nested object
       }));
-      setTopics(mapped as any);
+      setTopics(mapped as unknown as CommunityTopic[]);
       setError(null);
     } catch (err) {
       console.error('Error fetching community topics:', err);

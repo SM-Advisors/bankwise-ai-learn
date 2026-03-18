@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -28,7 +28,7 @@ export function useUserIdeas() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchIdeas = async () => {
+  const fetchIdeas = useCallback(async () => {
     if (!user) {
       setIdeas([]);
       setLoading(false);
@@ -43,14 +43,14 @@ export function useUserIdeas() {
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
-      setIdeas((data || []) as any);
+      setIdeas((data || []) as UserIdea[]);
     } catch (err) {
       console.error('Error fetching ideas:', err);
       setError('Failed to load ideas');
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const createIdea = async (idea: Pick<UserIdea, 'title' | 'description' | 'status'>) => {
     if (!user) return { success: false, error: 'Not authenticated' };
@@ -102,7 +102,7 @@ export function useUserIdeas() {
 
   useEffect(() => {
     fetchIdeas();
-  }, [user]);
+  }, [fetchIdeas]);
 
   return { ideas, loading, error, refetch: fetchIdeas, createIdea, updateIdea, deleteIdea };
 }

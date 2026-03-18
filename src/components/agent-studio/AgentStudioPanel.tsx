@@ -91,6 +91,7 @@ export function AgentStudioPanel({
       setLocalName(currentAgent.name || 'My Agent');
       setLocalSystemPrompt(currentAgent.system_prompt || '');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-sync when the agent identity changes, not on every field update
   }, [currentAgent?.id]);
 
   // Auto-create draft agent if none exists
@@ -116,6 +117,7 @@ export function AgentStudioPanel({
   }, [localTemplate, mode]);
 
   // Auto-save in advanced mode: debounced save for freeform textarea
+   
   useEffect(() => {
     if (mode === 'advanced' && currentAgent?.id && advancedPrompt !== localSystemPrompt) {
       const timeout = setTimeout(() => {
@@ -124,7 +126,7 @@ export function AgentStudioPanel({
       }, 1500);
       return () => clearTimeout(timeout);
     }
-  }, [advancedPrompt, mode]);
+  }, [advancedPrompt, mode, currentAgent?.id, updateAgent]);
 
   // Handle template changes (debounced save)
   const handleTemplateChange = useCallback(
@@ -224,7 +226,7 @@ export function AgentStudioPanel({
       const token = session?.access_token;
       if (!token) throw new Error('Not authenticated');
 
-      const supabaseUrl = (supabase as any).supabaseUrl as string;
+      const supabaseUrl = (supabase as unknown as { supabaseUrl: string }).supabaseUrl;
       const res = await fetch(`${supabaseUrl}/functions/v1/extract-agent-knowledge`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },

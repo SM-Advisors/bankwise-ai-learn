@@ -34,7 +34,8 @@ export default function Lesson() {
     if (!state.currentLesson && !state.isGeneratingLesson) {
       generateLesson();
     }
-  }, [state.questionnaireCompleted, state.learningStyle, state.selectedDepartment, state.selectedTopic]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- generateLesson cannot be a dep (defined after this effect, not wrapped in useCallback)
+  }, [state.questionnaireCompleted, state.learningStyle, state.selectedDepartment, state.selectedTopic, state.currentLesson, state.isGeneratingLesson, navigate]);
 
   const generateLesson = async () => {
     if (!selectedDepartment || !selectedTopic || !state.learningStyle) return;

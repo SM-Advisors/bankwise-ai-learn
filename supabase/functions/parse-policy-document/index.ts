@@ -114,7 +114,7 @@ serve(async (req) => {
     const arrayBuffer = await fileData.arrayBuffer();
     const extension = (file_name || file_path).toLowerCase().split(".").pop();
 
-    let aiMessages: any[];
+    let aiMessages: Array<{ role: string; content: string | Array<{ type: string; text?: string; image_url?: { url: string } }> }>;
 
     if (extension === "pdf") {
       // PDF: send as base64 to Gemini vision

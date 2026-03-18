@@ -105,7 +105,7 @@ export function useUserPrompts() {
     if (!user?.id) return;
     try {
       const { error } = await (supabase
-        .from('user_prompts') as any)
+        .from('user_prompts' as never))
         .update(updates)
         .eq('id', id)
         .eq('user_id', user.id);

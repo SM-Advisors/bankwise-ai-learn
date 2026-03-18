@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -73,7 +73,7 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewSub, setPreviewSub] = useState<{ id: string; title: string } | null>(null);
 
-  const fetchSubmissions = async () => {
+  const fetchSubmissions = useCallback(async () => {
     setLoading(true);
 
     // Get org user_ids for filtering if org-scoped
@@ -101,17 +101,17 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
       setSubmissions(filtered as ExecutiveSubmission[]);
     }
     setLoading(false);
-  };
+  }, [organizationId, toast]);
 
   useEffect(() => {
     fetchSubmissions();
-  }, [organizationId]);
+  }, [fetchSubmissions]);
 
   const updateSubmission = async (id: string, status: SubmissionStatus) => {
     setUpdatingId(id);
     const notes = noteValues[id] ?? null;
     const { error } = await (supabase
-      .from('executive_submissions') as any)
+      .from('executive_submissions' as never))
       .update({
         status,
         reviewer_notes: notes,
