@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth, type UserProfile } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -89,12 +89,12 @@ export default function TrainingWorkspace() {
   const [workspaceMode, setWorkspaceModeRaw] = useState<'learn' | 'practice'>(persistedMode || 'learn');
 
   // Wrap setters to persist to sessionStorage
-  const setSelectedModule = (mod: ModuleContent | null) => {
+  const setSelectedModule = useCallback((mod: ModuleContent | null) => {
     setSelectedModuleRaw(mod);
     if (mod && sessionId) {
       sessionStorage.setItem(`training_${sessionId}_moduleId`, mod.id);
     }
-  };
+  }, [sessionId]);
   const setWorkspaceMode = (mode: 'learn' | 'practice') => {
     setWorkspaceModeRaw(mode);
     if (sessionId) {
@@ -330,7 +330,7 @@ export default function TrainingWorkspace() {
         setVideoModalOpen(true);
       }
     }
-  }, [session, selectedModule, completedModules, persistedModuleId, moduleEngagement]);
+  }, [session, selectedModule, completedModules, persistedModuleId, moduleEngagement, setSelectedModule]);
 
   // Reset when module changes
   const prevModuleRef = useRef<string | null>(null);
