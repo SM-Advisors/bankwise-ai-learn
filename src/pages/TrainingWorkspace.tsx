@@ -35,6 +35,7 @@ import { AgentStudioPanel } from '@/components/agent-studio/AgentStudioPanel';
 import { WorkflowStudioPanel } from '@/components/workflow-studio/WorkflowStudioPanel';
 import { CapstonePanel } from '@/components/capstone/CapstonePanel';
 import { BrainstormPanel } from '@/components/BrainstormPanel';
+import { FeedbackPill } from '@/components/FeedbackPill';
 import type { CapstoneData } from '@/types/progress';
 import type { WorkflowData } from '@/types/workflow';
 import { Loader2, ArrowLeft, Shield, Bot, Building2, BookOpen, MessageSquare, GraduationCap } from 'lucide-react';
@@ -1194,8 +1195,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
   ];
 
   const trainingActions = (
-    <div className="flex items-center w-full justify-end">
-      {/* Right: brainstorm button */}
+    <div className="flex items-center gap-2 w-full justify-end">
+      <FeedbackPill />
       <div className="shrink-0">
         <BrainstormPanel compact />
       </div>

@@ -17,6 +17,7 @@ import type { SessionProgressData, SkillSignal } from '@/types/progress';
 import { CheckCircle, Play, Sparkles, Bot, Building2, Zap, Lock, Users, Wrench, ArrowRight, Pencil } from 'lucide-react';
 import andreaCoach from '@/assets/andrea-coach.png';
 import { BrainstormPanel } from '@/components/BrainstormPanel';
+import { FeedbackPill } from '@/components/FeedbackPill';
 import { useTour } from '@/hooks/useTour';
 import { DASHBOARD_STEPS } from '@/constants/tourSteps';
 import { useUserAgents } from '@/hooks/useUserAgents';
@@ -142,7 +143,7 @@ export default function Dashboard() {
     .slice(0, 4);
 
   return (
-    <AppShell breadcrumbs={[{ label: 'Home' }]} topBarActions={<BrainstormPanel compact />}>
+    <AppShell breadcrumbs={[{ label: 'Home' }]} topBarActions={<div className="flex items-center gap-2"><FeedbackPill /><BrainstormPanel compact /></div>}>
       <div className="w-full px-4 py-10 flex-1 flex items-center justify-center">
       <div className="w-full max-w-[60%] max-md:max-w-full">
         {homeState === 'brand_new' && (
