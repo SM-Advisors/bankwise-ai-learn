@@ -439,7 +439,7 @@ export const SESSION_1_CONTENT: SessionContent = {
 
 export const SESSION_2_CONTENT: SessionContent = {
   id: 2,
-  title: 'Structured Interaction, Models & Tools',
+  title: 'AI 201',
   description: 'Move from casual conversation to professional-grade AI use — understand limitations, add structure, and choose the right model and tools for each task',
   modules: [
     // ─── Module 2-1: AI Limitations & Critical Evaluation (NEW) ───────────
