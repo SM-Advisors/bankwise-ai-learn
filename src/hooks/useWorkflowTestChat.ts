@@ -36,7 +36,8 @@ export function useWorkflowTestChat() {
       });
 
       if (response.error) throw response.error;
-      return { reply: response.data?.reply || "I'd be happy to help with this step." };
+      if (!response.data?.reply) throw new Error(response.data?.error || 'Empty response from AI');
+      return { reply: response.data.reply };
     } catch (err) {
       console.error('Workflow test chat error:', err);
       return { error: err instanceof Error ? err.message : 'Unknown error' };

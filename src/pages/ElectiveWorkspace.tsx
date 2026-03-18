@@ -239,7 +239,8 @@ export default function ElectiveWorkspace() {
 
       if (response.error) throw response.error;
 
-      const reply = response.data?.reply || "I'd be happy to help. Could you provide more details?";
+      const reply = response.data?.reply;
+      if (!reply) throw new Error(response.data?.error || 'Empty response from AI');
       const assistantMsg = { role: 'assistant' as const, content: reply };
       await appendMessage(assistantMsg, convId);
     } catch (error) {

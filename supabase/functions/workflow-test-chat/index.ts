@@ -102,7 +102,15 @@ Use the above context to inform your response for this step.` : ""}
     }
 
     const claudeResponse = await response.json();
-    const reply = claudeResponse.content?.[0]?.text || "I'd be happy to help with this workflow step.";
+    const reply = claudeResponse.content?.[0]?.text;
+
+    if (!reply) {
+      console.error("[workflow-test-chat] Empty response from model");
+      return new Response(
+        JSON.stringify({ error: "The AI model returned an empty response. Please try again." }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     return new Response(
       JSON.stringify({ reply }),

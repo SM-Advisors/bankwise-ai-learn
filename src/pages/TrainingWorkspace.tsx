@@ -690,7 +690,8 @@ export default function TrainingWorkspace() {
 
       if (!response || response.error) throw lastError || new Error('Connection failed');
 
-      const reply = response.data?.reply || "I'd be happy to help. Could you provide more details?";
+      const reply = response.data?.reply;
+      if (!reply) throw new Error(response.data?.error || 'Empty response from AI');
       const assistantMsg = { role: 'assistant' as const, content: reply };
       // Pass the convId explicitly to avoid stale closure
       await appendMessage(assistantMsg, convId);

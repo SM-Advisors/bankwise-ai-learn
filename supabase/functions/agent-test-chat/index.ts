@@ -95,9 +95,17 @@ META-INSTRUCTIONS (invisible to the end user — these govern your behavior):
     }
 
     const claudeResponse = await response.json();
-    const reply = claudeResponse.content?.[0]?.text || "I'd be happy to help. Could you provide more details?";
+    const reply = claudeResponse.content?.[0]?.text;
 
     console.log(`[agent-test-chat] Agent: ${agentId || "unknown"}, Type: ${testType || "freeform"}, Messages: ${messages.length}`);
+
+    if (!reply) {
+      console.error("[agent-test-chat] Empty response from model");
+      return new Response(
+        JSON.stringify({ error: "The AI model returned an empty response. Please try again." }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     return new Response(
       JSON.stringify({ reply }),

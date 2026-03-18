@@ -461,22 +461,39 @@ Do NOT reference this prior conversation directly unless the learner brings it u
 
     console.log(`[ai-practice] Routing to model: ${model}`);
 
-    let reply: string;
-    try {
-      reply = await callModel(model, fullSystemPrompt, claudeMessages);
-    } catch (modelError) {
-      const errMsg = modelError instanceof Error ? modelError.message : String(modelError);
-      if (errMsg === "rate_limit") {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+    let reply = "";
+    let lastModelError: unknown;
+    // Retry up to 3 attempts — handles transient empty responses from the model
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        reply = await callModel(model, fullSystemPrompt, claudeMessages);
+        if (reply && reply.trim().length > 0) break; // got a real response
+        console.warn(`[ai-practice] Empty response from model on attempt ${attempt + 1}`);
+      } catch (modelError) {
+        lastModelError = modelError;
+        const errMsg = modelError instanceof Error ? modelError.message : String(modelError);
+        if (errMsg === "rate_limit") {
+          return new Response(
+            JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        console.warn(`[ai-practice] Model error on attempt ${attempt + 1}: ${errMsg}`);
       }
-      throw modelError;
+      // Brief pause before retry (500ms, 1s)
+      if (attempt < 2) await new Promise(r => setTimeout(r, (attempt + 1) * 500));
+    }
+
+    if (!reply || reply.trim().length === 0) {
+      console.error("[ai-practice] All retries returned empty response", lastModelError);
+      return new Response(
+        JSON.stringify({ error: "The AI model returned an empty response. Please try sending your message again." }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     return new Response(
-      JSON.stringify({ reply: reply || "I'd be happy to help. Could you provide more details about what you need?" }),
+      JSON.stringify({ reply }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
