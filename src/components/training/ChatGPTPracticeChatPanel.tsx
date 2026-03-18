@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import { VoiceMicButton } from '@/components/VoiceMicButton';
 import { type ModuleContent } from '@/data/trainingContent';
-import { getRoleScenario } from '@/data/roleScenarioBanks';
 import type { GeneratedModuleContent } from '@/hooks/useGeneratedModuleContent';
 import { type PracticeConversation } from '@/hooks/usePracticeConversations';
 import { AVAILABLE_MODELS, PROVIDER_COLORS, type ModelDefinition } from '@/lib/models';
@@ -106,16 +105,6 @@ export function ChatGPTPracticeChatPanel({
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  // Department-specific hints: generated → inline departmentScenarios → role scenario bank → default
-  const genDeptScenario = lineOfBusiness && generatedContent?.departmentScenarios?.[lineOfBusiness];
-  const deptScenarios = module.content.practiceTask.departmentScenarios;
-  const roleScenario = lineOfBusiness ? getRoleScenario(module.id, lineOfBusiness) : null;
-  const activeHints = genDeptScenario?.hints
-    || (generatedContent?.hints?.length ? generatedContent.hints : undefined)
-    || (deptScenarios && lineOfBusiness && deptScenarios[lineOfBusiness]?.hints)
-    || roleScenario?.hints
-    || module.content.practiceTask.hints;
 
   const hasConversation = messages.length > 0;
   const isSandbox = module.type === 'sandbox';
