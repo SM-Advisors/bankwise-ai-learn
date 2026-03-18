@@ -216,6 +216,7 @@ export default function TrainingWorkspace() {
     activeConversationId,
     activeMessages,
     createConversation,
+    seedFromPriorModule,
     appendMessage,
     markSubmitted,
     startNewChat,
@@ -354,6 +355,7 @@ export default function TrainingWorkspace() {
     // Define carryover mappings: target module → source module
     const carryoverMap: Record<string, string> = {
       '1-5': '1-4',
+      '1-6': '1-5',
     };
 
     const sourceModuleId = carryoverMap[selectedModule.id];
@@ -385,6 +387,49 @@ export default function TrainingWorkspace() {
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- selectedModule?.id is sufficient; adding the full object would cause unnecessary re-runs
   }, [selectedModule?.id, user?.id, sessionId]);
+
+  // Seed module 1-6's chat with the actual messages from module 1-5's submitted conversation.
+  // This lets the user continue the conversation (not just have invisible AI context).
+  const hasSeedAttemptedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!selectedModule || !user?.id) return;
+
+    // Define which modules should have their chat seeded with prior module messages
+    const conversationSeedMap: Record<string, string> = {
+      '1-6': '1-5',
+    };
+
+    const sourceModuleId = conversationSeedMap[selectedModule.id];
+    if (!sourceModuleId) return;
+
+    // Only attempt seeding once per module visit, and only if no conversations exist yet
+    if (hasSeedAttemptedRef.current === selectedModule.id) return;
+    if (practiceConversations.length > 0) {
+      hasSeedAttemptedRef.current = selectedModule.id;
+      return;
+    }
+
+    hasSeedAttemptedRef.current = selectedModule.id;
+
+    // Fetch the submitted conversation from the source module and seed the new one
+    supabase
+      .from('practice_conversations')
+      .select('messages')
+      .eq('user_id', user.id)
+      .eq('session_id', sessionId || '1')
+      .eq('module_id', sourceModuleId)
+      .eq('is_submitted', true)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.messages && Array.isArray(data.messages) && data.messages.length > 0) {
+          const priorMessages = data.messages as Array<{ role: 'user' | 'assistant'; content: string }>;
+          seedFromPriorModule(priorMessages, 'Continued from The Flipped Interaction');
+        }
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedModule?.id, user?.id, sessionId, practiceConversations.length]);
 
   // Load completed modules and engagement data from database progress.
   // Guard against setting identical values to avoid cascading re-renders

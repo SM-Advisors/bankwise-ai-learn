@@ -427,14 +427,16 @@ Use these facts naturally when relevant — do not list them back to the user.` 
     ].filter(Boolean).join("\n");
 
     // Inject prior module context if available (e.g., module 1-4 conversation for 1-5)
+    // For modules like 1-6 that seed the actual messages into the chat, this context
+    // is supplementary — the AI already sees the prior messages in the conversation history.
     const priorContextBlock = priorModuleContext ? `
 
 PRIOR MODULE CONTEXT:
-The learner completed a previous module where they had this conversation. Use this as background context to make your responses more personalized and build on what they already practiced:
+The learner completed a previous module where they had this conversation. Their conversation history has been carried forward so they can continue iterating on their work. Use this context to make your responses more personalized and build on what they already practiced. Treat this as a natural continuation — the learner should feel like they are picking up right where they left off.
 
 ${priorModuleContext}
 
-Do NOT reference this prior conversation directly unless the learner brings it up. Just use it to inform your understanding of their skill level and work context.` : "";
+Continue the conversation naturally. If the learner sends a new refinement request, respond as if you remember the full conversation above.` : "";
 
     const fullSystemPrompt = [systemPrompt, priorContextBlock, personalizationBlock]
       .filter(Boolean)
