@@ -179,7 +179,7 @@ export function ChatGPTPracticeChatPanel({
   const handleTextareaInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
     const t = e.currentTarget;
     t.style.height = 'auto';
-    t.style.height = `${Math.min(t.scrollHeight, 200)}px`;
+    t.style.height = `${Math.min(t.scrollHeight, 144)}px`;
   };
 
   const modelLabel = showModelSelector
@@ -409,7 +409,7 @@ export function ChatGPTPracticeChatPanel({
           ref={fileInputRef}
           type="file"
           className="hidden"
-          accept=".txt,.csv,.md,.json,.xml,.html,.log,.ts,.js,.py,.sql,.css,.yml,.yaml"
+          accept=".txt,.csv,.md,.json,.xml,.html,.log,.ts,.js,.py,.sql,.css,.yml,.yaml,.doc,.docx"
           onChange={handleFileSelect}
         />
 
@@ -473,7 +473,7 @@ export function ChatGPTPracticeChatPanel({
               placeholder="Ask anything"
               rows={1}
               disabled={isLoading}
-              className="flex-1 resize-none border-0 bg-transparent focus:outline-none text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 max-h-[200px] leading-relaxed py-1"
+              className="flex-1 resize-none border-0 bg-transparent focus:outline-none text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 max-h-[144px] leading-relaxed py-1"
               style={{ height: 'auto' }}
             />
 

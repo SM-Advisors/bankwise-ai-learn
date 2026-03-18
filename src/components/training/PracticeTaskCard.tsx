@@ -83,10 +83,16 @@ export function PracticeTaskCard({
           <Textarea
             id="practice-response"
             value={practiceInput}
-            onChange={(e) => onPracticeInputChange(e.target.value)}
+            onChange={(e) => {
+              onPracticeInputChange(e.target.value);
+              const el = e.target;
+              el.style.height = 'auto';
+              el.style.height = `${Math.min(el.scrollHeight, 144)}px`;
+            }}
             onKeyDown={handleKeyDown}
             placeholder={`Message ${module.content.practiceTask.title}...`}
-            className="min-h-[56px] max-h-[180px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-foreground placeholder:text-muted-foreground/60 rounded-t-2xl px-4 pt-3.5 pb-0"
+            className="min-h-[40px] max-h-[144px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-foreground placeholder:text-muted-foreground/60 rounded-t-2xl px-4 pt-3.5 pb-0 overflow-y-auto"
+            rows={1}
             aria-describedby="composer-hint"
           />
           {/* Toolbar row */}

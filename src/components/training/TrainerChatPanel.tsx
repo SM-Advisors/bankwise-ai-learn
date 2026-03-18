@@ -621,10 +621,10 @@ export function TrainerChatPanel({
                     // Auto-grow
                     const el = e.target;
                     el.style.height = 'auto';
-                    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+                    el.style.height = `${Math.min(el.scrollHeight, 144)}px`;
                   }}
                   placeholder="Ask Andrea for help..."
-                  className="min-h-[40px] resize-none text-sm rounded-xl overflow-hidden"
+                  className="min-h-[40px] max-h-[144px] resize-none text-sm rounded-xl overflow-y-auto"
                   style={{ height: '40px' }}
                   onKeyDown={handleKeyDown}
                 />
