@@ -166,7 +166,6 @@ export default function ElectiveWorkspace() {
 
       fetchGreeting();
     }
-     
   }, [profile, electivePath, selectedModule, completedModules, industrySlug, syntheticSessionId]);
 
   // Reset when module changes
