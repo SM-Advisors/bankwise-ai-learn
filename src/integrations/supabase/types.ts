@@ -694,6 +694,47 @@ export type Database = {
           },
         ]
       }
+      generated_module_content: {
+        Row: {
+          content: Json
+          created_at: string
+          department_slug: string
+          id: string
+          industry_slug: string
+          module_id: string
+          org_id: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          department_slug: string
+          id?: string
+          industry_slug: string
+          module_id: string
+          org_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          department_slug?: string
+          id?: string
+          industry_slug?: string
+          module_id?: string
+          org_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generated_module_content_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       industries: {
         Row: {
           created_at: string
