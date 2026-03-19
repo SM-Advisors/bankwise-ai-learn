@@ -1431,6 +1431,9 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
               <PersonalizationPractice
                 hasNextModule={!!nextModule}
                 onContinueToNext={nextModule ? () => handleModuleSelect(nextModule) : undefined}
+                onSendPracticeMessage={handlePracticeSendMessage}
+                practiceMessages={activeMessages}
+                isPracticeLoading={isPracticeLoading}
                 onSaved={(prefs) => {
                   // Send Andrea a message about the personalization for feedback
                   const feedbackPrompt = `The user just completed their personalization setup. Here are their choices:\n\n- **Tone:** ${prefs.tone}\n- **Verbosity:** ${prefs.verbosity}\n- **Formatting:** ${prefs.formatting_preference}\n- **Role Context:** ${prefs.role_context || '(not set)'}\n- **Custom Instructions:** ${prefs.additional_instructions || '(not set)'}\n\nPlease provide structured, specific feedback on their personalization choices. Focus on the Role Context and Custom Instructions fields — are they specific enough? If they're well-crafted, congratulate them. If they could be improved, give concrete suggestions based on their role/department. Do NOT be generic.`;
