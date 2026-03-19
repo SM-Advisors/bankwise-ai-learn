@@ -544,6 +544,9 @@ export default function TrainingWorkspace() {
     setSelectedModule(module);
     if (module.type === 'video') {
       setVideoModalOpen(true);
+    } else if (sessionId === '1' && module.id === '1-1') {
+      // Personalization module has no learn content — go straight to practice
+      setWorkspaceMode('practice');
     } else {
       setWorkspaceMode('learn');
     }
