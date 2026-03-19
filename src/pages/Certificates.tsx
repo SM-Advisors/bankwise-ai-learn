@@ -13,23 +13,23 @@ import type { SessionProgressData } from '@/types/progress';
 
 const SESSION_LABELS: Record<number, { title: string; skills: string[] }> = {
   1: {
-    title: 'Foundation & Early Wins',
+    title: 'AI Fundamentals & Your First Win',
     skills: ['Basic Interaction', 'Flipped Interaction Pattern', 'Iteration', 'Self-Review Loops'],
   },
   2: {
-    title: 'AI 201',
+    title: 'Prompting Frameworks & Model Selection',
     skills: ['CLEAR Framework', 'Output Templating', 'Multi-Shot Prompting', 'Chain-of-Thought', 'Model & Tool Selection'],
   },
   3: {
-    title: 'Agents',
+    title: 'Understanding & Building AI Agents',
     skills: ['Four Levels of Agents', 'Agent Building', 'Knowledge & Files', 'Tool Access'],
   },
   4: {
-    title: 'Functional Agents',
+    title: 'AI in Your Everyday Tools',
     skills: ['AI in Spreadsheets', 'AI in Presentations', 'AI in Email', 'Workflow Integration'],
   },
   5: {
-    title: 'Build Your Frankenstein',
+    title: 'Designing Your AI Workflow',
     skills: ['Stack Mapping', 'Workflow Design', 'Prototype Building', 'Presentation & Reflection'],
   },
 };

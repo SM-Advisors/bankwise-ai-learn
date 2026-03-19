@@ -455,6 +455,48 @@ export function PracticeChatPanel({
         </div>
       )}
 
+      {/* Sandbox session completion — no submission required, just show Complete Session when done */}
+      {isSandbox && isCompleted && !hasNextModule && onCompleteSession && (
+        <div className="w-full max-w-2xl mx-auto px-4 pt-2">
+          <div className="p-4 bg-accent/10 border border-accent/20 rounded-2xl text-center">
+            <div className="flex items-center justify-center gap-2 text-accent font-medium">
+              <CheckCircle className="h-5 w-5" />
+              All modules complete!
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              You've finished every module in this session. Ready to move on?
+            </p>
+            <div className="mt-3">
+              <Button onClick={onCompleteSession} size="sm" className="gap-2 rounded-full">
+                Complete Session
+                <CheckCircle className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sandbox continue to next module */}
+      {isSandbox && isCompleted && hasNextModule && onContinueToNext && (
+        <div className="w-full max-w-2xl mx-auto px-4 pt-2">
+          <div className="p-4 bg-accent/10 border border-accent/20 rounded-2xl text-center">
+            <div className="flex items-center justify-center gap-2 text-accent font-medium">
+              <CheckCircle className="h-5 w-5" />
+              Module complete!
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Keep exploring or continue when you're ready.
+            </p>
+            <div className="mt-3">
+              <Button onClick={onContinueToNext} size="sm" className="gap-2 rounded-full">
+                Continue to Next Module
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Get Andrea's Feedback button — appears after 1+ exchanges, not yet submitted (hidden in sandbox) */}
       {hasConversation && !isSubmitted && !isLoading && !isSandbox && (
         <div className="w-full max-w-2xl mx-auto px-4 pt-2">

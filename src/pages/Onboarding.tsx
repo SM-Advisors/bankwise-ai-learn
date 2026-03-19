@@ -260,13 +260,17 @@ export default function Onboarding() {
 
     if (step < TOTAL_STEPS) {
       setStep(step + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       await handleComplete();
     }
   };
 
   const handleBack = () => {
-    if (step > 1) setStep(step - 1);
+    if (step > 1) {
+      setStep(step - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // ── Complete ──────────────────────────────────────────────────────────────
@@ -558,7 +562,7 @@ export default function Onboarding() {
                   </div>
                   <div className="flex items-center justify-between px-4 py-3">
                     <span className="text-muted-foreground">First session</span>
-                    <span className="font-medium">Foundation & Early Wins</span>
+                    <span className="font-medium">AI Fundamentals & Your First Win</span>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">

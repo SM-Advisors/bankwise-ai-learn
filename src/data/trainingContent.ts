@@ -53,7 +53,7 @@ export interface SessionContent {
 
 export const SESSION_1_CONTENT: SessionContent = {
   id: 1,
-  title: 'Foundation & Early Wins',
+  title: 'AI Fundamentals & Your First Win',
   description: 'Build confidence with AI through conversation-first computing — every exercise works, every win is real',
   modules: [
     // ─── Module 1-1: Personalization ──────────────────────────────────────
@@ -439,7 +439,7 @@ export const SESSION_1_CONTENT: SessionContent = {
 
 export const SESSION_2_CONTENT: SessionContent = {
   id: 2,
-  title: 'AI 201',
+  title: 'Prompting Frameworks & Model Selection',
   description: 'Move from casual conversation to professional-grade AI use — understand limitations, add structure, and choose the right model and tools for each task',
   modules: [
     // ─── Module 2-1: AI Limitations & Critical Evaluation (NEW) ───────────
@@ -1007,7 +1007,7 @@ export const SESSION_2_CONTENT: SessionContent = {
 
 export const SESSION_3_CONTENT: SessionContent = {
   id: 3,
-  title: 'Agents',
+  title: 'Understanding & Building AI Agents',
   description: 'Understand what agents are, why they exist, and how to build one — layer by layer',
   modules: [
     // ─── Module 3-1: Why Agents Exist ─────────────────────────────────────
@@ -1376,7 +1376,7 @@ export const SESSION_3_CONTENT: SessionContent = {
 
 export const SESSION_4_CONTENT: SessionContent = {
   id: 4,
-  title: 'Functional Agents',
+  title: 'AI in Your Everyday Tools',
   description: 'Learn to use agents that already exist in the tools you use every day — choose the path most relevant to your work',
   modules: [
     // ─── Module 4-1: What Are Functional Agents? ──────────────────────────
@@ -1616,7 +1616,7 @@ export const SESSION_4_CONTENT: SessionContent = {
 
 export const SESSION_5_CONTENT: SessionContent = {
   id: 5,
-  title: 'Build Your Frankenstein',
+  title: 'Designing Your AI Workflow',
   description: 'Design your own AI stack — stitch the pieces together in the way that serves your work',
   modules: [
     // ─── Module 5-1: Map Your Stack ───────────────────────────────────────

@@ -87,10 +87,10 @@ export function CertificateGenerator({
             For successfully completing the comprehensive AI Training Program, demonstrating proficiency in structured prompting, AI agent development, and role-specific AI applications for professionals.
           </div>
           <div class="skills">
-            <span>Foundation & Early Wins</span>
-            <span>Structured Interaction</span>
-            <span>Agent Building</span>
-            <span>Functional AI Tools</span>
+            <span>AI Fundamentals</span>
+            <span>Prompting Frameworks</span>
+            <span>AI Agents</span>
+            <span>Everyday Tools</span>
           </div>
           <div class="footer">
             <div class="date">Completed: ${formattedDate}</div>
@@ -150,7 +150,7 @@ export function CertificateGenerator({
             For successfully completing the comprehensive AI Training Program, demonstrating proficiency in structured prompting, AI agent development, and role-specific AI applications.
           </p>
           <div className="flex flex-wrap justify-center gap-2">
-            {['Foundation & Early Wins', 'Structured Interaction', 'Agent Building', 'Functional AI Tools'].map((skill) => (
+            {['AI Fundamentals', 'Prompting Frameworks', 'AI Agents', 'Everyday Tools'].map((skill) => (
               <span key={skill} className="px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
                 {skill}
               </span>
