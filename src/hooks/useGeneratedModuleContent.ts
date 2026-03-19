@@ -156,6 +156,8 @@ export function useGeneratedModuleContent(
         console.error('useGeneratedModuleContent error:', err);
         setError(err instanceof Error ? err.message : 'Unknown error');
         setContent(null);
+        // Record failure so re-renders don't retry immediately
+        failedKeys.set(dedupKey, Date.now());
       } finally {
         inflightRequests.delete(dedupKey);
         setIsLoading(false);
