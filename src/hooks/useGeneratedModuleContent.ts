@@ -47,6 +47,10 @@ interface ModulePedagogy {
 // Prevents concurrent duplicate requests for the same module+dept+org combo.
 const inflightRequests = new Map<string, Promise<unknown>>();
 
+// Track keys that have already errored so we don't retry on re-render
+const failedKeys = new Map<string, number>();
+const FAIL_COOLDOWN_MS = 60_000; // Don't retry for 60s after an error
+
 // ─── Hook ───────────────────────────────────────────────────────────────────
 
 /**
@@ -85,6 +89,14 @@ export function useGeneratedModuleContent(
       }
 
       const dedupKey = `${moduleId}:${departmentSlug}:${effectiveOrgId}`;
+
+      // Don't retry if this key recently failed (prevents error-triggered re-render loops)
+      if (!forceRegenerate) {
+        const failedAt = failedKeys.get(dedupKey);
+        if (failedAt && Date.now() - failedAt < FAIL_COOLDOWN_MS) {
+          return;
+        }
+      }
 
       // If an identical request is already in flight, wait for it instead
       if (!forceRegenerate && inflightRequests.has(dedupKey)) {
@@ -144,6 +156,8 @@ export function useGeneratedModuleContent(
         console.error('useGeneratedModuleContent error:', err);
         setError(err instanceof Error ? err.message : 'Unknown error');
         setContent(null);
+        // Record failure so re-renders don't retry immediately
+        failedKeys.set(dedupKey, Date.now());
       } finally {
         inflightRequests.delete(dedupKey);
         setIsLoading(false);
