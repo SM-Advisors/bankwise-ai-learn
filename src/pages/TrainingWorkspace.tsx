@@ -664,16 +664,35 @@ export default function TrainingWorkspace() {
 
       // Track chat started engagement
       if (!moduleEngagement[selectedModule.id]?.chatStarted) {
+        const isSandboxModule = selectedModule.type === 'sandbox';
         trackModuleEngagement(selectedModule.id, {
           chatStarted: true,
           chatStartedAt: new Date().toISOString(),
           practiceMessageCount: 1,
           // Sandbox modules auto-complete on first message — no submission needed
-          ...(selectedModule.type === 'sandbox' ? {
+          ...(isSandboxModule ? {
             completed: true,
             completedAt: new Date().toISOString(),
           } : {}),
         });
+
+        // Sandbox: also add to completedModules so the "Complete Session" button appears
+        if (isSandboxModule) {
+          const newCompleted = new Set(completedModules);
+          newCompleted.add(selectedModule.id);
+          setCompletedModules(newCompleted);
+          setModuleCompleted(true);
+
+          // Persist completedModules array to DB
+          const progressKey = `session_${sessionId}_progress` as keyof typeof progress;
+          const currentProgress = (progress?.[progressKey] as SessionProgressData) || { completedModules: Array.from(completedModules) };
+          updateProgress({
+            [progressKey]: {
+              ...currentProgress,
+              completedModules: Array.from(newCompleted),
+            },
+          });
+        }
       }
     } else {
       // Append user message to existing conversation (stripped of file content)

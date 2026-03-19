@@ -371,11 +371,11 @@ export default function SuperAdminDashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {platform && [
-                  { label: 'Session 1 — Foundation', rate: platform.s1_completion_rate },
-                  { label: 'Session 2 — Structured Interaction', rate: platform.s2_completion_rate },
-                  { label: 'Session 3 — Agents', rate: platform.s3_completion_rate },
-                  { label: 'Session 4 — Functional Agents', rate: platform.s4_completion_rate },
-                  { label: 'Session 5 — Frankenstein', rate: platform.s5_completion_rate },
+                  { label: 'Session 1 — AI Fundamentals', rate: platform.s1_completion_rate },
+                  { label: 'Session 2 — Prompting Frameworks', rate: platform.s2_completion_rate },
+                  { label: 'Session 3 — AI Agents', rate: platform.s3_completion_rate },
+                  { label: 'Session 4 — Everyday Tools', rate: platform.s4_completion_rate },
+                  { label: 'Session 5 — AI Workflow', rate: platform.s5_completion_rate },
                 ].map((item) => (
                   <div key={item.label}>
                     <div className="flex justify-between text-sm mb-1">

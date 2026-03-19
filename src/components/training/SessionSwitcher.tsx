@@ -7,11 +7,11 @@ import type { ModuleEngagement } from '@/types/progress';
 
 // Short labels for the switcher pills — pulled from session titles in trainingContent
 const SESSION_LABELS: Record<number, string> = {
-  1: 'Foundations',
-  2: 'AI Agent',
-  3: 'Role Training',
-  4: 'Integration',
-  5: 'Frankenstein',
+  1: 'Fundamentals',
+  2: 'Frameworks',
+  3: 'Agents',
+  4: 'Daily Tools',
+  5: 'Workflow',
 };
 
 interface SessionSwitcherProps {

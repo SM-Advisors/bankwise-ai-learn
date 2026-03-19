@@ -46,6 +46,7 @@ export function useTour(tourId: TourId) {
       showProgress: true,
       progressText: '{{current}} of {{total}}',
       allowClose: true,
+      smoothScroll: true,
       onDestroyStarted: () => {
         driverRef.current = null;
         // Mark complete whenever the tour finishes OR is skipped

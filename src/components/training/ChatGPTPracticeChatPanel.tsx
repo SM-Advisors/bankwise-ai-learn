@@ -391,6 +391,50 @@ export function ChatGPTPracticeChatPanel({
       {/* ── Input area ── */}
       <div className="w-full max-w-[680px] mx-auto px-4 pb-2 pt-2 shrink-0">
 
+        {/* Sandbox session completion — no submission required */}
+        {isSandbox && isCompleted && !hasNextModule && onCompleteSession && (
+          <div className="p-4 mb-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-2xl text-center">
+            <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400 font-medium">
+              <CheckCircle className="h-5 w-5" />
+              All modules complete!
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              You've finished every module in this session. Ready to move on?
+            </p>
+            <div className="mt-3">
+              <button
+                onClick={onCompleteSession}
+                className="inline-flex items-center gap-2 rounded-full bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 transition-colors"
+              >
+                Complete Session
+                <CheckCircle className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Sandbox continue to next module */}
+        {isSandbox && isCompleted && hasNextModule && onContinueToNext && (
+          <div className="p-4 mb-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-2xl text-center">
+            <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400 font-medium">
+              <CheckCircle className="h-5 w-5" />
+              Module complete!
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Keep exploring or continue when you're ready.
+            </p>
+            <div className="mt-3">
+              <button
+                onClick={onContinueToNext}
+                className="inline-flex items-center gap-2 rounded-full bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 transition-colors"
+              >
+                Continue to Next Module
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Get Andrea's Feedback chip — appears above input after 1+ exchanges */}
         {hasConversation && !isSubmitted && !isLoading && !isSandbox && (
           <div className="flex justify-center mb-3">

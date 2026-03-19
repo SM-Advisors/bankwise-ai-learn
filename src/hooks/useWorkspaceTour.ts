@@ -14,6 +14,7 @@ export function useWorkspaceTour(sessionId: string | undefined, sessionTitle: st
       const driverObj = driver({
         showProgress: true,
         progressText: '{{current}} of {{total}}',
+        smoothScroll: true,
         onDestroyStarted: () => {
           localStorage.setItem(storageKey, 'true');
           driverObj.destroy();

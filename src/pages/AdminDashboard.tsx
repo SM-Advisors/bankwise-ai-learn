@@ -115,7 +115,7 @@ const moduleTypeIcon: Record<string, React.ElementType> = {
 const CORE_PROGRAMS = [
   {
     id: 1,
-    title: 'Foundation & Early Wins',
+    title: 'AI Fundamentals & Your First Win',
     description: 'Start with personalization, learn basic AI interaction, get your first real win, then build iteration and self-review skills.',
     icon: Sparkles,
     stage: 'Stage 1 - Foundation',
@@ -131,13 +131,13 @@ const CORE_PROGRAMS = [
   },
   {
     id: 2,
-    title: 'Structured Interaction, Models & Tools',
+    title: 'Prompting Frameworks & Model Selection',
     description: 'Add structure with the CLEAR Framework, master output templating, multi-shot prompting, model selection, chain-of-thought reasoning, and tool selection.',
     icon: Bot,
     stage: 'Stage 2 - Structure',
     modules: ALL_SESSION_CONTENT[2]?.modules.length || 7,
     estimatedTime: '3-4 hours',
-    prerequisites: 'Complete Session 1: Foundation & Early Wins',
+    prerequisites: 'Complete Session 1: AI Fundamentals & Your First Win',
     outcomes: [
       'Apply the CLEAR Framework for precision tasks',
       'Use multi-shot prompting and chain-of-thought reasoning',
@@ -147,13 +147,13 @@ const CORE_PROGRAMS = [
   },
   {
     id: 3,
-    title: 'Agents',
+    title: 'Understanding & Building AI Agents',
     description: 'Understand why agents exist, learn the Four Levels, and build your own agent from instructions through knowledge, files, and tool access.',
     icon: Building2,
     stage: 'Stage 3 - Agents',
     modules: ALL_SESSION_CONTENT[3]?.modules.length || 7,
     estimatedTime: '4-6 hours',
-    prerequisites: 'Complete Session 2: Structured Interaction, Models & Tools',
+    prerequisites: 'Complete Session 2: Prompting Frameworks & Model Selection',
     outcomes: [
       'Understand the Four Levels of AI agents',
       'Build a basic agent with instructions and constraints',

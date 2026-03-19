@@ -388,8 +388,8 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
         { session: 'S1', label: 'Session 1: Foundation', completed: s1Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s1Count / totalEnrolled) * 100) : 0 },
         { session: 'S2', label: 'Session 2: Structured Interaction', completed: s2Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s2Count / totalEnrolled) * 100) : 0 },
         { session: 'S3', label: 'Session 3: Agents', completed: s3Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s3Count / totalEnrolled) * 100) : 0 },
-        { session: 'S4', label: 'Session 4: Functional Agents', completed: s4Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s4Count / totalEnrolled) * 100) : 0 },
-        { session: 'S5', label: 'Session 5: Build Your Frankenstein', completed: s5Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s5Count / totalEnrolled) * 100) : 0 },
+        { session: 'S4', label: 'Session 4: AI in Your Everyday Tools', completed: s4Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s4Count / totalEnrolled) * 100) : 0 },
+        { session: 'S5', label: 'Session 5: Designing Your AI Workflow', completed: s5Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s5Count / totalEnrolled) * 100) : 0 },
       ];
 
       // Active users
