@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle, Save, Loader2, User, ArrowRight, Bot, Sparkles } from 'lucide-react';
+import { CheckCircle, Save, Loader2, ArrowRight, Bot, Sparkles } from 'lucide-react';
 import { useAIPreferences } from '@/hooks/useAIPreferences';
 import { useToast } from '@/hooks/use-toast';
 
@@ -58,7 +58,6 @@ export function PersonalizationPractice({
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [showProfilePopup, setShowProfilePopup] = useState(false);
 
   const [tone, setTone] = useState('professional');
   const [verbosity, setVerbosity] = useState('balanced');
@@ -96,7 +95,6 @@ export function PersonalizationPractice({
       // Re-enable submit button when user edits after submission
       if (saved) {
         setSaved(false);
-        setShowProfilePopup(false);
         autoPromptFiredRef.current = false;
       }
     }
@@ -165,9 +163,6 @@ export function PersonalizationPractice({
       setIsDirty(false);
       lastSavedRef.current = currentSnapshot;
       toast({ title: 'Personalization saved', description: 'Your preferences have been updated in My Profile.' });
-
-      // Show profile popup
-      setShowProfilePopup(true);
 
       onSaved({
         tone,
@@ -396,22 +391,6 @@ export function PersonalizationPractice({
                 </p>
               </div>
             )}
-          </div>
-        )}
-
-        {/* My Profile popup notification */}
-        {showProfilePopup && (
-          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex items-start gap-3">
-            <User className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-medium">Review your personalization anytime</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Click your name in the bottom-left corner to open My Profile and review or update your settings.
-              </p>
-            </div>
-            <button onClick={() => setShowProfilePopup(false)} className="text-muted-foreground hover:text-foreground text-xs">
-              Dismiss
-            </button>
           </div>
         )}
 
