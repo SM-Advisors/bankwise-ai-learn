@@ -6,12 +6,14 @@ export interface RateLimitConfig {
 }
 
 const DEFAULT_LIMITS: Record<string, RateLimitConfig> = {
-  trainer_chat:       { perMinute: 30, perDay: 200 },
-  "ai-practice":      { perMinute: 60, perDay: 500 },
-  practice_chat:      { perMinute: 60, perDay: 500 },
-  submission_review:  { perMinute: 10, perDay: 50  },
-  "agent-test-chat":  { perMinute: 30, perDay: 200 },
-  "workflow-test-chat": { perMinute: 30, perDay: 200 },
+  trainer_chat:              { perMinute: 30, perDay: 200 },
+  "ai-practice":             { perMinute: 60, perDay: 500 },
+  practice_chat:             { perMinute: 60, perDay: 500 },
+  submission_review:         { perMinute: 10, perDay: 50  },
+  "agent-test-chat":         { perMinute: 30, perDay: 200 },
+  "workflow-test-chat":      { perMinute: 30, perDay: 200 },
+  "intake-prompt-score":     { perMinute: 10, perDay: 100 },
+  "generate_module_content": { perMinute: 5,  perDay: 30  },
 };
 
 export async function checkRateLimit(
@@ -66,9 +68,8 @@ export async function checkRateLimit(
 
     return { allowed: true };
   } catch (err) {
-    // Fail open to avoid blocking users during DB outages, but log prominently
-    // so the issue is visible in function logs.
-    console.error("[rateLimiter] CRITICAL: DB check failed, rate limit not enforced. Error:", err);
-    return { allowed: true };
+    // Fail CLOSED to prevent runaway API costs during DB outages.
+    console.error("[rateLimiter] CRITICAL: DB check failed, blocking request. Error:", err);
+    return { allowed: false, reason: "Service temporarily unavailable. Please try again in a moment." };
   }
 }

@@ -1,5 +1,7 @@
 ﻿import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { checkRateLimit } from "../_shared/rateLimiter.ts";
 
 
 
@@ -25,6 +27,33 @@ serve(async (req) => {
     const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
     if (!ANTHROPIC_API_KEY) {
       throw new Error("ANTHROPIC_API_KEY is not configured");
+    }
+
+    // ── Auth + rate limiting ──────────────────────────────────────────────
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const authHeader = req.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "");
+    if (!token) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+    const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const rateCheck = await checkRateLimit(supabaseUrl, serviceRoleKey, user.id, "agent-test-chat");
+    if (!rateCheck.allowed) {
+      return new Response(
+        JSON.stringify({ error: rateCheck.reason }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     const { systemPrompt, messages, agentId, testType }: AgentTestChatRequest = await req.json();

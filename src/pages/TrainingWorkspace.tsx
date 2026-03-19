@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth, type UserProfile } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -118,21 +118,24 @@ export default function TrainingWorkspace() {
   const { createMemory } = useAIMemories();
 
   // ── Generated content: industry-specific examples & scenarios ───────────
-  const modulePedagogy = selectedModule ? {
-    title: selectedModule.title,
-    learningObjectives: selectedModule.learningObjectives,
-    learningOutcome: selectedModule.learningOutcome || '',
-    keyPoints: selectedModule.content.keyPoints || [],
-    overview: selectedModule.content.overview,
-    practiceTaskTitle: selectedModule.content.practiceTask.title,
-    practiceTaskInstructions: selectedModule.content.practiceTask.instructions,
-    successCriteria: Array.isArray(selectedModule.content.practiceTask.successCriteria)
-      ? selectedModule.content.practiceTask.successCriteria
-      : [
-          ...(selectedModule.content.practiceTask.successCriteria?.primary || []),
-          ...(selectedModule.content.practiceTask.successCriteria?.supporting || []),
-        ],
-  } : null;
+  const modulePedagogy = useMemo(() => {
+    if (!selectedModule) return null;
+    return {
+      title: selectedModule.title,
+      learningObjectives: selectedModule.learningObjectives,
+      learningOutcome: selectedModule.learningOutcome || '',
+      keyPoints: selectedModule.content.keyPoints || [],
+      overview: selectedModule.content.overview,
+      practiceTaskTitle: selectedModule.content.practiceTask.title,
+      practiceTaskInstructions: selectedModule.content.practiceTask.instructions,
+      successCriteria: Array.isArray(selectedModule.content.practiceTask.successCriteria)
+        ? selectedModule.content.practiceTask.successCriteria
+        : [
+            ...(selectedModule.content.practiceTask.successCriteria?.primary || []),
+            ...(selectedModule.content.practiceTask.successCriteria?.supporting || []),
+          ],
+    };
+  }, [selectedModule?.id]);
   const departmentSlug = profile?.department || null;
   const departmentName = departmentSlug
     ? (industryConfig.departments.find(d => d.slug === departmentSlug)?.name || departmentSlug)
@@ -740,22 +743,10 @@ export default function TrainingWorkspace() {
         ...(priorModuleContext ? { priorModuleContext } : {}),
       };
 
-      // Retry up to 2 times on network/connection errors (handles tab-away browser throttling)
-      let response;
-      let lastError: unknown;
-      for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-          response = await supabase.functions.invoke('ai-practice', { body: requestBody });
-          if (!response.error) break;
-          lastError = response.error;
-        } catch (err) {
-          lastError = err;
-        }
-        // Wait briefly before retry (1s, 2s)
-        if (attempt < 2) await new Promise(r => setTimeout(r, (attempt + 1) * 1000));
-      }
-
-      if (!response || response.error) throw lastError || new Error('Connection failed');
+      // Single invocation — backend already retries transient model errors (up to 3 attempts).
+      // Removed frontend retry loop to avoid 3×3 = 9× API call amplification.
+      const response = await supabase.functions.invoke('ai-practice', { body: requestBody });
+      if (response.error) throw response.error;
 
       const reply = response.data?.reply;
       if (!reply) throw new Error(response.data?.error || 'Empty response from AI');
