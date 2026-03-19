@@ -207,14 +207,14 @@ export function PersonalizationPractice({
         <div className="text-center space-y-1">
           <h2 className="text-xl font-semibold">Set Up Your Personalization</h2>
           <p className="text-sm text-muted-foreground">
-            Tell Andrea who you are so every response feels relevant to your work.
+            Configure how AI responds to you — tone, detail level, and context.
           </p>
         </div>
 
         {/* Response Tone */}
         <div className="space-y-2">
           <h3 className="text-sm font-semibold">Response Tone</h3>
-          <p className="text-xs text-muted-foreground">How should Andrea talk to you?</p>
+          <p className="text-xs text-muted-foreground">How should AI talk to you?</p>
           <div className="grid grid-cols-3 gap-2">
             {TONE_OPTIONS.map((opt) => (
               <button
@@ -258,7 +258,7 @@ export function PersonalizationPractice({
         {/* Formatting Style */}
         <div className="space-y-2">
           <h3 className="text-sm font-semibold">Formatting Style</h3>
-          <p className="text-xs text-muted-foreground">How should Andrea format responses?</p>
+          <p className="text-xs text-muted-foreground">How should AI format responses?</p>
           <div className="grid grid-cols-3 gap-2">
             {FORMAT_OPTIONS.map((opt) => (
               <button
@@ -281,7 +281,7 @@ export function PersonalizationPractice({
         <div className="space-y-2">
           <h3 className="text-sm font-semibold">Your Role Context</h3>
           <p className="text-xs text-muted-foreground">
-            Tell Andrea about your specific role so she can tailor responses
+            Tell the AI about your specific role so it can tailor responses
           </p>
           <Textarea
             value={roleContext}
@@ -295,7 +295,7 @@ export function PersonalizationPractice({
         <div className="space-y-2">
           <h3 className="text-sm font-semibold">Custom Instructions</h3>
           <p className="text-xs text-muted-foreground">
-            Any other preferences for how Andrea should assist you
+            Any other preferences for how the AI should assist you
           </p>
           <Textarea
             value={customInstructions}
@@ -324,7 +324,7 @@ export function PersonalizationPractice({
             ) : (
               <Save className="h-4 w-4" />
             )}
-            {saved ? 'Saved — see your preview below' : 'Save & Preview How Andrea Responds'}
+            {saved ? 'Saved — see your preview below' : 'Save & Preview Response'}
           </Button>
         </div>
 
