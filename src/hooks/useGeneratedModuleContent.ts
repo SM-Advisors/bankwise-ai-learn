@@ -47,6 +47,10 @@ interface ModulePedagogy {
 // Prevents concurrent duplicate requests for the same module+dept+org combo.
 const inflightRequests = new Map<string, Promise<unknown>>();
 
+// Track keys that have already errored so we don't retry on re-render
+const failedKeys = new Map<string, number>();
+const FAIL_COOLDOWN_MS = 60_000; // Don't retry for 60s after an error
+
 // ─── Hook ───────────────────────────────────────────────────────────────────
 
 /**
