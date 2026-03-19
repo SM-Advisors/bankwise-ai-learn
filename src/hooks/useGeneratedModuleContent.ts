@@ -90,6 +90,14 @@ export function useGeneratedModuleContent(
 
       const dedupKey = `${moduleId}:${departmentSlug}:${effectiveOrgId}`;
 
+      // Don't retry if this key recently failed (prevents error-triggered re-render loops)
+      if (!forceRegenerate) {
+        const failedAt = failedKeys.get(dedupKey);
+        if (failedAt && Date.now() - failedAt < FAIL_COOLDOWN_MS) {
+          return;
+        }
+      }
+
       // If an identical request is already in flight, wait for it instead
       if (!forceRegenerate && inflightRequests.has(dedupKey)) {
         try {
