@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIndustryContent } from '@/hooks/useIndustryContent';
@@ -43,6 +43,10 @@ interface ModulePedagogy {
   successCriteria: string[];
 }
 
+// ─── In-flight deduplication ────────────────────────────────────────────────
+// Prevents concurrent duplicate requests for the same module+dept+org combo.
+const inflightRequests = new Map<string, Promise<unknown>>();
+
 // ─── Hook ───────────────────────────────────────────────────────────────────
 
 /**
@@ -64,35 +68,64 @@ export function useGeneratedModuleContent(
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Stable refs for values used in the callback but that shouldn't retrigger it
+  const modulePedagogyRef = useRef(modulePedagogy);
+  modulePedagogyRef.current = modulePedagogy;
+  const configRef = useRef(config);
+  configRef.current = config;
+  const industrySlugRef = useRef(industrySlug);
+  industrySlugRef.current = industrySlug;
+  const departmentNameRef = useRef(departmentName);
+  departmentNameRef.current = departmentName;
+
   const fetchOrGenerate = useCallback(
     async (forceRegenerate = false) => {
-      if (!moduleId || !modulePedagogy || !departmentSlug || !departmentName || !effectiveOrgId) {
+      if (!moduleId || !modulePedagogyRef.current || !departmentSlug || !departmentNameRef.current || !effectiveOrgId) {
+        return;
+      }
+
+      const dedupKey = `${moduleId}:${departmentSlug}:${effectiveOrgId}`;
+
+      // If an identical request is already in flight, wait for it instead
+      if (!forceRegenerate && inflightRequests.has(dedupKey)) {
+        try {
+          const result = await inflightRequests.get(dedupKey);
+          if (result && typeof result === 'object' && 'content' in result) {
+            setContent((result as { content: GeneratedModuleContent }).content);
+          }
+        } catch {
+          // Original request failed; don't set error here — the original caller handles it
+        }
         return;
       }
 
       setIsLoading(true);
       setError(null);
 
-      try {
-        const { data, error: fnError } = await supabase.functions.invoke(
-          'generate-module-content',
-          {
-            body: {
-              orgId: effectiveOrgId,
-              industrySlug,
-              departmentSlug,
-              moduleId,
-              modulePedagogy,
-              industryContext: {
-                name: config.name,
-                complianceContext: config.complianceContext,
-                scenarioGenerationContext: config.scenarioGenerationContext,
-              },
-              departmentName,
-              forceRegenerate,
+      const promise = supabase.functions.invoke(
+        'generate-module-content',
+        {
+          body: {
+            orgId: effectiveOrgId,
+            industrySlug: industrySlugRef.current,
+            departmentSlug,
+            moduleId,
+            modulePedagogy: modulePedagogyRef.current,
+            industryContext: {
+              name: configRef.current.name,
+              complianceContext: configRef.current.complianceContext,
+              scenarioGenerationContext: configRef.current.scenarioGenerationContext,
             },
+            departmentName: departmentNameRef.current,
+            forceRegenerate,
           },
-        );
+        },
+      );
+
+      inflightRequests.set(dedupKey, promise);
+
+      try {
+        const { data, error: fnError } = await promise;
 
         if (fnError) {
           throw new Error(fnError.message || 'Failed to fetch module content');
@@ -112,11 +145,13 @@ export function useGeneratedModuleContent(
         setError(err instanceof Error ? err.message : 'Unknown error');
         setContent(null);
       } finally {
+        inflightRequests.delete(dedupKey);
         setIsLoading(false);
         setIsGenerating(false);
       }
     },
-    [moduleId, modulePedagogy, departmentSlug, departmentName, effectiveOrgId, industrySlug, config],
+    // Only primitive/stable dependencies — object refs are read via useRef
+    [moduleId, departmentSlug, effectiveOrgId],
   );
 
   // Fetch on mount / when inputs change
@@ -126,9 +161,17 @@ export function useGeneratedModuleContent(
       return;
     }
 
+    let cancelled = false;
+
     setIsGenerating(true);
-    fetchOrGenerate(false);
-  }, [moduleId, modulePedagogy, departmentSlug, effectiveOrgId, fetchOrGenerate]);
+    fetchOrGenerate(false).then(() => {
+      if (cancelled) return;
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [moduleId, departmentSlug, effectiveOrgId, fetchOrGenerate]);
 
   const regenerate = useCallback(async () => {
     setIsGenerating(true);

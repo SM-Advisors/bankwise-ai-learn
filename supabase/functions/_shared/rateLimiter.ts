@@ -66,9 +66,8 @@ export async function checkRateLimit(
 
     return { allowed: true };
   } catch (err) {
-    // Fail open to avoid blocking users during DB outages, but log prominently
-    // so the issue is visible in function logs.
-    console.error("[rateLimiter] CRITICAL: DB check failed, rate limit not enforced. Error:", err);
-    return { allowed: true };
+    // Fail CLOSED to prevent runaway API costs during DB outages.
+    console.error("[rateLimiter] CRITICAL: DB check failed, blocking request. Error:", err);
+    return { allowed: false, reason: "Service temporarily unavailable. Please try again in a moment." };
   }
 }

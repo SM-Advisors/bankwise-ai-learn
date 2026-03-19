@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { checkRateLimit } from "../_shared/rateLimiter.ts";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -81,6 +82,18 @@ serve(async (req: Request) => {
       return new Response(
         JSON.stringify({ error: "Invalid token" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ── Rate limiting ────────────────────────────────────────────────────────
+    const rateCheck = await checkRateLimit(
+      supabaseUrl, serviceRoleKey, user.id, "generate_module_content",
+      { perMinute: 5, perDay: 30 },
+    );
+    if (!rateCheck.allowed) {
+      return new Response(
+        JSON.stringify({ error: rateCheck.reason, content: null }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
