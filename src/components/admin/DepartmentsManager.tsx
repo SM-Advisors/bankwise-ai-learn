@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 import { useAllDepartments, useDepartmentRoles, type Department, type DepartmentRole } from '@/hooks/useDepartments';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +25,7 @@ function getErrorMessage(error: unknown): string {
 
 export function DepartmentsManager() {
   const { departments, loading, refetch, createDepartment, updateDepartment, toggleDepartment } = useAllDepartments();
+  const { config: industryConfig } = useIndustryContent();
   const { toast } = useToast();
   const [expandedDept, setExpandedDept] = useState<string | null>(null);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
@@ -174,7 +176,7 @@ export function DepartmentsManager() {
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label>Name</Label>
-              <Input value={deptForm.name} onChange={(e) => setDeptForm({ ...deptForm, name: e.target.value })} placeholder="e.g., Commercial Lending" />
+              <Input value={deptForm.name} onChange={(e) => setDeptForm({ ...deptForm, name: e.target.value })} placeholder={`e.g., ${industryConfig.departments[0]?.name || 'Operations'}`} />
             </div>
             <div className="space-y-2">
               <Label>Slug (auto-generated if blank)</Label>
@@ -229,7 +231,7 @@ export function DepartmentsManager() {
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label>Role Name</Label>
-              <Input value={roleForm.name} onChange={(e) => setRoleForm({ ...roleForm, name: e.target.value })} placeholder="e.g., Credit Analyst" />
+              <Input value={roleForm.name} onChange={(e) => setRoleForm({ ...roleForm, name: e.target.value })} placeholder={`e.g., ${industryConfig.roles[0]?.label || 'Analyst'}`} />
             </div>
             <div className="space-y-2">
               <Label>Description</Label>

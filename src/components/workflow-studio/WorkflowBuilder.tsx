@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/accordion';
 import { CheckCircle, Circle, Plus, Trash2, Zap, ListOrdered, FileOutput } from 'lucide-react';
 import type { WorkflowData, WorkflowStep } from '@/types/workflow';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 
 interface WorkflowBuilderProps {
   workflowData: WorkflowData;
@@ -22,6 +23,8 @@ interface WorkflowBuilderProps {
 }
 
 export function WorkflowBuilder({ workflowData, workflowName, onDataChange, onNameChange }: WorkflowBuilderProps) {
+  const { config: industryConfig } = useIndustryContent();
+
   const updateStep = (index: number, updates: Partial<WorkflowStep>) => {
     const newSteps = [...workflowData.steps];
     newSteps[index] = { ...newSteps[index], ...updates };
@@ -55,7 +58,7 @@ export function WorkflowBuilder({ workflowData, workflowName, onDataChange, onNa
         <Input
           value={workflowName}
           onChange={(e) => onNameChange(e.target.value)}
-          placeholder="e.g., Annual Loan Review Workflow"
+          placeholder={industryConfig.placeholders.workflowName}
           className="mt-1"
         />
       </div>
@@ -80,7 +83,7 @@ export function WorkflowBuilder({ workflowData, workflowName, onDataChange, onNa
               <Textarea
                 value={workflowData.trigger}
                 onChange={(e) => onDataChange({ ...workflowData, trigger: e.target.value })}
-                placeholder="e.g., Annual review date approaching for a commercial loan > $500K"
+                placeholder={industryConfig.placeholders.workflowTrigger}
                 rows={2}
               />
             </div>
@@ -190,7 +193,7 @@ export function WorkflowBuilder({ workflowData, workflowName, onDataChange, onNa
               <Textarea
                 value={workflowData.finalOutput}
                 onChange={(e) => onDataChange({ ...workflowData, finalOutput: e.target.value })}
-                placeholder="e.g., Complete annual loan review memo ready for credit committee presentation"
+                placeholder={industryConfig.placeholders.workflowOutput}
                 rows={2}
               />
             </div>

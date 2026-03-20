@@ -522,7 +522,7 @@ export default function Profile() {
                     </CardHeader>
                     <CardContent>
                       <Textarea value={roleContext} onChange={(e) => setRoleContext(e.target.value)}
-                        placeholder="e.g., I'm a credit analyst who reviews commercial loan applications."
+                        placeholder={industryConfig.placeholders.roleContext}
                         className="min-h-[100px]" />
                     </CardContent>
                   </Card>
@@ -535,7 +535,7 @@ export default function Profile() {
                     </CardHeader>
                     <CardContent>
                       <Textarea value={customInstructions} onChange={(e) => setCustomInstructions(e.target.value)}
-                        placeholder="e.g., Always relate examples to banking. Use analogies when explaining complex concepts."
+                        placeholder={industryConfig.placeholders.customInstructions}
                         className="min-h-[100px]" />
                     </CardContent>
                   </Card>
@@ -743,7 +743,7 @@ export default function Profile() {
               </DialogHeader>
               <div className="py-4">
                 <Textarea value={newContent} onChange={(e) => setNewContent(e.target.value)}
-                  placeholder="e.g., I prefer examples using commercial lending scenarios."
+                  placeholder={industryConfig.placeholders.memoryExample}
                   className="min-h-[120px]" />
                 <p className="text-xs text-muted-foreground mt-2">Andrea will use this to personalize your training experience.</p>
               </div>
