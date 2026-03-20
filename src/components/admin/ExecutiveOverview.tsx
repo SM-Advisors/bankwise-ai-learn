@@ -129,7 +129,7 @@ export function ExecutiveOverview({ organizationId, onNavigateTab }: ExecutiveOv
           icon={TrendingUp}
           label="Completion Rate"
           value={`${kpis.completionRate}%`}
-          subtitle={`${kpis.fullyCompleted} completed all 3 sessions`}
+          subtitle={`${kpis.fullyCompleted} completed all 5 sessions`}
           color="text-green-600"
           bg="bg-green-500/10"
           onClick={() => onNavigateTab('analytics')}

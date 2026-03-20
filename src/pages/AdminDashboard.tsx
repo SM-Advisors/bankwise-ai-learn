@@ -24,7 +24,6 @@ import { ProgressDashboard } from '@/components/admin/ProgressDashboard';
 import { IdeasInbox } from '@/components/admin/IdeasInbox';
 import { CSuiteReports } from '@/components/admin/CSuiteReports';
 import { CSuiteAdvisorPanel } from '@/components/admin/CSuiteAdvisorPanel';
-import { OrganizationsManager } from '@/components/admin/OrganizationsManager';
 import { DepartmentsManager } from '@/components/admin/DepartmentsManager';
 import { ExecutiveSubmissions } from '@/components/admin/ExecutiveSubmissions';
 import { CommunityReviewQueue } from '@/components/admin/CommunityReviewQueue';
@@ -135,7 +134,7 @@ const CORE_PROGRAMS = [
     description: 'Add structure with the CLEAR Framework, master output templating, multi-shot prompting, model selection, chain-of-thought reasoning, and tool selection.',
     icon: Bot,
     stage: 'Stage 2 - Structure',
-    modules: ALL_SESSION_CONTENT[2]?.modules.length || 7,
+    modules: ALL_SESSION_CONTENT[2]?.modules.length || 9,
     estimatedTime: '3-4 hours',
     prerequisites: 'Complete Session 1: AI Fundamentals & Your First Win',
     outcomes: [
@@ -151,7 +150,7 @@ const CORE_PROGRAMS = [
     description: 'Understand why agents exist, learn the Four Levels, and build your own agent from instructions through knowledge, files, and tool access.',
     icon: Building2,
     stage: 'Stage 3 - Agents',
-    modules: ALL_SESSION_CONTENT[3]?.modules.length || 7,
+    modules: ALL_SESSION_CONTENT[3]?.modules.length || 6,
     estimatedTime: '4-6 hours',
     prerequisites: 'Complete Session 2: Prompting Frameworks & Model Selection',
     outcomes: [
@@ -159,6 +158,38 @@ const CORE_PROGRAMS = [
       'Build a basic agent with instructions and constraints',
       'Add knowledge, files, and tool access to agents',
       'Test and deploy a production-quality agent',
+    ],
+  },
+  {
+    id: 4,
+    title: 'AI in Your Everyday Tools',
+    description: 'Learn to use agents that already exist in the tools you use every day — choose the path most relevant to your work.',
+    icon: Layers,
+    stage: 'Stage 4 - Functional Agents',
+    modules: ALL_SESSION_CONTENT[4]?.modules.length || 5,
+    estimatedTime: '2-3 hours',
+    prerequisites: 'Complete Session 3: Understanding & Building AI Agents',
+    outcomes: [
+      'Recognize functional agents embedded in your daily tools',
+      'Use AI features in spreadsheets, presentations, and email',
+      'Choose between custom agents and functional agents for each task',
+      'Apply functional agents to real tasks in your workflow',
+    ],
+  },
+  {
+    id: 5,
+    title: 'Designing Your AI Workflow',
+    description: 'Design your own AI stack — stitch custom agents, functional tools, and workflows together in the way that serves your work.',
+    icon: Target,
+    stage: 'Stage 5 - Your AI Stack',
+    modules: ALL_SESSION_CONTENT[5]?.modules.length || 5,
+    estimatedTime: '2-3 hours',
+    prerequisites: 'Complete Session 4: AI in Your Everyday Tools',
+    outcomes: [
+      'Map a real workflow and identify where AI fits',
+      'Design a multi-step AI workflow with human review checkpoints',
+      'Connect custom agents, functional tools, and workflows into a cohesive stack',
+      'Test and iterate on an end-to-end AI workflow prototype',
     ],
   },
 ];
@@ -759,19 +790,13 @@ export default function AdminDashboard() {
 
         {/* ── PEOPLE ── */}
         <TabsContent value="people" className="space-y-6">
-          <Tabs defaultValue="users" className="space-y-4">
+          <Tabs defaultValue="depts" className="space-y-4">
             <TabsList className="bg-background border">
-              <TabsTrigger value="users" className="gap-1.5 text-xs"><Users className="h-3.5 w-3.5" />Users</TabsTrigger>
-              {isSuperAdmin && (
-                <TabsTrigger value="orgs" className="gap-1.5 text-xs"><Building2 className="h-3.5 w-3.5" />Organizations</TabsTrigger>
-              )}
               <TabsTrigger value="depts" className="gap-1.5 text-xs"><Building2 className="h-3.5 w-3.5" />Departments</TabsTrigger>
+              <TabsTrigger value="users" className="gap-1.5 text-xs"><Users className="h-3.5 w-3.5" />Users</TabsTrigger>
             </TabsList>
-            <TabsContent value="users"><UsersManagement organizationId={effectiveOrgId} /></TabsContent>
-            {isSuperAdmin && (
-              <TabsContent value="orgs"><OrganizationsManager /></TabsContent>
-            )}
             <TabsContent value="depts"><DepartmentsManager /></TabsContent>
+            <TabsContent value="users"><UsersManagement organizationId={effectiveOrgId} /></TabsContent>
           </Tabs>
         </TabsContent>
 
@@ -980,24 +1005,34 @@ export default function AdminDashboard() {
                     AI Training Program Overview
                   </CardTitle>
                   <CardDescription>
-                    Three-stage progressive training: Foundation → Structured Interaction → Agents
+                    Five-stage progressive training: Foundation → Structure → Agents → Functional Agents → Your AI Stack
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-center gap-2 mb-8 flex-wrap">
-                    <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
                       <Sparkles className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium text-blue-600">Stage 1: Foundation</span>
+                      <span className="font-medium text-sm text-blue-600">Stage 1: Foundation</span>
                     </div>
                     <div className="text-muted-foreground">→</div>
-                    <div className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-purple-500/10 rounded-lg border border-purple-500/20">
                       <Bot className="h-4 w-4 text-purple-600" />
-                      <span className="font-medium text-purple-600">Stage 2: Structured Interaction</span>
+                      <span className="font-medium text-sm text-purple-600">Stage 2: Structure</span>
                     </div>
                     <div className="text-muted-foreground">→</div>
-                    <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-lg border border-green-500/20">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-green-500/10 rounded-lg border border-green-500/20">
                       <Building2 className="h-4 w-4 text-green-600" />
-                      <span className="font-medium text-green-600">Stage 3: Agents</span>
+                      <span className="font-medium text-sm text-green-600">Stage 3: Agents</span>
+                    </div>
+                    <div className="text-muted-foreground">→</div>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                      <Layers className="h-4 w-4 text-amber-600" />
+                      <span className="font-medium text-sm text-amber-600">Stage 4: Functional Agents</span>
+                    </div>
+                    <div className="text-muted-foreground">→</div>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-rose-500/10 rounded-lg border border-rose-500/20">
+                      <Target className="h-4 w-4 text-rose-600" />
+                      <span className="font-medium text-sm text-rose-600">Stage 5: Your AI Stack</span>
                     </div>
                   </div>
 
@@ -1008,6 +1043,8 @@ export default function AdminDashboard() {
                         'border-blue-500/30 bg-blue-500/5',
                         'border-purple-500/30 bg-purple-500/5',
                         'border-green-500/30 bg-green-500/5',
+                        'border-amber-500/30 bg-amber-500/5',
+                        'border-rose-500/30 bg-rose-500/5',
                       ];
                       return (
                         <Card key={program.id} className={`border-2 ${stageColors[idx]}`}>
