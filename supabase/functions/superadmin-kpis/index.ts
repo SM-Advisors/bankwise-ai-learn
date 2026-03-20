@@ -35,6 +35,8 @@ type PlatformKPIs = {
   avg_proficiency: number | null;
   ff_user_count: number;
   bank_user_count: number;
+  /** User count per organization: [{ name, count }] */
+  users_by_org: { name: string; count: number }[];
 };
 
 type OrgRow = {
@@ -238,6 +240,10 @@ Deno.serve(async (req) => {
         : null,
       ff_user_count: ffUserCount,
       bank_user_count: totalUsers - ffUserCount,
+      users_by_org: orgs
+        .filter((o) => o.user_count > 0)
+        .map((o) => ({ name: o.name, count: o.user_count }))
+        .sort((a, b) => b.count - a.count),
     };
 
     return new Response(JSON.stringify({ orgs, platform }), {

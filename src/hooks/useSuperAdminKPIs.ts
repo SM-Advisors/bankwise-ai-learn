@@ -31,6 +31,7 @@ export interface PlatformKPIs {
   avg_proficiency: number | null;
   ff_user_count: number;
   bank_user_count: number;
+  users_by_org?: { name: string; count: number }[];
 }
 
 interface SuperAdminKpiResponse {

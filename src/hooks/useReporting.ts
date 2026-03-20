@@ -323,6 +323,15 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
       }
 
       // Fetch remaining data in parallel now that we have the org filter
+      let ideasQuery = supabase
+        .from('user_ideas')
+        .select('*')
+        .eq('category', 'csuite_submission')
+        .order('votes', { ascending: false });
+      if (organizationId) {
+        ideasQuery = ideasQuery.in('user_id', safeOrgIds);
+      }
+
       const [
         { data: progressData },
         { data: promptEvents },
@@ -332,11 +341,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
           .from('training_progress')
           .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed')),
         promptEventsQuery,
-        (supabase
-          .from('user_ideas')
-          .select('*')
-          .eq('category', 'csuite_submission')
-          .order('votes', { ascending: false })),
+        ideasQuery,
       ]);
 
       const progress = progressData || [];
