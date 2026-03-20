@@ -126,7 +126,7 @@ const Index = () => {
               </div>
               <h3 className="font-semibold text-sm mb-1">Practical Outputs</h3>
               <p className="text-muted-foreground text-xs">
-                Create real work artifacts—credit memos, analyses, and reports you can use immediately.
+                Create real work artifacts—reports, analyses, and documents you can use immediately.
               </p>
             </div>
           </div>

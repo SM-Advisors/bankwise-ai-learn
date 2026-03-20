@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Settings as SettingsIcon, Brain, Save, Loader2, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 
 const TONE_OPTIONS = [
   { value: 'professional', label: 'Professional', description: 'Formal and business-appropriate' },
@@ -33,6 +34,7 @@ const FORMAT_OPTIONS = [
 export default function Settings() {
   const navigate = useNavigate();
   const { profile } = useAuth();
+  const { config: industryConfig } = useIndustryContent();
   const { preferences, loading, savePreferences } = useAIPreferences();
   const { toast } = useToast();
 
@@ -193,7 +195,7 @@ export default function Settings() {
               <Textarea
                 value={roleContext}
                 onChange={(e) => setRoleContext(e.target.value)}
-                placeholder="e.g., I'm a credit analyst who reviews commercial loan applications. I focus on financial statement analysis and risk assessment."
+                placeholder={industryConfig.placeholders.roleContext}
                 className="min-h-[100px]"
               />
             </CardContent>
@@ -211,7 +213,7 @@ export default function Settings() {
               <Textarea
                 value={customInstructions}
                 onChange={(e) => setCustomInstructions(e.target.value)}
-                placeholder="e.g., Always relate examples to banking. Use analogies when explaining complex concepts. Focus on practical applications."
+                placeholder={industryConfig.placeholders.customInstructions}
                 className="min-h-[100px]"
               />
             </CardContent>

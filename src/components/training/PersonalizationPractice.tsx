@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle, Save, Loader2, ArrowRight, Bot, Sparkles } from 'lucide-react';
 import { useAIPreferences } from '@/hooks/useAIPreferences';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 import { useToast } from '@/hooks/use-toast';
 
 interface PersonalizationPracticeProps {
@@ -55,6 +56,7 @@ export function PersonalizationPractice({
   isPracticeLoading = false,
 }: PersonalizationPracticeProps) {
   const { preferences, loading: prefsLoading, savePreferences } = useAIPreferences();
+  const { config: industryConfig } = useIndustryContent();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -281,7 +283,7 @@ export function PersonalizationPractice({
           <Textarea
             value={roleContext}
             onChange={(e) => setRoleContext(e.target.value)}
-            placeholder="e.g., I'm a credit analyst who reviews commercial loan applications."
+            placeholder={industryConfig.placeholders.roleContext}
             className="min-h-[80px] resize-none text-sm"
           />
         </div>
@@ -295,7 +297,7 @@ export function PersonalizationPractice({
           <Textarea
             value={customInstructions}
             onChange={(e) => setCustomInstructions(e.target.value)}
-            placeholder="e.g., Always relate examples to banking. Use analogies when explaining complex concepts."
+            placeholder={industryConfig.placeholders.customInstructions}
             className="min-h-[80px] resize-none text-sm"
           />
         </div>

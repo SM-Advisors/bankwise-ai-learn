@@ -62,6 +62,19 @@ export interface IndustryConfig {
   roles: IndustryRole[];
   /** Industry-specific department definitions */
   departments: IndustryDepartment[];
+  /** Industry-specific placeholder examples for form fields */
+  placeholders: {
+    roleContext: string;
+    customInstructions: string;
+    communityTopic: string;
+    ideaTitle: string;
+    workflowName: string;
+    workflowTrigger: string;
+    workflowOutput: string;
+    brainstormTask: string;
+    practicalOutputs: string;
+    memoryExample: string;
+  };
   /** Regulatory bodies, key frameworks, prohibited data types */
   complianceContext: string;
   /** Rich paragraph giving AI enough context to generate realistic scenarios */
@@ -89,6 +102,18 @@ const banking: IndustryConfig = {
     "You speak banking naturally. You reference credit committees, BSA/AML reviews, loan documentation, board reports, and regulatory examinations like someone who's been in the industry. Use real banking vocabulary — don't genericize. Say \"underwriting memo\" not \"professional document.\"",
   onboardingMicroTask:
     'Write the actual prompt you would type into an AI tool to draft a follow-up email to a small business customer after a meeting about a commercial line of credit.',
+  placeholders: {
+    roleContext: "e.g., I'm a credit analyst who reviews commercial loan applications.",
+    customInstructions: 'e.g., Always relate examples to banking. Use analogies when explaining complex concepts.',
+    communityTopic: 'e.g., Best practices for AI-assisted loan review',
+    ideaTitle: 'e.g., Automate loan document review',
+    workflowName: 'e.g., Annual Loan Review Workflow',
+    workflowTrigger: 'e.g., Annual review date approaching for a commercial loan > $500K',
+    workflowOutput: 'e.g., Complete annual loan review memo ready for credit committee presentation',
+    brainstormTask: 'e.g. I review loan applications and summarize them for the credit committee each week...',
+    practicalOutputs: 'Create real work artifacts—credit memos, analyses, and reports you can use immediately.',
+    memoryExample: 'e.g., I prefer examples using commercial lending scenarios.',
+  },
   roles: [
     { value: 'front_line', label: 'Front-line / Retail Banking', departmentSlug: 'retail_banking' },
     { value: 'loan_officer', label: 'Loan Officer / Credit Analyst / Mortgage', departmentSlug: 'commercial_lending' },
@@ -138,6 +163,18 @@ const healthcare: IndustryConfig = {
     'You speak healthcare naturally. You reference revenue cycle operations, claims management, patient access, coding and HIM, compliance, supply chain, and clinical operations like someone embedded in a health system. Use real healthcare vocabulary — say "denial management workflow" not "appeal process," say "charge capture" not "billing entry."',
   onboardingMicroTask:
     'Write the actual prompt you would type into an AI tool to draft a summary of denial trends for a monthly revenue cycle performance review.',
+  placeholders: {
+    roleContext: "e.g., I'm a revenue cycle analyst who reviews claim denials and prepares appeal letters.",
+    customInstructions: 'e.g., Always relate examples to healthcare operations. Reference realistic clinical workflows.',
+    communityTopic: 'e.g., Best practices for AI-assisted denial management',
+    ideaTitle: 'e.g., Automate claim denial trend analysis',
+    workflowName: 'e.g., Monthly Denial Trend Review Workflow',
+    workflowTrigger: 'e.g., Month-end close triggers review of all denied claims > $10K',
+    workflowOutput: 'e.g., Complete denial trend summary ready for revenue cycle leadership review',
+    brainstormTask: 'e.g. I compile denial trends and draft appeal letters for our revenue cycle team each month...',
+    practicalOutputs: 'Create real work artifacts—denial analyses, appeal letters, and performance reports you can use immediately.',
+    memoryExample: 'e.g., I prefer examples using revenue cycle and claims management scenarios.',
+  },
   roles: [
     { value: 'revenue_cycle_ops', label: 'Revenue Cycle Operations', departmentSlug: 'revenue_cycle_operations' },
     { value: 'patient_access', label: 'Patient Access / Registration', departmentSlug: 'patient_access_services' },
@@ -189,6 +226,18 @@ const insurance: IndustryConfig = {
     'You speak insurance naturally. You reference underwriting guidelines, claims processing, policy administration, actuarial analysis, loss ratios, and compliance requirements. Use real insurance vocabulary — say "claims adjuster review" not "document review."',
   onboardingMicroTask:
     'Write the actual prompt you would type into an AI tool to summarize a complex commercial property insurance claim for a claims adjuster preparing for a coverage review.',
+  placeholders: {
+    roleContext: "e.g., I'm an underwriter who evaluates commercial property risk submissions.",
+    customInstructions: 'e.g., Always relate examples to insurance workflows. Reference realistic underwriting scenarios.',
+    communityTopic: 'e.g., Best practices for AI-assisted claims summarization',
+    ideaTitle: 'e.g., Automate underwriting risk assessment summaries',
+    workflowName: 'e.g., Commercial Claims Review Workflow',
+    workflowTrigger: 'e.g., New commercial property claim filed exceeding $50K reserve threshold',
+    workflowOutput: 'e.g., Complete coverage analysis memo ready for claims adjuster review',
+    brainstormTask: 'e.g. I review claims files and prepare coverage analysis summaries for adjusters each week...',
+    practicalOutputs: 'Create real work artifacts—coverage analyses, claims summaries, and underwriting memos you can use immediately.',
+    memoryExample: 'e.g., I prefer examples using claims and underwriting scenarios.',
+  },
   roles: [
     { value: 'underwriter', label: 'Underwriter', departmentSlug: 'underwriting' },
     { value: 'claims_adjuster', label: 'Claims Adjuster / Examiner', departmentSlug: 'claims' },
@@ -228,6 +277,18 @@ const retail: IndustryConfig = {
     'You speak retail naturally. You reference merchandising, inventory management, customer experience, supply chain, planograms, and store operations. Use real retail vocabulary — say "seasonal collection launch" not "product introduction period."',
   onboardingMicroTask:
     'Write the actual prompt you would type into an AI tool to create a product description for a new seasonal collection item targeting your core customer demographic.',
+  placeholders: {
+    roleContext: "e.g., I'm a merchandiser who manages seasonal product assortments and promotions.",
+    customInstructions: 'e.g., Always relate examples to retail operations. Reference realistic merchandising workflows.',
+    communityTopic: 'e.g., Best practices for AI-generated product descriptions',
+    ideaTitle: 'e.g., Automate seasonal promotion copy creation',
+    workflowName: 'e.g., Seasonal Collection Launch Workflow',
+    workflowTrigger: 'e.g., New season buy plan finalized with 50+ new SKUs needing descriptions',
+    workflowOutput: 'e.g., Complete product descriptions and promotional copy ready for e-commerce upload',
+    brainstormTask: 'e.g. I create product descriptions and seasonal promotions for our online catalog each week...',
+    practicalOutputs: 'Create real work artifacts—product descriptions, promotional plans, and sales analyses you can use immediately.',
+    memoryExample: 'e.g., I prefer examples using merchandising and store operations scenarios.',
+  },
   roles: [
     { value: 'store_manager', label: 'Store Manager / District Manager', departmentSlug: 'store_operations' },
     { value: 'merchandiser', label: 'Merchandiser / Buyer', departmentSlug: 'merchandising' },
@@ -265,6 +326,18 @@ const manufacturing: IndustryConfig = {
     'You speak manufacturing naturally. You reference production planning, quality control (SPC, FMEA), supply chain, preventive maintenance, safety compliance, and continuous improvement (Lean/Six Sigma). Use real manufacturing vocabulary — say "root cause analysis" not "problem investigation."',
   onboardingMicroTask:
     'Write the actual prompt you would type into an AI tool to draft a root cause analysis report for a recurring defect found during final inspection on the production line.',
+  placeholders: {
+    roleContext: "e.g., I'm a quality engineer who manages CAPA processes and production inspections.",
+    customInstructions: 'e.g., Always relate examples to manufacturing operations. Reference realistic quality and production workflows.',
+    communityTopic: 'e.g., Best practices for AI-assisted root cause analysis',
+    ideaTitle: 'e.g., Automate defect trend reporting from inspection data',
+    workflowName: 'e.g., Non-Conformance Investigation Workflow',
+    workflowTrigger: 'e.g., Final inspection defect rate exceeds 2% threshold for a production line',
+    workflowOutput: 'e.g., Complete root cause analysis report ready for corrective action review',
+    brainstormTask: 'e.g. I document root cause analyses for defects found during final inspection each shift...',
+    practicalOutputs: 'Create real work artifacts—root cause analyses, SOPs, and quality reports you can use immediately.',
+    memoryExample: 'e.g., I prefer examples using production and quality management scenarios.',
+  },
   roles: [
     { value: 'plant_manager', label: 'Plant Manager / Operations Director', departmentSlug: 'production' },
     { value: 'quality', label: 'Quality Manager / Engineer', departmentSlug: 'quality' },
@@ -306,6 +379,18 @@ const general: IndustryConfig = {
     "You use clear, relatable language that works in any context. You avoid industry jargon and focus on practical AI skills that apply broadly — at work, at home, or in a career transition. Make examples feel personal and immediately useful. Meet the learner where they are.",
   onboardingMicroTask:
     'Write the actual prompt you would type into an AI tool to help you draft a professional email or message for a real situation you face regularly.',
+  placeholders: {
+    roleContext: "e.g., I'm a project manager who coordinates cross-functional teams and deliverables.",
+    customInstructions: 'e.g., Keep examples practical and jargon-free. Use analogies when explaining complex concepts.',
+    communityTopic: 'e.g., Best practices for using AI to draft professional emails',
+    ideaTitle: 'e.g., Automate weekly status report drafting',
+    workflowName: 'e.g., Weekly Status Report Workflow',
+    workflowTrigger: 'e.g., Friday afternoon reminder to compile team updates from the week',
+    workflowOutput: 'e.g., Complete weekly status report ready to send to stakeholders',
+    brainstormTask: 'e.g. I research topics and draft summary reports for my team each week...',
+    practicalOutputs: 'Create real work artifacts—reports, emails, and analyses you can use immediately.',
+    memoryExample: 'e.g., I prefer examples using everyday workplace scenarios.',
+  },
   welcomeMessage:
     "Welcome! You're here to build practical AI skills that work in any area of life or work.",
   roles: [

@@ -41,16 +41,6 @@ export function BrainstormPanel({ compact = false }: { compact?: boolean }) {
 
   const [historyOpen, setHistoryOpen] = useState(false);
 
-  const brainstormPlaceholders: Record<string, string> = {
-    banking: 'e.g. I review loan applications and summarize them for the credit committee each week...',
-    healthcare: 'e.g. I compile denial trends and draft appeal letters for our revenue cycle team each month...',
-    insurance: 'e.g. I review claims files and prepare coverage analysis summaries for adjusters each week...',
-    retail: 'e.g. I create product descriptions and seasonal promotions for our online catalog each week...',
-    manufacturing: 'e.g. I document root cause analyses for defects found during final inspection each shift...',
-    general: 'e.g. I research topics and draft summary reports for my team each week...',
-  };
-  const placeholderText = brainstormPlaceholders[industrySlug] || brainstormPlaceholders.general;
-
   const { conversations, createConversation, appendMessage, selectConversation } = useDashboardConversations();
   const { createIdea } = useUserIdeas();
   const { createTopic } = useCommunityTopics();
@@ -504,7 +494,7 @@ Enterprise ($$$$$): Full RPA platforms (UiPath, Automation Anywhere), custom ven
               <Textarea
                 value={taskInput}
                 onChange={(e) => setTaskInput(e.target.value)}
-                placeholder={placeholderText}
+                placeholder={industryConfig.placeholders.brainstormTask}
                 className="min-h-[120px] resize-none"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleStartBrainstorming();

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 import { useUserIdeas, IdeaStatus } from '@/hooks/useUserIdeas';
 import { useIdeaPreview } from '@/hooks/useIdeaPreview';
 import { useToast } from '@/hooks/use-toast';
@@ -44,6 +45,7 @@ const STATUS_CONFIG: Record<IdeaStatus, { label: string; icon: React.ElementType
 export default function Ideas() {
   const navigate = useNavigate();
   const { profile, loading: authLoading } = useAuth();
+  const { config: industryConfig } = useIndustryContent();
   const { ideas, loading, createIdea, updateIdea, deleteIdea } = useUserIdeas();
   const { generatingId, generatePreview, getPreviewStatus, getPreviewHtml } = useIdeaPreview();
   const { toast } = useToast();
@@ -164,7 +166,7 @@ export default function Ideas() {
                 <div>
                   <label className="text-sm font-medium mb-1.5 block">Title</label>
                   <Input
-                    placeholder="e.g., Automate loan document review"
+                    placeholder={industryConfig.placeholders.ideaTitle}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                   />

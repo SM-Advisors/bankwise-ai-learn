@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, type UserProfile } from '@/contexts/AuthContext';
+import { useIndustryContent } from '@/hooks/useIndustryContent';
 import { useCommunityTopics } from '@/hooks/useCommunityTopics';
 import { useCommunityReplies } from '@/hooks/useCommunityReplies';
 import { useToast } from '@/hooks/use-toast';
@@ -48,6 +49,7 @@ const formatRoleBadge = (role: string | null) => {
 export default function Community() {
   const navigate = useNavigate();
   const { user, profile, loading: authLoading } = useAuth();
+  const { config: industryConfig } = useIndustryContent();
   const { topics, loading: topicsLoading, createTopic, deleteTopic, refetch: refetchTopics } = useCommunityTopics();
   const { toast } = useToast();
 
@@ -154,7 +156,7 @@ export default function Community() {
                   <div>
                     <label className="text-sm font-medium mb-1.5 block">Title</label>
                     <Input
-                      placeholder="e.g., Best practices for AI-assisted loan review"
+                      placeholder={industryConfig.placeholders.communityTopic}
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
                     />
