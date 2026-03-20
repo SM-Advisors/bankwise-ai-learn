@@ -21,7 +21,7 @@ type LocalMessage = { role: 'user' | 'assistant'; content: string };
 export function BrainstormPanel({ compact = false }: { compact?: boolean }) {
   const { user, profile } = useAuth();
   const { toast } = useToast();
-  const { industrySlug } = useIndustryContent();
+  const { industrySlug, config: industryConfig } = useIndustryContent();
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<Phase>('input');
   const [taskInput, setTaskInput] = useState('');
@@ -40,6 +40,16 @@ export function BrainstormPanel({ compact = false }: { compact?: boolean }) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [historyOpen, setHistoryOpen] = useState(false);
+
+  const brainstormPlaceholders: Record<string, string> = {
+    banking: 'e.g. I review loan applications and summarize them for the credit committee each week...',
+    healthcare: 'e.g. I compile denial trends and draft appeal letters for our revenue cycle team each month...',
+    insurance: 'e.g. I review claims files and prepare coverage analysis summaries for adjusters each week...',
+    retail: 'e.g. I create product descriptions and seasonal promotions for our online catalog each week...',
+    manufacturing: 'e.g. I document root cause analyses for defects found during final inspection each shift...',
+    general: 'e.g. I research topics and draft summary reports for my team each week...',
+  };
+  const placeholderText = brainstormPlaceholders[industrySlug] || brainstormPlaceholders.general;
 
   const { conversations, createConversation, appendMessage, selectConversation } = useDashboardConversations();
   const { createIdea } = useUserIdeas();
@@ -197,6 +207,13 @@ Return ONLY valid JSON with no extra text:
 
       const brainstormPersona = `You are Andrea, an AI workflow advisor. Your role is to help people identify exactly where and how AI can make a measurable difference in work they actually do. You do not teach — you advise and recommend.
 
+━━━ INDUSTRY CONTEXT ━━━
+${industryConfig.andreaIndustrySavvy}
+
+Compliance & regulatory awareness: ${industryConfig.complianceContext}
+
+When giving examples, making suggestions, or walking through practical scenarios, always ground them in the user's industry (${industryConfig.name}). Use terminology, workflows, and tools that are realistic for a ${industryConfig.audienceType === 'consumer' ? 'general professional' : industryConfig.name + ' professional'}. Do NOT default to banking examples unless the user is actually in banking.
+
 ━━━ PHASE 1 — DISCOVERY (before any suggestions) ━━━
 Before recommending anything, map these six dimensions of the user's workflow. Ask about whichever critical ones are still missing after their opening description:
   1. Trigger — what starts this? (a scheduled time, someone sends something, a system event?)
@@ -217,7 +234,7 @@ Assess whether this workflow is a strong or weak AI candidate before recommendin
 
 STRONG signals (high-value AI opportunity): high repetition, predictable structure, document/text-heavy inputs, large volume, clear output format, multi-system data entry (copy-paste between apps).
 
-WEAK signals (honest redirect needed): primarily relationship or trust work, ethical judgment with legal accountability requirements, exception-dominated (more edge cases than standard path), legally requires documented human reasoning (e.g., credit denial, adverse action notices), creative work requiring institutional memory or originality.
+WEAK signals (honest redirect needed): primarily relationship or trust work, ethical judgment with legal accountability requirements, exception-dominated (more edge cases than standard path), legally requires documented human reasoning (e.g., regulatory decisions, compliance determinations), creative work requiring institutional memory or originality.
 
 If the workflow has weak signals: say so clearly and redirect to the part that IS a strong candidate. Example: "The final approval call itself isn't a great AI candidate — that needs human judgment and an audit trail. But the prep work leading up to it? That's where I'd focus."
 
@@ -268,7 +285,7 @@ PRICING DETERMINATION: Assign pricing based on these factors:
 - Number of systems that need integration (more systems = higher tier)
 - Whether custom code is required vs. off-the-shelf tools
 - Data volume and processing frequency
-- Compliance and security requirements (banking/regulated = higher tier)
+- Compliance and security requirements (regulated industries = higher tier)
 - Whether it needs ongoing developer maintenance
 
 When upfront build cost and ongoing cost differ significantly (e.g., $20K to build, $200/mo to run), note both.
@@ -394,7 +411,7 @@ Enterprise ($$$$$): Full RPA platforms (UiPath, Automation Anywhere), custom ven
 
       {/* Brainstorm Sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-[420px] sm:w-[420px] flex flex-col p-0">
+        <SheetContent side="right" className="w-[420px] sm:w-[420px] flex flex-col p-0 [&>button.absolute]:hidden">
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 border-b bg-primary text-primary-foreground shrink-0">
             <img
@@ -408,7 +425,7 @@ Enterprise ($$$$$): Full RPA platforms (UiPath, Automation Anywhere), custom ven
               </SheetTitle>
               <p className="text-xs text-primary-foreground/80 mt-0.5">with Andrea — your AI coach</p>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={handleNewChat}
                 className="p-1.5 rounded-md hover:bg-primary-foreground/15 transition-colors"
@@ -462,6 +479,13 @@ Enterprise ($$$$$): Full RPA platforms (UiPath, Automation Anywhere), custom ven
                   </>
                 )}
               </div>
+              <button
+                onClick={() => setOpen(false)}
+                className="p-1.5 rounded-md hover:bg-primary-foreground/15 transition-colors"
+                title="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
@@ -480,7 +504,7 @@ Enterprise ($$$$$): Full RPA platforms (UiPath, Automation Anywhere), custom ven
               <Textarea
                 value={taskInput}
                 onChange={(e) => setTaskInput(e.target.value)}
-                placeholder="e.g. I review loan applications and summarize them for the credit committee each week..."
+                placeholder={placeholderText}
                 className="min-h-[120px] resize-none"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleStartBrainstorming();
