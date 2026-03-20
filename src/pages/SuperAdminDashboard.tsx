@@ -186,7 +186,10 @@ export default function SuperAdminDashboard() {
                   </div>
                   <div className="text-2xl font-bold">{platform.total_users}</div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    {platform.bank_user_count} bankers · {platform.ff_user_count} F&F
+                    {platform.users_by_org && platform.users_by_org.length > 0
+                      ? platform.users_by_org.map((o, i) => `${i > 0 ? ' · ' : ''}${o.count} ${o.name}`).join('')
+                      : `${platform.total_users} users`
+                    }
                   </div>
                 </CardContent>
               </Card>
@@ -397,9 +400,9 @@ export default function SuperAdminDashboard() {
                     <div key={org.id} className="mb-4">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm font-medium">{org.name}</span>
-                        {org.audience_type === 'friends_family' && (
+                        {org.audience_type === 'consumer' && (
                           <Badge variant="secondary" className="text-xs gap-1">
-                            <Heart className="h-2.5 w-2.5" />F&F
+                            <Heart className="h-2.5 w-2.5" />Consumer
                           </Badge>
                         )}
                         <span className="text-xs text-muted-foreground ml-auto">{org.user_count} users</span>
