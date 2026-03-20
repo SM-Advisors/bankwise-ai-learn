@@ -123,6 +123,7 @@ export function ExecutiveOverview({ organizationId, onNavigateTab }: ExecutiveOv
           subtitle={`${kpis.enrollmentRate}% enrollment rate`}
           color="text-blue-600"
           bg="bg-blue-500/10"
+          onClick={() => onNavigateTab('people')}
         />
         <KPICard
           icon={TrendingUp}
@@ -131,6 +132,7 @@ export function ExecutiveOverview({ organizationId, onNavigateTab }: ExecutiveOv
           subtitle={`${kpis.fullyCompleted} completed all 3 sessions`}
           color="text-green-600"
           bg="bg-green-500/10"
+          onClick={() => onNavigateTab('analytics')}
         />
         <KPICard
           icon={AlertTriangle}
@@ -139,6 +141,7 @@ export function ExecutiveOverview({ organizationId, onNavigateTab }: ExecutiveOv
           subtitle={`${kpis.exceptionRate}% exception rate`}
           color={kpis.totalExceptions > 0 ? 'text-red-600' : 'text-green-600'}
           bg={kpis.totalExceptions > 0 ? 'bg-red-500/10' : 'bg-green-500/10'}
+          onClick={() => onNavigateTab('analytics')}
         />
         <KPICard
           icon={Lightbulb}
@@ -147,6 +150,7 @@ export function ExecutiveOverview({ organizationId, onNavigateTab }: ExecutiveOv
           subtitle={`${Object.values(kpis.ideasByStatus).reduce((a, b) => a + b, 0) - (kpis.ideasByStatus?.completed || 0)} in pipeline`}
           color="text-amber-600"
           bg="bg-amber-500/10"
+          onClick={() => onNavigateTab('engagement')}
         />
       </div>
 
@@ -277,16 +281,20 @@ export function ExecutiveOverview({ organizationId, onNavigateTab }: ExecutiveOv
 
 // ─── KPI Card ────────────────────────────────────────────────────────────────
 
-function KPICard({ icon: Icon, label, value, subtitle, color, bg }: {
+function KPICard({ icon: Icon, label, value, subtitle, color, bg, onClick }: {
   icon: React.ElementType;
   label: string;
   value: string | number;
   subtitle: string;
   color: string;
   bg: string;
+  onClick?: () => void;
 }) {
   return (
-    <Card className="p-4">
+    <Card
+      className={`p-4 ${onClick ? 'cursor-pointer hover:border-primary/40 hover:shadow-sm transition-all' : ''}`}
+      onClick={onClick}
+    >
       <div className="flex items-center gap-3">
         <div className={`p-2 rounded-lg ${bg} shrink-0`}>
           <Icon className={`h-4 w-4 ${color}`} />

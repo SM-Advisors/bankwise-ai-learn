@@ -1,16 +1,7 @@
-import { useState } from 'react';
 import { useCSuiteKPIs, LOB_LABELS, type IdeaItem } from '@/hooks/useReporting';
-import { useOrganizations } from '@/hooks/useOrganizations';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Users, TrendingUp, AlertTriangle, Lightbulb, Activity,
   BarChart3, ShieldAlert, Loader2, Award, Building2, Download,
@@ -85,10 +76,12 @@ function KPICard({
 // ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
-export function CSuiteReports() {
-  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
-  const { organizations, loading: orgsLoading } = useOrganizations();
-  const kpis = useCSuiteKPIs(selectedOrgId);
+interface CSuiteReportsProps {
+  organizationId?: string | null;
+}
+
+export function CSuiteReports({ organizationId }: CSuiteReportsProps) {
+  const kpis = useCSuiteKPIs(organizationId ?? null);
 
   const handleExportCSV = () => {
     if (!kpis) return;
@@ -163,34 +156,15 @@ export function CSuiteReports() {
           <p className="text-muted-foreground mt-1">AI Enablement program performance, compliance, and innovation metrics</p>
         </div>
 
-        {/* Organization filter */}
-        <div className="flex items-center gap-2">
-          <Building2 className="h-4 w-4 text-muted-foreground" />
-          <Select
-            value={selectedOrgId ?? 'all'}
-            onValueChange={(value) => setSelectedOrgId(value === 'all' ? null : value)}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="All Organizations" />
-            </SelectTrigger>
-            <SelectContent className="bg-card">
-              <SelectItem value="all">All Organizations</SelectItem>
-              {organizations.map((org) => (
-                <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Export button */}
-          <button
-            onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-md border border-border hover:bg-muted transition-colors"
-            title="Export as CSV"
-          >
-            <Download className="h-4 w-4" />
-            Export CSV
-          </button>
-        </div>
+        {/* Export button */}
+        <button
+          onClick={handleExportCSV}
+          className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-md border border-border hover:bg-muted transition-colors"
+          title="Export as CSV"
+        >
+          <Download className="h-4 w-4" />
+          Export CSV
+        </button>
       </div>
 
       <Tabs defaultValue="progress" className="space-y-6">
@@ -574,34 +548,6 @@ export function CSuiteReports() {
               iconColor="text-purple-600"
             />
           </div>
-
-          {/* Status Pipeline */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Idea Pipeline</CardTitle>
-              <CardDescription>Ideas grouped by workflow stage</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {Object.keys(kpis.ideasByStatus).length > 0 ? (
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart
-                    data={Object.entries(kpis.ideasByStatus).map(([status, count]) => ({
-                      status: STATUS_LABELS[status] || status,
-                      count,
-                    }))}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="status" tick={{ fontSize: 12 }} />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="count" name="Ideas" fill={BRAND_ORANGE} radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="text-center py-12 text-muted-foreground">No ideas submitted yet</div>
-              )}
-            </CardContent>
-          </Card>
 
           {/* Top Ideas */}
           <Card>

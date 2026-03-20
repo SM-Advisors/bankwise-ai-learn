@@ -691,8 +691,8 @@ export default function AdminDashboard() {
             ? `Managing users and content for ${viewingOrgName}`
             : 'Monitor adoption, review insights, and manage your AI training program'}
         </p>
-        {/* Org switcher — admins can switch to view any organization */}
-        {allOrgs.length > 0 && (
+        {/* Org switcher — only super admins can switch organizations */}
+        {isSuperAdmin && allOrgs.length > 0 && (
           <div className="flex items-center gap-2 mt-3">
             <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
             <Select
@@ -777,9 +777,9 @@ export default function AdminDashboard() {
 
         {/* ── REPORTS ── */}
         <TabsContent value="analytics" className="space-y-6">
-          <CSuiteReports />
+          <CSuiteReports organizationId={effectiveOrgId} />
           {/* Detailed learner-level progress table */}
-          <ProgressDashboard />
+          <ProgressDashboard organizationId={effectiveOrgId} />
         </TabsContent>
 
         {/* ── ENGAGEMENT ── */}

@@ -1,17 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useReporting, type UserProgressRow } from '@/hooks/useReporting';
-import { useOrganizations } from '@/hooks/useOrganizations';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Loader2, Users, TrendingUp, AlertTriangle, BarChart3, Building2, Download } from 'lucide-react';
+import { Loader2, Users, TrendingUp, AlertTriangle, BarChart3, Download } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -27,10 +19,12 @@ const LOB_LABELS: Record<string, string> = new Proxy({} as Record<string, string
   },
 });
 
-export function ProgressDashboard() {
-  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
-  const { organizations, loading: orgsLoading } = useOrganizations();
-  const { userProgress, promptStats, loading } = useReporting(selectedOrgId);
+interface ProgressDashboardProps {
+  organizationId?: string | null;
+}
+
+export function ProgressDashboard({ organizationId }: ProgressDashboardProps) {
+  const { userProgress, promptStats, loading } = useReporting(organizationId ?? null);
   const [lobFilter, setLobFilter] = useState<string | null>(null);
 
   const handleExportCSV = () => {
@@ -123,25 +117,6 @@ export function ProgressDashboard() {
     <div className="space-y-6">
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
-        {/* Organization filter */}
-        <div className="flex items-center gap-2">
-          <Building2 className="h-4 w-4 text-muted-foreground" />
-          <Select
-            value={selectedOrgId ?? 'all'}
-            onValueChange={(value) => setSelectedOrgId(value === 'all' ? null : value)}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="All Organizations" />
-            </SelectTrigger>
-            <SelectContent className="bg-card">
-              <SelectItem value="all">All Organizations</SelectItem>
-              {organizations.map((org) => (
-                <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         {/* LOB filter */}
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-muted-foreground">Filter by LOB:</span>
