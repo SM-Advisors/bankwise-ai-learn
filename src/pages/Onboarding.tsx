@@ -129,18 +129,22 @@ const STEP_DESCRIPTIONS: Record<number, { title: string; purpose: string }> = {
     purpose: 'Andrea uses your name to make every interaction personal — not generic.',
   },
   2: {
-    title: 'Your Role at the Organization',
-    purpose: 'Your role determines which examples, scenarios, and use cases Andrea shows you. The more accurate this is, the more relevant your training will be.',
+    title: 'Your Department',
+    purpose: 'Your department determines which examples, scenarios, and use cases you\'ll see throughout training.',
   },
   3: {
+    title: 'Your Role',
+    purpose: 'Your role helps Andrea tailor content to the work you actually do every day.',
+  },
+  4: {
     title: 'Your AI Skillset',
     purpose: 'These questions help Andrea understand your current comfort with AI so she can meet you exactly where you are — not too basic, not too advanced.',
   },
-  4: {
+  5: {
     title: 'How You Like to Learn',
     purpose: 'This tells Andrea how to deliver content to you. Some people learn by doing, others by seeing examples first. There\'s no wrong answer.',
   },
-  5: {
+  6: {
     title: 'Your Personalized Path',
     purpose: '',
   },
@@ -196,12 +200,15 @@ export default function Onboarding() {
 
   // ── Step state ────────────────────────────────────────────────────────────
   const [step, setStep] = useState(1);
-  const TOTAL_STEPS = 5;
+  const TOTAL_STEPS = isEnterprise ? 6 : 5;
 
   // Step 1: Name
   const [displayName, setDisplayName] = useState(() => profile?.display_name || '');
 
-  // Step 2: Role
+  // Step 2: Department (enterprise only)
+  const [selectedDepartmentSlug, setSelectedDepartmentSlug] = useState(profile?.department || '');
+
+  // Step 3: Role (enterprise) / Step 2: Role (consumer)
   const [roleKey, setRoleKey] = useState(profile?.intake_role_key || '');
   const [customRoleText, setCustomRoleText] = useState('');
   const [consumerJobTitle, setConsumerJobTitle] = useState(profile?.job_role || '');
@@ -226,6 +233,8 @@ export default function Onboarding() {
   const computedLevel = aiSkillScoreToLevel(aiSkillAnswers);
 
   // ── Advance ───────────────────────────────────────────────────────────────
+  // Enterprise: 1=Name, 2=Department, 3=Role, 4=AI Skills, 5=Learning Style, 6=Confirmation
+  // Consumer:   1=Name, 2=Role, 3=AI Skills, 4=Learning Style, 5=Confirmation
   const handleNext = async () => {
     if (step === 1) {
       if (!displayName.trim()) {
@@ -234,7 +243,17 @@ export default function Onboarding() {
       }
     }
 
-    if (step === 2) {
+    // Enterprise: Step 2 = Department
+    if (isEnterprise && step === 2) {
+      if (!selectedDepartmentSlug) {
+        toast({ title: 'Required', description: 'Please select your department', variant: 'destructive' });
+        return;
+      }
+    }
+
+    // Enterprise: Step 3 = Role, Consumer: Step 2 = Role
+    const roleStep = isEnterprise ? 3 : 2;
+    if (step === roleStep) {
       const hasRole = isEnterprise
         ? (roleKey === 'other' ? !!customRoleText.trim() : !!roleKey)
         : !!consumerJobTitle.trim();
@@ -244,14 +263,18 @@ export default function Onboarding() {
       }
     }
 
-    if (step === 3) {
+    // AI Skills step
+    const aiSkillStep = isEnterprise ? 4 : 3;
+    if (step === aiSkillStep) {
       if (Object.keys(aiSkillAnswers).length < AI_SKILL_QUESTIONS.length) {
         toast({ title: 'Please answer all questions', description: `Answer all ${AI_SKILL_QUESTIONS.length} questions to continue`, variant: 'destructive' });
         return;
       }
     }
 
-    if (step === 4) {
+    // Learning style step
+    const learningStyleStep = isEnterprise ? 5 : 4;
+    if (step === learningStyleStep) {
       if (!learningStyle) {
         toast({ title: 'Required', description: 'Please select a learning style', variant: 'destructive' });
         return;
@@ -283,7 +306,7 @@ export default function Onboarding() {
     const { error } = await updateProfile({
       display_name: displayName.trim(),
       job_role: isEnterprise ? (roleKey === 'other' ? customRoleText.trim() : (selectedRole?.label || roleKey)) : consumerJobTitle.trim(),
-      department: isEnterprise ? (selectedRole?.lobSlug || null) : null,
+      department: isEnterprise ? (selectedDepartmentSlug || selectedRole?.lobSlug || null) : null,
       ai_proficiency_level: level,
       learning_style: learningStyle,
       tech_learning_style: learningStyle,
@@ -374,8 +397,43 @@ export default function Onboarding() {
             </>
           )}
 
-          {/* ── Step 2: Role ───────────────────────────────────────────── */}
-          {step === 2 && (
+          {/* ── Step 2 (Enterprise): Department ────────────────────────── */}
+          {isEnterprise && step === 2 && (
+            <>
+              <CardHeader>
+                <CardTitle>What department are you in?</CardTitle>
+                <CardDescription>
+                  Select your department — this helps us tailor scenarios and examples to your area of work.
+                </CardDescription>
+                {stepInfo.purpose && (
+                  <p className="text-xs text-muted-foreground mt-2 italic">{stepInfo.purpose}</p>
+                )}
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-2">
+                  {industryConfig.departments.map(dept => (
+                    <button
+                      key={dept.slug}
+                      type="button"
+                      onClick={() => setSelectedDepartmentSlug(dept.slug)}
+                      className={cn(
+                        'w-full text-left px-4 py-3 rounded-lg border-2 text-sm transition-all',
+                        selectedDepartmentSlug === dept.slug
+                          ? 'border-primary bg-primary/8 font-medium'
+                          : 'border-border hover:border-primary/40 hover:bg-muted/30',
+                      )}
+                    >
+                      <span className="font-medium">{dept.name}</span>
+                      <span className="text-xs text-muted-foreground block mt-0.5">{dept.description}</span>
+                    </button>
+                  ))}
+                </div>
+              </CardContent>
+            </>
+          )}
+
+          {/* ── Role Step (Enterprise: Step 3, Consumer: Step 2) ───────── */}
+          {((isEnterprise && step === 3) || (!isEnterprise && step === 2)) && (
             <>
               <CardHeader>
                 <CardTitle>What do you do?</CardTitle>
@@ -446,8 +504,8 @@ export default function Onboarding() {
             </>
           )}
 
-          {/* ── Step 3: AI Skill Assessment (Multiple Choice) ──────────── */}
-          {step === 3 && (
+          {/* ── AI Skill Assessment (Enterprise: Step 4, Consumer: Step 3) ── */}
+          {((isEnterprise && step === 4) || (!isEnterprise && step === 3)) && (
             <>
               <CardHeader>
                 <CardTitle>How confident are you with AI?</CardTitle>
@@ -488,8 +546,8 @@ export default function Onboarding() {
             </>
           )}
 
-          {/* ── Step 4: Andrea + Learning Style ───────────────────────── */}
-          {step === 4 && (
+          {/* ── Learning Style (Enterprise: Step 5, Consumer: Step 4) ── */}
+          {((isEnterprise && step === 5) || (!isEnterprise && step === 4)) && (
             <>
               <CardHeader>
                 <CardTitle>How would you like me to teach you?</CardTitle>
@@ -534,8 +592,8 @@ export default function Onboarding() {
             </>
           )}
 
-          {/* ── Step 5: You're ready ───────────────────────────────────── */}
-          {step === 5 && (
+          {/* ── Confirmation (Enterprise: Step 6, Consumer: Step 5) ─── */}
+          {step === TOTAL_STEPS && (
             <>
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
