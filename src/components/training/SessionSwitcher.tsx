@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, Lock, ChevronDown } from 'lucide-react';
+import { CheckCircle2, Lock, ChevronDown, ArrowRight, PartyPopper } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ModuleContent } from '@/data/trainingContent';
 import type { ModuleEngagement } from '@/types/progress';
@@ -31,6 +31,12 @@ interface SessionSwitcherProps {
   moduleEngagement?: Record<string, ModuleEngagement>;
   /** Callback when a module is selected from the dropdown */
   onSelectModule?: (module: ModuleContent) => void;
+  /** Whether every module in the active session is completed */
+  allModulesCompleted?: boolean;
+  /** Whether the active session has already been marked complete */
+  isSessionCompleted?: boolean;
+  /** Callback to complete the session and advance to the next one */
+  onCompleteSession?: () => void;
 }
 
 export function SessionSwitcher({
@@ -42,6 +48,9 @@ export function SessionSwitcher({
   completedModules,
   moduleEngagement,
   onSelectModule,
+  allModulesCompleted,
+  isSessionCompleted,
+  onCompleteSession,
 }: SessionSwitcherProps) {
   const navigate = useNavigate();
   const [expandedSession, setExpandedSession] = useState<number | null>(null);
@@ -148,6 +157,18 @@ export function SessionSwitcher({
             </button>
           );
         })}
+
+        {/* Complete Session CTA — shown when all modules are green but session not yet marked complete */}
+        {allModulesCompleted && !isSessionCompleted && onCompleteSession && (
+          <button
+            onClick={onCompleteSession}
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 whitespace-nowrap bg-green-600 text-white hover:bg-green-700 shadow-sm animate-pulse hover:animate-none"
+          >
+            <PartyPopper className="h-3.5 w-3.5 shrink-0" />
+            Complete Session & Continue
+            <ArrowRight className="h-3 w-3 shrink-0" />
+          </button>
+        )}
       </div>
 
       {/* Horizontal module dropdown */}
