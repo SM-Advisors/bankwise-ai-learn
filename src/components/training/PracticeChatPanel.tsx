@@ -365,18 +365,19 @@ export function PracticeChatPanel({
                     <p className="text-sm text-muted-foreground mt-1">
                       Andrea has reviewed your conversation and you're ready to move on.
                     </p>
-                    <div className="mt-3 flex items-center justify-center gap-2">
-                      {hasNextModule && onContinueToNext ? (
+                    <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
+                      {hasNextModule && onContinueToNext && !onCompleteSession && (
                         <Button onClick={onContinueToNext} size="sm" className="gap-2 rounded-full">
                           Continue to Next Module
                           <ChevronRight className="h-4 w-4" />
                         </Button>
-                      ) : onCompleteSession ? (
-                        <Button onClick={onCompleteSession} size="sm" className="gap-2 rounded-full">
-                          Complete Session
+                      )}
+                      {onCompleteSession && (
+                        <Button onClick={onCompleteSession} size="sm" className="gap-2 rounded-full bg-green-600 hover:bg-green-700">
+                          Complete Session & Continue
                           <CheckCircle className="h-4 w-4" />
                         </Button>
-                      ) : null}
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -455,11 +456,11 @@ export function PracticeChatPanel({
         </div>
       )}
 
-      {/* Sandbox session completion — no submission required, just show Complete Session when done */}
-      {isSandbox && isCompleted && !hasNextModule && onCompleteSession && (
+      {/* Sandbox session completion — all modules done, session not yet complete */}
+      {isSandbox && isCompleted && onCompleteSession && (
         <div className="w-full max-w-2xl mx-auto px-4 pt-2">
-          <div className="p-4 bg-accent/10 border border-accent/20 rounded-2xl text-center">
-            <div className="flex items-center justify-center gap-2 text-accent font-medium">
+          <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-2xl text-center">
+            <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400 font-medium">
               <CheckCircle className="h-5 w-5" />
               All modules complete!
             </div>
@@ -467,8 +468,8 @@ export function PracticeChatPanel({
               You've finished every module in this session. Ready to move on?
             </p>
             <div className="mt-3">
-              <Button onClick={onCompleteSession} size="sm" className="gap-2 rounded-full">
-                Complete Session
+              <Button onClick={onCompleteSession} size="sm" className="gap-2 rounded-full bg-green-600 hover:bg-green-700">
+                Complete Session & Continue
                 <CheckCircle className="h-4 w-4" />
               </Button>
             </div>
@@ -476,8 +477,8 @@ export function PracticeChatPanel({
         </div>
       )}
 
-      {/* Sandbox continue to next module */}
-      {isSandbox && isCompleted && hasNextModule && onContinueToNext && (
+      {/* Sandbox continue to next module (only when session is NOT ready to complete) */}
+      {isSandbox && isCompleted && !onCompleteSession && hasNextModule && onContinueToNext && (
         <div className="w-full max-w-2xl mx-auto px-4 pt-2">
           <div className="p-4 bg-accent/10 border border-accent/20 rounded-2xl text-center">
             <div className="flex items-center justify-center gap-2 text-accent font-medium">

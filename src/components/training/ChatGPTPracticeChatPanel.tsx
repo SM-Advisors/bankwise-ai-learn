@@ -305,8 +305,8 @@ export function ChatGPTPracticeChatPanel({
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                       Andrea has reviewed your conversation and you're ready to move on.
                     </p>
-                    <div className="mt-3 flex items-center justify-center gap-2">
-                      {hasNextModule && onContinueToNext ? (
+                    <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
+                      {hasNextModule && onContinueToNext && !onCompleteSession && (
                         <button
                           onClick={onContinueToNext}
                           className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-colors"
@@ -314,15 +314,16 @@ export function ChatGPTPracticeChatPanel({
                           Continue to Next Module
                           <ChevronRight className="h-4 w-4" />
                         </button>
-                      ) : onCompleteSession ? (
+                      )}
+                      {onCompleteSession && (
                         <button
                           onClick={onCompleteSession}
-                          className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-colors"
+                          className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-colors"
                         >
-                          Complete Session
+                          Complete Session & Continue
                           <CheckCircle className="h-4 w-4" />
                         </button>
-                      ) : null}
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -391,8 +392,8 @@ export function ChatGPTPracticeChatPanel({
       {/* ── Input area ── */}
       <div className="w-full max-w-[680px] mx-auto px-4 pb-2 pt-2 shrink-0">
 
-        {/* Sandbox session completion — no submission required */}
-        {isSandbox && isCompleted && !hasNextModule && onCompleteSession && (
+        {/* Sandbox session completion — all modules done, session not yet complete */}
+        {isSandbox && isCompleted && onCompleteSession && (
           <div className="p-4 mb-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-2xl text-center">
             <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400 font-medium">
               <CheckCircle className="h-5 w-5" />
@@ -406,15 +407,15 @@ export function ChatGPTPracticeChatPanel({
                 onClick={onCompleteSession}
                 className="inline-flex items-center gap-2 rounded-full bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 transition-colors"
               >
-                Complete Session
+                Complete Session & Continue
                 <CheckCircle className="h-4 w-4" />
               </button>
             </div>
           </div>
         )}
 
-        {/* Sandbox continue to next module */}
-        {isSandbox && isCompleted && hasNextModule && onContinueToNext && (
+        {/* Sandbox continue to next module (only when session is NOT ready to complete) */}
+        {isSandbox && isCompleted && !onCompleteSession && hasNextModule && onContinueToNext && (
           <div className="p-4 mb-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-2xl text-center">
             <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400 font-medium">
               <CheckCircle className="h-5 w-5" />

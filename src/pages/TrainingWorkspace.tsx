@@ -1234,6 +1234,15 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
   const currentModuleIndex = session.modules.findIndex(m => m.id === selectedModule?.id);
   const nextModule = session.modules[currentModuleIndex + 1];
 
+  // Check if every module in this session is completed
+  const allModulesCompleted = session.modules.every((m) => {
+    const eng = moduleEngagement[m.id];
+    return completedModules.has(m.id) || eng?.completed === true;
+  });
+
+  const sessionNum = parseInt(sessionId || '1');
+  const isCurrentSessionCompleted = !!(progress as Record<string, unknown>)?.[`session_${sessionNum}_completed`];
+
   // Determine if the active conversation has been submitted
   const isActiveConversationSubmitted = activeConversation?.is_submitted || false;
 
@@ -1284,6 +1293,9 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         completedModules={completedModules}
         moduleEngagement={moduleEngagement}
         onSelectModule={handleModuleSelect}
+        allModulesCompleted={allModulesCompleted}
+        isSessionCompleted={isCurrentSessionCompleted}
+        onCompleteSession={handleCompleteSession}
       />
 
       {/* Mobile mode tab bar (Learn / Practice / Coach) */}
@@ -1515,7 +1527,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   isSubmitted={isActiveConversationSubmitted}
                   onSubmitForReview={handleSubmitForReview}
                   onContinueToNext={nextModule ? () => handleModuleSelect(nextModule) : undefined}
-                  onCompleteSession={!nextModule ? handleCompleteSession : undefined}
+                  onCompleteSession={allModulesCompleted && !isCurrentSessionCompleted ? handleCompleteSession : undefined}
                   hasNextModule={!!nextModule}
                   conversations={practiceConversations}
                   activeConversationId={activeConversationId}
@@ -1543,7 +1555,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   isSubmitted={isActiveConversationSubmitted}
                   onSubmitForReview={handleSubmitForReview}
                   onContinueToNext={nextModule ? () => handleModuleSelect(nextModule) : undefined}
-                  onCompleteSession={!nextModule ? handleCompleteSession : undefined}
+                  onCompleteSession={allModulesCompleted && !isCurrentSessionCompleted ? handleCompleteSession : undefined}
                   hasNextModule={!!nextModule}
                   conversations={practiceConversations}
                   activeConversationId={activeConversationId}
