@@ -183,7 +183,7 @@ export function PersonalizationPractice({
         }, 600);
       }
     } else {
-      toast({ title: 'Error', description: 'Failed to save preferences.', variant: 'destructive' });
+      toast({ title: 'Error', description: result.error || 'Failed to save preferences.', variant: 'destructive' });
     }
   };
 

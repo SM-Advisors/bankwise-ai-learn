@@ -65,26 +65,47 @@ export function useAIPreferences() {
   const savePreferences = useCallback(async (updates: Partial<Omit<AIPreferences, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => {
     if (!user) return { success: false, error: 'Not authenticated' };
     try {
-      const payload = {
-        ...DEFAULT_PREFERENCES,
-        ...updates,
-        user_id: user.id,
-        updated_at: new Date().toISOString(),
-      };
-      const { data, error } = await supabase
-        .from('ai_user_preferences')
-        .upsert(payload, { onConflict: 'user_id' })
-        .select()
-        .single();
+      const now = new Date().toISOString();
+      let data: AIPreferences | null = null;
+      let error: { message: string } | null = null;
+
+      if (preferences?.id) {
+        // Row exists — UPDATE
+        const result = await supabase
+          .from('ai_user_preferences')
+          .update({ ...updates, updated_at: now })
+          .eq('id', preferences.id)
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      } else {
+        // No row yet — INSERT
+        const result = await supabase
+          .from('ai_user_preferences')
+          .insert({
+            ...DEFAULT_PREFERENCES,
+            ...updates,
+            user_id: user.id,
+            updated_at: now,
+          })
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      }
+
       if (error) throw error;
-      // Update state directly instead of refetching to avoid re-render cascade
       if (data) setPreferences(data);
       return { success: true };
-    } catch (err) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message
+        : typeof err === 'object' && err !== null && 'message' in err ? String((err as { message: unknown }).message)
+        : 'Unknown error';
       console.error('Error saving AI preferences:', err);
-      return { success: false, error: 'Failed to save preferences' };
+      return { success: false, error: message };
     }
-  }, [user]);
+  }, [user, preferences?.id]);
 
   useEffect(() => {
     fetchPreferences();
