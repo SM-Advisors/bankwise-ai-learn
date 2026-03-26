@@ -22,15 +22,11 @@ export interface PracticeConversation {
 export function usePracticeConversations(
   sessionId: string,
   moduleId: string | null,
-  /** Map of moduleId → sourceModuleId for conversation seeding (e.g., { '1-6': '1-4' }) */
-  conversationSeedMap?: Record<string, string>,
 ) {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<PracticeConversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  // Track which modules we've already seeded to avoid duplicate seeding
-  const seededModulesRef = useState(() => new Set<string>())[0];
 
   // Fetch all conversations for this user + module
   const fetchConversations = useCallback(async () => {
@@ -53,50 +49,6 @@ export function usePracticeConversations(
         messages: (Array.isArray(row.messages) ? row.messages : []) as unknown as PracticeMessage[],
       }));
 
-      // If no conversations exist and this module should be seeded from a prior module,
-      // fetch the source conversation and create a seeded conversation.
-      const sourceModuleId = conversationSeedMap?.[moduleId];
-      if (parsed.length === 0 && sourceModuleId && !seededModulesRef.has(moduleId)) {
-        seededModulesRef.add(moduleId);
-
-        const { data: sourceData } = await supabase
-          .from('practice_conversations')
-          .select('messages')
-          .eq('user_id', user.id)
-          .eq('session_id', sessionId)
-          .eq('module_id', sourceModuleId)
-          .order('is_submitted', { ascending: false }) // prefer submitted
-          .order('updated_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (sourceData?.messages && Array.isArray(sourceData.messages) && sourceData.messages.length > 0) {
-          const priorMessages = sourceData.messages as unknown as PracticeMessage[];
-
-          const { data: seedRow, error: seedError } = await (supabase
-            .from('practice_conversations' as never))
-            .insert({
-              user_id: user.id,
-              session_id: sessionId,
-              module_id: moduleId,
-              title: 'Continued from prior module',
-              messages: priorMessages as unknown as Record<string, unknown>[],
-            })
-            .select()
-            .single();
-
-          if (!seedError && seedRow) {
-            const seededConv: PracticeConversation = {
-              ...seedRow,
-              messages: priorMessages,
-            };
-            setConversations([seededConv]);
-            setActiveConversationId(seedRow.id);
-            return; // seeded conversation is now the only one — skip normal auto-select
-          }
-        }
-      }
-
       setConversations(parsed);
 
       // Auto-select most recent conversation, or none if empty
@@ -113,7 +65,7 @@ export function usePracticeConversations(
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id, sessionId, moduleId, activeConversationId, conversationSeedMap, seededModulesRef]);
+  }, [user?.id, sessionId, moduleId, activeConversationId]);
 
   // Fetch on mount and when module changes
   useEffect(() => {

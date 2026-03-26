@@ -217,6 +217,11 @@ export default function TrainingWorkspace() {
     '1-6': '1-4', // Iteration seeds from Your First Win
   };
 
+  // Human-readable labels for the import button
+  const IMPORT_LABELS: Record<string, string> = {
+    '1-6': 'Import Your First Win Conversation',
+  };
+
   // Practice conversations hook — persists to database
   const {
     conversations: practiceConversations,
@@ -224,11 +229,48 @@ export default function TrainingWorkspace() {
     activeConversationId,
     activeMessages,
     createConversation,
+    seedFromPriorModule,
     appendMessage,
     markSubmitted,
     startNewChat,
     selectConversation,
-  } = usePracticeConversations(sessionId || '1', selectedModule?.id || null, CONVERSATION_SEED_MAP);
+  } = usePracticeConversations(sessionId || '1', selectedModule?.id || null);
+
+  // Manual import handler for pulling in a prior module's conversation
+  const [isImportingPrior, setIsImportingPrior] = useState(false);
+  const handleImportPriorConversation = useCallback(async () => {
+    if (!selectedModule || !user?.id) return;
+    const sourceModuleId = CONVERSATION_SEED_MAP[selectedModule.id];
+    if (!sourceModuleId) return;
+
+    setIsImportingPrior(true);
+    try {
+      const { data } = await supabase
+        .from('practice_conversations')
+        .select('messages')
+        .eq('user_id', user.id)
+        .eq('session_id', sessionId || '1')
+        .eq('module_id', sourceModuleId)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (data?.messages && Array.isArray(data.messages) && data.messages.length > 0) {
+        const priorMessages = data.messages as Array<{ role: 'user' | 'assistant'; content: string }>;
+        await seedFromPriorModule(priorMessages, 'Continued from Your First Win');
+      } else {
+        toast({
+          title: 'No conversation found',
+          description: 'Complete Module 4 (Your First Win) first, then come back to import it here.',
+          variant: 'destructive',
+        });
+      }
+    } catch {
+      toast({ title: 'Import failed', description: 'Could not load the prior conversation.', variant: 'destructive' });
+    } finally {
+      setIsImportingPrior(false);
+    }
+  }, [selectedModule, user?.id, sessionId, seedFromPriorModule, toast]);
 
   const { allowedModels } = useOrgModelSettings();
   const { platform } = useOrgPlatform();
@@ -1532,6 +1574,9 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   lastGateResult={lastGateResult}
                   completedModules={completedModules}
                   generatedContent={generatedContent}
+                  importPriorLabel={selectedModule ? IMPORT_LABELS[selectedModule.id] : undefined}
+                  onImportPriorConversation={selectedModule && CONVERSATION_SEED_MAP[selectedModule.id] ? handleImportPriorConversation : undefined}
+                  isImportingPrior={isImportingPrior}
                 />
               )
             ) : null}

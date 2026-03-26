@@ -56,6 +56,12 @@ interface PracticeChatPanelProps {
   lastGateResult?: import('@/types/progress').GateResult | null;
   completedModules?: Set<string>;
   generatedContent?: GeneratedModuleContent | null;
+  /** Label for the "import prior conversation" button (e.g., "Import Your First Win Conversation") */
+  importPriorLabel?: string;
+  /** Callback to import a conversation from a prior module */
+  onImportPriorConversation?: () => void;
+  /** Whether the import is in progress */
+  isImportingPrior?: boolean;
 }
 
 export function PracticeChatPanel({
@@ -83,6 +89,9 @@ export function PracticeChatPanel({
   lastGateResult,
   completedModules = new Set(),
   generatedContent,
+  importPriorLabel,
+  onImportPriorConversation,
+  isImportingPrior = false,
 }: PracticeChatPanelProps) {
   const [input, setInput] = useState('');
   const inputBeforeRecordingRef = useRef('');
@@ -452,6 +461,30 @@ export function PracticeChatPanel({
               )}
               <p className="text-sm text-muted-foreground leading-relaxed"><span className="font-medium text-foreground">Your scenario: </span>{activeScenario}</p>
             </div>
+
+            {/* Import prior conversation button */}
+            {onImportPriorConversation && (
+              <button
+                onClick={onImportPriorConversation}
+                disabled={isImportingPrior}
+                className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 transition-colors text-left"
+              >
+                <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  {isImportingPrior
+                    ? <Loader2 className="h-4 w-4 text-primary animate-spin" />
+                    : <History className="h-4 w-4 text-primary" />
+                  }
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {isImportingPrior ? 'Importing conversation...' : (importPriorLabel || 'Import prior conversation')}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Load your previous work so you can iterate on it here
+                  </p>
+                </div>
+              </button>
+            )}
           </div>
         </div>
       )}
