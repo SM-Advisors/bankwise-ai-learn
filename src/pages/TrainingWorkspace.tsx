@@ -212,6 +212,11 @@ export default function TrainingWorkspace() {
   // Per-session tour — triggers once per session on first visit
   useWorkspaceTour(sessionId, session?.title || '');
 
+  // Define which modules should have their chat seeded with a prior module's conversation
+  const CONVERSATION_SEED_MAP: Record<string, string> = {
+    '1-6': '1-4', // Iteration seeds from Your First Win
+  };
+
   // Practice conversations hook — persists to database
   const {
     conversations: practiceConversations,
@@ -219,12 +224,11 @@ export default function TrainingWorkspace() {
     activeConversationId,
     activeMessages,
     createConversation,
-    seedFromPriorModule,
     appendMessage,
     markSubmitted,
     startNewChat,
     selectConversation,
-  } = usePracticeConversations(sessionId || '1', selectedModule?.id || null);
+  } = usePracticeConversations(sessionId || '1', selectedModule?.id || null, CONVERSATION_SEED_MAP);
 
   const { allowedModels } = useOrgModelSettings();
   const { platform } = useOrgPlatform();
@@ -390,49 +394,6 @@ export default function TrainingWorkspace() {
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- selectedModule?.id is sufficient; adding the full object would cause unnecessary re-runs
   }, [selectedModule?.id, user?.id, sessionId]);
-
-  // Seed module 1-6's chat with the actual messages from module 1-4's submitted conversation.
-  // This lets the user continue the conversation (not just have invisible AI context).
-  const hasSeedAttemptedRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!selectedModule || !user?.id) return;
-
-    // Define which modules should have their chat seeded with prior module messages
-    const conversationSeedMap: Record<string, string> = {
-      '1-6': '1-4',
-    };
-
-    const sourceModuleId = conversationSeedMap[selectedModule.id];
-    if (!sourceModuleId) return;
-
-    // Only attempt seeding once per module visit, and only if no conversations exist yet
-    if (hasSeedAttemptedRef.current === selectedModule.id) return;
-    if (practiceConversations.length > 0) {
-      hasSeedAttemptedRef.current = selectedModule.id;
-      return;
-    }
-
-    hasSeedAttemptedRef.current = selectedModule.id;
-
-    // Fetch the submitted conversation from the source module and seed the new one
-    supabase
-      .from('practice_conversations')
-      .select('messages')
-      .eq('user_id', user.id)
-      .eq('session_id', sessionId || '1')
-      .eq('module_id', sourceModuleId)
-      .eq('is_submitted', true)
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data?.messages && Array.isArray(data.messages) && data.messages.length > 0) {
-          const priorMessages = data.messages as Array<{ role: 'user' | 'assistant'; content: string }>;
-          seedFromPriorModule(priorMessages, 'Continued from Your First Win');
-        }
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedModule?.id, user?.id, sessionId, practiceConversations.length]);
 
   // Load completed modules and engagement data from database progress.
   // Guard against setting identical values to avoid cascading re-renders
