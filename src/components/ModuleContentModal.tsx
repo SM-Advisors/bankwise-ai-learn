@@ -221,26 +221,6 @@ export function ModuleContentModal({ module, open, onOpenChange }: ModuleContent
               </Card>
             )}
 
-            {/* Key Points (for all types) */}
-            <Card>
-              <CardContent className="pt-6">
-                <h4 className="font-medium mb-3 flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-primary" />
-                  Key Points to Remember
-                </h4>
-                <ul className="space-y-2">
-                  {module.content.keyPoints.map((point, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-sm">
-                      <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center shrink-0 mt-0.5">
-                        {idx + 1}
-                      </span>
-                      {point}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-
             {/* Learning Objectives */}
             <Card>
               <CardContent className="pt-6">

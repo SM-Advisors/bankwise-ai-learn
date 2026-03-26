@@ -130,29 +130,6 @@ export function ModuleContentPanel({ module, onStartPractice, generatedContent }
                 ))}
               </div>
 
-              {/* Key Points */}
-              {module.content.keyPoints && module.content.keyPoints.length > 0 && (
-                <>
-                  <div className="border-t border-border/50" />
-                  <div>
-                    <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-primary" />
-                      Key Points
-                    </h3>
-                    <ul className="space-y-2">
-                      {module.content.keyPoints.map((point, idx) => (
-                        <li key={idx} className="flex items-start gap-2.5 text-sm">
-                          <span className="h-4 w-4 rounded-full bg-primary/10 text-primary text-[10px] flex items-center justify-center shrink-0 mt-0.5 font-medium">
-                            {idx + 1}
-                          </span>
-                          <span className="leading-relaxed">{point}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </>
-              )}
-
               {/* Steps */}
               {module.content.steps && module.content.steps.length > 0 && (
                 <>
