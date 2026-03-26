@@ -66,37 +66,38 @@ export function useAIPreferences() {
     if (!user) return { success: false, error: 'Not authenticated' };
     try {
       const now = new Date().toISOString();
-      let data: AIPreferences | null = null;
-      let error: { message: string } | null = null;
 
-      if (preferences?.id) {
-        // Row exists — UPDATE
-        const result = await supabase
-          .from('ai_user_preferences')
-          .update({ ...updates, updated_at: now })
-          .eq('id', preferences.id)
-          .select()
-          .single();
-        data = result.data;
-        error = result.error;
-      } else {
-        // No row yet — INSERT
-        const result = await supabase
-          .from('ai_user_preferences')
-          .insert({
-            ...DEFAULT_PREFERENCES,
-            ...updates,
-            user_id: user.id,
-            updated_at: now,
-          })
-          .select()
-          .single();
-        data = result.data;
-        error = result.error;
+      // Always try UPDATE by user_id first — works for existing rows regardless
+      // of whether the `preferences` state has loaded yet.
+      const updateResult = await supabase
+        .from('ai_user_preferences')
+        .update({ ...updates, updated_at: now })
+        .eq('user_id', user.id)
+        .select()
+        .maybeSingle();
+
+      if (updateResult.error) throw updateResult.error;
+
+      if (updateResult.data) {
+        // Row existed and was updated
+        setPreferences(updateResult.data);
+        return { success: true };
       }
 
-      if (error) throw error;
-      if (data) setPreferences(data);
+      // No existing row — INSERT a new one
+      const insertResult = await supabase
+        .from('ai_user_preferences')
+        .insert({
+          ...DEFAULT_PREFERENCES,
+          ...updates,
+          user_id: user.id,
+          updated_at: now,
+        })
+        .select()
+        .single();
+
+      if (insertResult.error) throw insertResult.error;
+      if (insertResult.data) setPreferences(insertResult.data);
       return { success: true };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message
@@ -105,7 +106,7 @@ export function useAIPreferences() {
       console.error('Error saving AI preferences:', err);
       return { success: false, error: message };
     }
-  }, [user, preferences?.id]);
+  }, [user]);
 
   useEffect(() => {
     fetchPreferences();
