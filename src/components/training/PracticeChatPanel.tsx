@@ -544,6 +544,30 @@ export function PracticeChatPanel({
         </div>
       )}
 
+      {/* Import prior conversation — shown above input for modules that support it */}
+      {onImportPriorConversation && !hasConversation && (
+        <div className="w-full max-w-2xl mx-auto px-4 pt-2">
+          <button
+            onClick={onImportPriorConversation}
+            disabled={isImportingPrior}
+            className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 transition-colors text-left"
+          >
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              {isImportingPrior
+                ? <Loader2 className="h-4 w-4 text-primary animate-spin" />
+                : <History className="h-4 w-4 text-primary" />
+              }
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {isImportingPrior ? 'Importing...' : (importPriorLabel || 'Import prior conversation')}
+              </p>
+              <p className="text-xs text-muted-foreground">Load your previous work to iterate on it</p>
+            </div>
+          </button>
+        </div>
+      )}
+
       {/* Copilot-Style Composer Bar */}
       <div className="w-full max-w-2xl mx-auto px-4 pb-3 pt-2">
         <div className="rounded-2xl border border-border bg-card shadow-sm">

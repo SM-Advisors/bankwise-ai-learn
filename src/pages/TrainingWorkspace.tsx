@@ -1547,6 +1547,9 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   orgName={profile?.employer_name || undefined}
                   policies={policies}
                   generatedContent={generatedContent}
+                  importPriorLabel={selectedModule ? IMPORT_LABELS[selectedModule.id] : undefined}
+                  onImportPriorConversation={selectedModule && CONVERSATION_SEED_MAP[selectedModule.id] ? handleImportPriorConversation : undefined}
+                  isImportingPrior={isImportingPrior}
                 />
               ) : (
                 <PracticeChatPanel
