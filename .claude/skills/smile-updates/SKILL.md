@@ -1,6 +1,6 @@
 ---
 name: smile-updates
-description: Process a Word document of SMILE update requests from docs/. Reads the .docx, presents each update for approval, implements changes sequentially, then creates a single PR with deployment notes.
+description: Process a PDF of SMILE update requests from docs/. Reads the PDF, presents each update for approval, implements changes sequentially, then creates a single PR with deployment notes.
 ---
 
 # SMILE Updates Skill
@@ -10,29 +10,29 @@ description: Process a Word document of SMILE update requests from docs/. Reads 
 /smile-updates
 ```
 
-No arguments needed. Auto-detects the most recent `Updates to SMILE*.docx` file in `docs/`.
+No arguments needed. Auto-detects the most recent `Updates to SMILE*.pdf` file in `docs/`.
 
 ## Examples
 - `/smile-updates` — Process the latest updates document
 
 ## Workflow
 
-You are processing a batch of update requests from a Word document. Follow this workflow precisely.
+You are processing a batch of update requests from a PDF document. Follow this workflow precisely.
 
 ### Phase 0: Document Discovery
 
 1. **Find the document**
-   - Use Glob to find all files matching `docs/Updates to SMILE*.docx`
+   - Use Glob to find all files matching `docs/Updates to SMILE*.pdf`
    - Sort by filename (the filenames contain dates) and select the most recent one
    - If no matching file is found, tell the user:
-     > "No 'Updates to SMILE' document found in `docs/`. Please add a `.docx` file named like `Updates to SMILE - {date}.docx` into the `docs/` folder and try again."
+     > "No 'Updates to SMILE' PDF found in `docs/`. Please export your Word document as PDF, name it like `Updates to SMILE - {date}.pdf`, place it in the `docs/` folder, and try again."
    - Then stop.
 
 2. **Read the document**
-   - Use the Read tool on the `.docx` file — Claude Code can read .docx files natively
-   - If the Read tool cannot parse the binary .docx, tell the user:
-     > "Could not read the .docx file directly. Please convert it to PDF and place it in `docs/`, or paste the content into the chat."
-   - Then stop and wait for the user to provide the content.
+   - Use the Read tool on the PDF file with the `pages` parameter
+   - Start by reading pages "1-5" to get the first batch of updates
+   - Continue reading subsequent page ranges ("6-10", "11-15", etc.) until the entire document has been read
+   - **Important**: The Read tool supports a maximum of 20 pages per request. For large documents, read in chunks.
 
 3. **Parse the updates**
    - The document contains multiple update requests separated by horizontal line dividers
@@ -93,7 +93,7 @@ For **each update** (1 through N), repeat steps 5–8:
    git commit -m "$(cat <<'EOF'
    [Brief description of this specific update]
 
-   From: [docx filename]
+   From: [PDF filename]
    Update [X] of [N]
 
    [session URL]
@@ -119,9 +119,9 @@ For **each update** (1 through N), repeat steps 5–8:
     - Use `gh pr create` with this structure:
 
     ```bash
-    gh pr create --title "SMILE Updates: [docx filename]" --body "$(cat <<'EOF'
+    gh pr create --title "SMILE Updates: [PDF filename]" --body "$(cat <<'EOF'
     ## Summary
-    Implements update requests from `[docx filename]`.
+    Implements update requests from `[PDF filename]`.
     **[M] of [N] updates implemented** ([S] skipped).
 
     ## Changes
@@ -164,10 +164,11 @@ For **each update** (1 through N), repeat steps 5–8:
 ## Important Rules
 
 - **One update at a time**: Never implement multiple updates simultaneously. Always present the plan and wait for approval before writing any code.
-- **Screenshots are context**: The Read tool can view images embedded in .docx files. Describe what the screenshots show when planning each change.
+- **Screenshots are context**: The Read tool renders images from PDFs visually. Describe what the screenshots show when planning each change.
 - **Do NOT merge the PR**: The user merges manually.
 - **Do NOT push to main**: All work happens on the feature branch.
 - **Type-check after each update**: Run `npx tsc --noEmit` before committing.
 - **Migrations follow existing naming**: Check `supabase/migrations/` for the latest timestamp pattern.
 - **Commit messages include session URL**: Every commit must end with the Claude Code session URL.
 - **Stage specific files**: Never use `git add .` or `git add -A`.
+- **PDF page limits**: Read a maximum of 20 pages per Read tool call. Use the `pages` parameter (e.g., `"1-10"`, `"11-20"`) to read in chunks.
