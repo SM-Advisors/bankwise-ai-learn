@@ -7,7 +7,7 @@ import {
   Loader2, ChevronRight, ChevronDown, ChevronUp,
   Bot, AudioLines, Plus, CheckCircle, AlertCircle,
   RotateCcw, ArrowUp, EyeOff, Eye, Building2,
-  Palette, ImageIcon, Paperclip, Globe, Wrench, FileText, X,
+  Palette, ImageIcon, Paperclip, Globe, Wrench, FileText, X, History,
 } from 'lucide-react';
 import { VoiceMicButton } from '@/components/VoiceMicButton';
 import { type ModuleContent } from '@/data/trainingContent';
@@ -49,6 +49,12 @@ interface ChatGPTPracticeChatPanelProps {
   orgName?: string;
   policies?: BankPolicy[];
   generatedContent?: GeneratedModuleContent | null;
+  /** Label for the "import prior conversation" button */
+  importPriorLabel?: string;
+  /** Callback to import a conversation from a prior module */
+  onImportPriorConversation?: () => void;
+  /** Whether the import is in progress */
+  isImportingPrior?: boolean;
 }
 
 const PLUS_MENU_ITEMS = [
@@ -85,6 +91,9 @@ export function ChatGPTPracticeChatPanel({
   orgName,
   policies = [],
   generatedContent,
+  importPriorLabel,
+  onImportPriorConversation,
+  isImportingPrior = false,
 }: ChatGPTPracticeChatPanelProps) {
   const { toast } = useToast();
   const [input, setInput] = useState('');
@@ -557,6 +566,24 @@ export function ChatGPTPracticeChatPanel({
             </button>
           </div>
         </div>
+
+        {/* Import prior conversation — shown above input chips when available */}
+        {onImportPriorConversation && !hasConversation && (
+          <div className="flex justify-center mt-3">
+            <button
+              type="button"
+              onClick={onImportPriorConversation}
+              disabled={isImportingPrior}
+              className="flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 text-sm text-primary px-4 py-2.5 hover:bg-primary/10 shadow-sm transition-colors"
+            >
+              {isImportingPrior
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : <History className="h-4 w-4" />
+              }
+              {isImportingPrior ? 'Importing...' : (importPriorLabel || 'Import prior conversation')}
+            </button>
+          </div>
+        )}
 
         {/* Below-input chips (empty state only) */}
         {!hasConversation && (
