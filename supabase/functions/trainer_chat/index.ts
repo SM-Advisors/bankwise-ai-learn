@@ -1069,10 +1069,11 @@ FIELD DEFINITIONS:
 - "levelSuggestion" (OPTIONAL — include VERY RARELY, at most once per session, only when you have strong evidence for a proficiency level change): Suggest when:
   - The learner has demonstrated consistent quality across 3+ messages that clearly places them at a different level than their current profile
   - The gap is significant (at least 1 full level up or down)
+  - OR the user EXPLICITLY asks to change their level (e.g., "move me to beginner", "change my level to advanced", "I want to go back to beginner"). In this case, ALWAYS honor the request immediately by including a levelSuggestion with their requested level. Do NOT say you cannot change their level. Acknowledge their request conversationally (e.g., "Adjusting your level — you'll see the training adapt accordingly.").
   - NEVER suggest more than one level change per conversation
   - currentLevel and proposedLevel must be from: beginner, intermediate, advanced, expert
   - This will be shown to the user as a suggestion they can accept or decline
-  Omit this field in almost all messages — this should be rare and meaningful.
+  Omit this field in almost all messages — this should be rare and meaningful, unless the user explicitly requests it.
 
 ${complianceCoachingBlock ? `## COMPLIANCE COACHING REQUIRED\n${complianceCoachingBlock}\n\n---\n` : ""}
 
