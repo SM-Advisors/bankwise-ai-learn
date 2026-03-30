@@ -1,24 +1,38 @@
 
 
-## Enable pg_cron Extension
+# Fix Type Errors and Deploy Edge Functions
 
-### What we'll do
-Run a single SQL migration to enable the `pg_cron` (and `pg_net`) extensions in your database. This is a prerequisite for setting up scheduled jobs like data retention crons.
+## Problem
+The `trainer_chat` and `submission_review` edge functions have TypeScript errors because the untyped Supabase client (`createClient` without generics) causes `.rpc("match_lesson_chunks", ...)` to resolve parameter types as `undefined`/`never`.
 
-### Technical Details
+## Plan
 
-**Migration SQL:**
-```sql
-CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA pg_catalog;
-CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
+### 1. Fix `retrieveLessonContext` type in both files
+In both `trainer_chat/index.ts` and `submission_review/index.ts`, cast the `.rpc()` call to bypass the strict typing since these functions use `createClient` without database type generics (which is correct for edge functions).
+
+**Change**: Cast the `supabase` parameter in `retrieveLessonContext` to `any`, or cast the `.rpc()` result:
+
+```typescript
+// Replace typed rpc call with:
+const { data, error } = await (supabase as any).rpc("match_lesson_chunks", {
+  query_embedding: JSON.stringify(queryEmbedding),
+  match_count: topK,
+  filter_lesson_id: lessonId,
+  filter_module_id: moduleId || null,
+  similarity_threshold: 0.3,
+  // + filter_learning_style in trainer_chat
+}) as { data: any; error: any };
 ```
 
-This enables:
-- **pg_cron** -- allows scheduling recurring SQL jobs (like a cron job inside your database)
-- **pg_net** -- allows making HTTP requests from within the database (needed if your cron jobs call edge functions)
+This applies to:
+- `supabase/functions/trainer_chat/index.ts` — lines ~401 and ~932 (the function signature and the call site)
+- `supabase/functions/submission_review/index.ts` — lines ~185 and ~337
 
-### Steps
-1. Run the migration above to enable both extensions
-2. Once confirmed, you can then run your Data Retention Cron migration
+### 2. Redeploy `trainer_chat` (and `submission_review` since it also has errors)
 
-No code file changes are needed -- this is purely a database-level change.
+Both functions will be redeployed after fixes.
+
+### Files Modified
+- `supabase/functions/trainer_chat/index.ts` (2 changes)
+- `supabase/functions/submission_review/index.ts` (2 changes)
+
