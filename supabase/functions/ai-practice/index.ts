@@ -182,6 +182,18 @@ async function callModel(
     }
 
     const data = await res.json();
+    console.log("[ai-practice] OpenAI response structure:", JSON.stringify({
+      hasChoices: !!data.choices,
+      choicesLength: data.choices?.length,
+      firstChoice: data.choices?.[0] ? {
+        finishReason: data.choices[0].finish_reason,
+        hasMessage: !!data.choices[0].message,
+        contentLength: data.choices[0].message?.content?.length,
+        contentPreview: data.choices[0].message?.content?.substring(0, 100),
+        refusal: data.choices[0].message?.refusal,
+      } : null,
+      error: data.error,
+    }));
     return data.choices?.[0]?.message?.content ?? "";
   }
 
