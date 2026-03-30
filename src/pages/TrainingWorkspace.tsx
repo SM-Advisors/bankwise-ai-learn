@@ -59,7 +59,7 @@ export default function TrainingWorkspace() {
   const contentScrollRef = useRef<HTMLDivElement>(null);
 
   const [leftCollapsed, setLeftCollapsed] = useState(false);
-  const [rightCollapsed, setRightCollapsed] = useState(false);
+  const [rightCollapsed, setRightCollapsed] = useState(true);
   // Restore persisted module & mode from sessionStorage to survive tab switches
   const persistedModuleId = sessionStorage.getItem(`training_${sessionId}_moduleId`);
   const persistedMode = sessionStorage.getItem(`training_${sessionId}_mode`) as 'learn' | 'practice' | null;
@@ -636,6 +636,8 @@ export default function TrainingWorkspace() {
   const handleBeginPractice = () => {
     setPracticePopupOpen(false);
     setWorkspaceMode('practice');
+    // Auto-expand Andrea panel when beginning practice
+    setRightCollapsed(false);
 
     setTrainerMessages(prev => [...prev, {
       role: 'assistant' as const,
