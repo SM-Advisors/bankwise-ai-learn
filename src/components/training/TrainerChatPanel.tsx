@@ -494,7 +494,7 @@ export function TrainerChatPanel({
                   <span className="text-sm text-muted-foreground">
                     {activeQuickAction === 'review' ? 'Preparing feedback...' :
                      activeQuickAction === 'hint' ? 'Preparing a hint...' :
-                     'Thinking...'}
+                     'Reviewing your work...'}
                   </span>
                 </div>
               )}
