@@ -342,7 +342,7 @@ export function TrainerChatPanel({
                             }}
                             className="text-[10px] font-medium text-accent hover:text-accent/80 transition-colors"
                           >
-                            Save to memories
+                            Save to My Notes
                           </button>
                           <span className="text-muted-foreground/30">|</span>
                           <button
@@ -360,7 +360,7 @@ export function TrainerChatPanel({
                   {message.memorySuggestion && savedSuggestions.has(idx) && (
                     <div className="ml-2 p-2 rounded-lg border border-green-500/20 bg-green-500/5 flex items-center gap-2">
                       <Check className="h-3.5 w-3.5 text-green-500 shrink-0" />
-                      <p className="text-[10px] text-green-700 dark:text-green-400 font-medium">Saved to memories</p>
+                      <p className="text-[10px] text-green-700 dark:text-green-400 font-medium">Saved to My Notes</p>
                     </div>
                   )}
 

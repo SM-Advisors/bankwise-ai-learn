@@ -1044,13 +1044,12 @@ FIELD DEFINITIONS:
   - "celebrate" — you're acknowledging a win or progress
   - "redirect" — you're steering them back on track
 - "hintAvailable": Set to true if you're holding back a specific hint or example that could help them. The UI will show a "Get hint" button.
-- "memorySuggestion" (OPTIONAL — include only when genuinely useful, NOT on every message): Suggest saving an insight when the learner:
-  - Has a learning breakthrough or "aha moment"
-  - Discovers a useful prompting technique or pattern
-  - States a work preference or workflow that Andrea should remember
-  - Grasps a key concept worth reinforcing later
-  - Completes a strong practice conversation (after review)
-  The "content" should be concise (1 sentence) and written as a fact about the learner, e.g. "Prefers structured prompts with role + task + context format" or "Learned that specificity in prompts dramatically improves AI output quality". The "reason" is a short note for the learner explaining why this is worth saving (shown in the UI). Omit this field entirely when there's nothing noteworthy to save.
+- "memorySuggestion" (OPTIONAL — include only when genuinely useful, NOT on every message): This saves a personal note for the learner (shown as "My Notes" in the UI). Only suggest saving when the learner:
+  - States a work preference, workflow detail, or role-specific context that is UNIQUE TO THEM and would be useful for personalizing future AI interactions
+  - Has a genuine learning breakthrough specific to their role or work
+  - Discovers a technique that connects to their specific job responsibilities
+  Do NOT suggest saving generic learning observations, textbook concepts, or insights that apply to everyone. The note should capture something personal and specific to THIS user's work context.
+  The "content" should be concise (1 sentence) and written as a fact about the learner, e.g. "Prefers structured prompts with role + task + context format" or "Works with quarterly board reports that require specific KPI formatting". The "reason" is a short note for the learner explaining why this is worth saving (shown in the UI). Omit this field entirely when there's nothing personally noteworthy to save.
 - "shareSuggestion" (OPTIONAL — include RARELY, only when genuinely noteworthy, not on every message): Suggest sharing when:
   - The learner explicitly asks to share something ("share this", "post this to the community", "send this to the Chief AI Officer")
   - The learner describes a painful or widespread friction point that colleagues would benefit from hearing about
@@ -1058,7 +1057,9 @@ FIELD DEFINITIONS:
   - The learner has deployed a working agent or workflow that could help others
   - DO NOT suggest sharing for routine practice tasks, generic insights, or minor observations
   Fields: "type" (idea|friction_point|agent|workflow), "summary" (1 sentence describing what would be shared, written as a title-like description), "destinations" (array of applicable destinations from: "community", "my_ideas", "executive" — include "executive" only for high-impact ideas or when user requests it). Omit this field entirely when there is nothing genuinely worth sharing.
-- "promptSaveSuggestion" (OPTIONAL — include when the learner crafts a genuinely well-structured, reusable prompt): Include when the learner's prompt uses CLEAR framework elements, includes guard rails, or demonstrates advanced techniques that would be useful to reuse. Roughly 1 in 5-10 messages when reviewing practice. Fields: "promptText" (the exact prompt text to save), "suggestedTitle" (short descriptive name, e.g. "Credit Memo Draft Prompt"), "suggestedCategory" (one of: Credit / Lending, Compliance / Risk, Finance / Accounting, Operations, Customer Service, General, Agent Template, Workflow). The UI will show a one-click "Save to Prompt Library" button. Omit this field for generic or low-quality prompts.
+- "promptSaveSuggestion" (OPTIONAL — include when the learner crafts a genuinely well-structured, reusable prompt): Include when the learner's prompt uses CLEAR framework elements, includes guard rails, or demonstrates advanced techniques that would be useful to reuse. Roughly 1 in 5-10 messages when reviewing practice.
+  IMPORTANT: The "promptText" field must contain a POLISHED, PRODUCTION-READY version of the prompt — not just what the learner typed verbatim. Take their prompt and improve it: fix awkward phrasing, add any missing CLEAR elements, include proper guard rails, and make it something they would genuinely want to pull from their library and reuse in real work. The saved prompt should be BETTER than what they wrote, not a copy of it.
+  Fields: "promptText" (the improved, polished prompt text to save — ready to copy-paste and use), "suggestedTitle" (short descriptive name, e.g. "Credit Memo Draft Prompt"), "suggestedCategory" (one of: Credit / Lending, Compliance / Risk, Finance / Accounting, Operations, Customer Service, General, Agent Template, Workflow). The UI will show a one-click "Save to Prompt Library" button. Omit this field for generic or low-quality prompts.
 - "skillObservation" (OPTIONAL — include when you clearly observe the learner demonstrating a specific skill at a specific level): Use this to silently record what you see. Only one skill per message. Include when:
   - The learner writes a prompt and you can clearly assess one skill (e.g., "context_setting" at "proficient" because they included role + scenario + output format)
   - Do NOT include for vague or ambiguous interactions where skill level is unclear
