@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
-  FileText, Lightbulb, Play, CheckCircle, Clock, Target, MessageSquare,
+  FileText, Lightbulb, Play, CheckCircle, Clock, Target, MessageSquare, ChevronLeft,
 } from 'lucide-react';
 import type { ModuleContent } from '@/data/trainingContent';
 import type { GeneratedModuleContent } from '@/hooks/useGeneratedModuleContent';
@@ -185,7 +185,7 @@ export function ModuleContentPanel({ module, onStartPractice, generatedContent }
         </div>
       </ScrollArea>
 
-      {/* Progressive CTA: "See Examples" → "Start Practice" */}
+      {/* Progressive CTA: "See Examples" → "Start Practice", with Back button */}
       <div className="shrink-0 border-t bg-card px-6 py-4">
         {hasExamples && !showExamples ? (
           <Button className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white animate-[radiate_2s_ease-in-out_infinite]" onClick={() => setShowExamples(true)}>
@@ -193,10 +193,18 @@ export function ModuleContentPanel({ module, onStartPractice, generatedContent }
             Click Here to Continue – See Examples
           </Button>
         ) : (
-          <Button className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white animate-[radiate_2s_ease-in-out_infinite]" onClick={onStartPractice}>
-            <MessageSquare className="h-4 w-4" />
-            Click Here to Continue – Start Practice
-          </Button>
+          <div className="flex gap-2">
+            {hasExamples && showExamples && (
+              <Button variant="outline" className="gap-1.5" onClick={() => setShowExamples(false)}>
+                <ChevronLeft className="h-4 w-4" />
+                Back
+              </Button>
+            )}
+            <Button className="flex-1 gap-2 bg-green-600 hover:bg-green-700 text-white animate-[radiate_2s_ease-in-out_infinite]" onClick={onStartPractice}>
+              <MessageSquare className="h-4 w-4" />
+              Click Here to Continue – Start Practice
+            </Button>
+          </div>
         )}
       </div>
     </div>

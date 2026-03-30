@@ -571,13 +571,13 @@ export const SESSION_2_CONTENT: SessionContent = {
       ],
       learningOutcome: 'After this module, you can use the CLEAR Framework to communicate precisely with AI when a task is specific, high-stakes, or requires a particular kind of output.',
       content: {
-        overview: 'In Session 1, you learned to have a conversation. That is still valid — and often sufficient. But when the task is specific, high-stakes, or requires a particular kind of output, structure helps. The CLEAR Framework gives you a tool for those moments.\n\nThis is not "the right way" to use AI. It is "the right way when you need precision." Casual conversation is still your default for exploration and quick tasks. CLEAR is for when you need the output to be exactly right.',
+        overview: 'In Session 1, you learned to have a conversation. That is still valid — and often sufficient. But when the task is specific, high-stakes, or requires a particular kind of output, the CLEAR Framework gives you a structured approach to get it right the first time.\n\n**CLEAR** stands for:\n\n**C — Context**: Set the scene. Tell the AI who it is acting as and what background it needs. *Why it matters:* Without context, the AI guesses your situation — and usually guesses wrong. A "credit memo" means something different to a loan officer vs. an auditor.\n\n**L — Length/Format**: Specify how the output should be structured and how long it should be. *Why it matters:* AI defaults to long, generic formats. Telling it "one-page executive summary with bullet points" saves you from editing a 3-page essay down.\n\n**E — Examples**: Show what good looks like. Paste a sample, describe a template, or reference a prior output. *Why it matters:* Examples are the fastest way to align the AI with your expectations. One good example beats a paragraph of instructions.\n\n**A — Audience**: Say who will read this and what tone/detail level they expect. *Why it matters:* A board report and a team Slack message require completely different language. The AI can only match your audience if you tell it who they are.\n\n**R — Requirements**: State the specific task, constraints, and must-haves. *Why it matters:* This is your checklist. Without explicit requirements, the AI will deliver something plausible but incomplete — missing the one thing you actually needed.\n\nYou do not need every element for every task. Casual conversation is still your default. CLEAR is for when you need the output to be exactly right.',
         keyPoints: [
-          'C — Context: Who is the AI acting as? What background does it need?',
-          'L — Length/Format: How should the output be structured? How long?',
-          'E — Examples: Can you show what good looks like?',
-          'A — Audience: Who will read this? What tone and level of detail?',
-          'R — Requirements: What specific task, constraints, and must-haves?',
+          'C — Context: Set the scene — who is the AI acting as and what background does it need?',
+          'L — Length/Format: Specify structure, length, and format of the output',
+          'E — Examples: Show what good looks like — one example beats a paragraph of instructions',
+          'A — Audience: Who will read this? Match tone and detail level to the reader',
+          'R — Requirements: State the specific task, constraints, and must-haves',
           'Structure is a tool for specific situations — not every interaction needs it',
           'You already have Session 1 experience — CLEAR adds precision on top of conversation skills',
         ],
@@ -596,14 +596,15 @@ export const SESSION_2_CONTENT: SessionContent = {
           'Compare the outputs — notice what changed and when CLEAR is worth the extra effort',
         ],
         practiceTask: {
-          title: 'Apply CLEAR and Compare',
-          instructions: 'Take a task you did in Session 1 and redo it with the CLEAR Framework. Compare outputs.',
-          scenario: 'Pick a task from Session 1 — or choose a new one that matters to your work. First, write a casual ask (like you would in Session 1). Run it and save the output. Then rewrite the same ask using the CLEAR Framework. Run it and compare.\n\nWhich output is better? How much better? Was the extra structure worth it for this task? There is no wrong answer — sometimes casual is fine. The skill is knowing when to add structure.',
+          title: 'Build a CLEAR Prompt Step by Step',
+          instructions: 'Choose a real work task and build a CLEAR prompt one element at a time. Start with Context, then add Length/Format, Examples, Audience, and Requirements — submitting for Andrea\'s feedback after each step. By the end, you\'ll have a complete CLEAR prompt.',
+          scenario: 'Pick a task that matters to your work — something you\'d actually want AI help with.\n\n1. Start by writing just the **C — Context** for your prompt. Submit for feedback.\n2. Add the **L — Length/Format**. Submit for feedback.\n3. Add **E — Examples** (or explain why you\'re skipping it). Submit for feedback.\n4. Add **A — Audience**. Submit for feedback.\n5. Add **R — Requirements**. Submit your complete CLEAR prompt for final feedback.\n\nBuild each element one at a time. Andrea will coach you through each step before you move to the next.',
           hints: [
-            'You do not need to fill in every CLEAR element for every task — use what is relevant',
-            'Context and Requirements are usually the highest-impact elements',
-            'If you are not sure what Examples to provide, skip it — or ask the AI to suggest the format',
-            'The goal is not to always use CLEAR — it is to know when it helps',
+            'Start with Context — describe the role and background the AI needs',
+            'For Length/Format, be specific: "one-page memo" or "3 bullet points" is better than "keep it short"',
+            'Examples are optional — but if you have a sample of what good looks like, share it',
+            'Audience drives tone: a board presentation needs different language than a team email',
+            'Requirements are your checklist — what MUST be in the output?',
           ],
           successCriteria: {
             primary: [
