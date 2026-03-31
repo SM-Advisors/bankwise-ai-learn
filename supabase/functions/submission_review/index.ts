@@ -714,13 +714,14 @@ ${learnerState?.attemptNumber ? `- Attempt #${learnerState.attemptNumber}` : ""}
 
 ## CRITICAL RULES
 1. Return ONLY valid JSON matching the exact schema below - no extra keys, no markdown wrapping
-2. Use ONLY criteria from the RETRIEVED LESSON CONTENT for evaluation
+2. Evaluate ONLY against the learning objectives and task instructions listed in SUBMISSION CONTEXT above. If the RETRIEVED LESSON CONTENT references objectives from a different module or session, IGNORE those — only use content that directly relates to THIS module's task.
 3. Be specific - reference exact parts of the submission
 4. Balance praise with constructive criticism
 5. Tailor language complexity to the ${learningStyle.replace("_", "-")} learning style
-6. If lesson content is missing, acknowledge this and evaluate on general best practices
+6. If lesson content is missing, evaluate based on the learning objectives and task listed in SUBMISSION CONTEXT above
 7. Check submissions for compliance with ORGANIZATION POLICIES - flag any potential violations
 8. If the submission touches on data handling, AI usage, or security, verify alignment with organizational guidelines
+9. NEVER require criteria from other modules. If a criterion mentions concepts not taught in this module's task, it belongs in "areasForImprovement" (informational), NOT in "issues" or "requiredToProgress"
 
 ## REQUIRED OUTPUT FORMAT (strict JSON, no extra keys)
 ${isGateModule ? `{
