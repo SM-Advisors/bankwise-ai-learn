@@ -176,7 +176,7 @@ async function callModel(
       },
       body: JSON.stringify({
         model,
-        max_completion_tokens: maxTokens,
+        max_completion_tokens: 16384,
         messages: [{ role: "system", content: systemPrompt }, ...messages],
       }),
     });
