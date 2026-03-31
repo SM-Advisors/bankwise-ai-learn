@@ -139,12 +139,15 @@
     font-family: 'Playfair Display', serif;
   }
 
-  /* Keep AI chat responses in sans-serif — override prose/heading serif fonts */
+  /* Keep AI chat responses in sans-serif with uniform text sizing */
   .prose {
     font-family: 'Inter', sans-serif;
   }
   .prose h1, .prose h2, .prose h3, .prose h4 {
     font-family: 'Inter', sans-serif;
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
+    font-weight: 600;
   }
 }
 

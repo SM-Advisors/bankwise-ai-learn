@@ -130,8 +130,11 @@ async function callModel(
     const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
     if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not configured");
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45000); // 45s timeout
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
+      signal: controller.signal,
       headers: {
         "x-api-key": ANTHROPIC_API_KEY,
         "anthropic-version": "2023-06-01",
@@ -144,6 +147,7 @@ async function callModel(
         messages,
       }),
     });
+    clearTimeout(timeout);
 
     if (!res.ok) {
       const errText = await res.text();
@@ -161,8 +165,11 @@ async function callModel(
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
     if (!OPENAI_API_KEY) return "**GPT-4o** isn't available in this environment yet — an OpenAI API key hasn't been configured. Switch back to **Claude Sonnet 4.6** using the model selector to continue.";
 
+    const oaiController = new AbortController();
+    const oaiTimeout = setTimeout(() => oaiController.abort(), 45000);
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
+      signal: oaiController.signal,
       headers: {
         "Authorization": `Bearer ${OPENAI_API_KEY}`,
         "content-type": "application/json",
@@ -173,6 +180,7 @@ async function callModel(
         messages: [{ role: "system", content: systemPrompt }, ...messages],
       }),
     });
+    clearTimeout(oaiTimeout);
 
     if (!res.ok) {
       const errText = await res.text();
@@ -202,10 +210,13 @@ async function callModel(
     const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
     if (!GOOGLE_AI_API_KEY) return "**Gemini 2.5 Flash** isn't available in this environment yet — a Google AI API key hasn't been configured. Switch back to **Claude Sonnet 4.6** using the model selector to continue.";
 
+    const gglController = new AbortController();
+    const gglTimeout = setTimeout(() => gglController.abort(), 45000);
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`,
       {
         method: "POST",
+        signal: gglController.signal,
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           system_instruction: { parts: [{ text: systemPrompt }] },
@@ -217,6 +228,7 @@ async function callModel(
         }),
       },
     );
+    clearTimeout(gglTimeout);
 
     if (!res.ok) {
       const errText = await res.text();

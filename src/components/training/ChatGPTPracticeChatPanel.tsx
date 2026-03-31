@@ -13,6 +13,7 @@ import { VoiceMicButton } from '@/components/VoiceMicButton';
 import { type ModuleContent } from '@/data/trainingContent';
 import type { GeneratedModuleContent } from '@/hooks/useGeneratedModuleContent';
 import { type PracticeConversation } from '@/hooks/usePracticeConversations';
+import { isBinaryDocumentFile, extractDocumentText } from '@/utils/documentParser';
 import { AVAILABLE_MODELS, PROVIDER_COLORS, type ModelDefinition } from '@/lib/models';
 import { useToast } from '@/hooks/use-toast';
 import { type BankPolicy } from '@/types/training';
@@ -137,7 +138,7 @@ export function ChatGPTPracticeChatPanel({
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 500 * 1024) {
@@ -145,6 +146,20 @@ export function ChatGPTPracticeChatPanel({
       e.target.value = '';
       return;
     }
+
+    // Binary document files (.docx, .xlsx) need special parsing
+    if (isBinaryDocumentFile(file.name)) {
+      try {
+        const text = await extractDocumentText(file);
+        setAttachedFile({ name: file.name, content: text });
+      } catch {
+        toast({ title: 'Unsupported file', description: 'Could not read this file. It may be corrupted or unsupported.' });
+      }
+      e.target.value = '';
+      return;
+    }
+
+    // Plain text files
     const reader = new FileReader();
     reader.onload = () => {
       setAttachedFile({ name: file.name, content: reader.result as string });
@@ -463,7 +478,7 @@ export function ChatGPTPracticeChatPanel({
           ref={fileInputRef}
           type="file"
           className="hidden"
-          accept=".txt,.csv,.md,.json,.xml,.html,.log,.ts,.js,.py,.sql,.css,.yml,.yaml,.doc,.docx"
+          accept=".txt,.csv,.md,.json,.xml,.html,.log,.ts,.js,.py,.sql,.css,.yml,.yaml,.doc,.docx,.xlsx,.xls"
           onChange={handleFileSelect}
         />
 

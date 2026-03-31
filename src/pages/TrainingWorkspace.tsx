@@ -748,23 +748,37 @@ export default function TrainingWorkspace() {
         ...(priorModuleContext ? { priorModuleContext } : {}),
       };
 
-      // Single invocation — backend already retries transient model errors (up to 3 attempts).
-      // Removed frontend retry loop to avoid 3×3 = 9× API call amplification.
-      const response = await supabase.functions.invoke('ai-practice', { body: requestBody });
-      if (response.error) throw response.error;
+      // Backend retries transient model errors (up to 3 attempts).
+      // Frontend adds one additional retry for network/connection failures.
+      let lastError: unknown;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const response = await supabase.functions.invoke('ai-practice', { body: requestBody });
+          if (response.error) throw response.error;
 
-      const reply = response.data?.reply;
-      if (!reply) throw new Error(response.data?.error || 'Empty response from AI');
-      const assistantMsg = { role: 'assistant' as const, content: reply };
-      // Pass the convId explicitly to avoid stale closure
-      await appendMessage(assistantMsg, convId);
-    } catch (error) {
-      console.error('Practice chat error:', error);
-      const errorMsg = {
-        role: 'assistant' as const,
-        content: "I'm having a brief connection issue. Please try again in a moment.",
-      };
-      await appendMessage(errorMsg, convId);
+          const reply = response.data?.reply;
+          if (!reply) throw new Error(response.data?.error || 'Empty response from AI');
+          const assistantMsg = { role: 'assistant' as const, content: reply };
+          await appendMessage(assistantMsg, convId);
+          lastError = null;
+          break;
+        } catch (err) {
+          lastError = err;
+          if (attempt === 0) {
+            console.warn('Practice chat error, retrying in 2s...', err);
+            await new Promise(r => setTimeout(r, 2000));
+          }
+        }
+      }
+
+      if (lastError) {
+        console.error('Practice chat error after retry:', lastError);
+        const errorMsg = {
+          role: 'assistant' as const,
+          content: "Something went wrong reaching the AI. This is usually temporary — please send your message again.",
+        };
+        await appendMessage(errorMsg, convId);
+      }
     } finally {
       setIsPracticeLoading(false);
     }
