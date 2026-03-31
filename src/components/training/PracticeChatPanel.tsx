@@ -15,6 +15,7 @@ import { type ModuleContent } from '@/data/trainingContent';
 import { getRoleScenario } from '@/data/roleScenarioBanks';
 import type { GeneratedModuleContent } from '@/hooks/useGeneratedModuleContent';
 import { type PracticeConversation } from '@/hooks/usePracticeConversations';
+import { isBinaryDocumentFile, extractDocumentText } from '@/utils/documentParser';
 import { AVAILABLE_MODELS, PROVIDER_COLORS, type ModelDefinition } from '@/lib/models';
 
 // Map of features to the module that teaches them. Button is disabled until the module is completed.
@@ -142,7 +143,7 @@ export function PracticeChatPanel({
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 512_000) {
@@ -150,6 +151,20 @@ export function PracticeChatPanel({
       e.target.value = '';
       return;
     }
+
+    // Binary document files (.docx, .xlsx) need special parsing
+    if (isBinaryDocumentFile(file.name)) {
+      try {
+        const text = await extractDocumentText(file);
+        setAttachedFile({ name: file.name, content: text });
+      } catch {
+        alert('Could not read this file. The file may be corrupted or in an unsupported format.');
+      }
+      e.target.value = '';
+      return;
+    }
+
+    // Plain text files
     const reader = new FileReader();
     reader.onload = () => {
       setAttachedFile({ name: file.name, content: reader.result as string });
@@ -575,7 +590,7 @@ export function PracticeChatPanel({
           <input
             ref={fileInputRef}
             type="file"
-            accept=".txt,.csv,.md,.json,.xml,.html,.log,.ts,.js,.py,.sql,.css,.yml,.yaml,.doc,.docx"
+            accept=".txt,.csv,.md,.json,.xml,.html,.log,.ts,.js,.py,.sql,.css,.yml,.yaml,.doc,.docx,.xlsx,.xls"
             onChange={handleFileSelect}
             className="hidden"
           />
