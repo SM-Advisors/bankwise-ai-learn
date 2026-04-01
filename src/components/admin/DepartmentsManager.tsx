@@ -98,7 +98,7 @@ export function DepartmentsManager() {
     if (!roleForm.name.trim()) return;
     setSaving(true);
     try {
-      const { error } = await (supabase.from('department_roles' as any) as any).insert({
+      const { error } = await (supabase as any).from(\'department_roles\').insert({
         department_id: departmentId,
         name: roleForm.name.trim(),
         description: roleForm.description.trim() || null,

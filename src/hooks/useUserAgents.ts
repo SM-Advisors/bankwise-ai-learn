@@ -52,8 +52,8 @@ export function useUserAgents() {
     if (!user?.id) return null;
 
     try {
-      const { data: result, error } = await (supabase
-        .from('user_agents' as any))
+      const { data: result, error } = await (supabase as any)
+        .from(\'user_agents\')
         .insert({
           user_id: user.id,
           name: data?.name || 'My Agent',
@@ -82,8 +82,8 @@ export function useUserAgents() {
     if (!user?.id) return;
 
     try {
-      const { error } = await (supabase
-        .from('user_agents' as any))
+      const { error } = await (supabase as any)
+        .from(\'user_agents\')
         .update(updates)
         .eq('id', id)
         .eq('user_id', user.id);
@@ -252,8 +252,8 @@ export function useUserAgents() {
       if (fetchError) throw fetchError;
 
       const updatedMessages = [...((current?.messages as unknown as Record<string, unknown>[]) || []), message];
-      const { error } = await (supabase
-        .from('agent_test_conversations' as any))
+      const { error } = await (supabase as any)
+        .from(\'agent_test_conversations\')
         .update({ messages: updatedMessages })
         .eq('id', conversationId);
 
