@@ -163,10 +163,15 @@ async function callModel(
   // ── OpenAI (gpt-*) ────────────────────────────────────────────────────────
   if (model.startsWith("gpt-")) {
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-    if (!OPENAI_API_KEY) return "**GPT-4o** isn't available in this environment yet — an OpenAI API key hasn't been configured. Switch back to **Claude Sonnet 4.6** using the model selector to continue.";
+    if (!OPENAI_API_KEY) return "**GPT** isn't available in this environment yet — an OpenAI API key hasn't been configured. Switch back to **Claude Sonnet 4.6** using the model selector to continue.";
+
+    // Handle reasoning model variant: strip "-reasoning" suffix, enable reasoning
+    const isReasoning = model.endsWith("-reasoning");
+    const apiModel = isReasoning ? model.replace("-reasoning", "") : model;
+    const reasoningParams = isReasoning ? { reasoning: { effort: "high" } } : {};
 
     const oaiController = new AbortController();
-    const oaiTimeout = setTimeout(() => oaiController.abort(), 45000);
+    const oaiTimeout = setTimeout(() => oaiController.abort(), isReasoning ? 90000 : 45000); // reasoning gets 90s
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       signal: oaiController.signal,
@@ -175,9 +180,10 @@ async function callModel(
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        model,
-        max_completion_tokens: 16384,
+        model: apiModel,
+        max_completion_tokens: isReasoning ? 32768 : 16384,
         messages: [{ role: "system", content: systemPrompt }, ...messages],
+        ...reasoningParams,
       }),
     });
     clearTimeout(oaiTimeout);
