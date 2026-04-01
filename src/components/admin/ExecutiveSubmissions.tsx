@@ -110,8 +110,8 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
   const updateSubmission = async (id: string, status: SubmissionStatus) => {
     setUpdatingId(id);
     const notes = noteValues[id] ?? null;
-    const { error } = await (supabase
-      .from('executive_submissions' as any))
+    const { error } = await (supabase as any)
+      .from('executive_submissions')
       .update({
         status,
         reviewer_notes: notes,
