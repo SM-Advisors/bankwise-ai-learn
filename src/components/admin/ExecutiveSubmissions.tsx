@@ -79,10 +79,10 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
     // Get org user_ids for filtering if org-scoped
     let orgUserIds: Set<string> | null = null;
     if (organizationId) {
-      const { data: profiles } = await (supabase
-        .from('user_profiles' as any)
+      const { data: profiles } = await (supabase as any)
+        .from('user_profiles')
         .select('user_id')
-        .eq('organization_id', organizationId));
+        .eq('organization_id', organizationId);
       orgUserIds = new Set(((profiles || []) as UserProfileRow[]).map((p) => p.user_id));
     }
 
