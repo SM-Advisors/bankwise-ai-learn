@@ -78,8 +78,8 @@ export function useDashboardConversations() {
         ? firstMessage.content.slice(0, 50) + (firstMessage.content.length > 50 ? '...' : '')
         : 'New Conversation';
 
-      const { data, error } = await (supabase
-        .from('dashboard_conversations' as never))
+      const { data, error } = await (supabase as any)
+        .from(\'dashboard_conversations\')
         .insert({
           user_id: user.id,
           title,

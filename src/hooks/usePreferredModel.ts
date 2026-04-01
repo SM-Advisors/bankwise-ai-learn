@@ -10,7 +10,7 @@ interface UsePreferredModelResult {
 
 export function usePreferredModel(allowedModels: string[]): UsePreferredModelResult {
   const { user, profile } = useAuth();
-  const rawPreferred = (profile as Record<string, unknown>)?.preferred_model as string | undefined;
+  const rawPreferred = (profile as unknown as Record<string, unknown>)?.preferred_model as string | undefined;
 
   // Stabilize allowedModels to avoid re-running effect on every render
   const allowedModelsKey = allowedModels.join(',');

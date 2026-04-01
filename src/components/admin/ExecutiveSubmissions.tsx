@@ -79,17 +79,17 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
     // Get org user_ids for filtering if org-scoped
     let orgUserIds: Set<string> | null = null;
     if (organizationId) {
-      const { data: profiles } = await (supabase
-        .from('user_profiles' as never)
+      const { data: profiles } = await (supabase as any)
+        .from('user_profiles')
         .select('user_id')
-        .eq('organization_id', organizationId));
+        .eq('organization_id', organizationId);
       orgUserIds = new Set(((profiles || []) as UserProfileRow[]).map((p) => p.user_id));
     }
 
-    const { data, error } = await (supabase
-      .from('executive_submissions' as never)
+    const { data, error } = await (supabase as any)
+      .from('executive_submissions')
       .select('*')
-      .order('created_at', { ascending: false }));
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Failed to load submissions:', error);
@@ -110,8 +110,8 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
   const updateSubmission = async (id: string, status: SubmissionStatus) => {
     setUpdatingId(id);
     const notes = noteValues[id] ?? null;
-    const { error } = await (supabase
-      .from('executive_submissions' as never))
+    const { error } = await (supabase as any)
+      .from('executive_submissions')
       .update({
         status,
         reviewer_notes: notes,

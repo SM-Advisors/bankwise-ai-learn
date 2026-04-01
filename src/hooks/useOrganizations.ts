@@ -45,7 +45,7 @@ export function useOrganizations() {
       if (orgsError) {
         console.error('Error fetching organizations:', orgsError);
       } else {
-        const mapped: Organization[] = (orgs || []).map((o: Record<string, unknown>) => ({
+        const mapped: Organization[] = (orgs || []).map((o: any) => ({
           ...o,
           allowed_models: Array.isArray(o.allowed_models) ? o.allowed_models as string[] : ['claude-sonnet-4-6'],
           audience_type: o.audience_type || 'enterprise',
@@ -99,7 +99,7 @@ export function useOrganizations() {
     try {
       const { error } = await supabase
         .from('organizations')
-        .insert({ name, slug, audience_type: audienceType, industry: industry || null, platform } as never);
+        .insert({ name, slug, audience_type: audienceType, industry: industry || null, platform } as any);
 
       if (error) {
         console.error('Error creating organization:', error);
@@ -234,7 +234,7 @@ export function useOrganizations() {
     try {
       const { error } = await (supabase
         .from('organizations')
-        .update({ platform } as never)
+        .update({ platform } as any)
         .eq('id', orgId));
 
       if (error) {

@@ -1260,7 +1260,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
   });
 
   const sessionNum = parseInt(sessionId || '1');
-  const isCurrentSessionCompleted = !!(progress as Record<string, unknown>)?.[`session_${sessionNum}_completed`];
+  const isCurrentSessionCompleted = !!(progress as unknown as Record<string, unknown>)?.[`session_${sessionNum}_completed`];
 
   // Determine if the active conversation has been submitted
   const isActiveConversationSubmitted = activeConversation?.is_submitted || false;

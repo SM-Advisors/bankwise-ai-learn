@@ -34,8 +34,8 @@ export function useUserWorkflows() {
   const createWorkflow = useCallback(async (data?: Partial<UserWorkflow>): Promise<string | null> => {
     if (!user?.id) return null;
     try {
-      const { data: result, error } = await (supabase
-        .from('user_workflows' as never))
+      const { data: result, error } = await (supabase as any)
+        .from(\'user_workflows\')
         .insert({
           user_id: user.id,
           name: data?.name || 'My Workflow',
@@ -62,8 +62,8 @@ export function useUserWorkflows() {
     if (!user?.id) return;
     setWorkflows(prev => prev.map(w => w.id === id ? { ...w, ...updates, updated_at: new Date().toISOString() } : w));
     try {
-      const { error } = await (supabase
-        .from('user_workflows' as never))
+      const { error } = await (supabase as any)
+        .from(\'user_workflows\')
         .update(updates)
         .eq('id', id)
         .eq('user_id', user.id);

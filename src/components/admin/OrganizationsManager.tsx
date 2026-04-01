@@ -120,8 +120,8 @@ export function OrganizationsManager() {
   const handleRegenerateContent = async (orgId: string, orgName: string) => {
     setRegeneratingOrgId(orgId);
     try {
-      const { error } = await supabase
-        .from('generated_module_content' as never)
+      const { error } = await (supabase as any)
+        .from(\'generated_module_content\')
         .delete()
         .eq('org_id', orgId);
       if (error) throw error;
