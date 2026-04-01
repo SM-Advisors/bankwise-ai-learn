@@ -99,7 +99,7 @@ export function useOrganizations() {
     try {
       const { error } = await supabase
         .from('organizations')
-        .insert({ name, slug, audience_type: audienceType, industry: industry || null, platform } as never);
+        .insert({ name, slug, audience_type: audienceType, industry: industry || null, platform } as any);
 
       if (error) {
         console.error('Error creating organization:', error);
@@ -234,7 +234,7 @@ export function useOrganizations() {
     try {
       const { error } = await (supabase
         .from('organizations')
-        .update({ platform } as never)
+        .update({ platform } as any)
         .eq('id', orgId));
 
       if (error) {

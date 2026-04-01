@@ -39,7 +39,7 @@ export function useShareContent() {
     // ── Share to My Ideas ────────────────────────────────────────────────────
     if (payload.destinations.includes('my_ideas')) {
       const { error } = await (supabase
-        .from('user_ideas' as never))
+        .from('user_ideas' as any))
         .insert({
           title: payload.title,
           description: payload.body,
@@ -61,7 +61,7 @@ export function useShareContent() {
     // ── Share to Community ───────────────────────────────────────────────────
     if (payload.destinations.includes('community')) {
       const { error } = await (supabase
-        .from('community_topics' as never))
+        .from('community_topics' as any))
         .insert({
           title: payload.title,
           body: payload.body,

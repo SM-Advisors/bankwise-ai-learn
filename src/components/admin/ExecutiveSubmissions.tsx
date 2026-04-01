@@ -80,14 +80,14 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
     let orgUserIds: Set<string> | null = null;
     if (organizationId) {
       const { data: profiles } = await (supabase
-        .from('user_profiles' as never)
+        .from('user_profiles' as any)
         .select('user_id')
         .eq('organization_id', organizationId));
       orgUserIds = new Set(((profiles || []) as UserProfileRow[]).map((p) => p.user_id));
     }
 
     const { data, error } = await (supabase
-      .from('executive_submissions' as never)
+      .from('executive_submissions' as any)
       .select('*')
       .order('created_at', { ascending: false }));
 
@@ -111,7 +111,7 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
     setUpdatingId(id);
     const notes = noteValues[id] ?? null;
     const { error } = await (supabase
-      .from('executive_submissions' as never))
+      .from('executive_submissions' as any))
       .update({
         status,
         reviewer_notes: notes,

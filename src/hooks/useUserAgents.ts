@@ -53,7 +53,7 @@ export function useUserAgents() {
 
     try {
       const { data: result, error } = await (supabase
-        .from('user_agents' as never))
+        .from('user_agents' as any))
         .insert({
           user_id: user.id,
           name: data?.name || 'My Agent',
@@ -83,7 +83,7 @@ export function useUserAgents() {
 
     try {
       const { error } = await (supabase
-        .from('user_agents' as never))
+        .from('user_agents' as any))
         .update(updates)
         .eq('id', id)
         .eq('user_id', user.id);
@@ -253,7 +253,7 @@ export function useUserAgents() {
 
       const updatedMessages = [...((current?.messages as unknown as Record<string, unknown>[]) || []), message];
       const { error } = await (supabase
-        .from('agent_test_conversations' as never))
+        .from('agent_test_conversations' as any))
         .update({ messages: updatedMessages })
         .eq('id', conversationId);
 

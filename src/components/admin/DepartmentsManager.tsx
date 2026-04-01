@@ -46,7 +46,7 @@ export function DepartmentsManager() {
     setSaving(true);
     try {
       // Get the first available industry ID
-      const { data: industries } = await supabase.from('industries' as never).select('id').limit(1).single();
+      const { data: industries } = await supabase.from('industries' as any).select('id').limit(1).single();
       const industryId = (industries as { id?: string } | null)?.id;
       if (!industryId) throw new Error('No industry found');
 
@@ -98,7 +98,7 @@ export function DepartmentsManager() {
     if (!roleForm.name.trim()) return;
     setSaving(true);
     try {
-      const { error } = await (supabase.from('department_roles' as never)).insert({
+      const { error } = await (supabase.from('department_roles' as any)).insert({
         department_id: departmentId,
         name: roleForm.name.trim(),
         description: roleForm.description.trim() || null,

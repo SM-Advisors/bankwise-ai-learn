@@ -157,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const { data, error } = await (supabase
-      .from('user_profiles' as never))
+      .from('user_profiles' as any))
       .insert(insertData)
       .select()
       .single();
