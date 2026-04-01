@@ -86,10 +86,10 @@ export function ExecutiveSubmissions({ organizationId }: ExecutiveSubmissionsPro
       orgUserIds = new Set(((profiles || []) as UserProfileRow[]).map((p) => p.user_id));
     }
 
-    const { data, error } = await (supabase
-      .from('executive_submissions' as any)
+    const { data, error } = await (supabase as any)
+      .from('executive_submissions')
       .select('*')
-      .order('created_at', { ascending: false }));
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Failed to load submissions:', error);
