@@ -46,7 +46,7 @@ export function DepartmentsManager() {
     setSaving(true);
     try {
       // Get the first available industry ID
-      const { data: industries } = await supabase.from('industries' as any) as any.select('id').limit(1).single();
+      const { data: industries } = await (supabase as any).from('industries').select('id').limit(1).single();
       const industryId = (industries as { id?: string } | null)?.id;
       if (!industryId) throw new Error('No industry found');
 

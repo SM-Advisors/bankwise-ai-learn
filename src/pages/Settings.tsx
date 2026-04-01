@@ -69,8 +69,8 @@ export default function Settings() {
 
     // Delete practice conversations and dashboard conversations
     await Promise.all([
-      supabase.from('practice_conversations' as any) as any.delete().eq('user_id', user.id),
-      supabase.from('dashboard_conversations' as any) as any.delete().eq('user_id', user.id),
+      (supabase as any).from('practice_conversations').delete().eq('user_id', user.id),
+      (supabase as any).from('dashboard_conversations').delete().eq('user_id', user.id),
     ]);
 
     setDeletingConversations(false);
