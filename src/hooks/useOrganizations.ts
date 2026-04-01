@@ -45,7 +45,7 @@ export function useOrganizations() {
       if (orgsError) {
         console.error('Error fetching organizations:', orgsError);
       } else {
-        const mapped: Organization[] = (orgs || []).map((o: Record<string, unknown>) => ({
+        const mapped: Organization[] = (orgs || []).map((o: any) => ({
           ...o,
           allowed_models: Array.isArray(o.allowed_models) ? o.allowed_models as string[] : ['claude-sonnet-4-6'],
           audience_type: o.audience_type || 'enterprise',
