@@ -27,10 +27,10 @@ vi.mock('@/integrations/supabase/client', () => ({
         authStateCallback = cb;
         return { data: { subscription: { unsubscribe: vi.fn() } } };
       }),
-      getSession: (...args: any[]) => mockGetSession(...args),
-      signOut: (...args: any[]) => mockSignOut(...args),
-      signUp: (...args: any[]) => mockSignUp(...args),
-      signInWithPassword: (...args: any[]) => mockSignInWithPassword(...args),
+      getSession: () => mockGetSession(),
+      signOut: () => mockSignOut(),
+      signUp: () => mockSignUp(),
+      signInWithPassword: () => mockSignInWithPassword(),
     },
     from: (...args: unknown[]) => fromMock(...args),
   },
