@@ -135,7 +135,7 @@ export function useAllDepartments() {
 
   const createDepartment = async (dept: Partial<Department>) => {
     const { data, error } = await (supabase as any)
-      .from(\'departments\')
+      .from('departments')
       .insert(dept)
       .select()
       .single();
