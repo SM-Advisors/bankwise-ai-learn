@@ -17,7 +17,7 @@ export function useValueSignals() {
   ) => {
     if (!user?.id) return;
     try {
-      await (supabase as any).from(\'value_signals\').insert({
+      await (supabase as any).from('value_signals').insert({
         user_id: user.id,
         org_id: profile?.organization_id ?? null,
         signal_type: signalType,

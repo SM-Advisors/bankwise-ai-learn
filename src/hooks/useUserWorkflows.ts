@@ -35,7 +35,7 @@ export function useUserWorkflows() {
     if (!user?.id) return null;
     try {
       const { data: result, error } = await (supabase as any)
-        .from(\'user_workflows\')
+        .from('user_workflows')
         .insert({
           user_id: user.id,
           name: data?.name || 'My Workflow',
@@ -63,7 +63,7 @@ export function useUserWorkflows() {
     setWorkflows(prev => prev.map(w => w.id === id ? { ...w, ...updates, updated_at: new Date().toISOString() } : w));
     try {
       const { error } = await (supabase as any)
-        .from(\'user_workflows\')
+        .from('user_workflows')
         .update(updates)
         .eq('id', id)
         .eq('user_id', user.id);
