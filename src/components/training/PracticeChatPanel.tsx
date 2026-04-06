@@ -103,9 +103,10 @@ export function PracticeChatPanel({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Feature gating: check if features are unlocked based on completed modules
+  // Special case: model selector is also unlocked when the user is ON module 2-7 (they need it to complete the task)
   const isAttachmentsUnlocked = isAttachmentsAvailable(module.id);
   const isToolsUnlocked = completedModules.has(FEATURE_MODULE_MAP.tools);
-  const isModelSelectorUnlocked = completedModules.has(FEATURE_MODULE_MAP.modelSelector);
+  const isModelSelectorUnlocked = completedModules.has(FEATURE_MODULE_MAP.modelSelector) || module.id === FEATURE_MODULE_MAP.modelSelector;
   const lockedTooltip = "This feature will be available after the module where it is taught.";
 
   const showModelSelector = allowedModels.length > 1 && !!selectedModel && !!onModelChange;
