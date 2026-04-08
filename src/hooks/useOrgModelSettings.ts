@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { DEFAULT_MODEL } from '@/lib/models';
+import { DEFAULT_MODEL, AVAILABLE_MODELS } from '@/lib/models';
+
+// When org has no model restrictions, allow all models
+const ALL_MODEL_IDS = AVAILABLE_MODELS.map(m => m.id);
 
 interface OrgModelSettings {
   allowedModels: string[];
@@ -10,12 +13,12 @@ interface OrgModelSettings {
 
 export function useOrgModelSettings(): OrgModelSettings {
   const { user, profile } = useAuth();
-  const [allowedModels, setAllowedModels] = useState<string[]>([DEFAULT_MODEL]);
+  const [allowedModels, setAllowedModels] = useState<string[]>(ALL_MODEL_IDS);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!user?.id || !profile?.organization_id) {
-      setAllowedModels([DEFAULT_MODEL]);
+      setAllowedModels(ALL_MODEL_IDS);
       setIsLoading(false);
       return;
     }
@@ -29,12 +32,12 @@ export function useOrgModelSettings(): OrgModelSettings {
       .single())
       .then(({ data, error }) => {
         if (error || !data) {
-          setAllowedModels([DEFAULT_MODEL]);
+          setAllowedModels(ALL_MODEL_IDS);
         } else {
           const raw = data.allowed_models;
           const models: string[] = Array.isArray(raw) && raw.length > 0
             ? (raw as string[])
-            : [DEFAULT_MODEL];
+            : ALL_MODEL_IDS;
           setAllowedModels(models);
         }
         setIsLoading(false);
