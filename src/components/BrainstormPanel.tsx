@@ -48,7 +48,7 @@ export function BrainstormPanel({ compact = false }: { compact?: boolean }) {
     { key: 'layer2', label: 'Layer 2' },
     { key: 'layer3', label: 'Layer 3' },
   ];
-  const [summaryScopes, setSummaryScopes] = useState<Set<SummaryScope>>(new Set());
+  const [summaryScopes, setSummaryScopes] = useState<Set<SummaryScope>>(new Set<SummaryScope>());
   const [scopePickerMode, setScopePickerMode] = useState<SubmitMode>(null);
   const allScopesSelected = summaryScopes.size === SCOPE_OPTIONS.length;
 
@@ -118,7 +118,7 @@ export function BrainstormPanel({ compact = false }: { compact?: boolean }) {
 
   const openSubmitForm = (mode: SubmitMode) => {
     // Show the scope picker instead of immediately summarizing
-    setSummaryScopes(new Set(SCOPE_OPTIONS.map(o => o.key))); // default: all selected
+    setSummaryScopes(new Set<SummaryScope>()); // start empty — user must select
     setScopePickerMode(mode);
   };
 
