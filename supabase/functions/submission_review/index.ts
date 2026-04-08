@@ -448,7 +448,23 @@ EVALUATION FOCUS:
 - Are all 5 CLEAR elements present — Context, Length/Format, Examples, Audience, Requirements?
 - Are elements specific to the learner's professional context, not generic placeholders?
 - Does the prompt produce a different (better) output than a casual ask would?
-- Are requirements specific enough that the learner could tell if they were met?` : moduleId === "2-6" ? `## MODULE 2-6 RUBRIC: MULTI-SHOT PROMPTING
+- Are requirements specific enough that the learner could tell if they were met?` : moduleId === "2-5" ? `## MODULE 2-5 RUBRIC: OUTLINE EXPANDER
+This submission tests the learner's ability to provide a structural skeleton and let the AI fill in the substance — controlling shape while delegating content.
+
+3-LEVEL RUBRIC:
+| Criterion | Developing | Proficient | Advanced |
+|-----------|-----------|-----------|---------|
+| Outline Structure | No outline provided, or just a single topic with no sections | 4–7 distinct sections with clear headers or labels | Sections are logically ordered, each with a one-line description of scope |
+| Delegation of Substance | Learner wrote most of the content themselves | AI was asked to expand the outline into detailed content | AI expanded each section and learner iterated on the structure (added, removed, or reordered sections) |
+| Iteration | Single prompt, no revision | At least one structural revision (add/remove/reorder a section) | Multiple structural iterations that show the learner controlling the shape, not just accepting the first result |
+| Work Relevance | Generic or hypothetical document | Document is tied to a real professional task (report, memo, proposal, training material, plan) | Document is immediately usable in the learner's actual work context |
+| Outline + Template Combination | No output format specified | Some format guidance given (e.g., "as a memo") | Explicitly combined outline control with an output template for full structural and format control |
+
+EVALUATION FOCUS:
+- Did the learner provide the skeleton and let the AI fill in the substance — or did they write the content themselves?
+- Did the learner iterate on the structure, not just the content?
+- Is the document relevant to their actual professional context?
+- Bonus: did they combine the Outline Expander with output templating for maximum control?` : moduleId === "2-6" ? `## MODULE 2-6 RUBRIC: MULTI-SHOT PROMPTING
 This submission tests the learner's ability to use examples to teach an AI consistent output patterns.
 
 3-LEVEL RUBRIC:
