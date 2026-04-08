@@ -14,7 +14,7 @@ import { type ModuleContent } from '@/data/trainingContent';
 import type { GeneratedModuleContent } from '@/hooks/useGeneratedModuleContent';
 import { type PracticeConversation } from '@/hooks/usePracticeConversations';
 import { isBinaryDocumentFile, extractDocumentText } from '@/utils/documentParser';
-import { AVAILABLE_MODELS, PROVIDER_COLORS, type ModelDefinition } from '@/lib/models';
+import { AVAILABLE_MODELS, PROVIDER_COLORS, PROVIDER_LABELS, type ModelDefinition } from '@/lib/models';
 import { useToast } from '@/hooks/use-toast';
 import { type BankPolicy } from '@/types/training';
 
@@ -247,7 +247,7 @@ export function ChatGPTPracticeChatPanel({
                     className={`w-full flex items-start gap-2.5 px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${model.id === selectedModel ? 'bg-gray-50 dark:bg-gray-800' : ''}`}
                   >
                     <span className={`mt-0.5 shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium leading-none ${PROVIDER_COLORS[model.provider]}`}>
-                      {model.provider.toUpperCase().slice(0, 4)}
+                      {PROVIDER_LABELS[model.provider]}
                     </span>
                     <div>
                       <p className="text-xs font-medium text-gray-800 dark:text-gray-200">{model.label}</p>

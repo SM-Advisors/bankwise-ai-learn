@@ -27,6 +27,12 @@ export const AVAILABLE_MODELS: ModelDefinition[] = [
 
 export const DEFAULT_MODEL = 'gpt-5.4';
 
+export const PROVIDER_LABELS: Record<ModelDefinition['provider'], string> = {
+  anthropic: 'ANTH',
+  openai:    'OPENAI',
+  google:    'GOOGLE',
+};
+
 export const PROVIDER_COLORS: Record<ModelDefinition['provider'], string> = {
   anthropic: 'bg-purple-100 text-purple-700',
   openai:    'bg-green-100 text-green-700',
