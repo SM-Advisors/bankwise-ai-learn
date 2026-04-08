@@ -40,6 +40,34 @@ export function BrainstormPanel({ compact = false }: { compact?: boolean }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
 
+  // Summary scope selection (what to include when summarizing)
+  type SummaryScope = 'workflow' | 'layer1' | 'layer2' | 'layer3';
+  const SCOPE_OPTIONS: { key: SummaryScope; label: string }[] = [
+    { key: 'workflow', label: 'Workflow' },
+    { key: 'layer1', label: 'Layer 1' },
+    { key: 'layer2', label: 'Layer 2' },
+    { key: 'layer3', label: 'Layer 3' },
+  ];
+  const [summaryScopes, setSummaryScopes] = useState<Set<SummaryScope>>(new Set());
+  const [scopePickerMode, setScopePickerMode] = useState<SubmitMode>(null);
+  const allScopesSelected = summaryScopes.size === SCOPE_OPTIONS.length;
+
+  const toggleScope = (scope: SummaryScope) => {
+    setSummaryScopes(prev => {
+      const next = new Set(prev);
+      if (next.has(scope)) next.delete(scope); else next.add(scope);
+      return next;
+    });
+  };
+
+  const toggleEntireConversation = () => {
+    if (allScopesSelected) {
+      setSummaryScopes(new Set());
+    } else {
+      setSummaryScopes(new Set(SCOPE_OPTIONS.map(o => o.key)));
+    }
+  };
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -88,17 +116,37 @@ export function BrainstormPanel({ compact = false }: { compact?: boolean }) {
     selectConversation(conv.id);
   };
 
-  const openSubmitForm = async (mode: SubmitMode) => {
-    // Fallback: use first user message if Andrea summarization fails
+  const openSubmitForm = (mode: SubmitMode) => {
+    // Show the scope picker instead of immediately summarizing
+    setSummaryScopes(new Set(SCOPE_OPTIONS.map(o => o.key))); // default: all selected
+    setScopePickerMode(mode);
+  };
+
+  const runSummarization = async () => {
+    const mode = scopePickerMode;
+    if (!mode) return;
+    setScopePickerMode(null);
+
     const firstUserMsg = localMessages.find(m => m.role === 'user')?.content || '';
     const fallbackTitle = firstUserMsg.length > 80 ? firstUserMsg.slice(0, 77) + '...' : firstUserMsg;
 
     setIsSummarizing(true);
-    setSubmitMode(mode); // open form immediately so spinner is visible
+    setSubmitMode(mode);
+
+    const scopeLabels: string[] = [];
+    if (summaryScopes.has('workflow')) scopeLabels.push('the workflow description and discovery');
+    if (summaryScopes.has('layer1')) scopeLabels.push('Layer 1 (Step-Level Automation)');
+    if (summaryScopes.has('layer2')) scopeLabels.push('Layer 2 (Chunk Automation)');
+    if (summaryScopes.has('layer3')) scopeLabels.push('Layer 3 (Full-Flow Automation)');
+    const scopeInstruction = scopeLabels.length === SCOPE_OPTIONS.length
+      ? 'Summarize the entire conversation.'
+      : `Focus ONLY on these parts: ${scopeLabels.join(', ')}. Ignore other parts of the conversation.`;
 
     try {
       const destinationLabel = mode === 'ideas' ? 'My Ideas' : mode === 'community' ? 'Community Hub' : 'C-Suite Innovation Pipeline';
       const summaryPrompt = `You are summarizing a brainstorm conversation for a ${destinationLabel} submission.
+
+${scopeInstruction}
 
 Based on the conversation below, write:
 1. A professional title (under 80 characters) that captures the workflow/task and AI opportunity
@@ -395,7 +443,7 @@ After presenting all layers, end with: "Which layer feels like the right startin
 
       {/* Brainstorm Sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-[420px] sm:w-[420px] flex flex-col p-0 [&>button.absolute]:hidden">
+        <SheetContent side="right" className="w-[840px] sm:w-[840px] flex flex-col p-0 [&>button.absolute]:hidden">
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 border-b bg-primary text-primary-foreground shrink-0">
             <img
@@ -571,6 +619,52 @@ After presenting all layers, end with: "Which layer feels like the right startin
                   >
                     <Brain className="h-3 w-3" /> Assume & answer
                   </button>
+                </div>
+              )}
+
+              {/* Scope picker — what to include in the summary */}
+              {scopePickerMode && (
+                <div className="border-t p-3 space-y-2 bg-muted/20 shrink-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-semibold">What should Andrea summarize?</span>
+                    <button onClick={() => setScopePickerMode(null)} className="text-muted-foreground hover:text-foreground">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {SCOPE_OPTIONS.map(opt => (
+                      <button
+                        key={opt.key}
+                        onClick={() => toggleScope(opt.key)}
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                          summaryScopes.has(opt.key)
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-background text-muted-foreground border-border hover:bg-muted'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                    <button
+                      onClick={toggleEntireConversation}
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                        allScopesSelected
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'bg-background text-muted-foreground border-border hover:bg-muted'
+                      }`}
+                    >
+                      Entire Conversation
+                    </button>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={runSummarization}
+                    disabled={summaryScopes.size === 0}
+                    className="w-full h-8 text-xs gap-1.5 mt-1"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    Summarize & Continue
+                  </Button>
                 </div>
               )}
 
