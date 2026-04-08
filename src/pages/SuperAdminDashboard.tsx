@@ -64,17 +64,18 @@ export default function SuperAdminDashboard() {
 
   const handleToggleGates = async (checked: boolean) => {
     setAllGatesUnlocked(checked);
-    const { error } = await supabase
-      .from('app_settings')
-      .upsert(
-        {
-          key: 'all_gates_unlocked',
-          value: checked ? 'true' : 'false',
-          description: 'When true, all progressive disclosure gates (zones, sessions, modules) are bypassed platform-wide.',
-        },
-        { onConflict: 'key' }
-      );
-    if (error) console.error('Failed to update gate setting:', error);
+    const { error } = await supabase.functions.invoke('admin-settings', {
+      body: {
+        action: 'upsert',
+        key: 'all_gates_unlocked',
+        value: checked ? 'true' : 'false',
+        description: 'When true, all progressive disclosure gates (zones, sessions, modules) are bypassed platform-wide.',
+      },
+    });
+    if (error) {
+      console.error('Failed to update gate setting:', error);
+      setAllGatesUnlocked(!checked); // revert on failure
+    }
   };
 
   useEffect(() => {
