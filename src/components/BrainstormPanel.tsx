@@ -443,7 +443,7 @@ After presenting all layers, end with: "Which layer feels like the right startin
 
       {/* Brainstorm Sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-[840px] sm:w-[840px] flex flex-col p-0 [&>button.absolute]:hidden">
+        <SheetContent side="right" className="w-[840px] sm:w-[840px] sm:max-w-[840px] flex flex-col p-0 [&>button.absolute]:hidden">
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 border-b bg-primary text-primary-foreground shrink-0">
             <img
@@ -695,10 +695,21 @@ After presenting all layers, end with: "Which layer feels like the right startin
                         className="text-sm h-8"
                       />
                       <Textarea
+                        ref={(el) => {
+                          if (el) {
+                            el.style.height = 'auto';
+                            el.style.height = Math.min(el.scrollHeight, 12 * 20) + 'px';
+                          }
+                        }}
                         value={submitDescription}
-                        onChange={(e) => setSubmitDescription(e.target.value)}
+                        onChange={(e) => {
+                          setSubmitDescription(e.target.value);
+                          const el = e.target;
+                          el.style.height = 'auto';
+                          el.style.height = Math.min(el.scrollHeight, 12 * 20) + 'px';
+                        }}
                         placeholder="Description (optional)"
-                        className="text-sm min-h-[60px] resize-none"
+                        className="text-sm min-h-[60px] max-h-[240px] resize-none overflow-y-auto"
                       />
                       <div className="flex gap-2">
                         <Button
