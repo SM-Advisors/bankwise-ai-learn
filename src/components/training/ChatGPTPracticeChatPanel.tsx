@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import {
   Loader2, ChevronRight, ChevronDown, ChevronUp,
   Bot, AudioLines, Plus, CheckCircle, AlertCircle,
-  RotateCcw, ArrowUp, EyeOff, Eye, Building2,
+  RotateCcw, ArrowUp, EyeOff, Eye, Building2, MessageSquarePlus,
   Palette, ImageIcon, Paperclip, Globe, Wrench, FileText, X, History,
 } from 'lucide-react';
 import { VoiceMicButton } from '@/components/VoiceMicButton';
@@ -104,7 +104,11 @@ export function ChatGPTPracticeChatPanel({
   const [incognito, setIncognito] = useState(false);
   const [knowledgeOpen, setKnowledgeOpen] = useState(false);
   const [attachedFile, setAttachedFile] = useState<{ name: string; content: string } | null>(null);
+  const [gateDismissed, setGateDismissed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Reset gate dismissed when a new gate result arrives
+  useEffect(() => { setGateDismissed(false); }, [lastGateResult]);
 
   const isAttachmentsAvailable = (moduleId: string) => moduleId !== '1-1';
   const isAttachmentsUnlocked = isAttachmentsAvailable(module.id);
@@ -350,7 +354,7 @@ export function ChatGPTPracticeChatPanel({
                       )}
                     </div>
                   </div>
-                ) : (
+                ) : !gateDismissed ? (
                   <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-2xl">
                     <div className="flex items-center justify-center gap-2 text-amber-600 dark:text-amber-400 font-medium">
                       <AlertCircle className="h-5 w-5" />
@@ -387,17 +391,24 @@ export function ChatGPTPracticeChatPanel({
                         </ul>
                       </div>
                     )}
-                    <div className="mt-3">
+                    <div className="mt-3 flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => { setGateDismissed(true); inputRef.current?.focus(); }}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <MessageSquarePlus className="h-4 w-4" />
+                        Continue Conversation
+                      </button>
                       <button
                         onClick={onNewChat}
-                        className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors mx-auto"
+                        className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
                         <RotateCcw className="h-4 w-4" />
-                        Try Again
+                        Start New Conversation
                       </button>
                     </div>
                   </div>
-                )}
+                ) : null}
               </div>
             )}
 

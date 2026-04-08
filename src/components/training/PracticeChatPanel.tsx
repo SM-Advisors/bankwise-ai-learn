@@ -97,6 +97,7 @@ export function PracticeChatPanel({
   const [input, setInput] = useState('');
   const inputBeforeRecordingRef = useRef('');
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [gateDismissed, setGateDismissed] = useState(false);
   const [activeTab, setActiveTab] = useState<'work' | 'web'>('work');
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [attachedFile, setAttachedFile] = useState<{ name: string; content: string } | null>(null);
@@ -114,6 +115,9 @@ export function PracticeChatPanel({
   const allowedModelDefs = AVAILABLE_MODELS.filter(m => allowedModels.includes(m.id));
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Reset gate dismissed when a new gate result arrives
+  useEffect(() => { setGateDismissed(false); }, [lastGateResult]);
 
   // Department-specific scenario and hints: generated → inline departmentScenarios → role scenario bank → default
   const genDeptScenario = lineOfBusiness && generatedContent?.departmentScenarios?.[lineOfBusiness];
@@ -445,7 +449,7 @@ export function PracticeChatPanel({
                       )}
                     </div>
                   </div>
-                ) : (
+                ) : !gateDismissed ? (
                   /* Not yet passed — show feedback and encourage retry */
                   <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
                     <div className="flex items-center justify-center gap-2 text-amber-600 dark:text-amber-400 font-medium">
@@ -484,13 +488,17 @@ export function PracticeChatPanel({
                       </div>
                     )}
                     <div className="mt-3 flex items-center justify-center gap-2">
+                      <Button variant="outline" size="sm" onClick={() => { setGateDismissed(true); inputRef.current?.focus(); }} className="gap-2 rounded-full">
+                        <MessageSquarePlus className="h-4 w-4" />
+                        Continue Conversation
+                      </Button>
                       <Button variant="outline" size="sm" onClick={onNewChat} className="gap-2 rounded-full">
                         <RotateCcw className="h-4 w-4" />
-                        Try Again
+                        Start New Conversation
                       </Button>
                     </div>
                   </div>
-                )}
+                ) : null}
               </div>
             )}
 
