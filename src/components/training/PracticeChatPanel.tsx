@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Loader2, Send, CheckCircle, AlertCircle,
-  ChevronRight, ChevronDown, Bot, User, AudioLines, Plus, SlidersHorizontal,
+  ChevronRight, ChevronDown, Bot, User, AudioLines, Plus, Globe,
   MessageSquarePlus, History, Clock, ChevronUp, Sparkles, RotateCcw, X, FileText,
 } from 'lucide-react';
 import { VoiceMicButton } from '@/components/VoiceMicButton';
@@ -58,6 +58,8 @@ interface PracticeChatPanelProps {
   lastGateResult?: import('@/types/progress').GateResult | null;
   completedModules?: Set<string>;
   generatedContent?: GeneratedModuleContent | null;
+  webSearchEnabled?: boolean;
+  onWebSearchToggle?: (enabled: boolean) => void;
   /** Label for the "import prior conversation" button (e.g., "Import Your First Win Conversation") */
   importPriorLabel?: string;
   /** Callback to import a conversation from a prior module */
@@ -94,12 +96,13 @@ export function PracticeChatPanel({
   importPriorLabel,
   onImportPriorConversation,
   isImportingPrior = false,
+  webSearchEnabled = false,
+  onWebSearchToggle,
 }: PracticeChatPanelProps) {
   const [input, setInput] = useState('');
   const inputBeforeRecordingRef = useRef('');
   const [historyOpen, setHistoryOpen] = useState(false);
   const [gateDismissed, setGateDismissed] = useState(false);
-  const [activeTab, setActiveTab] = useState<'work' | 'web'>('work');
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [attachedFile, setAttachedFile] = useState<{ name: string; content: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -107,7 +110,7 @@ export function PracticeChatPanel({
   // Feature gating: check if features are unlocked based on completed modules
   // Special case: model selector is also unlocked when the user is ON module 2-7 (they need it to complete the task)
   const isAttachmentsUnlocked = isAttachmentsAvailable(module.id);
-  const isToolsUnlocked = completedModules.has(FEATURE_MODULE_MAP.tools);
+  const isToolsUnlocked = completedModules.has(FEATURE_MODULE_MAP.tools) || module.id === FEATURE_MODULE_MAP.tools;
   const isModelSelectorUnlocked = completedModules.has(FEATURE_MODULE_MAP.modelSelector) || module.id === FEATURE_MODULE_MAP.modelSelector;
   const lockedTooltip = "This feature will be available after the module where it is taught.";
 
@@ -226,31 +229,8 @@ export function PracticeChatPanel({
           </Button>
         </div>
 
-        {/* Center: Work / Web Toggle + Model selector */}
+        {/* Center: Model selector */}
         <div className="flex items-center gap-2">
-          <div className="inline-flex items-center rounded-full border border-border bg-card p-0.5 shadow-sm">
-            <button
-              onClick={() => setActiveTab('work')}
-              className={`px-5 py-1.5 text-sm font-medium rounded-full transition-colors ${
-                activeTab === 'work'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Work
-            </button>
-            <button
-              onClick={() => setActiveTab('web')}
-              className={`px-5 py-1.5 text-sm font-medium rounded-full transition-colors ${
-                activeTab === 'web'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Web
-            </button>
-          </div>
-
           {/* Model selector — in top bar for visibility */}
           {showModelSelector && isModelSelectorUnlocked && (
             <div className="relative">
@@ -721,13 +701,29 @@ export function PracticeChatPanel({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span>
-                    <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-full text-sm px-3 text-muted-foreground hover:text-foreground hover:bg-muted" disabled={!isToolsUnlocked}>
-                      <SlidersHorizontal className="h-4 w-4" />
-                      Tools
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={`h-8 gap-1.5 rounded-full text-sm px-3 ${
+                        isToolsUnlocked && webSearchEnabled
+                          ? 'text-blue-600 bg-blue-50 hover:bg-blue-100 dark:text-blue-400 dark:bg-blue-950 dark:hover:bg-blue-900'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      }`}
+                      disabled={!isToolsUnlocked}
+                      onClick={() => isToolsUnlocked && onWebSearchToggle?.(!webSearchEnabled)}
+                    >
+                      <Globe className="h-4 w-4" />
+                      Search
+                      {isToolsUnlocked && (
+                        <span className={`text-[10px] font-semibold uppercase ${webSearchEnabled ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground/60'}`}>
+                          {webSearchEnabled ? 'ON' : 'OFF'}
+                        </span>
+                      )}
                     </Button>
                   </span>
                 </TooltipTrigger>
                 {!isToolsUnlocked && <TooltipContent side="top"><p className="text-xs">{lockedTooltip}</p></TooltipContent>}
+                {isToolsUnlocked && <TooltipContent side="top"><p className="text-xs">{webSearchEnabled ? 'Web search is ON — AI will search the internet' : 'Web search is OFF — AI uses its own knowledge'}</p></TooltipContent>}
               </Tooltip>
               {/* Model selector — only shown when org has 2+ models enabled */}
               {showModelSelector && !isModelSelectorUnlocked && (

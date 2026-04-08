@@ -109,6 +109,7 @@ export default function TrainingWorkspace() {
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
   const [mobileTab, setMobileTab] = useState<'practice' | 'coach'>('practice');
   const [mobileModulesOpen, setMobileModulesOpen] = useState(false);
+  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
 
   // Practice instructions popup state (must be before early returns to avoid conditional hook calls)
   const [practicePopupOpen, setPracticePopupOpen] = useState(false);
@@ -740,6 +741,8 @@ export default function TrainingWorkspace() {
         sessionNumber: parseInt(sessionId || '1'),
         model: preferredModel,
         industrySlug,
+        // Web search toggle (module 2-9+)
+        ...(webSearchEnabled ? { webSearch: true } : {}),
         // Session 3: use deployed agent's custom system prompt if available
         ...(isSession3 && deployedAgent?.system_prompt ? { customSystemPrompt: deployedAgent.system_prompt } : {}),
         // Department context for bankers; interests for F&F users
@@ -1570,6 +1573,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   importPriorLabel={selectedModule ? IMPORT_LABELS[selectedModule.id] : undefined}
                   onImportPriorConversation={selectedModule && CONVERSATION_SEED_MAP[selectedModule.id] ? handleImportPriorConversation : undefined}
                   isImportingPrior={isImportingPrior}
+                  webSearchEnabled={webSearchEnabled}
+                  onWebSearchToggle={setWebSearchEnabled}
                 />
               ) : (
                 <PracticeChatPanel
@@ -1600,6 +1605,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   importPriorLabel={selectedModule ? IMPORT_LABELS[selectedModule.id] : undefined}
                   onImportPriorConversation={selectedModule && CONVERSATION_SEED_MAP[selectedModule.id] ? handleImportPriorConversation : undefined}
                   isImportingPrior={isImportingPrior}
+                  webSearchEnabled={webSearchEnabled}
+                  onWebSearchToggle={setWebSearchEnabled}
                 />
               )
             ) : null}

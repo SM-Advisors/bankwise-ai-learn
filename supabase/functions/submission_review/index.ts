@@ -495,23 +495,24 @@ EVALUATION FOCUS:
 - Does the prompt force sequential reasoning rather than a single-pass summary?
 - Are step dependencies explicit (e.g., "Using the analysis from Step 2, evaluate...")?
 - Would someone else be able to audit the chain of reasoning?
-- Does the final output look different from what a single-step prompt would produce?` : moduleId === "2-9" ? `## MODULE 2-9 RUBRIC: TOOL SELECTION
-This submission tests the learner's ability to identify when an AI tool is the right choice for a task — and how to interrogate a new tool using the same criteria.
+- Does the final output look different from what a single-step prompt would produce?` : moduleId === "2-9" ? `## MODULE 2-9 RUBRIC: WEB SEARCH
+This submission tests the learner's ability to know when to turn web search on versus off — and to articulate the trade-off.
 
 3-LEVEL RUBRIC:
 | Criterion | Developing | Proficient | Advanced |
 |-----------|-----------|-----------|---------|
-| Task Analysis | Chooses tool without analyzing the task | Analyzes the task against tool capabilities | Analysis includes task type, frequency, risk level, and compliance sensitivity |
-| Data Privacy Assessment | Not addressed | Notes whether the task involves sensitive data | Identifies specific data types and checks tool's data handling policy |
-| Fit vs. Gap Identification | Lists only benefits | Identifies at least 1 gap or limitation | Gaps are ranked by severity with a mitigation or workaround for each |
-| Custom vs. Built-In Distinction | Confused about the difference | Correctly distinguishes when a custom agent (Session 3) would be better | Explains the threshold: when built-in tools are sufficient vs. when to build |
-| Decision Quality | Vague conclusion | Clear approve/skip/investigate decision with rationale | Decision includes conditions: approved for X tasks, not for Y, with review protocol |
+| Toggle Usage | Never toggled web search, or left it on/off for everything | Toggled web search on and off for different prompts | Toggled deliberately with a clear reason for each state |
+| ON Identification | Cannot identify when search adds value | Correctly identifies at least one task that benefits from web search (current data, recent events, live info) | Identifies multiple categories where search is essential and explains why |
+| OFF Identification | Assumes search is always better | Correctly identifies at least one task where search is unnecessary (drafting, brainstorming, analysis) | Explains the cost of unnecessary search (latency, noise, distraction from reasoning) |
+| Comparison | No comparison attempted | Compared at least one prompt with search on vs. off | Articulated specific differences in response quality, speed, or source relevance |
+| Source Awareness | Accepts all search results uncritically | Notes that search results vary in quality | Identifies when a search result should be verified against a trusted source |
 
 EVALUATION FOCUS:
-- Does the analysis start with the task, not the tool?
-- Is data privacy assessed before capabilities — or as an afterthought?
-- Is the final decision specific enough to act on (not just "it looks useful")?
-- Does the learner understand the difference between functional agents and custom agents?` : moduleId === "2-10" ? `## MODULE 2-10 RUBRIC: SESSION 2 SANDBOX (CAPSTONE)
+- Did the learner actually toggle web search during the conversation?
+- Can they explain WHY search was on or off for a specific prompt — not just that it was?
+- Did they compare the same or similar prompt both ways?
+- Do they understand the trade-off: grounding vs. noise, accuracy vs. speed?
+- Did they verify or question any search-generated facts?` : moduleId === "2-10" ? `## MODULE 2-10 RUBRIC: SESSION 2 SANDBOX (CAPSTONE)
 This is the Session 2 Sandbox. Evaluate independent application of Session 2 techniques to a real work task — structured prompting, output templating, multi-shot, chain-of-thought, or tool selection.
 
 3-LEVEL RUBRIC:
