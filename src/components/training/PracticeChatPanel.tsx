@@ -30,6 +30,7 @@ const isAttachmentsAvailable = (moduleId: string) => moduleId !== '1-1';
 interface PracticeMessage {
   role: 'user' | 'assistant';
   content: string;
+  model?: string;
 }
 
 interface PracticeChatPanelProps {
@@ -378,34 +379,58 @@ export function PracticeChatPanel({
         <ScrollArea className="flex-1 w-full">
           <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
 
-            {messages.map((message, idx) => (
-              <div
-                key={idx}
-                className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                {message.role === 'assistant' && (
-                  <div className="w-7 h-7 rounded-lg bg-muted border border-border flex items-center justify-center shrink-0 mt-0.5">
-                    <Bot className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                )}
-                <div
-                  className={`rounded-2xl px-4 py-3 max-w-[85%] ${
-                    message.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-card border border-border text-foreground'
-                  }`}
-                >
-                  <div className={`prose prose-sm max-w-none dark:prose-invert [&>p]:mb-1.5 [&>p]:text-sm [&>p]:leading-relaxed [&>ul]:my-1.5 [&>ul]:pl-4 [&>ol]:my-1.5 [&>ol]:pl-4 [&>li]:mb-0.5 [&>li]:text-sm [&>table]:w-full [&>table]:border-collapse [&>table]:my-2 [&_th]:border [&_th]:border-border [&_th]:px-2 [&_th]:py-1 [&_th]:bg-muted [&_th]:text-left [&_th]:font-semibold [&_th]:text-xs [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_td]:text-xs`}>
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+            {messages.map((message, idx) => {
+              const modelDef = message.model ? AVAILABLE_MODELS.find(m => m.id === message.model) : undefined;
+              const prevUserModel = message.role === 'user' && idx >= 2
+                ? messages.slice(0, idx).filter(m => m.role === 'user').pop()?.model
+                : undefined;
+              const modelSwitched = message.role === 'user' && message.model && prevUserModel && message.model !== prevUserModel;
+              return (
+                <div key={idx}>
+                  {modelSwitched && (
+                    <div className="flex items-center gap-2 my-2">
+                      <div className="flex-1 border-t border-dashed border-amber-400/50" />
+                      <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 whitespace-nowrap">
+                        Switched to {modelDef?.label || message.model}
+                      </span>
+                      <div className="flex-1 border-t border-dashed border-amber-400/50" />
+                    </div>
+                  )}
+                  <div className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    {message.role === 'assistant' && (
+                      <div className="w-7 h-7 rounded-lg bg-muted border border-border flex items-center justify-center shrink-0 mt-0.5">
+                        <Bot className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="max-w-[85%]">
+                      <div
+                        className={`rounded-2xl px-4 py-3 ${
+                          message.role === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-card border border-border text-foreground'
+                        }`}
+                      >
+                        <div className={`prose prose-sm max-w-none dark:prose-invert [&>p]:mb-1.5 [&>p]:text-sm [&>p]:leading-relaxed [&>ul]:my-1.5 [&>ul]:pl-4 [&>ol]:my-1.5 [&>ol]:pl-4 [&>li]:mb-0.5 [&>li]:text-sm [&>table]:w-full [&>table]:border-collapse [&>table]:my-2 [&_th]:border [&_th]:border-border [&_th]:px-2 [&_th]:py-1 [&_th]:bg-muted [&_th]:text-left [&_th]:font-semibold [&_th]:text-xs [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_td]:text-xs`}>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+                        </div>
+                      </div>
+                      {message.role === 'assistant' && modelDef && (
+                        <div className="mt-0.5 ml-1">
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${PROVIDER_COLORS[modelDef.provider]}`}>
+                            {modelDef.label}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    {message.role === 'user' && (
+                      <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shrink-0 mt-0.5">
+                        <User className="h-4 w-4 text-primary-foreground" />
+                      </div>
+                    )}
                   </div>
                 </div>
-                {message.role === 'user' && (
-                  <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shrink-0 mt-0.5">
-                    <User className="h-4 w-4 text-primary-foreground" />
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
 
             {isLoading && (
               <div className="flex gap-3 justify-start">

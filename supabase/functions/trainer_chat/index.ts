@@ -1108,7 +1108,7 @@ ${aiMemories.map((m, i) => `${i + 1}. ${m.is_pinned ? "[PINNED] " : ""}${m.conte
 ${practiceConversation && practiceConversation.length > 0 ? `## LEARNER'S PRACTICE CONVERSATION (${practiceConversation.length} messages)
 IMPORTANT: The learner has a practice conversation in the center panel. You CAN see it — it is provided below. DO NOT say you cannot see their conversation. When they ask you to review it, analyze the conversation shown here:
 
-${practiceConversation.map((m, i) => `[${i + 1}] **${m.role === "user" ? "Learner's Prompt" : "AI Response"}:** ${m.content}`).join("\n\n")}
+${practiceConversation.map((m, i) => `[${i + 1}] **${m.role === "user" ? "Learner's Prompt" : "AI Response"}**${m.model ? ` _(model: ${m.model})_` : ""}**:** ${m.content}`).join("\n\n")}
 
 ---
 REVIEW INSTRUCTIONS: When the learner asks you to review their practice conversation (or mentions "review", "check", "look at", "feedback on" their practice):

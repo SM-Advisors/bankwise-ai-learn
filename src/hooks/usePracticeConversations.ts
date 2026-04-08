@@ -5,6 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 export interface PracticeMessage {
   role: 'user' | 'assistant';
   content: string;
+  /** Model ID used for this exchange (e.g. 'gpt-5.4', 'claude-sonnet-4-6') */
+  model?: string;
 }
 
 export interface PracticeConversation {

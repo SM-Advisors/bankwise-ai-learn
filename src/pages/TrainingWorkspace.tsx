@@ -662,7 +662,7 @@ export default function TrainingWorkspace() {
       const userText = lastDoubleLine >= 0 ? afterPrefix.slice(lastDoubleLine + 2) : '';
       dbContent = `[Attached file: ${filePrefix[1]}]${userText ? '\n\n' + userText : ''}`;
     }
-    const userMsgForDb = { role: 'user' as const, content: dbContent };
+    const userMsgForDb = { role: 'user' as const, content: dbContent, model: preferredModel };
 
     // Track the conversation ID and messages for this send operation
     let convId = activeConversationId;
@@ -760,7 +760,7 @@ export default function TrainingWorkspace() {
 
           const reply = response.data?.reply;
           if (!reply) throw new Error(response.data?.error || 'Empty response from AI');
-          const assistantMsg = { role: 'assistant' as const, content: reply };
+          const assistantMsg = { role: 'assistant' as const, content: reply, model: preferredModel };
           await appendMessage(assistantMsg, convId);
           lastError = null;
           break;
@@ -795,7 +795,7 @@ export default function TrainingWorkspace() {
 
     // Build the conversation transcript to embed directly in the message
     const conversationTranscript = activeMessages
-      .map(m => `[${m.role === 'user' ? 'My Prompt' : 'AI Response'}]: ${m.content}`)
+      .map(m => `[${m.role === 'user' ? 'My Prompt' : 'AI Response'}]${m.model ? ` (model: ${m.model})` : ''}: ${m.content}`)
       .join('\n\n');
 
     const reviewRequest = `Please review my practice conversation below:\n\n---\n${conversationTranscript}\n---`;
