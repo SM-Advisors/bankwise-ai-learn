@@ -16,7 +16,7 @@ import { getRoleScenario } from '@/data/roleScenarioBanks';
 import type { GeneratedModuleContent } from '@/hooks/useGeneratedModuleContent';
 import { type PracticeConversation } from '@/hooks/usePracticeConversations';
 import { isBinaryDocumentFile, extractDocumentText } from '@/utils/documentParser';
-import { AVAILABLE_MODELS, PROVIDER_COLORS, type ModelDefinition } from '@/lib/models';
+import { AVAILABLE_MODELS, PROVIDER_COLORS, PROVIDER_LABELS, type ModelDefinition } from '@/lib/models';
 
 // Map of features to the module that teaches them. Button is disabled until the module is completed.
 const FEATURE_MODULE_MAP: Record<string, string> = {
@@ -259,7 +259,7 @@ export function PracticeChatPanel({
                 className="flex items-center gap-1.5 h-8 rounded-full px-3 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors border border-border/60"
               >
                 <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium leading-none ${selectedModelDef ? PROVIDER_COLORS[selectedModelDef.provider] : ''}`}>
-                  {selectedModelDef?.provider?.toUpperCase().slice(0, 4) ?? ''}
+                  {selectedModelDef ? PROVIDER_LABELS[selectedModelDef.provider] : ''}
                 </span>
                 <span className="truncate max-w-[120px]">{selectedModelDef?.label ?? selectedModel}</span>
                 {modelDropdownOpen ? <ChevronUp className="h-3 w-3 shrink-0" /> : <ChevronDown className="h-3 w-3 shrink-0" />}
@@ -276,7 +276,7 @@ export function PracticeChatPanel({
                         className={`w-full flex items-start gap-2.5 px-3 py-2 text-left hover:bg-muted transition-colors ${model.id === selectedModel ? 'bg-muted/60' : ''}`}
                       >
                         <span className={`mt-0.5 shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium leading-none ${PROVIDER_COLORS[model.provider]}`}>
-                          {model.provider.toUpperCase().slice(0, 4)}
+                          {PROVIDER_LABELS[model.provider]}
                         </span>
                         <div>
                           <p className="text-xs font-medium text-foreground">{model.label}</p>
@@ -705,42 +705,6 @@ export function PracticeChatPanel({
                 {!isToolsUnlocked && <TooltipContent side="top"><p className="text-xs">{lockedTooltip}</p></TooltipContent>}
               </Tooltip>
               {/* Model selector — only shown when org has 2+ models enabled */}
-              {showModelSelector && isModelSelectorUnlocked && (
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setModelDropdownOpen(o => !o)}
-                    className="flex items-center gap-1.5 h-8 rounded-full px-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors border border-border/60"
-                  >
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium leading-none ${selectedModelDef ? PROVIDER_COLORS[selectedModelDef.provider] : ''}`}>
-                      {selectedModelDef?.provider?.toUpperCase().slice(0, 4) ?? ''}
-                    </span>
-                    <span className="truncate max-w-[100px]">{selectedModelDef?.label ?? selectedModel}</span>
-                    {modelDropdownOpen ? <ChevronUp className="h-3 w-3 shrink-0" /> : <ChevronDown className="h-3 w-3 shrink-0" />}
-                  </button>
-                  {modelDropdownOpen && (
-                    <div className="absolute bottom-full left-0 mb-1 z-50 w-56 rounded-xl border border-border bg-popover shadow-lg py-1">
-                      {allowedModelDefs.map(model => (
-                        <button
-                          key={model.id}
-                          type="button"
-                          onClick={() => { onModelChange!(model.id); setModelDropdownOpen(false); }}
-                          className={`w-full flex items-start gap-2.5 px-3 py-2 text-left hover:bg-muted transition-colors ${model.id === selectedModel ? 'bg-muted/60' : ''}`}
-                        >
-                          <span className={`mt-0.5 shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium leading-none ${PROVIDER_COLORS[model.provider]}`}>
-                            {model.provider.toUpperCase().slice(0, 4)}
-                          </span>
-                          <div>
-                            <p className="text-xs font-medium text-foreground">{model.label}</p>
-                            <p className="text-[11px] text-muted-foreground">{model.description}</p>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-              {/* Show locked model selector button when feature is gated */}
               {showModelSelector && !isModelSelectorUnlocked && (
                 <Tooltip>
                   <TooltipTrigger asChild>
