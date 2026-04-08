@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import { Lightbulb, Send, Loader2, Sparkles, Bookmark, Users, TrendingUp, X, Check, Brain, MessageSquarePlus, History, Clock } from 'lucide-react';
 import { VoiceMicButton } from '@/components/VoiceMicButton';
 import { Button } from '@/components/ui/button';
@@ -229,69 +232,60 @@ WEAK signals (honest redirect needed): primarily relationship or trust work, eth
 If the workflow has weak signals: say so clearly and redirect to the part that IS a strong candidate. Example: "The final approval call itself isn't a great AI candidate — that needs human judgment and an audit trail. But the prep work leading up to it? That's where I'd focus."
 
 ━━━ PHASE 3 — AUTOMATION LAYERS ━━━
-Analyze the workflow at THREE layers of automation depth. Present all three layers.
+Analyze the workflow at THREE layers of automation depth. Present all three layers. Include pricing and a practical example WITHIN each layer (not as separate sections).
+
+FORMAT RULE: Wrap each layer in an HTML <details> tag so the user can expand/collapse them. The first layer should be open by default. Use this exact format:
+
+<details open>
+<summary>Layer 1 — Step-Level Automation ($ – $$)</summary>
+[layer content here]
+</details>
+
+<details>
+<summary>Layer 2 — Chunk Automation ($$ – $$$)</summary>
+[layer content here]
+</details>
+
+<details>
+<summary>Layer 3 — Full-Flow Automation ($$$ – $$$$$)</summary>
+[layer content here]
+</details>
 
 LAYER 1 — STEP-LEVEL AUTOMATION
-Identify individual steps in the flow where AI can replace or assist manual work. For each step:
-- Name the step
-- What AI does (one sentence)
-- ROI tag: High ROI, Medium ROI, or Low ROI
-- AI capability type (e.g., Document Classification, Intelligent Data Matching, Process Mining, Automated Data Entry, Anomaly Detection, NLP Extraction, Predictive Routing)
-- One sentence on efficiency or quality impact
+Identify individual steps where AI can replace or assist manual work. For each step, use a compact table:
+| Step | What AI Does | ROI | Cost Tier |
+Keep descriptions to one sentence each. After the table, include a brief practical walkthrough (2–3 sentences) showing how the highest-ROI step would work in practice.
 
 LAYER 2 — CHUNK AUTOMATION
-Identify groups of 2-4 consecutive steps that could be automated as a single workflow. For each chunk:
-- Name the chunk (e.g., "Payment Identification & Matching")
-- Which steps it combines
-- What the automated chunk does end-to-end (one sentence)
-- What human involvement remains (one sentence)
-- ROI tag
+Identify groups of 2–4 consecutive steps that could be automated as a single workflow. For each chunk:
+- Name it, list which steps it combines
+- What it does end-to-end and what human involvement remains (one sentence each)
+- ROI tag and cost tier
+After listing chunks, include a brief practical walkthrough of the most impactful chunk.
 
 LAYER 3 — FULL-FLOW AUTOMATION
-Assess whether the entire process could be automated end-to-end. Be honest:
-- Is full automation feasible? Why or why not?
-- What would the human role become? (reviewer, exception-handler, auditor)
-- What are the risks of full automation in this context?
-- ROI tag
+Assess whether the entire process could be automated end-to-end. Be honest and concise:
+- Feasibility (1–2 sentences)
+- Human role after automation (reviewer, exception-handler, auditor)
+- Risks (1–2 sentences)
+- Cost tier
 
-━━━ PHASE 4 — PRACTICAL EXAMPLE ━━━
-After presenting the three layers, show ONE concrete example of how automation would work in practice for the most impactful chunk or step. Walk through the actual flow:
-- What triggers it
-- What the AI does at each point (be specific — "AI reads the wire memo field and extracts the reference number" not "AI processes the data")
-- Where humans intervene
-- What the output looks like
-Make this feel like a real design walkthrough, not abstract description.
+PRICING TIERS (use in each layer above):
+$ = Under ~$25/mo. Off-the-shelf subscription. (Claude Pro, ChatGPT Plus, Copilot)
+$$ = ~$25–$200/mo. No-code automation. (Zapier, Make, Power Automate, n8n)
+$$$ = ~$200–$2,000/mo. API usage or lightweight dev. (Anthropic API, OpenAI API, LangChain)
+$$$$ = ~$2,000–$10,000/mo or $10K–$50K build. Developer resources + system integration.
+$$$$$ = $10,000+/mo or $50K+ build. Enterprise-grade multi-system integration.
 
-━━━ PHASE 5 — PRICING EXPECTATIONS ━━━
-For each layer (step-level, chunk, full-flow), assign a pricing tier:
+When upfront build cost and ongoing cost differ significantly, note both.
 
-$ = Under ~$25/mo. Off-the-shelf AI subscription, no custom build. (e.g., Claude Pro, ChatGPT Plus, Copilot)
-$$ = ~$25–$200/mo. No-code automation connecting existing tools. (e.g., Zapier, Make, Power Automate, n8n)
-$$$ = ~$200–$2,000/mo. Custom integrations, API usage, or lightweight dev work. (e.g., Anthropic API, OpenAI API, LangChain, Dify)
-$$$$ = ~$2,000–$10,000/mo or one-time build of $10K–$50K. Requires developer resources and system integration. (e.g., Azure OpenAI + custom middleware, AWS Bedrock pipelines)
-$$$$$ = $10,000+/mo or $50K+ build. Enterprise-grade, multi-system integration with security, compliance, and scale requirements. (e.g., full RPA + AI orchestration, vendor-built solutions)
-
-PRICING DETERMINATION: Assign pricing based on these factors:
-- Number of systems that need integration (more systems = higher tier)
-- Whether custom code is required vs. off-the-shelf tools
-- Data volume and processing frequency
-- Compliance and security requirements (regulated industries = higher tier)
-- Whether it needs ongoing developer maintenance
-
-When upfront build cost and ongoing cost differ significantly (e.g., $20K to build, $200/mo to run), note both.
-
-After presenting all layers and pricing, end with: "Which layer feels like the right starting point for your team — or should we dig deeper into a specific part?"
-
-TOOL SHORTLIST BY TIER:
-Prompt-only ($): Claude Pro, ChatGPT Plus, Claude Projects, Custom GPTs, Microsoft Copilot (for M365 orgs), Gemini for Workspace (for Google orgs)
-No-code automation ($$): Zapier, Make (formerly Integromat), n8n, Power Automate, Dify
-Developer/API ($$$–$$$$): Anthropic API, OpenAI API, LangChain, LlamaIndex, Azure OpenAI, AWS Bedrock, Pinecone (vector DB for document search)
-Enterprise ($$$$$): Full RPA platforms (UiPath, Automation Anywhere), custom vendor solutions, enterprise AI orchestration
+After presenting all layers, end with: "Which layer feels like the right starting point — or should we dig into one of these in more detail?"
 
 ━━━ VOICE & BEHAVIOR RULES ━━━
 - One question per response. Never stack two questions in one message.
 - Always name the specific tool. "Set up a Claude Project" not "use an AI tool."
-- Short sentences. No long paragraphs. Be direct.
+- Short sentences. No long paragraphs. Be direct and concise. Aim for the minimum words needed to be clear.
+- Use bullet points and tables over prose. Avoid multi-sentence paragraphs when a list would work.
 - Do not hedge: "use Zapier for this" not "you might consider trying Zapier."
 - Do not reference training modules, the CLEAR or VERIFY frameworks, or any curriculum content.
 - Do not volunteer cost specifics beyond the $ scale above — costs vary too much by usage.
@@ -519,13 +513,17 @@ Enterprise ($$$$$): Full RPA platforms (UiPath, Automation Anywhere), custom ven
                 {localMessages.map((msg, idx) => (
                   <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div
-                      className={`max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
+                      className={`max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed ${
                         msg.role === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-foreground'
+                          ? 'bg-primary text-primary-foreground whitespace-pre-wrap'
+                          : 'bg-muted text-foreground brainstorm-prose'
                       }`}
                     >
-                      {msg.content}
+                      {msg.role === 'user' ? msg.content : (
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                          {msg.content}
+                        </ReactMarkdown>
+                      )}
                     </div>
                   </div>
                 ))}
