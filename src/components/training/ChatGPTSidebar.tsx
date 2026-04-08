@@ -28,6 +28,8 @@ interface ChatGPTSidebarProps {
   onNewChat: () => void;
   displayName?: string;
   orgName?: string;
+  /** SuperAdmin global override — all gates open */
+  allGatesUnlocked?: boolean;
 }
 
 function isModuleLocked(
@@ -96,6 +98,7 @@ export function ChatGPTSidebar({
   onNewChat,
   displayName,
   orgName,
+  allGatesUnlocked,
 }: ChatGPTSidebarProps) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -219,7 +222,7 @@ export function ChatGPTSidebar({
                 {modules.map(m => {
                   const engagement = moduleEngagement[m.id];
                   const isLegacyCompleted = completedModules.has(m.id);
-                  const locked = isModuleLocked(m, modules, moduleEngagement, completedModules);
+                  const locked = allGatesUnlocked ? false : isModuleLocked(m, modules, moduleEngagement, completedModules);
                   const state = engagement
                     ? getModuleState(engagement)
                     : isLegacyCompleted

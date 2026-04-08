@@ -49,9 +49,11 @@ import { useGeneratedModuleContent, type GeneratedModuleContent } from '@/hooks/
 import { ModuleContentPanel } from '@/components/training/ModuleContentPanel';
 import { PersonalizationPractice } from '@/components/training/PersonalizationPractice';
 import { SessionSwitcher } from '@/components/training/SessionSwitcher';
+import { useGatesUnlocked } from '@/hooks/useGatesUnlocked';
 
 export default function TrainingWorkspace() {
   const isMobile = useIsMobile();
+  const allGatesUnlocked = useGatesUnlocked();
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const { user, profile, progress, loading, markSessionCompleted, updateProgress, updateProfile } = useAuth();
@@ -1315,6 +1317,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
         allModulesCompleted={allModulesCompleted}
         isSessionCompleted={isCurrentSessionCompleted}
         onCompleteSession={handleCompleteSession}
+        allGatesUnlocked={allGatesUnlocked}
       />
 
       {/* Mobile mode tab bar (Learn / Practice / Coach) */}
@@ -1387,6 +1390,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
             onNewChat={handleNewChat}
             displayName={profile?.display_name || undefined}
             orgName={profile?.employer_name || undefined}
+            allGatesUnlocked={allGatesUnlocked}
           />
         )}
 

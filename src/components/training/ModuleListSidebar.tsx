@@ -16,6 +16,8 @@ interface ModuleListSidebarProps {
   moduleEngagement: Record<string, ModuleEngagement>;
   onSelectModule: (module: ModuleContent) => void;
   onGateBypass?: (moduleId: string) => void;
+  /** SuperAdmin global override — all gates open */
+  allGatesUnlocked?: boolean;
 }
 
 const getModuleTypeIcon = (type: ModuleContent['type']) => {
@@ -128,6 +130,7 @@ export function ModuleListSidebar({
   moduleEngagement,
   onSelectModule,
   onGateBypass,
+  allGatesUnlocked,
 }: ModuleListSidebarProps) {
   // Compute active module count (any state beyond not_started)
   const activeCount = modules.filter((m) => {
@@ -187,7 +190,7 @@ export function ModuleListSidebar({
               const isSelected = selectedModule?.id === module.id;
               const engagement = moduleEngagement[module.id];
               const isLegacyCompleted = completedModules.has(module.id);
-              const locked = isModuleLocked(module, modules, moduleEngagement, completedModules);
+              const locked = allGatesUnlocked ? false : isModuleLocked(module, modules, moduleEngagement, completedModules);
               const isGate = !!module.isGateModule;
               const gatePassed = engagement?.gatePassed === true || isLegacyCompleted;
 

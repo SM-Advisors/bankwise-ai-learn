@@ -12,6 +12,7 @@ import { useBankPolicies } from '@/hooks/useBankPolicies';
 import { TrainerChatPanel } from '@/components/training/TrainerChatPanel';
 import { PracticeChatPanel } from '@/components/training/PracticeChatPanel';
 import { ModuleListSidebar } from '@/components/training/ModuleListSidebar';
+import { useGatesUnlocked } from '@/hooks/useGatesUnlocked';
 import { type Message, type BankPolicy } from '@/types/training';
 import type { ModuleEngagement } from '@/types/progress';
 import { DEFAULT_ENGAGEMENT } from '@/types/progress';
@@ -41,6 +42,7 @@ export default function ElectiveWorkspace() {
   const { user, profile, loading } = useAuth();
   const { toast } = useToast();
   const { industrySlug } = useIndustryContent();
+  const allGatesUnlocked = useGatesUnlocked();
   const contentScrollRef = useRef<HTMLDivElement>(null);
 
   const [leftCollapsed, setLeftCollapsed] = useState(false);
@@ -689,6 +691,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                     handleModuleSelect(module);
                     setMobileModulesOpen(false);
                   }}
+                  allGatesUnlocked={allGatesUnlocked}
                 />
               </SheetContent>
             </Sheet>
@@ -776,6 +779,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
             completedModules={completedModules}
             moduleEngagement={moduleEngagement}
             onSelectModule={handleModuleSelect}
+            allGatesUnlocked={allGatesUnlocked}
           />
         )}
 
