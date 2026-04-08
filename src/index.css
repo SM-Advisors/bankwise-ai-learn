@@ -149,6 +149,80 @@
     line-height: 1.25rem !important;
     font-weight: 600;
   }
+
+  /* Brainstorm panel markdown styling */
+  .brainstorm-prose {
+    font-family: 'Inter', sans-serif;
+  }
+  .brainstorm-prose p {
+    margin: 0.25rem 0;
+  }
+  .brainstorm-prose h2, .brainstorm-prose h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0.75rem 0 0.25rem;
+  }
+  .brainstorm-prose ul, .brainstorm-prose ol {
+    margin: 0.25rem 0;
+    padding-left: 1.25rem;
+  }
+  .brainstorm-prose li {
+    margin: 0.15rem 0;
+  }
+  .brainstorm-prose table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    margin: 0.5rem 0;
+  }
+  .brainstorm-prose th, .brainstorm-prose td {
+    border: 1px solid hsl(var(--border));
+    padding: 0.25rem 0.5rem;
+    text-align: left;
+  }
+  .brainstorm-prose th {
+    font-weight: 600;
+    background: hsl(var(--muted));
+  }
+  .brainstorm-prose strong {
+    font-weight: 600;
+  }
+
+  /* Collapsible details/summary for brainstorm layers */
+  .brainstorm-prose details {
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.5rem;
+    margin: 0.5rem 0;
+    overflow: hidden;
+  }
+  .brainstorm-prose details summary {
+    cursor: pointer;
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    background: hsl(var(--muted));
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .brainstorm-prose details summary::-webkit-details-marker {
+    display: none;
+  }
+  .brainstorm-prose details summary::before {
+    content: '▶';
+    font-size: 0.65rem;
+    transition: transform 0.2s;
+  }
+  .brainstorm-prose details[open] summary::before {
+    transform: rotate(90deg);
+  }
+  .brainstorm-prose details > :not(summary) {
+    padding: 0 0.75rem;
+  }
+  .brainstorm-prose details > :last-child {
+    padding-bottom: 0.5rem;
+  }
 }
 
 @layer components {
