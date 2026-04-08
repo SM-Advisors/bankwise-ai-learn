@@ -18,8 +18,9 @@ import {
 import {
   Building2, Users, TrendingUp, Award, ArrowLeft,
   Shield, Heart, BarChart3, ExternalLink, Loader2, MessageSquare, Download, Paperclip,
-  CircleDot, CheckCircle2, Eye, RotateCcw
+  CircleDot, CheckCircle2, Eye, RotateCcw, LockOpen, Lock
 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { Logo } from '@/components/Logo';
 import { TrainingResetManager } from '@/components/admin/TrainingResetManager';
 import jsPDF from 'jspdf';
@@ -44,6 +45,42 @@ export default function SuperAdminDashboard() {
   const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [feedbackFilter, setFeedbackFilter] = useState<'all' | 'new' | 'resolved'>('all');
+  const [allGatesUnlocked, setAllGatesUnlocked] = useState(false);
+  const [gatesToggleLoading, setGatesToggleLoading] = useState(true);
+
+  // Load current gate override setting
+  useEffect(() => {
+    if (!profile?.is_super_admin) return;
+    supabase
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'all_gates_unlocked')
+      .maybeSingle()
+      .then(({ data }) => {
+        setAllGatesUnlocked(data?.value === 'true');
+        setGatesToggleLoading(false);
+      });
+  }, [profile?.is_super_admin]);
+
+  const handleToggleGates = async (checked: boolean) => {
+    setAllGatesUnlocked(checked);
+    // Upsert the setting — try update first, then insert if it doesn't exist
+    const { error: updateError, count } = await supabase
+      .from('app_settings')
+      .update({ value: checked ? 'true' : 'false' })
+      .eq('key', 'all_gates_unlocked');
+
+    if (updateError || count === 0) {
+      // Row doesn't exist yet — insert it
+      await supabase
+        .from('app_settings')
+        .insert({
+          key: 'all_gates_unlocked',
+          value: checked ? 'true' : 'false',
+          description: 'When true, all progressive disclosure gates (zones, sessions, modules) are bypassed platform-wide.',
+        });
+    }
+  };
 
   useEffect(() => {
     async function fetchFeedback() {
@@ -222,6 +259,44 @@ export default function SuperAdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* Global Gate Override */}
+        <Card className={`border-2 transition-colors ${allGatesUnlocked ? 'border-amber-400 bg-amber-50/50 dark:bg-amber-950/20' : 'border-border'}`}>
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {allGatesUnlocked ? (
+                <div className="h-10 w-10 rounded-lg bg-amber-500/15 flex items-center justify-center">
+                  <LockOpen className="h-5 w-5 text-amber-600" />
+                </div>
+              ) : (
+                <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                  <Lock className="h-5 w-5 text-muted-foreground" />
+                </div>
+              )}
+              <div>
+                <h3 className="text-sm font-semibold">
+                  Progressive Disclosure Gates
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {allGatesUnlocked
+                    ? 'All gates unlocked — users can access all zones, sessions, and modules without restrictions.'
+                    : 'Gates active — users must complete prerequisites to unlock zones, sessions, and modules.'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className={`text-xs font-medium ${allGatesUnlocked ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                {allGatesUnlocked ? 'Unlocked' : 'Locked'}
+              </span>
+              <Switch
+                checked={allGatesUnlocked}
+                onCheckedChange={handleToggleGates}
+                disabled={gatesToggleLoading}
+                aria-label="Toggle all gates"
+              />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Organizations tab */}
         <Tabs defaultValue="orgs">

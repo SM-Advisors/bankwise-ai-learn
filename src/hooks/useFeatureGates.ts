@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LEARNER_ZONES, type UnlockCondition, type Zone } from '@/config/zones';
 import type { SessionProgressData } from '@/types/progress';
 import { supabase } from '@/integrations/supabase/client';
+import { useGatesUnlocked } from '@/hooks/useGatesUnlocked';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -33,6 +34,7 @@ function hasCompletedModule(
  */
 export function useFeatureGates() {
   const { user, profile, progress } = useAuth();
+  const allGatesUnlocked = useGatesUnlocked();
 
   const session1Progress = progress?.session_1_progress as SessionProgressData | null;
 
@@ -49,6 +51,9 @@ export function useFeatureGates() {
   }, [user?.id]);
 
   function isUnlocked(condition: UnlockCondition): boolean {
+    // SuperAdmin global override — all gates open
+    if (allGatesUnlocked) return true;
+
     switch (condition) {
       case 'always':
         return true;
@@ -83,6 +88,7 @@ export function useFeatureGates() {
   return {
     isUnlocked,
     unlockedZones,
+    allGatesUnlocked,
     // Named helpers for common checks
     canAccessLearn: isUnlocked('onboarding_completed'),
     canAccessExplore: isUnlocked('session_1_basic_interaction_done'),

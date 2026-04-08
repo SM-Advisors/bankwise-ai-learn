@@ -37,6 +37,8 @@ interface SessionSwitcherProps {
   isSessionCompleted?: boolean;
   /** Callback to complete the session and advance to the next one */
   onCompleteSession?: () => void;
+  /** SuperAdmin global override — all gates open */
+  allGatesUnlocked?: boolean;
 }
 
 export function SessionSwitcher({
@@ -51,6 +53,7 @@ export function SessionSwitcher({
   allModulesCompleted,
   isSessionCompleted,
   onCompleteSession,
+  allGatesUnlocked,
 }: SessionSwitcherProps) {
   const navigate = useNavigate();
   const [expandedSession, setExpandedSession] = useState<number | null>(null);
@@ -87,6 +90,7 @@ export function SessionSwitcher({
 
   // Check if a module is locked — strict sequential: previous module must be completed
   const isModuleLocked = (module: ModuleContent, allModules: ModuleContent[]): boolean => {
+    if (allGatesUnlocked) return false;
     if (!moduleEngagement || !completedModules) return false;
     const moduleIndex = allModules.findIndex(m => m.id === module.id);
     // First module is never locked
@@ -117,7 +121,7 @@ export function SessionSwitcher({
     <div className="relative shrink-0" ref={dropdownRef}>
       <div className="flex items-center gap-1.5 px-4 py-2 border-b bg-card/50 overflow-x-auto">
         {(([1, 2, 3, 4, 5] as const)).map((n) => {
-          const isAccessible = n <= currentSession;
+          const isAccessible = allGatesUnlocked || n <= currentSession;
           const isActive = n === activeSession;
           const isCompleted = !!completedSessions[n];
           const isExpanded = expandedSession === n;
