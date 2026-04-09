@@ -126,7 +126,7 @@ export function DashboardChat({ profile, progress, forceOpen }: DashboardChatPro
     if (progress?.session_3_completed) completedModules.push('Session 3: Skills & Projects');
     if (progress?.session_4_completed) completedModules.push('Session 4: Agents & Autonomy');
     if (progress?.session_5_completed) completedModules.push('Session 5: AI in Your Everyday Tools');
-    if (progress?.session_6_completed) completedModules.push('Session 6: Designing Your AI Workflow');
+    if ((progress as any)?.session_6_completed) completedModules.push('Session 6: Designing Your AI Workflow');
 
     let progressSummary = `${completedModules.length}/6 sessions completed`;
     if (completedModules.length === 0) {
