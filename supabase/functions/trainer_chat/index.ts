@@ -9,6 +9,7 @@ import { getIndustryContext } from "../_shared/industryContext.ts";
 interface Message {
   role: "user" | "assistant";
   content: string;
+  model?: string;
 }
 
 interface AgentContext {
