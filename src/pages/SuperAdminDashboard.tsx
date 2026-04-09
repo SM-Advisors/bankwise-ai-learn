@@ -234,7 +234,7 @@ export default function SuperAdminDashboard() {
                   </div>
                   <div className="text-2xl font-bold">{platform.s1_completion_rate}%</div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    S2: {platform.s2_completion_rate}% · S3: {platform.s3_completion_rate}% · S4: {platform.s4_completion_rate}% · S5: {platform.s5_completion_rate}%
+                    S2: {platform.s2_completion_rate}% · S3: {platform.s3_completion_rate}% · S4: {platform.s4_completion_rate}% · S5: {platform.s5_completion_rate}% · S6: {platform.s6_completion_rate}%
                   </div>
                 </CardContent>
               </Card>
@@ -447,9 +447,10 @@ export default function SuperAdminDashboard() {
                 {platform && [
                   { label: 'Session 1 — AI Fundamentals', rate: platform.s1_completion_rate },
                   { label: 'Session 2 — Prompting Frameworks', rate: platform.s2_completion_rate },
-                  { label: 'Session 3 — AI Agents', rate: platform.s3_completion_rate },
-                  { label: 'Session 4 — Everyday Tools', rate: platform.s4_completion_rate },
-                  { label: 'Session 5 — AI Workflow', rate: platform.s5_completion_rate },
+                  { label: 'Session 3 — Skills', rate: platform.s3_completion_rate },
+                  { label: 'Session 4 — Agents', rate: platform.s4_completion_rate },
+                  { label: 'Session 5 — Everyday Tools', rate: platform.s5_completion_rate },
+                  { label: 'Session 6 — AI Workflow', rate: platform.s6_completion_rate },
                 ].map((item) => (
                   <div key={item.label}>
                     <div className="flex justify-between text-sm mb-1">

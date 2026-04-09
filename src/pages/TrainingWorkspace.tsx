@@ -1311,6 +1311,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           3: !!progress?.session_3_completed,
           4: !!progress?.session_4_completed,
           5: !!progress?.session_5_completed,
+          6: !!progress?.session_6_completed,
         }}
         modules={session.modules}
         selectedModule={selectedModule}

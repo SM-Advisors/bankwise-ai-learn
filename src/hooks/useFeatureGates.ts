@@ -72,7 +72,7 @@ export function useFeatureGates() {
       case 'session_1_completed':
         return progress?.session_1_completed ?? false;
 
-      case 'session_3_agent_deployed':
+      case 'session_4_agent_deployed':
         return hasDeployedAgent;
 
       default:

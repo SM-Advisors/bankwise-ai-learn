@@ -13,6 +13,7 @@ export interface UserProgressRow {
   session_3_completed: boolean;
   session_4_completed: boolean;
   session_5_completed: boolean;
+  session_6_completed: boolean;
 }
 
 export interface PromptEventStats {
@@ -43,6 +44,7 @@ export interface DepartmentBreakdown {
   s3: number;
   s4: number;
   s5: number;
+  s6: number;
   avgProficiency: number;
 }
 
@@ -183,7 +185,7 @@ export function useReporting(organizationId: string | null = null) {
 
       const { data: progressData } = await supabase
         .from('training_progress')
-        .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed');
+        .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed, session_6_completed');
 
       type ProgressRow = NonNullable<typeof progressData>[number];
       const progressMap = new Map<string, ProgressRow>();
@@ -206,6 +208,7 @@ export function useReporting(organizationId: string | null = null) {
           session_3_completed: prog?.session_3_completed || false,
           session_4_completed: prog?.session_4_completed || false,
           session_5_completed: prog?.session_5_completed || false,
+          session_6_completed: prog?.session_6_completed || false,
         };
       });
       setUserProgress(combined);
@@ -339,7 +342,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
       ] = await Promise.all([
         (supabase
           .from('training_progress')
-          .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed')),
+          .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed, session_6_completed')),
         promptEventsQuery,
         ideasQuery,
       ]);
@@ -378,6 +381,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
           session_3_completed: prog?.session_3_completed || false,
           session_4_completed: prog?.session_4_completed || false,
           session_5_completed: prog?.session_5_completed || false,
+          session_6_completed: prog?.session_6_completed || false,
         };
       });
 
@@ -386,15 +390,17 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
       const s3Count = combined.filter((u) => u.session_3_completed).length;
       const s4Count = combined.filter((u) => u.session_4_completed).length;
       const s5Count = combined.filter((u) => u.session_5_completed).length;
-      const fullyCompleted = combined.filter((u) => u.session_1_completed && u.session_2_completed && u.session_3_completed && u.session_4_completed && u.session_5_completed).length;
+      const s6Count = combined.filter((u) => u.session_6_completed).length;
+      const fullyCompleted = combined.filter((u) => u.session_1_completed && u.session_2_completed && u.session_3_completed && u.session_4_completed && u.session_5_completed && u.session_6_completed).length;
       const completionRate = totalEnrolled > 0 ? Math.round((fullyCompleted / totalEnrolled) * 100) : 0;
 
       const funnelData: SessionFunnelItem[] = [
         { session: 'S1', label: 'Session 1: Foundation', completed: s1Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s1Count / totalEnrolled) * 100) : 0 },
         { session: 'S2', label: 'Session 2: Structured Interaction', completed: s2Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s2Count / totalEnrolled) * 100) : 0 },
-        { session: 'S3', label: 'Session 3: Agents', completed: s3Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s3Count / totalEnrolled) * 100) : 0 },
-        { session: 'S4', label: 'Session 4: AI in Your Everyday Tools', completed: s4Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s4Count / totalEnrolled) * 100) : 0 },
-        { session: 'S5', label: 'Session 5: Designing Your AI Workflow', completed: s5Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s5Count / totalEnrolled) * 100) : 0 },
+        { session: 'S3', label: 'Session 3: Skills & Projects', completed: s3Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s3Count / totalEnrolled) * 100) : 0 },
+        { session: 'S4', label: 'Session 4: Agents & Autonomy', completed: s4Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s4Count / totalEnrolled) * 100) : 0 },
+        { session: 'S5', label: 'Session 5: AI in Your Everyday Tools', completed: s5Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s5Count / totalEnrolled) * 100) : 0 },
+        { session: 'S6', label: 'Session 6: Designing Your AI Workflow', completed: s6Count, total: totalEnrolled, rate: totalEnrolled > 0 ? Math.round((s6Count / totalEnrolled) * 100) : 0 },
       ];
 
       // Active users
@@ -439,6 +445,7 @@ export function useCSuiteKPIs(organizationId: string | null = null): CSuiteKPIs 
           s3: users.filter((u) => u.session_3_completed).length,
           s4: users.filter((u) => u.session_4_completed).length,
           s5: users.filter((u) => u.session_5_completed).length,
+          s6: users.filter((u) => u.session_6_completed).length,
           avgProficiency: users.length > 0 ? Math.round((profSum / users.length) * 10) / 10 : 0,
         };
       });

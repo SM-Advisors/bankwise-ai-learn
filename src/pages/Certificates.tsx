@@ -21,14 +21,18 @@ const SESSION_LABELS: Record<number, { title: string; skills: string[] }> = {
     skills: ['CLEAR Framework', 'Output Templating', 'Multi-Shot Prompting', 'Chain-of-Thought', 'Model & Tool Selection'],
   },
   3: {
-    title: 'Understanding & Building AI Agents',
-    skills: ['Four Levels of Agents', 'Agent Building', 'Knowledge & Files', 'Tool Access'],
+    title: 'Skills & Projects',
+    skills: ['Autonomy Spectrum', 'Skill Anatomy', 'Knowledge Integration', 'Skills + Projects', 'Sharing & Scaling'],
   },
   4: {
+    title: 'Agents & Autonomy',
+    skills: ['Agent Design', 'Agent Building & Testing', 'Governance & Compliance', 'Agent Deployment'],
+  },
+  5: {
     title: 'AI in Your Everyday Tools',
     skills: ['AI in Spreadsheets', 'AI in Presentations', 'AI in Email', 'Workflow Integration'],
   },
-  5: {
+  6: {
     title: 'Designing Your AI Workflow',
     skills: ['Stack Mapping', 'Workflow Design', 'Prototype Building', 'Presentation & Reflection'],
   },

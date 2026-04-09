@@ -211,13 +211,13 @@ describe('useFeatureGates — session_1_completed', () => {
   });
 });
 
-describe('useFeatureGates — session_3_agent_deployed', () => {
+describe('useFeatureGates — session_4_agent_deployed', () => {
   it('returns false when no deployed agents (count = 0)', async () => {
     mockUser = { id: 'user-1' };
     fromMock.mockReturnValue(createAgentBuilder(0));
     const { result } = renderHook(() => useFeatureGates());
     await waitFor(() =>
-      expect(result.current.isUnlocked('session_3_agent_deployed')).toBe(false)
+      expect(result.current.isUnlocked('session_4_agent_deployed')).toBe(false)
     );
   });
 
@@ -226,7 +226,7 @@ describe('useFeatureGates — session_3_agent_deployed', () => {
     fromMock.mockReturnValue(createAgentBuilder(1));
     const { result } = renderHook(() => useFeatureGates());
     await waitFor(() =>
-      expect(result.current.isUnlocked('session_3_agent_deployed')).toBe(true)
+      expect(result.current.isUnlocked('session_4_agent_deployed')).toBe(true)
     );
   });
 });

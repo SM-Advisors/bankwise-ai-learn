@@ -123,15 +123,16 @@ export function DashboardChat({ profile, progress, forceOpen }: DashboardChatPro
     const completedModules: string[] = [];
     if (progress?.session_1_completed) completedModules.push('Session 1: AI Fundamentals & Your First Win');
     if (progress?.session_2_completed) completedModules.push('Session 2: Prompting Frameworks & Model Selection');
-    if (progress?.session_3_completed) completedModules.push('Session 3: Understanding & Building AI Agents');
-    if (progress?.session_4_completed) completedModules.push('Session 4: AI in Your Everyday Tools');
-    if (progress?.session_5_completed) completedModules.push('Session 5: Designing Your AI Workflow');
+    if (progress?.session_3_completed) completedModules.push('Session 3: Skills & Projects');
+    if (progress?.session_4_completed) completedModules.push('Session 4: Agents & Autonomy');
+    if (progress?.session_5_completed) completedModules.push('Session 5: AI in Your Everyday Tools');
+    if (progress?.session_6_completed) completedModules.push('Session 6: Designing Your AI Workflow');
 
-    let progressSummary = `${completedModules.length}/5 sessions completed`;
+    let progressSummary = `${completedModules.length}/6 sessions completed`;
     if (completedModules.length === 0) {
       progressSummary = 'Just getting started - no sessions completed yet';
-    } else if (completedModules.length === 5) {
-      progressSummary = 'All 5 sessions completed!';
+    } else if (completedModules.length === 6) {
+      progressSummary = 'All 6 sessions completed!';
     }
 
     return {
