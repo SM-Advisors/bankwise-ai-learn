@@ -9,7 +9,7 @@ export type UnlockCondition =
   | 'session_1_basic_interaction_done'  // Basic Interaction (1-3) complete → unlocks Explore
   | 'first_practice_done'       // Any practice chat started → unlocks Community
   | 'session_1_completed'       // Full session 1 done
-  | 'session_3_agent_deployed'; // User has deployed their first agent → unlocks Agents zone
+  | 'session_4_agent_deployed'; // User has deployed their first agent → unlocks Agents zone
 
 // ─── Zone definition ─────────────────────────────────────────────────────────
 export interface Zone {
@@ -62,7 +62,7 @@ export const LEARNER_ZONES: Zone[] = [
     label: 'Agents',
     description: 'Your deployed AI agents',
     path: '/agents',
-    unlockedBy: 'session_3_agent_deployed',
+    unlockedBy: 'session_4_agent_deployed',
   },
   {
     id: 'profile',

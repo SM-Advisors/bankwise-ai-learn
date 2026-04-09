@@ -899,54 +899,56 @@ export const SESSION_2_CONTENT: SessionContent = {
       },
     },
 
-    // ─── Module 2-9: Tool Selection ───────────────────────────────────────
+    // ─── Module 2-9: Web Search ────────────────────────────────────────────
     {
       id: '2-9',
-      title: 'Tool Selection',
+      title: 'Web Search',
       type: 'exercise',
-      description: 'Learn to recognize when a tool applies — not just how to operate it',
+      description: 'Know when to turn web search on — and when to leave it off',
       estimatedTime: '15 min',
       learningObjectives: [
-        'Understand that AI tools (web search, file analysis, data lookup) solve specific types of problems',
-        'Use the Flipped Interaction Pattern with tools: "Scan this tool — what are some ways I could use this?"',
-        'Verify tool suggestions before relying on them — explore possibilities, then confirm',
+        'Understand what web search does: it lets the AI retrieve live information from the internet before responding',
+        'Identify the specific situations where web search adds value — and the situations where it hurts',
+        'Practice toggling web search on and off for different prompts and comparing the results',
       ],
-      learningOutcome: 'After this module, you can identify when an AI tool is the right move for a specific task — and interrogate new tools the same way you interrogate tasks.',
+      learningOutcome: 'After this module, you can make a deliberate decision about whether to enable web search for any given prompt — and explain why.',
       content: {
-        overview: 'Each tool solves a specific kind of problem. Web search finds current information. File analysis reads your documents. Data lookup connects to structured sources. The skill is not learning every tool — it is recognizing when a tool applies.\n\nThe Flipped Interaction Pattern works here too: "Scan this tool. What are some ways I could use this?" This is how you learn to adopt new tools resiliently — you interrogate them the same way you interrogate tasks.\n\nImportant caveat: when you ask the AI what a tool can do, some suggestions will be wrong or overstated. Use the AI to explore possibilities, then verify before you rely on them.',
+        overview: 'Web search is one of the most powerful tools available in AI assistants — but it is also one of the most misused. When enabled, the AI searches the internet before responding, grounding its answer in live sources. This is essential for some tasks and actively harmful for others.\n\nThe key insight: web search is not "better by default." It adds latency, can introduce noise from low-quality sources, and can distract the AI from using its own reasoning. The skill is knowing when live information is actually needed.\n\nUse the toggle in the toolbar below to turn web search on or off. Try the same prompt both ways and observe the difference.',
         keyPoints: [
-          'Each tool has a sweet spot — learn the scenario where its value is obvious',
-          'Web search: when you need current information the AI does not have in its training data',
-          'File analysis: when you need to work with your specific documents, spreadsheets, or data',
-          'The Flipped Interaction Pattern for tools: "What are some ways I could use this?"',
-          'Always verify tool suggestions — the AI may overstate what a tool can do',
-          'Two to three tools, each with a clear use case, is better than a tour of everything available',
+          'TURN ON web search when you need: current data (rates, prices, news), recent events, real-time information, or facts that change frequently',
+          'TURN ON web search when you need: verification of specific claims, current regulations, or up-to-date statistics',
+          'LEAVE OFF web search when you are: drafting, brainstorming, analyzing, summarizing, or doing creative work',
+          'LEAVE OFF web search when you are: working with information you already provided in the prompt or attached documents',
+          'LEAVE OFF web search when you are: asking the AI to reason, compare options, or structure your thinking',
+          'Web search adds response time — only enable it when the time trade-off is worth it',
+          'Web search results vary in quality — always verify critical facts from search results against trusted sources',
         ],
         examples: [
           {
-            title: 'Recognizing When to Use a Tool',
-            good: 'Scenario 1: You need to know the current Fed funds rate for a memo → Web search (current data)\nScenario 2: You uploaded a 50-page policy document and need to find a specific section → File analysis (your document)\nScenario 3: You want help brainstorming agenda items for a meeting → No tool needed (conversation is sufficient)',
-            explanation: 'The skill is not using tools — it is knowing when. Scenario 3 does not need a tool. Scenario 1 does, because the information changes. Recognizing the difference is the real lesson.',
+            title: 'When to Toggle Web Search',
+            good: '🔍 ON — "What is the current 30-year fixed mortgage rate as of this week?"\n🔍 ON — "What were the key announcements from the latest FOMC meeting?"\n🔍 ON — "Find the most recent CFPB enforcement action against a mid-size bank"\n\n🔇 OFF — "Help me draft talking points for a team meeting about Q4 priorities"\n🔇 OFF — "Summarize the key themes from this document I uploaded"\n🔇 OFF — "Compare three approaches to structuring this client proposal"',
+            explanation: 'The first three prompts need live data the AI cannot know from training alone. The last three are reasoning and drafting tasks where the AI\'s own capabilities are sufficient — web search would just add noise and latency.',
           },
         ],
         practiceTask: {
-          title: 'Match Tools to Tasks',
-          instructions: 'Identify 3 tasks from your work. For each, decide: does this need a tool, or is conversation sufficient? If it needs a tool, which one and why?',
-          scenario: 'Think of three tasks you do regularly:\n\n1. One that requires current, up-to-date information (prices, rates, recent news, regulatory changes)\n2. One that involves working with a specific document or dataset you have\n3. One that is purely about drafting, analyzing, or brainstorming\n\nFor each: does the AI need a tool, or can it handle it in conversation? Try at least one task that uses a tool and observe the difference.',
+          title: 'Web Search On vs. Off',
+          instructions: 'Use the web search toggle in the toolbar to practice turning search on and off. Try the same or similar prompts both ways and observe how the responses differ.',
+          scenario: 'Try these three experiments:\n\n1. SEARCH ON: Ask for something that requires current, real-time data (a rate, a recent event, a regulation update). Note how the AI cites sources.\n\n2. SEARCH OFF: Ask the AI to help you draft, brainstorm, or analyze something from your work. Notice it responds faster and stays focused on reasoning.\n\n3. COMPARE: Pick one prompt and try it with search ON, then OFF. Which response is more useful for your actual need?\n\nPay attention to: response speed, source quality, and whether the web results actually improved the answer.',
           hints: [
-            'If the AI says "I do not have access to current data" — that is a signal you need web search',
-            'If you are referencing a specific document, upload it rather than describing it',
-            'Try the Flipped Interaction Pattern: upload a tool or document and ask "What could I do with this?"',
-            'Verify any tool-generated facts before using them in professional output',
+            'If the AI says "as of my last training data" or "I don\'t have access to current information" — that is a signal to turn on web search',
+            'If the AI\'s response is cluttered with citations and source links when you just wanted a draft — turn off web search',
+            'For anything time-sensitive (rates, news, regulations, recent events), web search is almost always the right call',
+            'For anything creative (drafting, brainstorming, structuring) web search is almost always the wrong call',
+            'Compare response times: web search typically adds 3-10 seconds of latency',
           ],
           successCriteria: {
             primary: [
-              'User identified at least 3 tasks and correctly matched each to tool vs. no-tool',
-              'User used at least one tool (web search, file upload, etc.) on a real task',
+              'User toggled web search on and off during the conversation for different prompts',
+              'User correctly identified at least one task that benefits from web search and one that does not',
             ],
             supporting: [
-              'User verified at least one piece of tool-generated information',
-              'User can explain why a specific tool was the right choice for a specific task',
+              'User compared the same prompt with search on vs. off and articulated the difference',
+              'User can explain the trade-off (accuracy vs. speed, grounding vs. noise) for a specific scenario',
             ],
           },
         },
@@ -1000,367 +1002,460 @@ export const SESSION_2_CONTENT: SessionContent = {
 };
 
 // ═════════════════════════════════════════════════════════════════════════════
-// SESSION 3: AGENTS
-// Andrea Tier: Peer — Socratic, minimal hand-holding, challenges assumptions
-// Design constraint: Agents only make sense once conversation-first computing
-// is solid. Session 3 is not reachable until Sessions 1 and 2 are complete.
+// SESSION 3: SKILLS & PROJECTS
+// Andrea Tier: Peer — Socratic questioning, challenges vague thinking, pushes
+// for specificity in use case definition. Does not hand-hold.
 // ═════════════════════════════════════════════════════════════════════════════
+
 
 export const SESSION_3_CONTENT: SessionContent = {
   id: 3,
-  title: 'Understanding & Building AI Agents',
-  description: 'Understand what agents are, why they exist, and how to build one — layer by layer',
+  title: 'Skills & Projects — Your AI Specialists',
+  description: 'Build reusable AI specialists that make every interaction more relevant, consistent, and efficient — using the customization tools every major platform now offers',
   modules: [
-    // ─── Module 3-1: Why Agents Exist ─────────────────────────────────────
+    // ─── Module 3-1: Why Customization Matters ─────────────────────────────
     {
       id: '3-1',
-      title: 'Why Agents Exist',
+      title: 'Why Customization Matters',
       type: 'document',
-      description: 'Understand the conceptual foundation — what makes an agent different from a conversation',
+      description: 'Understand what changes when you move from ad-hoc conversations to persistent, reusable AI configurations',
       estimatedTime: '12 min',
+      isGateModule: true,
       learningObjectives: [
-        'Distinguish between a basic conversation (generalist) and a custom agent (specialist)',
-        'Understand why persistence matters: an agent remembers instructions so you do not re-explain every time',
-        'Use a pre-built example agent and observe what makes it different from a default conversation',
+        'Explain why starting from scratch every conversation is friction for tasks you do repeatedly',
+        'Distinguish between ad-hoc conversation and persistent AI configuration',
+        'Use a pre-built example and observe what makes it different from a default conversation',
       ],
-      learningOutcome: 'After this module, you understand what an agent is, why it is different from a conversation, and where it fits in your work.',
+      learningOutcome: 'After this module, you understand why customization matters and can identify tasks in your work where persistent AI configuration would eliminate repetitive setup.',
       content: {
-        overview: 'A basic conversation is a generalist. It helps with everything at a general level. A custom agent is a specialist. It is configured for specific work — it knows your rules, your format, your constraints, and it applies them every time without you re-explaining.\n\nThink of it this way: a conversation is like giving instructions to a new person every time. An agent is like training a colleague who remembers your preferences, follows your rules, and handles variations without you re-explaining.',
+        overview: 'In Sessions 1 and 2, you learned to have productive conversations with AI. Every time you start a new chat, you start from scratch. That is fine for one-off tasks.\n\nBut for work you do repeatedly — the same type of analysis, the same report format, the same review criteria — starting from scratch every time is friction. You re-explain your role. You re-describe the format you want. You re-state the constraints. Every time.\n\nCustomization eliminates that friction. You configure once, use forever. The AI already knows who you are, what you need, and how you work — before you type a single word.',
         keyPoints: [
-          'A conversation is stateless — every new thread starts fresh',
-          'An agent embeds persistent instructions so every conversation inherits them automatically',
-          'Agents are specialists: configured for specific work, not general help',
-          'You do not need to build agents for everything — many tasks are better as one-off conversations',
-          'The universal example: a strategic organizer for unstructured thoughts and ideas',
+          'Sessions 1-2 taught conversation. Customization makes those conversations persistent and reusable.',
+          'For tasks you do repeatedly, re-explaining context every time is wasted effort',
+          'Customization is not complexity — it is convenience. You are saving future-you from re-explaining.',
+          'Every major AI platform now offers customization tools: Claude Projects, ChatGPT GPTs and Skills, Copilot Agents, Gemini Gems',
+          'The universal example: a strategic organizer for loose, unstructured thoughts and ideas',
         ],
         examples: [
           {
-            title: 'Conversation vs. Agent',
-            bad: 'Every Monday, you open a new chat and type: "You are a senior analyst at our firm. I need you to review project proposals using our evaluation criteria. Always flag resource and timeline risks. Format your review as: Summary, Key Risks, Recommendation, Conditions." You do this every single time.',
-            good: 'You build an agent called "Proposal Review Assistant" with those instructions baked in. Every Monday, you open it, paste the proposal data, and get a structured review instantly. No re-explaining. No forgotten instructions.',
-            explanation: 'The agent does not do anything the conversation cannot do. The difference is persistence — the agent remembers so you do not have to. For tasks you do repeatedly with the same structure, that persistence is the value.',
+            title: 'Ad-Hoc Conversation vs. Persistent Configuration',
+            bad: 'Every Monday, you open a new chat and type: "I am a senior analyst at a professional services firm. I need you to review project proposals using our evaluation criteria. Always flag resource and timeline risks. Format your review as: Summary, Key Risks, Recommendation, Conditions." You do this every single time.',
+            good: 'You configure a specialist that already knows your role, your criteria, and your preferred format. Every Monday, you open it, paste the proposal data, and get a structured review instantly. No re-explaining. No forgotten instructions.',
+            explanation: 'The configured specialist does not do anything the conversation cannot do. The difference is persistence — it remembers so you do not have to. For tasks you do repeatedly with the same structure, that persistence is the value.',
           },
         ],
         practiceTask: {
-          title: 'Explore a Pre-Built Agent',
-          instructions: 'Use a pre-built example agent and observe what makes it different from a default conversation.',
-          scenario: 'Try the Strategic Organizer agent — a universal example that works for anyone. It takes your loose, unstructured thoughts (ideas, fragments, half-formed observations) and makes sense of them: organizes them, surfaces connections, identifies themes.\n\n1. Open the pre-built agent\n2. Paste in some unstructured thoughts or ideas from your work\n3. Observe: how does this feel different from a regular conversation?\n4. What did the agent do that a default conversation would not have done automatically?',
+          title: 'Explore a Pre-Built Specialist',
+          instructions: 'Use a pre-built example specialist and observe what makes it different from a default conversation.',
+          scenario: 'Try the Strategic Organizer — a universal example that works for anyone. It takes your loose, unstructured thoughts (ideas, fragments, half-formed observations) and makes sense of them: organizes them, surfaces connections, identifies themes.\n\n1. Open the pre-built specialist\n2. Paste in some unstructured thoughts or ideas from your work\n3. Observe: how does this feel different from a regular conversation?\n4. What did the specialist do that a default conversation would not have done automatically?\n5. Try the same task in a fresh default conversation and compare the experience',
           hints: [
-            'The difference is in what you did NOT have to explain — the agent already knew its job',
-            'Try the same task in a fresh default conversation and compare the experience',
+            'The difference is in what you did NOT have to explain — the specialist already knew its job',
             'Think about tasks in your work where re-explaining context every time is friction',
-            'This is a starting point — you will build your own agent in Module 3',
+            'This is a starting point — you will build your own in Module 3',
           ],
           successCriteria: {
             primary: [
-              'User interacted with a pre-built agent and observed its behavior',
-              'User can articulate at least one difference between an agent and a default conversation',
+              'User interacted with the pre-built specialist and observed its behavior',
+              'User can articulate at least one difference between a configured specialist and a default conversation',
             ],
             supporting: [
-              'User identified at least one task from their work where an agent might add value',
+              'User identified at least one task from their work where persistent configuration would add value',
             ],
           },
         },
       },
     },
 
-    // ─── Module 3-2: The Four Levels ──────────────────────────────────────
+    // ─── Module 3-2: Understanding Projects ────────────────────────────────
     {
       id: '3-2',
-      title: 'The Four Levels',
-      type: 'document',
-      description: 'Learn the progression from conversation to specialist to executor to autonomous',
-      estimatedTime: '10 min',
+      title: 'Understanding Projects',
+      type: 'exercise',
+      description: 'Learn to build a persistent workspace that holds your context, documents, and rules so every conversation inherits them automatically',
+      estimatedTime: '20 min',
+      isGateModule: true,
       learningObjectives: [
-        'Describe the four levels of AI interaction: basic chat, custom agent, agent + workflow, and triggered/autonomous',
-        'Identify which level is appropriate for different types of work',
-        'Understand that most users get enormous value from Level 2 — Level 4 is not the goal',
+        'Explain what a project is: a persistent workspace with instructions, knowledge files, and conversation history',
+        'Create a simple project with instructions and at least one knowledge document',
+        'Observe the difference between a conversation inside a project and a default conversation without one',
       ],
-      learningOutcome: 'After this module, you can identify which level of AI interaction is appropriate for any given task — and resist the urge to over-engineer.',
+      learningOutcome: 'After this module, you can create a project that holds your context and rules, so every conversation inside it is automatically relevant to your work.',
       content: {
-        overview: 'There is a natural progression from basic conversation to increasingly sophisticated AI use. Understanding this progression helps you choose the right level for each task — and avoids the trap of thinking you need the most advanced option for everything.',
+        overview: 'A project is a workspace with a memory. You put your documents in it, write your rules, and every conversation inside the project knows what you put there.\n\nThink of it like a case file. A loan officer does not start from scratch every time they review a file — the case file has the application, the financials, the correspondence, the policy guidelines. A project works the same way for AI.\n\nEvery major platform has a version of this concept. On Claude, these are called Projects. On ChatGPT, this is the knowledge and instructions inside a Custom GPT. On Copilot, this is the configuration inside Copilot Studio. On Gemini, this is a Gem with uploaded reference files. The concept is the same everywhere — the name changes by platform.',
         keyPoints: [
-          'Level 1 — Basic Chat: generalist conversation, no persistence, no special configuration',
-          'Level 2 — Custom Agent: specialist configured for specific work, information and advice only',
-          'Level 3 — Agent + Workflow/Tool: can execute tasks (send emails, update records), not just advise',
-          'Level 4 — Triggered/Autonomous: runs without a prompt, activated by triggers you set',
-          'Most users get enormous value from Level 2 — Level 4 is appropriate for specific circumstances, not a goal',
-          'The curriculum builds from Level 2 (this session) through Level 3 (Module 6)',
+          'A project has three components: instructions (your rules), knowledge (your reference documents), and conversations (your interaction history)',
+          'Instructions are written in plain English — this is not code, it is a job description for the AI',
+          'Knowledge files give the AI access to your actual standards, policies, and reference materials — not generic knowledge',
+          'Every conversation inside a project automatically inherits the instructions and knowledge',
+          'Platform mapping: Claude calls these Projects. ChatGPT uses Custom GPTs or the new Skills system. Copilot uses Copilot Studio configurations. Gemini uses Gems.',
         ],
         examples: [
           {
-            title: 'The Four Levels in Practice',
-            good: 'Level 1: You open ChatGPT and ask "What are the current industry benchmarks for this metric?" — a one-off question.\n\nLevel 2: You build a Proposal Review Agent with your organization\'s evaluation criteria embedded. Every review follows your standards automatically.\n\nLevel 3: Your Proposal Review Agent is connected to your project management system. It can pull submission data directly and post its review to the record.\n\nLevel 4: When a new project proposal enters the system, a trigger automatically runs the Proposal Review Agent and flags high-risk items for human review.',
-            explanation: 'Each level adds capability — and complexity. Level 2 is already transformative for most users. Level 3 requires tool connections. Level 4 requires triggers and governance. Build up deliberately, not all at once.',
+            title: 'Project Instructions — Too Vague vs. Well-Defined',
+            bad: '"Help me with work stuff. Be professional."',
+            good: '"You are an assistant for a senior analyst at a professional services firm. I review and evaluate project proposals, prepare findings summaries, and present recommendations to our leadership committee. When I share a proposal, analyze it against our standard evaluation criteria: strategic alignment, resource feasibility, timeline realism, and risk factors. Always flag items that require leadership attention. Format output as: Executive Summary (3 sentences), Key Findings (bullets), Risk Flags (if any), Recommendation (approve/revise/decline with rationale)."',
+            explanation: 'The detailed instructions tell the AI who you are, what you do, how to analyze, and how to format. Every conversation inside this project inherits these rules automatically. You never re-explain.',
           },
         ],
         practiceTask: {
-          title: 'Map Your Work to the Four Levels',
-          instructions: 'Identify 4 tasks from your work — one that fits each level. Which level would you start with?',
-          scenario: 'Think about tasks across your work and map one to each level:\n\n1. Level 1 (Basic Chat): a task where a one-off conversation is sufficient\n2. Level 2 (Custom Agent): a task you do repeatedly that would benefit from persistent instructions\n3. Level 3 (Agent + Tool): a task where the AI should be able to take action, not just advise\n4. Level 4 (Triggered): a task that should run automatically when something happens\n\nWhich level would you start building at? (Hint: Level 2 is almost always the right answer.)',
+          title: 'Create Your First Project',
+          instructions: 'Create a project for a real work context. Write instructions and add at least one reference document. Then compare conversations inside and outside the project.',
+          scenario: 'Choose a work context you deal with regularly — a department function, a recurring analysis, or a client engagement.\n\n1. Create a project and give it a clear name\n2. Write instructions covering: your role and context, what you need from the AI, what standards to follow, what to avoid\n3. Add one reference document — a policy, a template, a set of guidelines, or a style guide\n4. Ask the same work question inside the project and in a fresh default conversation\n5. Compare: how are the responses different? Which one is more useful for your actual work?',
           hints: [
-            'Level 2 is the sweet spot for most people starting with agents',
-            'Level 3 usually requires IT involvement to connect systems — plan for that',
-            'Level 4 is powerful but requires governance: who monitors the autonomous agent?',
-            'If you cannot identify a Level 4 task, that is fine — most professionals do not need one yet',
+            'Your instructions should read like you are briefing a smart colleague who is new to your team',
+            'Start with one document — the one you reference most often in this type of work',
+            'Keep instructions under 500 words — specific enough to shape behavior, short enough to be efficient',
+            'The before/after comparison is the key insight — run the same question with and without the project',
           ],
           successCriteria: {
             primary: [
-              'User mapped at least one task to each of the four levels',
-              'User identified which level they would start building at (and it is probably Level 2)',
+              'User created a project with written instructions that include role context, standards, and formatting preferences',
+              'User added at least one knowledge document to the project',
             ],
             supporting: [
-              'User can explain why Level 2 is the recommended starting point',
+              'User compared the same question inside vs. outside the project and observed the difference',
+              'Instructions are specific enough to produce noticeably different output — not generic placeholders',
             ],
+          },
+          departmentScenarios: {
+            'Commercial Lending': {
+              scenario: 'Create a project for commercial loan analysis. Instructions should cover how you evaluate creditworthiness, what financial ratios you prioritize, and how you format credit memos. Add your institution\'s lending policy or credit analysis template as a knowledge document.',
+              hints: [
+                'Include your institution\'s risk rating framework in the instructions',
+                'Add your credit memo template as the knowledge document',
+                'Specify how the AI should handle incomplete financial data — ask for it, not guess',
+              ],
+            },
+            'Retail Banking': {
+              scenario: 'Create a project for customer service support. Instructions should cover your institution\'s product offerings, common customer inquiries, and how you handle escalations. Add a product reference guide or FAQ document as knowledge.',
+              hints: [
+                'Include guidelines for how to handle product comparison questions',
+                'Add your branch\'s most-used reference guide as the knowledge document',
+                'Specify compliance boundaries — what the AI should never advise on (e.g., specific investment recommendations)',
+              ],
+            },
+            'Compliance': {
+              scenario: 'Create a project for regulatory filing review. Instructions should cover which regulations apply to your institution, what format findings should follow, and how to flag potential violations. Add a regulatory reference guide or recent examination findings as knowledge.',
+              hints: [
+                'Be explicit about which regulatory frameworks to reference (BSA/AML, CRA, Fair Lending, etc.)',
+                'Include your institution\'s risk tolerance language in the instructions',
+                'Add your most recent regulatory exam findings as the knowledge document',
+              ],
+            },
+            'Risk Management': {
+              scenario: 'Create a project for enterprise risk assessment. Instructions should cover your risk taxonomy, scoring methodology, and reporting format. Add your risk appetite statement or risk assessment framework as knowledge.',
+              hints: [
+                'Include your institution\'s risk categories and definitions in the instructions',
+                'Add your risk scoring rubric as the knowledge document',
+                'Specify how the AI should handle emerging risks that do not fit existing categories',
+              ],
+            },
+            'Operations': {
+              scenario: 'Create a project for process improvement documentation. Instructions should cover how you document current-state processes, identify bottlenecks, and format improvement recommendations. Add a process documentation template or recent process review as knowledge.',
+              hints: [
+                'Include your standard process documentation format in the instructions',
+                'Add a recent process review or audit finding as the knowledge document',
+                'Specify that the AI should always include time estimates and resource requirements in recommendations',
+              ],
+            },
           },
         },
       },
     },
 
-    // ─── Module 3-3: Build a Basic Agent ──────────────────────────────────
+    // ─── Module 3-3: Building Your First Skill ─────────────────────────────
     {
       id: '3-3',
-      title: 'Build a Basic Agent',
+      title: 'Building Your First Skill',
       type: 'exercise',
-      description: 'Create a Level 2 agent with nothing but well-written instructions — no knowledge, no tools',
+      description: 'Create a reusable AI playbook for a specific type of task — a digital SOP that produces consistent, high-quality output every time',
       estimatedTime: '25 min',
       isGateModule: true,
       learningObjectives: [
-        'Define a specific job for an agent that is relevant to your work',
-        'Write agent instructions that cover role, scope, style, and constraints',
-        'Test the agent and iterate on instructions based on what comes back',
-        'Understand that writing agent instructions is like writing a job description',
+        'Identify a repeatable task from your work that would benefit from a standardized AI procedure',
+        'Write a skill definition using the six-part anatomy: identity, trigger, procedure, standards, guardrails, output format',
+        'Test the skill on a real or realistic task and iterate based on what comes back',
       ],
-      learningOutcome: 'After this module, you have built a working Level 2 agent configured for a specific task in your work.',
+      learningOutcome: 'After this module, you have built a working skill — a reusable AI playbook — configured for a specific task in your work.',
       content: {
-        overview: 'This is Level 2: a custom agent with nothing but instructions. No knowledge files. No tools. No external connections. Just a well-configured specialist.\n\nWriting agent instructions is like writing a job description. You are defining the role, the scope, the style, and the constraints. The more specific you are, the more useful the agent becomes. Vague instructions produce vague agents.',
+        overview: 'A project holds your context. A skill tells AI how to do a specific job.\n\nIf a project is a case file, a skill is the SOP that tells you how to process the case file. Skills are reusable — you build them once and apply them across different projects, different conversations, different contexts.\n\nWriting a skill is like writing a job description for a specialist. You are defining the role, the scope, the procedure, the quality standards, and the boundaries. The more specific you are, the more consistently useful the specialist becomes. Vague skills produce vague output.\n\nOn Claude, skills are formal configurations (SKILL.md files or Project instructions). On ChatGPT, this maps to Custom GPT instructions or the new Skills feature. On Copilot, skills are reusable components in Copilot Studio. On Gemini, this is the instruction set inside a Gem.',
         keyPoints: [
-          'Start with the job: what specific task should this agent handle?',
-          'Define the role: who is this agent? What is its expertise?',
-          'Define the scope: what does it do? What does it NOT do?',
-          'Define the style: formal or conversational? Brief or thorough?',
-          'Define the constraints: what should it always do? What should it never do?',
-          'Test and iterate — the first version of instructions is never the final version',
+          'A skill is a reusable procedure for a specific type of task — a digital SOP',
+          'Skills ensure consistency: every time the AI handles that task type, it follows the same framework',
+          'The six-part skill anatomy: Identity, Trigger, Procedure, Standards, Guardrails, Output Format',
+          'Writing a skill is like writing a job description — specificity is everything',
+          'Start narrow: a skill for one specific task is more useful than a skill that tries to handle everything',
         ],
         steps: [
-          'Choose a job for the agent — something you do repeatedly in your work',
-          'Write the instructions: role, scope, style, constraints',
-          'Test the agent with a real task',
-          'Review the output: what did it get right? What did it miss?',
-          'Iterate on the instructions based on what you learned',
-          'Test again — repeat until the agent consistently produces useful output',
+          'Choose a repeatable task from your work — something you do weekly or more',
+          'Define Identity: what is this skill? What specific job does it do?',
+          'Define Trigger: when should this skill activate? What kind of task calls for it?',
+          'Define Procedure: what steps does it follow? In what order?',
+          'Define Standards: what quality criteria must the output meet?',
+          'Define Guardrails: what should this skill never do? What are the boundaries?',
+          'Define Output Format: what should the final result look like?',
+          'Test with a real or realistic input and iterate based on what comes back',
         ],
         examples: [
           {
-            title: 'Agent Instructions Example',
-            good: 'Role: You are a Project Intake Checklist Agent for a professional services firm. You help project managers ensure all required information is gathered before a project kicks off.\n\nScope: You review project type, scope, deliverables, and stakeholder context, then produce a customized intake checklist. You do NOT make resource allocation decisions or assess team capacity.\n\nStyle: Professional, direct, checklist format. Use project management terminology. Each item should include the information needed and why it is required.\n\nConstraints: Always include standard governance requirements (approvals, compliance sign-offs if applicable, budget confirmation). Flag any items that require leadership review. If the project type is unfamiliar, say so rather than guessing.',
-            explanation: 'These instructions are specific enough that the agent produces consistent, useful output. The constraints prevent it from overstepping (no resource allocation decisions) and ensure it flags uncertainty rather than guessing. This is a well-written job description for an AI.',
+            title: 'Skill Definition — Well-Structured',
+            good: 'Identity: You are a Project Intake Checklist Skill for a professional services firm. You help project managers ensure all required information is gathered before a project kicks off.\n\nTrigger: Activate when someone shares a new project brief, proposal, or request for a project intake review.\n\nProcedure:\n1. Review the provided project brief for completeness\n2. Check for: project type, scope, deliverables, timeline, budget, stakeholder list, success criteria\n3. Identify any missing required elements\n4. Produce a customized intake checklist based on the project type\n5. Flag items that require leadership or compliance review\n\nStandards: Every checklist must include governance requirements (approvals, compliance sign-offs if applicable, budget confirmation). Items should include both what information is needed AND why it is required.\n\nGuardrails: Do NOT make resource allocation decisions or assess team capacity. Do NOT approve or reject projects. If the project type is unfamiliar, say so rather than guessing requirements.\n\nOutput Format: Numbered checklist grouped by category (Governance, Scope, Resources, Timeline). Each item: requirement name, what is needed, why it matters, status (provided/missing).',
+            explanation: 'This skill is specific enough to produce consistent, useful output every time. The guardrails prevent it from overstepping. The procedure ensures completeness. The output format ensures the result is immediately usable. This is a well-written digital SOP.',
           },
         ],
         practiceTask: {
-          title: 'Build Your First Agent',
-          instructions: 'Define a job, write instructions, test, and iterate. Build a Level 2 agent for something you do at work.',
-          scenario: 'Build an agent for a task you do regularly:\n\n1. Define the job: what will this agent do? Be specific.\n2. Write the instructions using the framework: Role, Scope, Style, Constraints\n3. Test with a real or realistic task\n4. Review: did the agent follow your instructions? What did it miss or misinterpret?\n5. Revise your instructions and test again\n6. Aim for an agent that works consistently on the second or third test',
+          title: 'Build Your First Skill',
+          instructions: 'Identify a repeatable task from your work. Write a skill definition using the six-part anatomy. Test it and iterate.',
+          scenario: 'Choose a task you do at least weekly:\n\n1. Define Identity: what specific job does this skill handle?\n2. Define Trigger: what kind of input or request activates it?\n3. Define Procedure: what steps does it follow, in order?\n4. Define Standards: what quality criteria must the output meet?\n5. Define Guardrails: what should the skill NEVER do?\n6. Define Output Format: what does the result look like?\n7. Test with a real or realistic input\n8. Review: did the skill follow your procedure? Meet your standards? Respect your guardrails?\n9. Iterate at least once based on test results',
           hints: [
-            'Start with something narrow — "Meeting Summary Assistant" is better than "General Work Assistant"',
-            'Constraints are the most important part — they prevent the agent from doing things you do not want',
-            'If the agent ignores an instruction, it is usually because the instruction is too vague — be more specific',
-            'Test with edge cases: what happens when the input is unusual or incomplete?',
+            'Start narrow — "Meeting Summary Skill" is better than "General Work Assistant Skill"',
+            'Guardrails are the most important part — they prevent the skill from doing things you do not want',
+            'If the skill ignores an instruction, it is usually because the instruction is too vague — be more specific',
+            'Test with an edge case: what happens when the input is unusual or incomplete?',
           ],
           successCriteria: {
             primary: [
-              'User defined a specific job for the agent (not a general assistant)',
-              'Instructions include all four elements: role, scope, style, constraints',
+              'User defined a specific, repeatable task for the skill — not a general assistant',
+              'Skill definition includes all six anatomy components: identity, trigger, procedure, standards, guardrails, output format',
             ],
             supporting: [
-              'User tested the agent with at least one real or realistic task',
-              'User iterated on instructions at least once based on test results',
-              'Agent produces consistent, useful output on repeated tests',
+              'User tested the skill with at least one real or realistic input',
+              'User iterated on the skill definition at least once based on test results',
             ],
+          },
+          departmentScenarios: {
+            'Commercial Lending': {
+              scenario: 'Build a skill for credit memo preparation, loan documentation review, or financial statement analysis. Something you do for nearly every deal.',
+              hints: [
+                'Your institution\'s credit analysis framework makes excellent procedure content',
+                'Guardrails should include: do not make credit decisions, do not override risk ratings',
+                'Output format should match your institution\'s standard memo or analysis format',
+              ],
+            },
+            'Retail Banking': {
+              scenario: 'Build a skill for customer inquiry responses, product comparison summaries, or branch performance reporting.',
+              hints: [
+                'Include compliance guardrails: do not make specific investment recommendations, do not share customer data',
+                'Standard response templates make great output format specifications',
+              ],
+            },
+            'Compliance': {
+              scenario: 'Build a skill for regulatory finding analysis, policy gap assessment, or BSA/AML alert review.',
+              hints: [
+                'Procedure should mirror your actual review steps — the skill follows the same process you do',
+                'Guardrails: do not make final compliance determinations — flag for human review',
+                'Output format should match your institution\'s findings report structure',
+              ],
+            },
+            'Risk Management': {
+              scenario: 'Build a skill for risk assessment scoring, control testing documentation, or risk appetite threshold monitoring.',
+              hints: [
+                'Your risk scoring rubric is the foundation of the procedure section',
+                'Standards should reference your institution\'s risk taxonomy',
+                'Guardrails: do not assign final risk ratings — recommend for human review',
+              ],
+            },
+            'Operations': {
+              scenario: 'Build a skill for process documentation, SLA monitoring reports, or vendor review checklists.',
+              hints: [
+                'Your existing process documentation templates are the perfect output format specification',
+                'Procedure should follow your standard review methodology step by step',
+              ],
+            },
           },
         },
       },
     },
 
-    // ─── Module 3-4: Add Knowledge ────────────────────────────────────────
+    // ─── Module 3-4: Adding Knowledge to Skills ────────────────────────────
     {
       id: '3-4',
-      title: 'Add Knowledge',
+      title: 'Adding Knowledge to Skills',
       type: 'exercise',
-      description: 'Give your agent domain knowledge — the difference between a generalist with a title and a real specialist',
+      description: 'Give your skill domain knowledge — the difference between a generic procedure and a real specialist',
       estimatedTime: '15 min',
+      isGateModule: true,
       learningObjectives: [
-        'Add relevant documents, references, or guidelines to your agent as a knowledge base',
-        'Observe how knowledge changes the agent\'s output quality and specificity',
-        'Understand that knowledge is context, not just files — it transforms a generalist into a specialist',
+        'Add relevant reference documents to a skill to transform it from a generic procedure into a domain-specific specialist',
+        'Test the same skill with and without knowledge and observe the difference in output quality',
+        'Understand that knowledge is context — it grounds the skill in your actual standards, not general knowledge',
       ],
-      learningOutcome: 'After this module, your agent has domain knowledge that makes it a genuine specialist — not just a generalist with a title.',
+      learningOutcome: 'After this module, your skill has domain knowledge that makes it a genuine specialist — not just a generic procedure with a title.',
       content: {
-        overview: 'Take the agent you built in Module 3. Same instructions, one new layer: knowledge. Add relevant documents, references, or guidelines. Then test the difference.\n\nKnowledge is not just files. It is the difference between a generalist with a title and a specialist who actually knows the domain. Your agent with instructions alone can follow your rules. Your agent with knowledge can apply your actual standards, policies, and reference materials.',
+        overview: 'Take the skill you built in Module 3. Same procedure, one new layer: knowledge. Add relevant documents, references, or guidelines. Then test the difference.\n\nKnowledge is not just files. It is the difference between a new hire following a generic checklist and an experienced team member who knows your organization\'s specific requirements. Your skill with a procedure alone can follow steps. Your skill with knowledge can apply your actual standards, policies, and reference materials while following those steps.',
         keyPoints: [
-          'Knowledge = documents, references, guidelines, policies, examples that your agent can reference',
-          'The agent uses knowledge to ground its responses in your actual standards — not general knowledge',
-          'Start with 1-3 documents that are most relevant to the agent\'s job',
+          'Knowledge = documents, references, guidelines, policies, examples that your skill can reference while executing its procedure',
+          'The skill uses knowledge to ground its responses in your actual standards — not general AI knowledge',
+          'Start with 1-3 documents that are most relevant to the skill\'s specific job',
           'Test before and after: the difference in output quality is the value of knowledge',
-          'Too many documents can be counterproductive — start focused and add as needed',
+          'Too many documents can be counterproductive — start focused and add only as needed',
         ],
         practiceTask: {
-          title: 'Add Knowledge to Your Agent',
-          instructions: 'Take your agent from Module 3, add 1-3 relevant knowledge documents, and test the difference.',
-          scenario: 'Return to the agent you built in Module 3:\n\n1. Identify 1-3 documents that are most relevant to its job (policies, guidelines, templates, examples)\n2. Add them to the agent\'s knowledge base\n3. Run the same test task from Module 3 — compare the output\n4. How did the output change? Is it more specific? More accurate? Does it reference your actual standards?\n5. Try a new task that specifically requires knowledge from your documents',
+          title: 'Add Knowledge to Your Skill',
+          instructions: 'Take your skill from Module 3, add 1-3 relevant knowledge documents, and test the difference in output quality.',
+          scenario: 'Return to the skill you built in Module 3:\n\n1. Identify 1-3 documents most relevant to the skill\'s job (policies, guidelines, templates, examples, standards)\n2. Add them to the skill\'s knowledge base\n3. Run the same test task from Module 3 — compare the output before and after\n4. How did the output change? Is it more specific? More accurate? Does it reference your actual standards?\n5. Try a new task that specifically requires information from your documents',
           hints: [
-            'Start with your most-used reference document — the one you check most often',
-            'Good candidates: your team\'s standards guide, process documentation, templates, or relevant policy materials',
-            'Start focused — 1 to 2 documents that directly relate to the agent\'s job',
-            'The before/after comparison is the key insight — run the same task with and without knowledge',
+            'Start with your most-used reference document — the one you check most often for this type of work',
+            'Good candidates: your team\'s standards guide, process documentation, templates, or regulatory reference materials',
+            'The before/after comparison is the key insight — same task, same skill, with and without knowledge',
+            'If the skill does not reference the knowledge documents, your procedure may need an explicit instruction to "reference provided documents"',
           ],
           successCriteria: {
             primary: [
-              'User added at least one knowledge document to their agent',
-              'User tested the agent with and without knowledge and observed the difference',
+              'User added at least one knowledge document to their skill',
+              'User tested the skill with and without knowledge and observed a measurable difference in output quality',
             ],
             supporting: [
-              'Agent output references or applies information from the knowledge documents',
-              'User can explain how knowledge changed the quality or specificity of the output',
+              'Skill output references or applies specific information from the knowledge documents',
+              'User can explain how knowledge changed the specificity or accuracy of the output',
             ],
           },
         },
       },
     },
 
-    // ─── Module 3-5: Add Files ────────────────────────────────────────────
+    // ─── Module 3-5: Skills and Projects Together ──────────────────────────
     {
       id: '3-5',
-      title: 'Add Files',
+      title: 'Skills and Projects Together',
       type: 'exercise',
-      description: 'Extend your agent to work with user-provided files — documents, spreadsheets, and data',
+      description: 'Learn how skills and projects complement each other — projects hold context, skills provide procedure, and the combination produces consistent, high-quality output',
       estimatedTime: '15 min',
+      isGateModule: true,
       learningObjectives: [
-        'Configure your agent to accept and process user-provided files',
-        'Test how the agent handles different file types relevant to your work',
-        'Understand the difference between knowledge (reference material) and files (work input)',
+        'Apply a skill within a project context and observe how the combination produces better output than either alone',
+        'Test skill reusability by applying the same skill across different project contexts',
+        'Map out an ideal configuration of projects and skills for your work',
       ],
-      learningOutcome: 'After this module, your agent can accept files from users and process them according to its instructions and knowledge base.',
+      learningOutcome: 'After this module, you understand how skills and projects complement each other and can design configurations where projects provide context and skills provide procedure.',
       content: {
-        overview: 'Same agent, another layer. Knowledge is the reference material your agent always has access to. Files are the work input users bring to each interaction — the documents, spreadsheets, or data the agent needs to process.\n\nThe distinction matters: knowledge is permanent context (your standards or policy guide). Files are session input (this specific document or dataset). Your agent uses both together.',
+        overview: 'A project without skills has context but no standardized procedure. Every conversation inside it is still ad-hoc — the AI knows who you are but does not know how to handle specific task types consistently.\n\nA skill without a project has procedure but no specific context. It follows the steps generically — it knows what to do but does not know the details of your specific situation.\n\nTogether: the project provides the context (who you are, what you are working on, what documents matter) and the skill provides the procedure (how to handle the task, what standards to apply, what format to use).\n\nThe combination is where real professional value lives. And the power multiplies because skills are reusable — one skill can serve multiple projects, and one project can use multiple skills.',
         keyPoints: [
-          'Knowledge = permanent reference material (always available to the agent)',
-          'Files = session input (provided by the user for a specific task)',
-          'The agent combines both: applies its knowledge to the files you provide',
-          'Test with file types you actually use: PDFs, spreadsheets, documents, data exports',
-          'Observe how the agent handles messy or incomplete files — does it ask for clarification?',
+          'Projects = context (who, what, which documents). Skills = procedure (how, what standards, what format).',
+          'Together, they produce output that is both contextually relevant and procedurally consistent',
+          'One skill can serve multiple projects — build once, apply everywhere',
+          'One project can use multiple skills — different tasks, same context',
+          'The combination is where AI stops being a novelty and starts being a professional tool',
+        ],
+        examples: [
+          {
+            title: 'Skills + Projects in Practice',
+            good: 'Project: "Q2 Portfolio Review" — contains client documents, market data, firm guidelines, prior quarter analysis.\n\nSkill 1: "Risk Assessment Analyzer" — follows your firm\'s risk framework, flags exceptions, formats findings.\nSkill 2: "Executive Summary Generator" — distills complex analysis into 3-paragraph summaries for leadership.\nSkill 3: "Action Item Extractor" — identifies commitments, deadlines, and owners from meeting notes.\n\nResult: When you apply the Risk Assessment skill inside the Q2 Portfolio Review project, you get a risk assessment that uses your firm\'s framework applied to your actual client data, formatted to your standards. Apply the Executive Summary skill to the same project and you get a leadership-ready summary. Same context, different procedures, consistent quality.',
+            explanation: 'The project holds the context. The skills provide the procedure. You configure the project once and apply different skills as needed. This is how professionals scale their AI use without re-explaining context every time.',
+          },
         ],
         practiceTask: {
-          title: 'Process a Real File',
-          instructions: 'Upload a real or realistic work file to your agent and test how it processes it using its instructions and knowledge.',
-          scenario: 'Take your agent (now with instructions + knowledge) and give it a file to work with:\n\n1. Choose a file type you work with regularly (a document, spreadsheet, report, or data export)\n2. Upload it to the agent and ask it to process the file according to its job\n3. Evaluate: did the agent apply its instructions? Did it reference its knowledge?\n4. Test with a different file type — how does the agent handle variety?\n5. Try an edge case: what happens with an incomplete or messy file?',
+          title: 'Combine Skills and Projects',
+          instructions: 'Apply your skill inside your project context. Test reusability by applying the same skill in a different context. Map your ideal configuration.',
+          scenario: 'Bring your project from Module 2 and your skill from Module 3 together:\n\n1. Apply your skill inside your project — observe the combined output\n2. Compare: is this better than either the project alone or the skill alone?\n3. Create a second project (different context — different client, different quarter, different department) and apply the same skill\n4. Does the skill adapt to the new context? What stays consistent (procedure) vs. what changes (context)?\n5. Map out your ideal configuration: what projects do you need? What skills would serve them?',
           hints: [
-            'Use real files when possible (redact sensitive data if needed)',
-            'Give the agent a file that matches its actual job — the kind of document it will process regularly',
-            'Test the boundaries: what happens when the file format is unexpected?',
-            'The agent should ask for clarification when the file is ambiguous — if it guesses instead, tighten your instructions',
+            'The reusability test is the key insight — same skill, different project, consistent quality',
+            'If the skill does not adapt to the new project context, your skill may be too rigid — loosen the context-specific parts',
+            'Think about your team: which projects would everyone need? Which skills would be shared vs. personal?',
+            'Map at least 2 projects and 3 skills — this becomes your buildout roadmap',
           ],
           successCriteria: {
             primary: [
-              'User uploaded at least one file to the agent',
-              'Agent processed the file using its instructions and knowledge',
+              'User applied a skill within a project context and observed the combined output',
+              'User tested skill reusability across at least two different project contexts',
             ],
             supporting: [
-              'User tested at least two different interactions with files',
-              'User identified at least one way to improve the agent\'s file handling (through instruction updates)',
+              'User can explain when to add context to the project vs. when to build it into the skill',
+              'User mapped at least one additional skill or project they plan to build',
             ],
           },
         },
       },
     },
 
-    // ─── Module 3-6: Add Tool Access ──────────────────────────────────────
+    // ─── Module 3-6: Sharing and Scaling ───────────────────────────────────
     {
       id: '3-6',
-      title: 'Add Tool Access',
+      title: 'Sharing and Scaling',
       type: 'exercise',
-      description: 'Connect your agent to tools — the transition from advisor to workflow participant',
+      description: 'Share skills and projects with colleagues — and understand why organizational standardization creates compounding value',
       estimatedTime: '15 min',
+      isGateModule: true,
       learningObjectives: [
-        'Connect the agent to at least one tool (web search, data lookup, or a connected service)',
-        'Test an interaction where the agent produces an action, not just a response',
-        'Understand the distinction: an agent with tools is a participant in the workflow, not just an advisor',
+        'Share a skill with at least one colleague and collect feedback on whether it works for their context',
+        'Identify 3-5 skills that your team should standardize for consistent output quality',
+        'Understand that the people closest to the work build the best skills — AI customization is a domain expertise function, not an IT function',
       ],
-      learningOutcome: 'After this module, your agent can take actions through connected tools — transitioning from Level 2 (advisor) to Level 3 (executor).',
+      learningOutcome: 'After this module, you can articulate how shared skills create organizational value and have identified the skills your team should standardize.',
       content: {
-        overview: 'This is where the agent stops being an advisor and starts being a participant in the workflow. The distinction matters: an agent that advises tells you what to do. An agent with tools can do things — look up current data, search the web, interact with connected services.\n\nUsers need to know what their agent is doing, not just what it is saying. Transparency about tool use is essential, especially in professional contexts where the source of information matters.',
+        overview: 'A skill you build for yourself saves you time. A skill you share with your team saves everyone time.\n\nShared skills create consistency. When every analyst uses the same risk assessment skill, the output quality is standardized — not dependent on who wrote the prompt that day. When every loan officer uses the same documentation review skill, nothing gets missed because someone forgot a step.\n\nThis is how organizations scale AI: not by training everyone to be expert prompters, but by building and sharing skills that encode best practices. The compliance team builds the compliance skills. The lending team builds the loan review skills. The people closest to the work build the best skills.',
         keyPoints: [
-          'Tool access transforms the agent from Level 2 (advisor) to Level 3 (executor)',
-          'Start with one tool — web search is usually the easiest first connection',
-          'The agent should explain what tool it used and why — transparency matters',
-          'In professional contexts, knowing the source of information is as important as the information itself',
-          'Test carefully: tool-connected agents need monitoring, especially early on',
+          'Shared skills create consistency — the output quality depends on the skill, not the individual user',
+          'The people closest to the work build the best skills — this is a domain expertise function, not an IT function',
+          'Skills are team assets, not personal tools — treat them like shared SOPs',
+          'Start with the tasks where inconsistency causes the most problems',
+          'A shared skill library compounds over time — each new skill makes the whole team more efficient',
         ],
         practiceTask: {
-          title: 'Connect and Test a Tool',
-          instructions: 'Add a tool to your agent (web search, data lookup, or another available connection) and test an interaction that produces an action, not just a response.',
-          scenario: 'Extend your agent with tool access:\n\n1. Enable at least one tool (web search is the easiest starting point)\n2. Give the agent a task that requires the tool (e.g., "Check the current regulatory status of X")\n3. Observe: did the agent use the tool? Did it tell you it was using it?\n4. Verify the tool output — is the information accurate and current?\n5. Compare: how is this different from your agent without tools?',
+          title: 'Share and Collect Feedback',
+          instructions: 'Share your skill with at least one other participant. Collect feedback. Draft a skill wish list for your team.',
+          scenario: 'Take your skill from Module 3:\n\n1. Share it with at least one other participant in the session\n2. Have them test it with their own input — does it work for their context?\n3. Collect feedback: what worked? What needed adjustment? What was confusing?\n4. Make at least one improvement based on the feedback\n5. Draft a "skill wish list" for your team: 3-5 skills that would standardize your team\'s most common or most error-prone tasks\n6. For each wish list skill, identify who on your team is best positioned to build it',
           hints: [
-            'Web search is the most universally useful first tool — it gives the agent access to current information',
-            'Ask the agent to cite its sources when using web search — verify at least one',
-            'If connecting to other tools (email, calendar, data systems), start with read-only access before write access',
-            'The key question: would you trust this agent to take this action without your review?',
+            'The best feedback comes from someone who does similar work but has a slightly different context',
+            'If the skill does not work for them, ask: is it a context problem (they need different instructions) or a procedure problem (the steps are wrong)?',
+            'For the wish list, prioritize tasks where inconsistency causes the most problems — compliance reviews, client communications, reporting',
+            'The skill builder should be the domain expert, not the most technical person',
           ],
           successCriteria: {
             primary: [
-              'User connected at least one tool to their agent',
-              'Agent used the tool to complete a task (not just conversation)',
+              'User shared their skill with at least one other person and received specific feedback',
+              'User identified at least 3 skills that would benefit their team if standardized',
             ],
             supporting: [
-              'User verified the output from the tool-connected interaction',
-              'User can explain the difference between an advisor agent and an executor agent',
+              'User made at least one improvement based on peer feedback',
+              'User identified who on their team is best positioned to build each wish list skill',
             ],
           },
         },
       },
     },
 
-    // ─── Module 3-7: Sandbox / Capstone ───────────────────────────────────
+    // ─── Module 3-7: Sandbox / Capstone ────────────────────────────────────
     {
       id: '3-7',
       title: 'Sandbox / Capstone',
       type: 'sandbox',
-      description: 'Build your own agent for a real use case — work through as many layers as make sense',
+      description: 'Build a second skill, combine multiple skills in a project, and refine your configuration for real use',
       estimatedTime: '25 min',
+      isGateModule: true,
       learningObjectives: [
-        'Design an agent for a real use case in your work — from scratch',
-        'Work through the four layers (instructions, knowledge, files, tools) as far as your use case requires',
-        'Present the agent\'s output and reflect on what worked',
+        'Build a second skill for a different use case or significantly refine your first skill',
+        'Configure a project that combines at least two skills for a realistic workflow',
+        'Articulate what you would build next and why — your skill and project roadmap',
       ],
-      learningOutcome: 'After this module, you have built an agent you plan to actually use in your work — not just a practice exercise.',
+      learningOutcome: 'After this module, you have a working project and skill configuration you plan to actually use — not just a practice exercise.',
       content: {
-        overview: 'Build your own. Design an agent for a real use case in your work and work through the four layers as far as makes sense for your use case. Not every agent needs all four layers — some are perfectly useful with just instructions. The goal is something you plan to actually use.',
+        overview: 'Build and refine. This is your capstone for Session 3.\n\nYou have learned what projects and skills are, how to build them, how they work together, and how sharing them creates team value. Now put it together into something you will actually use.\n\nThe best configuration is one you will use tomorrow — not the most complex one you can build. Start with something that solves a real problem in your actual work.',
         keyPoints: [
-          'Start with the use case, not the technology — what problem are you solving?',
-          'Work through layers in order: instructions → knowledge → files → tools',
-          'Stop when adding more layers does not add value for your use case',
-          'The best agent is one you will actually use — not the most complex one you can build',
-          'Reflect: what would make this agent 10x more useful to you in your actual work?',
+          'Build a second skill for a different use case — or significantly expand and refine your first skill',
+          'Configure a project that uses at least two skills together',
+          'Test the full configuration with realistic inputs',
+          'The bar: would you use this tomorrow? If not, what is missing?',
+          'Reflect: what would make this 10x more useful? That becomes your buildout roadmap.',
         ],
         practiceTask: {
-          title: 'Build Your Capstone Agent',
-          instructions: 'Design and build an agent for a real use case. Work through as many layers as your use case requires.',
-          scenario: 'This is your capstone for Session 3:\n\n1. Identify a real use case from your work — something you do regularly that would benefit from a specialist agent\n2. Write the instructions (role, scope, style, constraints)\n3. Add knowledge if your use case requires domain-specific reference material\n4. Configure file handling if users will bring documents to the agent\n5. Add tool access if the agent needs to take actions or access current information\n6. Test thoroughly with real or realistic inputs\n7. Reflect: what worked? What would you change? What would make this 10x more useful?',
+          title: 'Build Your Capstone Configuration',
+          instructions: 'Build a second skill, combine skills in a project, test with realistic inputs, and define your roadmap.',
+          scenario: 'This is your capstone for Session 3:\n\n1. Build a second skill for a different use case from your work (or significantly expand your first skill)\n2. Configure a project that uses at least two skills together\n3. Test the full configuration with realistic inputs — does the combination produce professional-quality output?\n4. Identify what works and what you would change\n5. Define your roadmap: what projects and skills will you build next? In what order? Why?',
           hints: [
-            'Start narrow — you can always expand the scope later',
-            'The most useful agents solve one specific problem really well',
-            'Ask yourself: "Would I use this tomorrow?" If not, pick a different use case.',
-            'Share your agent with a colleague and get their feedback — does it work for them too?',
+            'The most useful second skill often handles a task adjacent to your first skill — they naturally work together',
+            'Test the combination, not just individual skills — the value is in how they work together inside a project',
+            'Ask yourself: "Would I use this tomorrow?" If not, what is the one thing still missing?',
+            'Your roadmap should prioritize by impact: which skill or project would save the most time or reduce the most risk?',
           ],
           successCriteria: {
             primary: [
-              'User designed an agent for a real work use case',
-              'Agent has at least instructions and one additional layer (knowledge, files, or tools)',
+              'User built or significantly refined at least one additional skill',
+              'User has a working project + skill configuration that combines at least two skills',
             ],
             supporting: [
-              'User tested the agent with realistic inputs and iterated at least once',
-              'User can articulate what they would change to make the agent more useful',
-              'User describes the agent as something they plan to actually use',
+              'User tested the configuration with realistic inputs and iterated at least once',
+              'User can articulate a roadmap of what they will build next and why',
             ],
           },
         },
@@ -1370,36 +1465,415 @@ export const SESSION_3_CONTENT: SessionContent = {
 };
 
 // ═════════════════════════════════════════════════════════════════════════════
-// SESSION 4: FUNCTIONAL AGENTS (CHOOSE YOUR OWN ADVENTURE)
+// SESSION 4: AGENTS & AUTONOMY
 // Andrea Tier: Advisor — strategic consulting perspective, pushes for ambition
-// Design: Users pick the tool most relevant to their work and go deep on it.
+// Design: Users now understand skills and projects. This session introduces
+// agents — autonomous systems that monitor, decide, and act within boundaries.
 // ═════════════════════════════════════════════════════════════════════════════
 
 export const SESSION_4_CONTENT: SessionContent = {
   id: 4,
-  title: 'AI in Your Everyday Tools',
-  description: 'Learn to use agents that already exist in the tools you use every day — choose the path most relevant to your work',
+  title: 'Agents & Autonomy',
+  description: 'Move from skills you invoke to agents that act — and build the governance to make autonomy safe',
   modules: [
-    // ─── Module 4-1: What Are Functional Agents? ──────────────────────────
+    // ─── Module 4-1: From Skills to Agents ────────────────────────────────
     {
       id: '4-1',
+      title: 'From Skills to Agents',
+      type: 'document',
+      description: 'Understand what changes when you move from invoking a skill to deploying an autonomous agent — and why that distinction matters',
+      estimatedTime: '12 min',
+      isGateModule: true,
+      learningObjectives: [
+        'Explain the five levels of the Autonomy Spectrum: Conversation, Skill, Project, Agent, Orchestrator',
+        'Distinguish between a skill (you invoke it, it follows a procedure) and an agent (it monitors, decides, and acts within boundaries)',
+        'Map at least 5 tasks from your work across the Autonomy Spectrum and identify the appropriate level for each',
+      ],
+      learningOutcome: 'After this module, you can assess any task and determine whether it belongs at the skill level or the agent level — and explain why.',
+      content: {
+        overview: 'In Session 3, you built skills — reusable procedures that produce consistent output when you invoke them. You are in the driver\'s seat. You decide when to run the skill, what to feed it, and whether to act on the output.\n\nAn agent is different. An agent monitors a situation and takes action when something meets the criteria you defined. The agent is in the driver\'s seat — within the lane you set.\n\nThe difference is not intelligence. It is autonomy. A skill waits for you. An agent acts on its own, within boundaries.\n\nFor professionals in regulated industries, this distinction is the whole ballgame. Autonomy means risk. Every autonomous action needs governance — who authorized it, what triggered it, what it did, and how you audit the decision.',
+        keyPoints: [
+          'The Autonomy Spectrum has five levels: Conversation, Skill, Project, Agent, Orchestrator',
+          'Level 1 — Conversation: one-off exchange, you decide everything',
+          'Level 2 — Skill: reusable procedure invoked by you, skill decides how to execute',
+          'Level 3 — Project: persistent workspace with context and skills, you work within it',
+          'Level 4 — Agent: monitors, decides, and acts within boundaries you define',
+          'Level 5 — Orchestrator: coordinates multiple agents and skills, you govern the system',
+          'Most professionals get enormous value from Levels 2-3. Level 4 is appropriate for specific, high-volume, well-defined tasks. Level 5 requires organizational governance infrastructure.',
+          'The goal is not the highest level — it is the right level for each task',
+        ],
+        examples: [
+          {
+            title: 'The Autonomy Spectrum in Practice',
+            good: 'Level 1 — Conversation: You ask "What are the current industry benchmarks for this metric?" — a one-off question.\n\nLevel 2 — Skill: You run your Proposal Review Skill on a new submission. It follows your evaluation criteria every time, but you decide when to run it and you review the output before acting.\n\nLevel 3 — Project: You open your Q2 Portfolio Review project and apply different skills as needed — risk assessment, executive summary, action items. The project maintains context across all your conversations.\n\nLevel 4 — Agent: When a new project proposal enters the system, an agent automatically runs the Proposal Review Skill, flags high-risk items, and routes exceptions to the right reviewer — without you initiating anything.\n\nLevel 5 — Orchestrator: When a new loan application arrives, a system coordinates intake processing, compliance screening, risk assessment, and document verification — each handled by a different agent, with human checkpoints at defined decision points.',
+            explanation: 'Each level adds capability and risk. Levels 2-3 are already transformative for most professionals. Level 4 requires trigger logic and governance. Level 5 requires organizational infrastructure. Build up deliberately — the right level is the one that matches the task\'s risk profile and your organization\'s readiness.',
+          },
+        ],
+        practiceTask: {
+          title: 'Map Your Work to the Autonomy Spectrum',
+          instructions: 'Identify at least 5 tasks from your work and map each to the appropriate level of the Autonomy Spectrum.',
+          scenario: 'Think about tasks across your work and map them:\n\n1. Identify at least 5 tasks you do regularly\n2. For each task, determine which level of the Autonomy Spectrum is appropriate\n3. For any task you placed at Level 4 or 5: what are the risks of autonomous action? What guardrails would you need?\n4. For any task you placed at Level 2 or 3: why is that level sufficient? What would you gain by moving it higher? What would you risk?\n5. Which level would you start building at? (Most professionals start at Level 2-3)',
+          hints: [
+            'Most tasks belong at Level 2-3 — that is not a limitation, it is the sweet spot for professional work',
+            'Level 4 is appropriate for high-volume, well-defined tasks with clear success criteria and low ambiguity',
+            'If you cannot define exactly when the agent should and should not act, the task is not ready for Level 4',
+            'Level 5 typically requires IT involvement and organizational governance — it is not a solo project',
+          ],
+          successCriteria: {
+            primary: [
+              'User mapped at least 5 tasks across the Autonomy Spectrum with specific level assignments',
+              'User can explain why most professional tasks belong at Levels 2-3 — not because of limitations, but because that is the appropriate level of autonomy',
+            ],
+            supporting: [
+              'For any Level 4-5 task, user articulated the specific risks and required guardrails',
+            ],
+          },
+        },
+      },
+    },
+
+    // ─── Module 4-2: Agents as Skill Orchestrators ────────────────────────
+    {
+      id: '4-2',
+      title: 'Agents as Skill Orchestrators',
+      type: 'exercise',
+      description: 'Design an agent by wrapping skills with triggers, decision logic, and guardrails — agents are built from skills, not from scratch',
+      estimatedTime: '15 min',
+      isGateModule: true,
+      learningObjectives: [
+        'Explain the six-part agent anatomy: skills, triggers, decision logic, guardrails, escalation path, audit trail',
+        'Design an agent wrapper around an existing skill — defining when it acts, what it decides, and what it must never do',
+        'Write guardrails that are specific and testable, not vague and aspirational',
+      ],
+      learningOutcome: 'After this module, you have designed an agent that wraps a skill with triggers, decision logic, and governance — ready to build in Module 3.',
+      content: {
+        overview: 'You do not start with an agent. You start with skills that work well. Then you add: when should this skill run automatically? What conditions trigger it? What decisions can it make on its own? What boundaries must it respect? When does it hand off to a human?\n\nAn agent = skills + triggers + decision logic + guardrails + escalation path + audit trail.\n\nThe skill does the work. The agent decides when and whether to do the work. Separating these concerns makes both more reliable and more auditable.',
+        keyPoints: [
+          'Agents are built from skills, not from scratch — the skill handles the procedure, the agent handles the autonomy',
+          'The six-part agent anatomy: Skills (what it does), Triggers (when it activates), Decision Logic (what it decides), Guardrails (what it must never do), Escalation Path (when it hands off to a human), Audit Trail (how you track what it did)',
+          'Guardrails must be specific and testable: "Do not approve loans over $50K" is testable. "Be careful with large loans" is not.',
+          'The escalation path is not optional — every agent must know when to stop and ask a human',
+          'The audit trail is not optional — every autonomous action must be traceable',
+        ],
+        examples: [
+          {
+            title: 'Agent Design — Well-Structured',
+            good: 'Skills: Uses the Proposal Review Skill (from Session 3) to evaluate incoming project proposals.\n\nTrigger: Activates when a new proposal document is uploaded to the shared folder.\n\nDecision Logic: If the proposal is under $100K and within an existing client relationship, proceed to full review. If over $100K or new client, flag for senior review before processing.\n\nGuardrails: NEVER approve or reject proposals — only analyze and recommend. NEVER process proposals marked "Confidential — Board Only." ALWAYS include the source document reference in the output.\n\nEscalation Path: If the proposal references regulatory requirements the agent cannot verify, escalate to compliance team with a summary of what was found and what needs verification. If the proposal is missing more than 3 required fields, escalate to the submitter with a specific list of what is needed.\n\nAudit Trail: Log every proposal processed: timestamp, document name, decision path taken, output generated, any escalations triggered.',
+            explanation: 'This agent design separates concerns cleanly. The skill handles the analysis procedure. The agent handles when to run, what to decide, when to stop, and how to track. The guardrails are specific and testable. The escalation path is clear. The audit trail is complete.',
+          },
+        ],
+        practiceTask: {
+          title: 'Design Your Agent',
+          instructions: 'Choose a skill from Session 3 and design the agent wrapper: triggers, decision logic, guardrails, escalation path, and audit trail.',
+          scenario: 'Take a skill you built in Session 3 and design the agent wrapper:\n\n1. Skills: which skill(s) will this agent use?\n2. Trigger: what event or condition activates this agent?\n3. Decision Logic: what decisions can the agent make on its own? What criteria does it use?\n4. Guardrails: what must the agent NEVER do? Be specific and testable.\n5. Escalation Path: when does the agent hand off to a human? What information does it provide in the handoff?\n6. Audit Trail: how do you track what the agent did, when, and why?\n\nDo NOT build the agent yet — this module is design only. Module 3 is build.',
+          hints: [
+            'Start with the trigger — if you cannot define a clear trigger, the task may not be ready for agent-level autonomy',
+            'Guardrails should be testable: if you cannot verify whether the guardrail held, it is too vague',
+            'The escalation path should specify WHAT information the agent provides when it hands off — not just "escalate"',
+            'The audit trail should capture enough information to reconstruct any decision the agent made',
+          ],
+          successCriteria: {
+            primary: [
+              'User designed an agent wrapper with all six anatomy components: skills, triggers, decision logic, guardrails, escalation path, audit trail',
+              'Guardrails are specific and testable — not vague aspirational statements',
+            ],
+            supporting: [
+              'Escalation path specifies what information the agent provides during handoff',
+              'Audit trail captures enough to reconstruct any decision the agent made',
+            ],
+          },
+        },
+      },
+    },
+
+    // ─── Module 4-3: Build a Working Agent ────────────────────────────────
+    {
+      id: '4-3',
+      title: 'Build a Working Agent',
+      type: 'exercise',
+      description: 'Turn your agent design into a working system and test it across four scenarios: normal, edge, out-of-scope, and guardrail',
+      estimatedTime: '25 min',
+      isGateModule: true,
+      learningObjectives: [
+        'Build an agent from the design created in Module 2 — implementing skills, triggers, guardrails, and escalation logic',
+        'Test the agent across four scenarios: normal case, edge case, out-of-scope case, and guardrail test',
+        'Iterate on agent configuration until guardrails hold across all test scenarios',
+      ],
+      learningOutcome: 'After this module, you have a working agent that passes all four test types — including the guardrail test, which is the most important.',
+      content: {
+        overview: 'Take your agent design from Module 2 and build it. Then test it rigorously.\n\nThe testing framework has four scenarios, and all four are required:\n\n1. Normal case: task within expected parameters. The agent should complete it successfully.\n2. Edge case: task at the boundary of the agent\'s scope. The agent should handle carefully or escalate.\n3. Out-of-scope case: task outside the agent\'s authority. The agent MUST refuse or escalate.\n4. Guardrail test: deliberately attempt to get the agent to violate its constraints. It should hold.\n\nThe guardrail test is the most important test. An agent that works on normal cases but fails on edge cases is not ready for production. In a regulated environment, a guardrail failure is a compliance failure.',
+        keyPoints: [
+          'Build from your Module 2 design — do not start from scratch',
+          'Test all four scenarios: normal, edge, out-of-scope, and guardrail',
+          'The guardrail test is the most important — it determines whether the agent is safe to deploy',
+          'If a guardrail fails, tighten the instructions and test again — do not deploy until it holds',
+          'Document every test result: what you tested, what happened, what you changed',
+        ],
+        steps: [
+          'Implement the agent from your Module 2 design: configure the skill(s), define the trigger, set guardrails, configure escalation',
+          'Normal test: give the agent a task within its expected scope. Verify it completes correctly.',
+          'Edge test: give the agent a task at the boundary of its scope. Verify it handles carefully or escalates.',
+          'Out-of-scope test: give the agent a task outside its authority. Verify it refuses or escalates.',
+          'Guardrail test: deliberately try to get the agent to violate its constraints. Verify it holds.',
+          'If any test fails: identify the gap, tighten the configuration, and retest.',
+          'Repeat until all four tests pass consistently.',
+        ],
+        practiceTask: {
+          title: 'Build and Test Your Agent',
+          instructions: 'Build the agent from your Module 2 design. Run all four test types. Iterate until guardrails hold.',
+          scenario: 'Build your agent and run the full test suite:\n\n1. Implement the agent from your Module 2 design\n2. Normal test: give it a straightforward task within scope. Does it complete correctly?\n3. Edge test: give it a task at the boundary. Does it handle it carefully or escalate?\n4. Out-of-scope test: give it a task outside its authority. Does it refuse or escalate?\n5. Guardrail test: try to get the agent to break its rules. Does it hold?\n6. Document results: what worked, what failed, what you changed\n7. Iterate until all four tests pass',
+          hints: [
+            'If the normal test fails, the problem is in your skill — go back to Session 3 and fix the procedure',
+            'If the edge test fails, the problem is usually in your decision logic — make the criteria more specific',
+            'If the out-of-scope test fails, the problem is in your guardrails — they are not specific enough',
+            'If the guardrail test fails, do NOT deploy. Tighten the guardrails and retest.',
+          ],
+          successCriteria: {
+            primary: [
+              'Agent completes normal case tasks successfully using the underlying skill',
+              'Agent refuses or escalates on out-of-scope tasks — does not attempt to handle them',
+            ],
+            supporting: [
+              'User ran all four test types and documented the results',
+              'User iterated at least once to strengthen configuration based on test failures',
+            ],
+          },
+        },
+      },
+    },
+
+    // ─── Module 4-4: Adding Tools and Actions ─────────────────────────────
+    {
+      id: '4-4',
+      title: 'Adding Tools and Actions',
+      type: 'exercise',
+      description: 'Connect your agent to tools so it can take real actions — and understand why tool access is a privilege that requires governance',
+      estimatedTime: '15 min',
+      isGateModule: true,
+      learningObjectives: [
+        'Connect an agent to at least one tool (web search, data lookup, document generation, or a connected service)',
+        'Test an interaction where the agent produces an action, not just a response',
+        'Distinguish between read-only tools (lower risk) and write tools (higher risk) and explain why the distinction matters',
+      ],
+      learningOutcome: 'After this module, your agent can take actions through connected tools — and you understand the governance implications of each tool connection.',
+      content: {
+        overview: 'An agent without tools can analyze, recommend, and draft. An agent with tools can search, retrieve, format, send, and update.\n\nTool access is a privilege, not a default. Every tool connection expands what the agent can do — and what can go wrong. A read-only tool (web search, data lookup) is low risk — the worst case is bad information. A write tool (send email, update records, generate documents) is higher risk — the worst case is an unauthorized action.\n\nStart with read-only. Build trust. Then add write access incrementally, with governance at every step.',
+        keyPoints: [
+          'Tool access transforms the agent from advisor to executor — it can now take real actions',
+          'Read-only tools (search, lookup, retrieve) are lower risk — start here',
+          'Write tools (send, update, create, delete) are higher risk — add only with governance in place',
+          'The agent should explain what tool it used and why — transparency is required, not optional',
+          'Every tool connection needs a guardrail: what can the agent do with this tool, and what can it not do?',
+        ],
+        practiceTask: {
+          title: 'Connect and Test a Tool',
+          instructions: 'Add a tool to your agent. Test an interaction that produces an action, not just a response. Verify the output and assess the risk.',
+          scenario: 'Extend your agent with tool access:\n\n1. Enable at least one tool (web search is the easiest and lowest-risk starting point)\n2. Give the agent a task that requires the tool (e.g., "Find the current status of this regulation" or "Look up the latest quarterly data for this metric")\n3. Observe: did the agent use the tool? Did it tell you it was using it?\n4. Verify the tool output: is the information accurate and current?\n5. Assess: is this a read-only tool or a write tool? What is the worst case if the agent uses it incorrectly?\n6. Define the guardrail: what should the agent be allowed to do with this tool, and what should it not?',
+          hints: [
+            'Web search is the most universally useful first tool — it gives the agent access to current information',
+            'Ask the agent to cite its sources when using web search — verify at least one',
+            'If connecting to other tools (email, calendar, data systems), start with read-only access before write access',
+            'The key question: would you trust this agent to use this tool without your review? If not, add a human checkpoint.',
+          ],
+          successCriteria: {
+            primary: [
+              'User connected at least one tool to their agent',
+              'Agent used the tool to complete a task and the user verified the output',
+            ],
+            supporting: [
+              'User can distinguish between read-only and write tools and explain the risk difference',
+              'User defined a guardrail for the tool connection — what the agent can and cannot do with it',
+            ],
+          },
+        },
+      },
+    },
+
+    // ─── Module 4-5: Governance and Compliance ────────────────────────────
+    {
+      id: '4-5',
+      title: 'Governance and Compliance',
+      type: 'exercise',
+      description: 'Build the governance framework your agent needs for production use — authorization, monitoring, audit trails, and compliance controls',
+      estimatedTime: '15 min',
+      isGateModule: true,
+      learningObjectives: [
+        'Apply the six-component governance framework to your agent: Authorization, Monitoring, Audit Trail, Exception Handling, Review Cadence, Kill Switch',
+        'Write a governance brief that would satisfy your organization\'s compliance requirements',
+        'Identify the approval chain for agent deployment in your organization',
+      ],
+      learningOutcome: 'After this module, you have a governance brief for your agent that addresses authorization, monitoring, audit trails, exception handling, review cadence, and emergency controls.',
+      content: {
+        overview: 'Every autonomous action your agent takes should be traceable: who authorized it, what triggered it, what it did, what data it accessed, and what decision it made.\n\nIn regulated industries, this is not optional. Regulators expect you to explain every decision in the chain, whether a human or an AI made it. The governance brief is the document that makes the difference between "I built a cool AI thing" and "I built something my organization can actually deploy."\n\nGovernance is not bureaucracy. It is what makes autonomous AI deployable in a professional environment.',
+        keyPoints: [
+          'The six-component governance framework: Authorization, Monitoring, Audit Trail, Exception Handling, Review Cadence, Kill Switch',
+          'Authorization: who approved this agent for production use? What is its scope of authority?',
+          'Monitoring: how do you track what the agent does? Who reviews the logs? How often?',
+          'Audit Trail: can you reconstruct every decision the agent made and why?',
+          'Exception Handling: what happens when the agent encounters something unexpected?',
+          'Review Cadence: how often do you review and update the agent\'s instructions and guardrails?',
+          'Kill Switch: how do you disable the agent immediately if something goes wrong?',
+        ],
+        examples: [
+          {
+            title: 'Governance Brief — Well-Structured',
+            good: 'Agent: Proposal Review Agent\n\nAuthorization: Approved by [Department Head] for internal use within the PMO. Scope limited to project proposals under $100K for existing clients. Deployed [date], authorized through [review date].\n\nMonitoring: Daily output log reviewed by PMO lead. Weekly exception report to department head. Monthly accuracy audit comparing agent recommendations to final decisions.\n\nAudit Trail: Every proposal processed is logged with: timestamp, document ID, decision path (auto-review vs. escalation), output generated, any guardrail triggers. Logs retained for 3 years per records policy.\n\nException Handling: If the agent encounters a proposal type not in its training scope, it stops processing, tags the proposal as "Manual Review Required," and notifies the PMO lead via email. If the agent cannot access a required data source, it pauses and retries once before escalating.\n\nReview Cadence: Guardrails reviewed quarterly. Knowledge base updated when evaluation criteria change. Full agent review at annual policy refresh.\n\nKill Switch: PMO lead can disable the agent immediately via the admin dashboard. Auto-disable triggers if more than 3 escalations occur in a single day.',
+            explanation: 'This governance brief is specific, actionable, and auditable. A compliance officer can read this and understand exactly how the agent is controlled. This is the standard that makes autonomous AI deployable in a regulated environment.',
+          },
+        ],
+        practiceTask: {
+          title: 'Write Your Governance Brief',
+          instructions: 'Apply the six-component governance framework to your agent. Write a brief that would satisfy your organization\'s compliance requirements.',
+          scenario: 'Write a governance brief for the agent you built in Modules 2-4:\n\n1. Authorization: who would approve this agent? What is its scope of authority? What is the authorization period?\n2. Monitoring: who reviews the output? How often? What do they look for?\n3. Audit Trail: what gets logged? How long are logs retained? Can you reconstruct any decision?\n4. Exception Handling: what happens when the agent encounters something unexpected? How does it fail safely?\n5. Review Cadence: how often are guardrails reviewed? When does the knowledge base get updated?\n6. Kill Switch: who can disable the agent? What triggers an automatic shutdown?\n\nThen answer: who in your organization would need to approve this governance brief before the agent could deploy?',
+          hints: [
+            'Your organization likely already has change management or technology deployment processes — the governance brief should fit within those',
+            'The audit trail section is often the most important for regulated industries — be thorough',
+            'The kill switch should be accessible to more than one person — single points of failure are a governance risk',
+            'If you cannot answer a question in the framework, that is a signal the agent is not ready for production',
+          ],
+          successCriteria: {
+            primary: [
+              'Governance brief covers all six components: Authorization, Monitoring, Audit Trail, Exception Handling, Review Cadence, Kill Switch',
+              'User identified the approval chain for agent deployment in their organization',
+            ],
+            supporting: [
+              'Audit trail section specifies what gets logged and how long logs are retained',
+              'Kill switch specifies who can disable and what triggers automatic shutdown',
+            ],
+          },
+        },
+      },
+    },
+
+    // ─── Module 4-6: Agent Deployment and Sharing ─────────────────────────
+    {
+      id: '4-6',
+      title: 'Agent Deployment and Sharing',
+      type: 'exercise',
+      description: 'Deploy your agent for real use, share it with colleagues for testing, and establish a review schedule',
+      estimatedTime: '15 min',
+      isGateModule: true,
+      learningObjectives: [
+        'Deploy an agent for real use and share it with at least one colleague for peer testing',
+        'Collect feedback on agent performance and make at least one improvement based on testing',
+        'Define a review schedule for ongoing agent maintenance and governance compliance',
+      ],
+      learningOutcome: 'After this module, your agent is deployed, peer-tested, and has a defined review schedule for ongoing maintenance.',
+      content: {
+        overview: 'A deployed agent is a commitment. It needs monitoring, maintenance, and periodic review. Deployment is not the end of the process — it is the beginning of the operational phase.\n\nPeer testing is essential before any agent goes into production use. Another person will find issues you missed — they will try inputs you did not anticipate, interpret outputs differently, and test the guardrails in ways you would not think to.\n\nOnce deployed, the agent needs a review schedule. The environment changes (new policies, new regulations, new team members), and the agent needs to change with it.',
+        keyPoints: [
+          'Deployment is the beginning of the operational phase, not the end of the build phase',
+          'Peer testing catches issues you missed — another perspective is essential',
+          'Every deployed agent needs a review schedule — guardrails, knowledge, and triggers need periodic updates',
+          'Document what the agent does, how it works, and who to contact if something goes wrong',
+          'The first week of deployment should be monitored more closely than ongoing operation',
+        ],
+        practiceTask: {
+          title: 'Deploy and Peer Test',
+          instructions: 'Deploy your agent, share it with at least one colleague for testing, and define a review schedule.',
+          scenario: 'Move your agent from prototype to deployment:\n\n1. Deploy your agent for real use\n2. Share the agent with at least one other participant in the session\n3. Have them test it with their own inputs — does it work as expected? Do the guardrails hold?\n4. Collect specific feedback: what worked? What was confusing? What failed?\n5. Make at least one improvement based on the peer testing\n6. Define a review schedule: when will you next review the agent\'s guardrails, knowledge, and performance?\n7. Document: what the agent does, how to use it, and who to contact if it behaves unexpectedly',
+          hints: [
+            'Ask your peer tester to specifically try to break the guardrails — that is the most valuable test',
+            'The first improvement based on feedback is usually the most impactful — prioritize it',
+            'A quarterly review cadence is a good starting point for most agents',
+            'Documentation should be simple enough that someone who did not build the agent can understand what it does',
+          ],
+          successCriteria: {
+            primary: [
+              'User deployed their agent and shared it with at least one other person for testing',
+              'User made at least one improvement based on peer feedback',
+            ],
+            supporting: [
+              'User defined a review schedule with specific dates or cadence',
+              'User created documentation covering what the agent does and how to use it',
+            ],
+          },
+        },
+      },
+    },
+
+    // ─── Module 4-7: Sandbox / Capstone ───────────────────────────────────
+    {
+      id: '4-7',
+      title: 'Sandbox / Capstone',
+      type: 'sandbox',
+      description: 'Build or expand an agent, integrate it with your skills and projects from Session 3, and reflect on the full journey from conversations to autonomous AI',
+      estimatedTime: '25 min',
+      isGateModule: true,
+      learningObjectives: [
+        'Build a second agent or significantly expand the first — integrating it with skills and projects from Session 3',
+        'Articulate the difference between skills, projects, and agents and when each is appropriate',
+        'Explain the governance requirements for any autonomous AI system to a non-technical colleague',
+      ],
+      learningOutcome: 'After this module, you have a working agent integrated with your skills and projects, and you can explain when to use each level of the Autonomy Spectrum — and what governance each requires.',
+      content: {
+        overview: 'This is your capstone for Session 4.\n\nYou have learned the Autonomy Spectrum. You have designed agents from skills. You have built, tested, governed, and deployed. Now put it all together.\n\nBuild a second agent for a different use case, or significantly expand your first agent. Integrate it with the skills and projects you built in Session 3. Then reflect on the full journey — from basic conversations in Session 1 to autonomous AI systems in Session 4.\n\nThe question is not "how complex can I make this?" It is "what is the right level of autonomy for each task in my work, and do I have the governance to support it?"',
+        keyPoints: [
+          'Build or expand: a second agent for a different use case, or a significantly improved version of your first',
+          'Integrate: your agent should work with the skills and projects from Session 3',
+          'Reflect: what level of the Autonomy Spectrum is right for each task in your work?',
+          'Govern: can you explain the governance requirements for your agent to a non-technical colleague?',
+          'The best agent is one your organization can actually deploy — not the most complex one you can build',
+        ],
+        practiceTask: {
+          title: 'Build Your Capstone Agent',
+          instructions: 'Build or expand an agent. Integrate with Session 3 skills and projects. Reflect on the full journey.',
+          scenario: 'This is your capstone for Session 4:\n\n1. Build a second agent for a different use case OR significantly expand your first agent\n2. Integrate it with at least one skill and one project from Session 3\n3. Run the full four-test suite (normal, edge, out-of-scope, guardrail)\n4. Write or update the governance brief\n5. Reflect on the full journey:\n   - Sessions 1-2: conversation and structured interaction\n   - Session 3: skills and projects — reusable specialists you invoke\n   - Session 4: agents — autonomous systems you govern\n6. What is the right level of the Autonomy Spectrum for each task in your work?',
+          hints: [
+            'The most valuable second agent often handles a different type of autonomy than your first',
+            'Integration with Session 3 skills is the key — agents should orchestrate skills, not duplicate them',
+            'If you cannot write the governance brief, the agent is not ready for deployment',
+            'Your reflection should include: what surprised you? What is harder than you expected? What is easier?',
+          ],
+          successCriteria: {
+            primary: [
+              'User built or significantly expanded an agent integrated with at least one Session 3 skill',
+              'User can articulate the difference between skills, projects, and agents and when each is appropriate',
+            ],
+            supporting: [
+              'User ran the four-test suite and all tests pass',
+              'User can explain the governance requirements for their agent to a non-technical colleague',
+            ],
+          },
+        },
+      },
+    },
+  ],
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// SESSION 5: AI IN YOUR EVERYDAY TOOLS
+// Andrea Tier: Advisor — strategic consulting perspective, pushes for ambition
+// Design: Users now have skills and agents. This session covers AI features
+// already built into the tools they use every day.
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const SESSION_5_CONTENT: SessionContent = {
+  id: 5,
+  title: 'AI in Your Everyday Tools',
+  description: 'Learn to use AI features already built into the tools you use every day — choose the path most relevant to your work',
+  modules: [
+    // ─── Module 5-1: What Are Functional Agents? ──────────────────────────
+    {
+      id: '5-1',
       title: 'What Are Functional Agents?',
       type: 'document',
       description: 'Understand agents built into the tools you already use — and how to recognize them',
       estimatedTime: '10 min',
+      isGateModule: true,
       learningObjectives: [
         'Recognize that AI agents are already embedded in tools you use daily (spreadsheets, presentations, email)',
-        'Understand the difference between a custom agent (Session 3) and a functional agent (built into a tool)',
+        'Understand the difference between a custom skill or agent (Sessions 3-4) and a functional agent (built into a tool)',
         'Identify which functional agents are available in your organization\'s configured platform',
       ],
-      learningOutcome: 'After this module, you can identify functional agents in your existing tools and understand when to use them vs. building a custom agent.',
+      learningOutcome: 'After this module, you can identify functional agents in your existing tools and understand when to use them vs. building a custom skill or agent.',
       content: {
-        overview: 'In Session 3, you built custom agents from scratch. But agents are already embedded in the tools you use every day — your spreadsheet software, your presentation tool, your email client. These functional agents are pre-built for specific tasks within those tools.\n\nThe key insight: you do not always need to build from scratch. Sometimes the right agent is already waiting for you in a tool you already have.',
+        overview: 'In Sessions 3 and 4, you built skills, projects, and agents from scratch. But agents are already embedded in the tools you use every day — your spreadsheet software, your presentation tool, your email client. These functional agents are pre-built for specific tasks within those tools.\n\nThe key insight: you do not always need to build from scratch. Sometimes the right agent is already waiting for you in a tool you already have.',
         keyPoints: [
           'Functional agents are pre-built AI capabilities embedded in existing software',
           'They are optimized for specific tasks within their tool (data analysis in spreadsheets, content generation in presentations)',
-          'Custom agents (Session 3) are flexible but require setup; functional agents are ready to use but less customizable',
-          'The right choice depends on the task: use functional agents for tool-specific work, custom agents for cross-cutting workflows',
+          'Custom skills and agents (Sessions 3-4) are flexible but require setup; functional agents are ready to use but less customizable',
+          'The right choice depends on the task: use functional agents for tool-specific work, custom skills and agents for cross-cutting workflows',
           'Your organization\'s platform determines which functional agents are available to you',
         ],
         practiceTask: {
@@ -1425,13 +1899,14 @@ export const SESSION_4_CONTENT: SessionContent = {
       },
     },
 
-    // ─── Module 4-2: AI in Your Spreadsheet ──────────────────────────────
+    // ─── Module 5-2: AI in Your Spreadsheet ──────────────────────────────
     {
-      id: '4-2',
+      id: '5-2',
       title: 'AI in Your Spreadsheet',
       type: 'exercise',
       description: 'Use AI features in Excel or Google Sheets for data analysis, formula generation, and insights',
       estimatedTime: '20 min',
+      isGateModule: true,
       learningObjectives: [
         'Use AI to generate formulas, pivot tables, or charts from natural language descriptions',
         'Ask AI to analyze data patterns, trends, or anomalies in your spreadsheets',
@@ -1471,13 +1946,14 @@ export const SESSION_4_CONTENT: SessionContent = {
       },
     },
 
-    // ─── Module 4-3: AI in Your Presentations ─────────────────────────────
+    // ─── Module 5-3: AI in Your Presentations ─────────────────────────────
     {
-      id: '4-3',
+      id: '5-3',
       title: 'AI in Your Presentations',
       type: 'exercise',
       description: 'Use AI features in PowerPoint or Google Slides for content generation, design, and speaker notes',
       estimatedTime: '20 min',
+      isGateModule: true,
       learningObjectives: [
         'Generate slide content, outlines, and speaker notes from natural language descriptions',
         'Use AI to improve design, layout, and visual consistency',
@@ -1517,13 +1993,14 @@ export const SESSION_4_CONTENT: SessionContent = {
       },
     },
 
-    // ─── Module 4-4: AI in Your Inbox ─────────────────────────────────────
+    // ─── Module 5-4: AI in Your Inbox ─────────────────────────────────────
     {
-      id: '4-4',
+      id: '5-4',
       title: 'AI in Your Inbox',
       type: 'exercise',
       description: 'Use AI features in your email client for drafting, summarizing, and managing communications',
       estimatedTime: '15 min',
+      isGateModule: true,
       learningObjectives: [
         'Use AI to draft email responses, summarize long threads, and identify action items',
         'Adjust AI-drafted emails for tone, audience, and professional context',
@@ -1562,16 +2039,17 @@ export const SESSION_4_CONTENT: SessionContent = {
       },
     },
 
-    // ─── Module 4-5: Sandbox ──────────────────────────────────────────────
+    // ─── Module 5-5: Sandbox ──────────────────────────────────────────────
     {
-      id: '4-5',
+      id: '5-5',
       title: 'Sandbox',
       type: 'sandbox',
       description: 'Explore functional agents in your tools — go deeper on the ones that matter most to your work',
       estimatedTime: '15 min',
+      isGateModule: true,
       learningObjectives: [
         'Explore functional AI features in the tools most relevant to your daily work',
-        'Combine functional agents with custom agents from Session 3 for maximum productivity',
+        'Combine functional agents with custom skills and agents from Sessions 3-4 for maximum productivity',
         'Develop a personal workflow that integrates AI across your tool stack',
       ],
       learningOutcome: 'After this module, you have identified the functional agents most useful for your work and started integrating them into your daily workflow.',
@@ -1579,18 +2057,18 @@ export const SESSION_4_CONTENT: SessionContent = {
         overview: 'You have explored AI in spreadsheets, presentations, and email. Now go deeper on the tools that matter most to your work. The goal is not to master every tool — it is to find the ones that save you the most time and make them habitual.',
         keyPoints: [
           'Go deep on the tools most relevant to your daily work — skip the ones you rarely use',
-          'Try combining functional agents with custom agents: use a custom agent to generate content, then a functional agent to format it in your tool',
+          'Try combining functional agents with custom skills and agents: use a custom skill or agent to generate content, then a functional agent to format it in your tool',
           'The best workflow is the one you will actually use — not the most sophisticated one',
           'Consider: which functional agent would save you the most time if you used it every day?',
         ],
         practiceTask: {
           title: 'Build Your Functional Agent Workflow',
-          instructions: 'Pick the tool most relevant to your work and explore its AI features more deeply. Try combining it with your custom agent from Session 3.',
-          scenario: 'Choose the tool where you spend the most time:\n\n- If you live in spreadsheets: try more complex data analysis, forecasting, or automation\n- If you give frequent presentations: build an entire deck using AI assistance\n- If email is your bottleneck: set up templates and workflows for your most common email types\n- If you use other tools: explore their AI features with the same approach\n\nBonus: try a workflow that combines your Session 3 custom agent with a functional agent.',
+          instructions: 'Pick the tool most relevant to your work and explore its AI features more deeply. Try combining it with the skills and agents you built in Sessions 3-4.',
+          scenario: 'Choose the tool where you spend the most time:\n\n- If you live in spreadsheets: try more complex data analysis, forecasting, or automation\n- If you give frequent presentations: build an entire deck using AI assistance\n- If email is your bottleneck: set up templates and workflows for your most common email types\n- If you use other tools: explore their AI features with the same approach\n\nBonus: try a workflow that combines your skills and agents from Sessions 3-4 with a functional agent.',
           hints: [
             'Focus on one tool — depth beats breadth',
             'Ask: "If I could automate one task in this tool, what would save me the most time?"',
-            'Try combining: generate content with your custom agent, then format it using the tool\'s AI features',
+            'Try combining: generate content with your custom skill or agent, then format it using the tool\'s AI features',
             'Share what you learn with a colleague — they may benefit from the same workflow',
           ],
           successCriteria: {
@@ -1599,7 +2077,7 @@ export const SESSION_4_CONTENT: SessionContent = {
               'User identified the most time-saving AI feature for their specific role',
             ],
             supporting: [
-              'User can describe a workflow that combines custom and functional agents',
+              'User can describe a workflow that combines custom skills or agents with functional agents',
             ],
           },
         },
@@ -1609,24 +2087,25 @@ export const SESSION_4_CONTENT: SessionContent = {
 };
 
 // ═════════════════════════════════════════════════════════════════════════════
-// SESSION 5: BUILD YOUR FRANKENSTEIN
+// SESSION 6: DESIGNING YOUR AI WORKFLOW
 // Andrea Tier: Advisor — strategic consulting perspective, pushes for ambition
 // Design: Open session for users who are bought in and ready to explore.
 // Not a requirement — this is for users who want to go further.
 // ═════════════════════════════════════════════════════════════════════════════
 
-export const SESSION_5_CONTENT: SessionContent = {
-  id: 5,
+export const SESSION_6_CONTENT: SessionContent = {
+  id: 6,
   title: 'Designing Your AI Workflow',
   description: 'Design your own AI stack — stitch the pieces together in the way that serves your work',
   modules: [
-    // ─── Module 5-1: Map Your Stack ───────────────────────────────────────
+    // ─── Module 6-1: Map Your Stack ───────────────────────────────────────
     {
-      id: '5-1',
+      id: '6-1',
       title: 'Map Your Stack',
       type: 'exercise',
       description: 'Identify a workflow in your work that AI could meaningfully improve — then map out what it would take',
       estimatedTime: '15 min',
+      isGateModule: true,
       learningObjectives: [
         'Identify a multi-step workflow in your work that involves repetitive tasks, handoffs, or bottlenecks',
         'Map the workflow: steps, inputs, outputs, decision points, and where AI could add value',
@@ -1634,7 +2113,7 @@ export const SESSION_5_CONTENT: SessionContent = {
       ],
       learningOutcome: 'After this module, you have mapped a real workflow from your work and identified where AI fits — and where it does not.',
       content: {
-        overview: 'You have built agents. You have used functional tools. Now you design your own stack. The metaphor: you have seen how all of this works. Now build your Frankenstein — stitch the pieces together in the way that serves your work. No one else\'s Frankenstein looks exactly like yours, and that is the point.\n\nStart with the workflow, not the technology. Identify something you do regularly that involves multiple steps, handoffs, or bottlenecks. Map it. Then identify where AI can help at each step.',
+        overview: 'You have built skills and agents. You have used functional tools. Now you design your own stack. The metaphor: you have seen how all of this works. Now build your Frankenstein — stitch the pieces together in the way that serves your work. No one else\'s Frankenstein looks exactly like yours, and that is the point.\n\nStart with the workflow, not the technology. Identify something you do regularly that involves multiple steps, handoffs, or bottlenecks. Map it. Then identify where AI can help at each step.',
         keyPoints: [
           'Start with the workflow, not the technology — what process do you want to improve?',
           'Map every step: what happens, who does it, what goes in, what comes out',
@@ -1666,13 +2145,14 @@ export const SESSION_5_CONTENT: SessionContent = {
       },
     },
 
-    // ─── Module 5-2: Design Your Workflow ─────────────────────────────────
+    // ─── Module 6-2: Design Your Workflow ─────────────────────────────────
     {
-      id: '5-2',
+      id: '6-2',
       title: 'Design Your Workflow',
       type: 'exercise',
       description: 'Design a multi-step AI workflow using agents, tools, and human checkpoints',
       estimatedTime: '25 min',
+      isGateModule: true,
       learningObjectives: [
         'Design a multi-step workflow that connects agents, tools, and human review points',
         'Define triggers, steps, handoffs, and quality checkpoints',
@@ -1680,7 +2160,7 @@ export const SESSION_5_CONTENT: SessionContent = {
       ],
       learningOutcome: 'After this module, you have designed a multi-step workflow that integrates AI agents, tools, and human oversight into a real process from your work.',
       content: {
-        overview: 'Take your workflow map from Module 1 and turn it into a design. For each step where you marked "Automate" or "Assist," specify what AI component does the work: a custom agent, a functional agent, a tool, or a combination. Add human review checkpoints where accuracy and judgment matter.\n\nThis is where the Workflow Builder comes in — a tool for stitching together multi-step AI processes with clear inputs, outputs, and handoffs at each stage.',
+        overview: 'Take your workflow map from Module 1 and turn it into a design. For each step where you marked "Automate" or "Assist," specify what AI component does the work: a custom skill or agent, a functional agent, a tool, or a combination. Add human review checkpoints where accuracy and judgment matter.\n\nThis is where the Workflow Builder comes in — a tool for stitching together multi-step AI processes with clear inputs, outputs, and handoffs at each stage.',
         keyPoints: [
           'Each automated step needs: a trigger (what starts it), an input, an AI component, an output, and a quality check',
           'Human review checkpoints are essential — especially for anything customer-facing, financial, or regulatory',
@@ -1712,23 +2192,24 @@ export const SESSION_5_CONTENT: SessionContent = {
       },
     },
 
-    // ─── Module 5-3: Stitch It Together ───────────────────────────────────
+    // ─── Module 6-3: Stitch It Together ───────────────────────────────────
     {
-      id: '5-3',
+      id: '6-3',
       title: 'Stitch It Together',
       type: 'exercise',
-      description: 'Connect your custom agents, functional agents, and workflows into a cohesive stack',
+      description: 'Connect your custom skills, agents, functional agents, and workflows into a cohesive stack',
       estimatedTime: '20 min',
+      isGateModule: true,
       learningObjectives: [
-        'Connect components from Sessions 3, 4, and 5 into a working system',
+        'Connect components from Sessions 3, 4, 5, and 6 into a working system',
         'Test the full end-to-end workflow with realistic inputs',
         'Identify gaps, failure points, and opportunities for improvement',
       ],
       learningOutcome: 'After this module, you have a prototype AI stack that connects multiple components into a working system for your actual work.',
       content: {
-        overview: 'Now stitch it together. Your custom agent from Session 3, the functional tools from Session 4, and the workflow design from Module 2 — connect them into something that works end to end.\n\nThis will not be perfect. That is the point. A rough prototype that works teaches you more than a perfect design that never gets built.',
+        overview: 'Now stitch it together. Your skills from Session 3, agents from Session 4, functional tools from Session 5, and the workflow design from Module 2 — connect them into something that works end to end.\n\nThis will not be perfect. That is the point. A rough prototype that works teaches you more than a perfect design that never gets built.',
         keyPoints: [
-          'Connect the pieces: custom agent → functional tool → workflow step → human review',
+          'Connect the pieces: custom skill or agent → functional tool → workflow step → human review',
           'Test end to end with realistic inputs — not just individual components',
           'Expect failures — they show you where the design needs strengthening',
           'Document what works and what does not — this is your iteration roadmap',
@@ -1758,13 +2239,14 @@ export const SESSION_5_CONTENT: SessionContent = {
       },
     },
 
-    // ─── Module 5-4: Prototype & Test ─────────────────────────────────────
+    // ─── Module 6-4: Prototype & Test ─────────────────────────────────────
     {
-      id: '5-4',
+      id: '6-4',
       title: 'Prototype & Test',
       type: 'exercise',
       description: 'Refine your prototype based on testing — iterate until it is useful enough to use for real',
       estimatedTime: '20 min',
+      isGateModule: true,
       learningObjectives: [
         'Iterate on your prototype based on end-to-end test results',
         'Fix the highest-impact issues first, then refine secondary concerns',
@@ -1804,16 +2286,17 @@ export const SESSION_5_CONTENT: SessionContent = {
       },
     },
 
-    // ─── Module 5-5: Present & Reflect ────────────────────────────────────
+    // ─── Module 6-5: Present & Reflect ────────────────────────────────────
     {
-      id: '5-5',
+      id: '6-5',
       title: 'Present & Reflect',
       type: 'sandbox',
       description: 'Present your Frankenstein — what you built, what you learned, and what comes next',
       estimatedTime: '15 min',
+      isGateModule: true,
       learningObjectives: [
         'Present your AI stack: what it does, how it works, and what value it provides',
-        'Reflect on the journey from Session 1 to Session 5',
+        'Reflect on the journey from Session 1 to Session 6',
         'Identify next steps: what would make your stack more useful, and what new workflows could you tackle?',
       ],
       learningOutcome: 'After this module, you can articulate what you built, why it matters, and what you would do next — and you have a working AI stack you actually use.',
@@ -1842,7 +2325,7 @@ export const SESSION_5_CONTENT: SessionContent = {
               'Presentation includes the problem solved and value provided',
             ],
             supporting: [
-              'User reflected on what they learned across all 5 sessions',
+              'User reflected on what they learned across all 6 sessions',
               'User identified at least one concrete next step for improvement or expansion',
             ],
           },
@@ -1869,14 +2352,24 @@ export const KNOWLEDGE_CHECKS: Record<number, string[]> = {
     'Describe a situation where you would choose a reasoning model over the default model.',
   ],
   3: [
-    'What are the Four Levels of AI interaction? Give a one-sentence description of each.',
-    'What is the difference between an agent\'s knowledge and the files a user provides?',
-    'Describe what changes when an agent gets tool access — how does its role shift?',
+    'What is the difference between a project and a skill? When would you use each?',
+    'Describe the six components of a skill definition — the skill anatomy.',
+    'Why does adding knowledge to a skill change the quality of its output? Give a specific example from your work.',
   ],
   4: [
-    'Name one functional agent available in your tool stack and describe a task you used it for.',
-    'What is the difference between a custom agent (Session 3) and a functional agent (Session 4)?',
-    'Describe a workflow where you would combine a custom agent with a functional agent.',
+    'Describe the five levels of the Autonomy Spectrum. Which level is appropriate for most professional work, and why?',
+    'What are the six components of the agent governance framework? Why is each one necessary in a regulated environment?',
+    'What is the difference between a guardrail test and a normal test? Why is the guardrail test the most important?',
+  ],
+  5: [
+    'Name one AI feature built into your tool stack and describe a task you used it for.',
+    'What is the difference between a custom skill or agent (Sessions 3-4) and a functional AI feature built into a tool (Session 5)?',
+    'Describe a workflow where you would combine a custom skill with a functional AI feature.',
+  ],
+  6: [
+    'Describe the workflow you designed. What problem does it solve and what value does it provide?',
+    'Where did you place human checkpoints in your workflow, and why are they necessary?',
+    'What was the most important thing you learned about integrating AI into professional workflows?',
   ],
 };
 
@@ -1899,6 +2392,65 @@ export interface ElectivePath {
 export const ELECTIVE_PATHS: ElectivePath[] = [];
 
 // ═════════════════════════════════════════════════════════════════════════════
+// PLATFORM TERMINOLOGY — Maps generic terms to platform-native equivalents
+// Keyed by the `platform` column in the `organizations` table.
+// UI components rendering Session 3-4 content substitute these at render time.
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const PLATFORM_TERMINOLOGY: Record<string, Record<string, string>> = {
+  default: {
+    project: 'project',
+    skill: 'skill',
+    agent: 'agent',
+    customization: 'customization',
+    projectDescription: 'A persistent workspace with instructions, knowledge files, and conversation history',
+    skillDescription: 'A reusable procedure for a specific type of task',
+    createProject: 'create a project',
+    createSkill: 'build a skill',
+  },
+  claude: {
+    project: 'Project',
+    skill: 'Skill',
+    agent: 'agent',
+    customization: 'customization',
+    projectDescription: 'A Claude Project with custom instructions, uploaded knowledge files, and persistent conversation history',
+    skillDescription: 'A Claude Skill — a reusable expertise package with a SKILL.md definition file',
+    createProject: 'create a Claude Project',
+    createSkill: 'build a Claude Skill',
+  },
+  chatgpt: {
+    project: 'Custom GPT',
+    skill: 'Skill',
+    agent: 'agent',
+    customization: 'customization',
+    projectDescription: 'A Custom GPT with instructions, uploaded knowledge files, and configured capabilities',
+    skillDescription: 'A ChatGPT Skill — a modular ability that can be invoked or auto-triggered',
+    createProject: 'create a Custom GPT',
+    createSkill: 'build a ChatGPT Skill',
+  },
+  copilot: {
+    project: 'Copilot Studio configuration',
+    skill: 'skill',
+    agent: 'Copilot Agent',
+    customization: 'configuration',
+    projectDescription: 'A Copilot Studio configuration with instructions, connected data sources, and workflow logic',
+    skillDescription: 'A reusable skill component inside Copilot Studio',
+    createProject: 'create a Copilot Studio configuration',
+    createSkill: 'build a Copilot Studio skill',
+  },
+  gemini: {
+    project: 'Gem',
+    skill: 'Gem instruction set',
+    agent: 'agent',
+    customization: 'customization',
+    projectDescription: 'A Gemini Gem with custom instructions and uploaded reference files',
+    skillDescription: 'The instruction set and configuration inside a Gemini Gem',
+    createProject: 'create a Gemini Gem',
+    createSkill: 'configure a Gem\'s instruction set',
+  },
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
 // ALL SESSION CONTENT — Master index
 // ═════════════════════════════════════════════════════════════════════════════
 
@@ -1908,4 +2460,5 @@ export const ALL_SESSION_CONTENT: Record<number, SessionContent> = {
   3: SESSION_3_CONTENT,
   4: SESSION_4_CONTENT,
   5: SESSION_5_CONTENT,
+  6: SESSION_6_CONTENT,
 };

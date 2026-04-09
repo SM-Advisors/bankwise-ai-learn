@@ -109,6 +109,7 @@ export default function TrainingWorkspace() {
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([]);
   const [mobileTab, setMobileTab] = useState<'practice' | 'coach'>('practice');
   const [mobileModulesOpen, setMobileModulesOpen] = useState(false);
+  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
 
   // Practice instructions popup state (must be before early returns to avoid conditional hook calls)
   const [practicePopupOpen, setPracticePopupOpen] = useState(false);
@@ -662,7 +663,7 @@ export default function TrainingWorkspace() {
       const userText = lastDoubleLine >= 0 ? afterPrefix.slice(lastDoubleLine + 2) : '';
       dbContent = `[Attached file: ${filePrefix[1]}]${userText ? '\n\n' + userText : ''}`;
     }
-    const userMsgForDb = { role: 'user' as const, content: dbContent };
+    const userMsgForDb = { role: 'user' as const, content: dbContent, model: preferredModel };
 
     // Track the conversation ID and messages for this send operation
     let convId = activeConversationId;
@@ -740,6 +741,8 @@ export default function TrainingWorkspace() {
         sessionNumber: parseInt(sessionId || '1'),
         model: preferredModel,
         industrySlug,
+        // Web search toggle (module 2-9+)
+        ...(webSearchEnabled ? { webSearch: true } : {}),
         // Session 3: use deployed agent's custom system prompt if available
         ...(isSession3 && deployedAgent?.system_prompt ? { customSystemPrompt: deployedAgent.system_prompt } : {}),
         // Department context for bankers; interests for F&F users
@@ -760,7 +763,7 @@ export default function TrainingWorkspace() {
 
           const reply = response.data?.reply;
           if (!reply) throw new Error(response.data?.error || 'Empty response from AI');
-          const assistantMsg = { role: 'assistant' as const, content: reply };
+          const assistantMsg = { role: 'assistant' as const, content: reply, model: preferredModel };
           await appendMessage(assistantMsg, convId);
           lastError = null;
           break;
@@ -795,7 +798,7 @@ export default function TrainingWorkspace() {
 
     // Build the conversation transcript to embed directly in the message
     const conversationTranscript = activeMessages
-      .map(m => `[${m.role === 'user' ? 'My Prompt' : 'AI Response'}]: ${m.content}`)
+      .map(m => `[${m.role === 'user' ? 'My Prompt' : 'AI Response'}]${m.model ? ` (model: ${m.model})` : ''}: ${m.content}`)
       .join('\n\n');
 
     const reviewRequest = `Please review my practice conversation below:\n\n---\n${conversationTranscript}\n---`;
@@ -1308,6 +1311,7 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
           3: !!progress?.session_3_completed,
           4: !!progress?.session_4_completed,
           5: !!progress?.session_5_completed,
+          6: !!progress?.session_6_completed,
         }}
         modules={session.modules}
         selectedModule={selectedModule}
@@ -1570,6 +1574,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   importPriorLabel={selectedModule ? IMPORT_LABELS[selectedModule.id] : undefined}
                   onImportPriorConversation={selectedModule && CONVERSATION_SEED_MAP[selectedModule.id] ? handleImportPriorConversation : undefined}
                   isImportingPrior={isImportingPrior}
+                  webSearchEnabled={webSearchEnabled}
+                  onWebSearchToggle={setWebSearchEnabled}
                 />
               ) : (
                 <PracticeChatPanel
@@ -1600,6 +1606,8 @@ I'm having a connection issue for detailed feedback. Ask me specific questions a
                   importPriorLabel={selectedModule ? IMPORT_LABELS[selectedModule.id] : undefined}
                   onImportPriorConversation={selectedModule && CONVERSATION_SEED_MAP[selectedModule.id] ? handleImportPriorConversation : undefined}
                   isImportingPrior={isImportingPrior}
+                  webSearchEnabled={webSearchEnabled}
+                  onWebSearchToggle={setWebSearchEnabled}
                 />
               )
             ) : null}

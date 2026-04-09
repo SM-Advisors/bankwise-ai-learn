@@ -28,6 +28,7 @@ export interface PlatformKPIs {
   s3_completion_rate: number;
   s4_completion_rate: number;
   s5_completion_rate: number;
+  s6_completion_rate: number;
   avg_proficiency: number | null;
   ff_user_count: number;
   bank_user_count: number;

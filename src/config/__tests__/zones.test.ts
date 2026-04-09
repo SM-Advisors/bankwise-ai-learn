@@ -11,7 +11,7 @@ const VALID_UNLOCK_CONDITIONS: UnlockCondition[] = [
   'session_1_basic_interaction_done',
   'first_practice_done',
   'session_1_completed',
-  'session_3_agent_deployed',
+  'session_4_agent_deployed',
 ];
 
 describe('LEARNER_ZONES — required fields', () => {

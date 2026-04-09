@@ -54,6 +54,7 @@ import {
   Sparkles,
   Bot,
   Building2,
+  Zap,
   Video,
   Play,
   Clock,
@@ -146,49 +147,65 @@ const CORE_PROGRAMS = [
   },
   {
     id: 3,
-    title: 'Understanding & Building AI Agents',
-    description: 'Understand why agents exist, learn the Four Levels, and build your own agent from instructions through knowledge, files, and tool access.',
+    title: 'Skills & Projects',
+    description: 'Build reusable AI skills — digital SOPs with identity, procedure, standards, and guardrails — and organize them into persistent projects.',
     icon: Building2,
-    stage: 'Stage 3 - Agents',
-    modules: ALL_SESSION_CONTENT[3]?.modules.length || 6,
+    stage: 'Stage 3 - Skills & Projects',
+    modules: ALL_SESSION_CONTENT[3]?.modules.length || 7,
     estimatedTime: '4-6 hours',
     prerequisites: 'Complete Session 2: Prompting Frameworks & Model Selection',
     outcomes: [
-      'Understand the Four Levels of AI agents',
-      'Build a basic agent with instructions and constraints',
-      'Add knowledge, files, and tool access to agents',
-      'Test and deploy a production-quality agent',
+      'Understand the Autonomy Spectrum and the six-part skill anatomy',
+      'Build a complete skill with identity, procedure, standards, and guardrails',
+      'Add knowledge to make a skill a domain specialist',
+      'Combine skills and projects into reusable configurations',
     ],
   },
   {
     id: 4,
-    title: 'AI in Your Everyday Tools',
-    description: 'Learn to use agents that already exist in the tools you use every day — choose the path most relevant to your work.',
+    title: 'Agents & Autonomy',
+    description: 'Move from skills you invoke to agents that act — design, build, test, govern, and deploy autonomous AI systems.',
     icon: Layers,
-    stage: 'Stage 4 - Functional Agents',
-    modules: ALL_SESSION_CONTENT[4]?.modules.length || 5,
-    estimatedTime: '2-3 hours',
-    prerequisites: 'Complete Session 3: Understanding & Building AI Agents',
+    stage: 'Stage 4 - Agents & Autonomy',
+    modules: ALL_SESSION_CONTENT[4]?.modules.length || 7,
+    estimatedTime: '4-6 hours',
+    prerequisites: 'Complete Session 3: Skills & Projects',
     outcomes: [
-      'Recognize functional agents embedded in your daily tools',
-      'Use AI features in spreadsheets, presentations, and email',
-      'Choose between custom agents and functional agents for each task',
-      'Apply functional agents to real tasks in your workflow',
+      'Design agents using the six-part agent anatomy',
+      'Build and test agents across four scenarios: normal, edge, out-of-scope, guardrail',
+      'Write governance briefs covering authorization, monitoring, audit trails, and compliance',
+      'Deploy agents with peer testing and review schedules',
     ],
   },
   {
     id: 5,
-    title: 'Designing Your AI Workflow',
-    description: 'Design your own AI stack — stitch custom agents, functional tools, and workflows together in the way that serves your work.',
-    icon: Target,
-    stage: 'Stage 5 - Your AI Stack',
+    title: 'AI in Your Everyday Tools',
+    description: 'Learn to use AI features already built into the tools you use every day — choose the path most relevant to your work.',
+    icon: Zap,
+    stage: 'Stage 5 - Everyday Tools',
     modules: ALL_SESSION_CONTENT[5]?.modules.length || 5,
     estimatedTime: '2-3 hours',
-    prerequisites: 'Complete Session 4: AI in Your Everyday Tools',
+    prerequisites: 'Complete Session 4: Agents & Autonomy',
+    outcomes: [
+      'Recognize functional agents embedded in your daily tools',
+      'Use AI features in spreadsheets, presentations, and email',
+      'Choose between custom skills/agents and functional agents for each task',
+      'Apply functional agents to real tasks in your workflow',
+    ],
+  },
+  {
+    id: 6,
+    title: 'Designing Your AI Workflow',
+    description: 'Design your own AI stack — stitch skills, agents, functional tools, and workflows together in the way that serves your work.',
+    icon: Target,
+    stage: 'Stage 6 - Your AI Stack',
+    modules: ALL_SESSION_CONTENT[6]?.modules.length || 5,
+    estimatedTime: '2-3 hours',
+    prerequisites: 'Complete Session 5: AI in Your Everyday Tools',
     outcomes: [
       'Map a real workflow and identify where AI fits',
       'Design a multi-step AI workflow with human review checkpoints',
-      'Connect custom agents, functional tools, and workflows into a cohesive stack',
+      'Connect skills, agents, functional tools, and workflows into a cohesive stack',
       'Test and iterate on an end-to-end AI workflow prototype',
     ],
   },
@@ -1005,7 +1022,7 @@ export default function AdminDashboard() {
                     AI Training Program Overview
                   </CardTitle>
                   <CardDescription>
-                    Five-stage progressive training: Foundation → Structure → Agents → Functional Agents → Your AI Stack
+                    Six-stage progressive training: Foundation → Structure → Skills → Agents → Everyday Tools → Your AI Stack
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -1022,17 +1039,22 @@ export default function AdminDashboard() {
                     <div className="text-muted-foreground">→</div>
                     <div className="flex items-center gap-2 px-3 py-2 bg-green-500/10 rounded-lg border border-green-500/20">
                       <Building2 className="h-4 w-4 text-green-600" />
-                      <span className="font-medium text-sm text-green-600">Stage 3: Agents</span>
+                      <span className="font-medium text-sm text-green-600">Stage 3: Skills</span>
                     </div>
                     <div className="text-muted-foreground">→</div>
                     <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 rounded-lg border border-amber-500/20">
                       <Layers className="h-4 w-4 text-amber-600" />
-                      <span className="font-medium text-sm text-amber-600">Stage 4: Functional Agents</span>
+                      <span className="font-medium text-sm text-amber-600">Stage 4: Agents</span>
+                    </div>
+                    <div className="text-muted-foreground">→</div>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-teal-500/10 rounded-lg border border-teal-500/20">
+                      <Zap className="h-4 w-4 text-teal-600" />
+                      <span className="font-medium text-sm text-teal-600">Stage 5: Everyday Tools</span>
                     </div>
                     <div className="text-muted-foreground">→</div>
                     <div className="flex items-center gap-2 px-3 py-2 bg-rose-500/10 rounded-lg border border-rose-500/20">
                       <Target className="h-4 w-4 text-rose-600" />
-                      <span className="font-medium text-sm text-rose-600">Stage 5: Your AI Stack</span>
+                      <span className="font-medium text-sm text-rose-600">Stage 6: Your AI Stack</span>
                     </div>
                   </div>
 

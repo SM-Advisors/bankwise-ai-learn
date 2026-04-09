@@ -24,6 +24,7 @@ interface PracticeChatRequest {
   departmentLob?: string; // Alias for lineOfBusiness from frontend
   priorModuleContext?: string; // Transcript from a prior module for context carryover
   industrySlug?: string; // Industry for dynamic context
+  webSearch?: boolean; // Whether web search is enabled (module 2-9+)
 }
 
 interface AIMemory {
@@ -124,11 +125,17 @@ async function callModel(
   systemPrompt: string,
   messages: Message[],
   maxTokens = 1500,
+  webSearch = false,
 ): Promise<string> {
   // ── Anthropic (claude-*) ──────────────────────────────────────────────────
   if (model.startsWith("claude-")) {
     const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
     if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not configured");
+
+    // Claude doesn't have native web search — add a note to the system prompt
+    const effectiveSystemPrompt = webSearch
+      ? systemPrompt + "\n\n[WEB SEARCH NOTE: The user has enabled web search, but this model (Claude) does not have built-in web search. If the user asks for current data, let them know you cannot access live information and suggest they switch to a model with web search (like GPT or Gemini) using the model selector.]"
+      : systemPrompt;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 45000); // 45s timeout
@@ -143,7 +150,7 @@ async function callModel(
       body: JSON.stringify({
         model,
         max_tokens: maxTokens,
-        system: systemPrompt,
+        system: effectiveSystemPrompt,
         messages,
       }),
     });
@@ -168,8 +175,51 @@ async function callModel(
     // Handle reasoning model variant: strip "-reasoning" suffix, enable reasoning
     const isReasoning = model.endsWith("-reasoning");
     const apiModel = isReasoning ? model.replace("-reasoning", "") : model;
-    const reasoningParams = isReasoning ? { reasoning: { effort: "high" } } : {};
 
+    // ── Web search: use OpenAI Responses API with web_search_preview tool ──
+    if (webSearch) {
+      const wsController = new AbortController();
+      const wsTimeout = setTimeout(() => wsController.abort(), 60000); // 60s for web search
+      const responsesInput = [
+        { role: "system" as const, content: systemPrompt },
+        ...messages.map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
+      ];
+      const res = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        signal: wsController.signal,
+        headers: {
+          "Authorization": `Bearer ${OPENAI_API_KEY}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          model: apiModel,
+          input: responsesInput,
+          tools: [{ type: "web_search_preview" }],
+          ...(isReasoning ? { reasoning: { effort: "high" } } : {}),
+        }),
+      });
+      clearTimeout(wsTimeout);
+
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("OpenAI Responses API error:", res.status, errText);
+        if (res.status === 429) throw new Error("rate_limit");
+        throw new Error(`OpenAI Responses API error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      // Extract text from output items
+      const outputText = (data.output || [])
+        .filter((item: { type: string }) => item.type === "message")
+        .flatMap((item: { content: Array<{ type: string; text: string }> }) =>
+          (item.content || []).filter((c: { type: string }) => c.type === "output_text").map((c: { text: string }) => c.text)
+        )
+        .join("\n\n");
+      return outputText || "";
+    }
+
+    // ── Standard Chat Completions (no web search) ──
+    const reasoningParams = isReasoning ? { reasoning: { effort: "high" } } : {};
     const oaiController = new AbortController();
     const oaiTimeout = setTimeout(() => oaiController.abort(), isReasoning ? 90000 : 45000); // reasoning gets 90s
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -217,21 +267,26 @@ async function callModel(
     if (!GOOGLE_AI_API_KEY) return "**Gemini 2.5 Flash** isn't available in this environment yet — a Google AI API key hasn't been configured. Switch back to **Claude Sonnet 4.6** using the model selector to continue.";
 
     const gglController = new AbortController();
-    const gglTimeout = setTimeout(() => gglController.abort(), 45000);
+    const gglTimeout = setTimeout(() => gglController.abort(), webSearch ? 60000 : 45000);
+    const requestBody: Record<string, unknown> = {
+      system_instruction: { parts: [{ text: systemPrompt }] },
+      contents: messages.map(m => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      })),
+      generationConfig: { maxOutputTokens: maxTokens },
+    };
+    // Add Google Search grounding when web search is enabled
+    if (webSearch) {
+      requestBody.tools = [{ google_search: {} }];
+    }
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GOOGLE_AI_API_KEY}`,
       {
         method: "POST",
         signal: gglController.signal,
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: systemPrompt }] },
-          contents: messages.map(m => ({
-            role: m.role === "assistant" ? "model" : "user",
-            parts: [{ text: m.content }],
-          })),
-          generationConfig: { maxOutputTokens: maxTokens },
-        }),
+        body: JSON.stringify(requestBody),
       },
     );
     clearTimeout(gglTimeout);
@@ -299,6 +354,7 @@ serve(async (req) => {
       departmentLob,
       priorModuleContext,
       industrySlug,
+      webSearch,
     }: PracticeChatRequest = await req.json();
 
     const model = requestedModel || "claude-sonnet-4-6";
@@ -491,14 +547,14 @@ Continue the conversation naturally. If the learner sends a new refinement reque
       content: m.content,
     }));
 
-    console.log(`[ai-practice] Routing to model: ${model}`);
+    console.log(`[ai-practice] Routing to model: ${model}${webSearch ? ' (web search ON)' : ''}`);
 
     let reply = "";
     let lastModelError: unknown;
     // Retry up to 3 attempts — handles transient empty responses from the model
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        reply = await callModel(model, fullSystemPrompt, claudeMessages);
+        reply = await callModel(model, fullSystemPrompt, claudeMessages, 1500, !!webSearch);
         if (reply && reply.trim().length > 0) break; // got a real response
         console.warn(`[ai-practice] Empty response from model on attempt ${attempt + 1}`);
       } catch (modelError) {

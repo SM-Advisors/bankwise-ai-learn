@@ -495,23 +495,24 @@ EVALUATION FOCUS:
 - Does the prompt force sequential reasoning rather than a single-pass summary?
 - Are step dependencies explicit (e.g., "Using the analysis from Step 2, evaluate...")?
 - Would someone else be able to audit the chain of reasoning?
-- Does the final output look different from what a single-step prompt would produce?` : moduleId === "2-9" ? `## MODULE 2-9 RUBRIC: TOOL SELECTION
-This submission tests the learner's ability to identify when an AI tool is the right choice for a task — and how to interrogate a new tool using the same criteria.
+- Does the final output look different from what a single-step prompt would produce?` : moduleId === "2-9" ? `## MODULE 2-9 RUBRIC: WEB SEARCH
+This submission tests the learner's ability to know when to turn web search on versus off — and to articulate the trade-off.
 
 3-LEVEL RUBRIC:
 | Criterion | Developing | Proficient | Advanced |
 |-----------|-----------|-----------|---------|
-| Task Analysis | Chooses tool without analyzing the task | Analyzes the task against tool capabilities | Analysis includes task type, frequency, risk level, and compliance sensitivity |
-| Data Privacy Assessment | Not addressed | Notes whether the task involves sensitive data | Identifies specific data types and checks tool's data handling policy |
-| Fit vs. Gap Identification | Lists only benefits | Identifies at least 1 gap or limitation | Gaps are ranked by severity with a mitigation or workaround for each |
-| Custom vs. Built-In Distinction | Confused about the difference | Correctly distinguishes when a custom agent (Session 3) would be better | Explains the threshold: when built-in tools are sufficient vs. when to build |
-| Decision Quality | Vague conclusion | Clear approve/skip/investigate decision with rationale | Decision includes conditions: approved for X tasks, not for Y, with review protocol |
+| Toggle Usage | Never toggled web search, or left it on/off for everything | Toggled web search on and off for different prompts | Toggled deliberately with a clear reason for each state |
+| ON Identification | Cannot identify when search adds value | Correctly identifies at least one task that benefits from web search (current data, recent events, live info) | Identifies multiple categories where search is essential and explains why |
+| OFF Identification | Assumes search is always better | Correctly identifies at least one task where search is unnecessary (drafting, brainstorming, analysis) | Explains the cost of unnecessary search (latency, noise, distraction from reasoning) |
+| Comparison | No comparison attempted | Compared at least one prompt with search on vs. off | Articulated specific differences in response quality, speed, or source relevance |
+| Source Awareness | Accepts all search results uncritically | Notes that search results vary in quality | Identifies when a search result should be verified against a trusted source |
 
 EVALUATION FOCUS:
-- Does the analysis start with the task, not the tool?
-- Is data privacy assessed before capabilities — or as an afterthought?
-- Is the final decision specific enough to act on (not just "it looks useful")?
-- Does the learner understand the difference between functional agents and custom agents?` : moduleId === "2-10" ? `## MODULE 2-10 RUBRIC: SESSION 2 SANDBOX (CAPSTONE)
+- Did the learner actually toggle web search during the conversation?
+- Can they explain WHY search was on or off for a specific prompt — not just that it was?
+- Did they compare the same or similar prompt both ways?
+- Do they understand the trade-off: grounding vs. noise, accuracy vs. speed?
+- Did they verify or question any search-generated facts?` : moduleId === "2-10" ? `## MODULE 2-10 RUBRIC: SESSION 2 SANDBOX (CAPSTONE)
 This is the Session 2 Sandbox. Evaluate independent application of Session 2 techniques to a real work task — structured prompting, output templating, multi-shot, chain-of-thought, or tool selection.
 
 3-LEVEL RUBRIC:
@@ -526,76 +527,64 @@ EVALUATION FOCUS:
 - Is this a real work task that would benefit from the structured techniques in Session 2?
 - Is at least one Session 2 technique applied correctly (not just mentioned)?
 - Does the output reflect the technique — not just a well-worded prompt?
-- Can the learner articulate which technique they used and why it helped?` : moduleId === "3-3" && agentTemplate ? `## MODULE 3-3 RUBRIC: BUILD A BASIC AGENT
-This submission is a Level 2 AI agent configured for a specific task. Evaluate COMPLETENESS and QUALITY of the agent configuration — not prompt technique.
-
-SCORING WEIGHTS:
-- Identity (20%): Clear role, scope, audience, and purpose defined
-- Task List (25%): At least 2 specific tasks with formats and constraints
-- Output Rules (15%): At least 2 formatting/behavior rules defined
-- Guard Rails (25%): At least 2 guard rails with alternative responses + 1 out-of-scope defense
-- Compliance Anchors (15%): At least 1 compliance or quality anchor that must appear in outputs
-
-AGENT TEMPLATE DATA:
-${agentTemplate.identity ? `Identity: "${agentTemplate.identity}"` : "Identity: MISSING"}
-Tasks: ${agentTemplate.taskList?.filter(t => t.name).length || 0} defined${agentTemplate.taskList?.filter(t => t.name).map(t => ` (${t.name})`).join(",") || ""}
-Output Rules: ${agentTemplate.outputRules?.filter(r => r.trim()).length || 0} defined
-Guard Rails: ${agentTemplate.guardRails?.filter(g => g.rule.trim()).length || 0} defined
-Compliance Anchors: ${agentTemplate.complianceAnchors?.filter(a => a.trim()).length || 0} defined
-
-EVALUATION FOCUS:
-- Is the agent configured for a specific, real task — not a generic "helpful assistant"?
-- Are the tasks written as instructions the agent can actually follow?
-- Do guard rails cover realistic out-of-scope requests for this agent's role?
-- Is the identity specific enough to produce consistent, role-appropriate behavior?
-- Would this agent be useful in real work without significant manual oversight?` : moduleId === "3-4" ? `## MODULE 3-4 RUBRIC: ADD KNOWLEDGE
-This submission tests the learner's ability to give an agent domain knowledge that makes it a genuine specialist.
+- Can the learner articulate which technique they used and why it helped?` : moduleId === "3-3" ? `## MODULE 3-3 RUBRIC: BUILDING YOUR FIRST SKILL
+This submission tests the learner's ability to build a complete skill with all six anatomy components.
 
 3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Knowledge Source Selection | Generic or irrelevant source | Relevant document or reference for the agent's role | Source directly addresses the task types the agent handles |
-| Knowledge Integration | Source added without instructions for use | Agent told when to reference the knowledge | Agent told which tasks require the knowledge, which don't, and how to cite it |
-| Specialist vs. Generalist Gap | Knowledge doesn't change the agent's behavior | Knowledge enables answers the agent couldn't give before | Knowledge closes a specific gap identified in the baseline agent |
-| Accuracy & Hallucination Risk | No instructions to stay within the source | Agent told to limit answers to what's in the source | Agent told to acknowledge when a question is outside the knowledge base |
+| Criterion | Weight | Developing | Proficient | Advanced |
+|-----------|--------|-----------|-----------|---------|
+| Identity | 15% | Generic or vague role | Clear role with scope and audience | Detailed identity with task scope, tone, and domain context |
+| Trigger Definition | 10% | No trigger defined | Trigger described in general terms | Specific, testable trigger condition that maps to real work events |
+| Procedure Completeness | 25% | Vague instructions | Step-by-step procedure that can be followed | Procedure handles variations and edge cases with decision logic |
+| Standards Specificity | 15% | No standards or generic quality language | At least 2 specific output standards | Standards are measurable and testable — not aspirational |
+| Guardrails Testability | 25% | No guardrails or vague aspirations | At least 2 specific guardrails with clear boundaries | Guardrails are testable: you can verify whether each one held or was violated |
+| Output Format Clarity | 10% | No output format specified | Output format described in general terms | Output format includes structure, length, and content requirements |
 
 EVALUATION FOCUS:
-- Does the knowledge source actually match the agent's tasks?
-- Would the agent behave differently with vs. without this knowledge?
-- Is the agent instructed to stay within what the knowledge source covers?
-- Does the knowledge make the agent more useful — or just more confident?` : moduleId === "3-5" ? `## MODULE 3-5 RUBRIC: ADD FILES
-This submission tests the learner's ability to extend an agent with file-processing capability.
+- Does the skill address a specific, real task — not a generic "helpful assistant"?
+- Is the procedure detailed enough for the skill to produce consistent output?
+- Are guardrails specific and testable — not vague aspirational statements?
+- Would this skill produce useful output for the learner's actual work?` : moduleId === "3-4" ? `## MODULE 3-4 RUBRIC: ADDING KNOWLEDGE TO YOUR SKILL
+This submission tests the learner's ability to give a skill domain knowledge that makes it a genuine specialist.
 
 3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| File Type Specification | No file types specified | Specific file types defined (PDF, CSV, DOCX, etc.) | File types include handling instructions for each format |
-| Processing Instructions | Vague ("process the file") | Clear instructions for what to extract or analyze | Instructions include output structure for each file type |
-| Guard Rails for Files | No file-specific guard rails | Agent told what to do if a file is unreadable | Agent told what to do if a file is the wrong type, too large, or contains unexpected content |
-| Privacy & Data Handling | No data handling instructions | Agent told not to store or repeat sensitive data | Specific data types identified with handling instructions (anonymize, flag, skip) |
-| Output Quality | Unstructured dump of file content | Structured output tied to the agent's specific task | Output format matches what the task requires — summary, extraction, analysis, or comparison |
+| Criterion | Weight | Developing | Proficient | Advanced |
+|-----------|--------|-----------|-----------|---------|
+| Knowledge Source Selection | 30% | Generic or irrelevant source | Relevant document or reference for the skill's domain | Source directly addresses the task types the skill handles |
+| Integration Quality | 40% | Source added without instructions for use | Skill output references the knowledge appropriately | Skill told which tasks require the knowledge, which don't, and how to cite it |
+| Before/After Comparison | 30% | No comparison provided | Notes that output improved with knowledge | Specific before/after examples showing how knowledge changed the quality |
 
 EVALUATION FOCUS:
-- Is the agent told specifically what to do with files — not just that it can accept them?
-- Are guard rails in place for file edge cases (wrong format, missing data, PII)?
-- Does the output format match what the learner actually needs from the file?` : moduleId === "3-6" ? `## MODULE 3-6 RUBRIC: ADD TOOL ACCESS
-This submission tests the learner's ability to transition an agent from Level 2 (advisor) to Level 3 (executor) by connecting it to tools.
+- Does the knowledge source actually match the skill's tasks?
+- Would the skill behave differently with vs. without this knowledge?
+- Can the learner articulate the specific improvement knowledge provides?` : moduleId === "3-5" ? `## MODULE 3-5 RUBRIC: SKILLS + PROJECTS
+This submission tests the learner's ability to combine skills and projects into a working configuration.
 
 3-LEVEL RUBRIC:
-| Criterion | Developing | Proficient | Advanced |
-|-----------|-----------|-----------|---------|
-| Tool Selection Rationale | Tool added without justification | Tool is appropriate for the agent's task | Tool is the minimal escalation — avoids adding capability not needed |
-| Level 2 vs. Level 3 Distinction | Confused about the difference | Correctly identifies when tool access changes the agent's behavior | Explains specific tasks that are now possible at Level 3 that were not at Level 2 |
-| Human Oversight Design | No review checkpoints | At least 1 human review point before consequential action | Review checkpoints are specific: what is reviewed, by whom, and when |
-| Failure & Fallback | No failure handling | Agent told what to do if a tool call fails | Agent has fallback behavior for each tool — degrade gracefully, not fail silently |
-| Scope Discipline | Tool access is open-ended | Tool access is scoped to specific tasks | Tool access is the minimum required — explicit about what the tool cannot be used for |
+| Criterion | Weight | Developing | Proficient | Advanced |
+|-----------|--------|-----------|-----------|---------|
+| Combination Quality | 30% | Skill and project loosely related | Skill integrated into project with clear purpose | Skill and project complement each other — the combination is more powerful than either alone |
+| Reusability Test | 40% | Skill only works in one context | Skill tested in at least 2 different project contexts | Skill produces consistent quality across multiple contexts with evidence |
+| Configuration Roadmap | 30% | No roadmap or vague intentions | Plan for 1-2 additional skills or projects | Prioritized roadmap with rationale for what to build next based on impact |
 
 EVALUATION FOCUS:
-- Does the tool access serve the agent's specific task — or is it scope creep?
-- Are human review checkpoints designed for the highest-risk actions?
-- Would the agent fail gracefully if a tool is unavailable?
-- Is this genuinely a Level 3 agent — or still essentially a Level 2 with an unused tool?` : moduleId === "3-7" && agentTemplate ? `## MODULE 3-7 RUBRIC: SESSION 3 SANDBOX (AGENT CAPSTONE)
-This is the Session 3 Sandbox / Capstone — the learner's final agent for actual use. Evaluate as a real deliverable, not a practice exercise.
+- Does the skill work well inside the project context?
+- Has the learner tested the skill in more than one scenario?
+- Is the roadmap specific and prioritized by impact?` : moduleId === "3-6" ? `## MODULE 3-6 RUBRIC: SHARING AND SCALING
+This submission tests the learner's ability to share skills, collect feedback, and identify domain expertise for scaling.
+
+3-LEVEL RUBRIC:
+| Criterion | Weight | Developing | Proficient | Advanced |
+|-----------|--------|-----------|-----------|---------|
+| Peer Feedback Quality | 30% | No peer feedback collected | Feedback collected from at least one peer with specific observations | Feedback led to at least one concrete improvement in the skill |
+| Skill Wish List Specificity | 40% | Vague list of potential skills | At least 3 specific skills with defined tasks and domains | Skills prioritized by impact with clear rationale for sequencing |
+| Domain Expertise Identification | 30% | No domain expertise considered | Identifies at least one colleague whose expertise could improve a skill | Specific plan for extracting and encoding domain expertise into skill knowledge |
+
+EVALUATION FOCUS:
+- Did peer testing reveal something the learner missed?
+- Is the skill wish list specific enough to act on?
+- Does the learner understand how domain expertise maps to skill knowledge?` : moduleId === "3-7" && agentTemplate ? `## MODULE 3-7 RUBRIC: SESSION 3 SANDBOX (SKILLS & PROJECTS CAPSTONE)
+This is the Session 3 Sandbox / Capstone — the learner's skills and project configuration for actual use. Evaluate as a real deliverable, not a practice exercise.
 
 3-LEVEL RUBRIC:
 | Criterion | Weight | Developing | Proficient | Advanced |
@@ -603,8 +592,8 @@ This is the Session 3 Sandbox / Capstone — the learner's final agent for actua
 | Identity | 15% | Generic role | Role-specific with clear audience and purpose | Detailed persona with task scope, tone, and output style defined |
 | Task List | 20% | 1 vague task | 2+ specific, actionable tasks | 3+ tasks with format, constraint, and edge case handling |
 | Guard Rails | 25% | 0-1 generic rails | 2+ rails with specific alternatives | 3+ rails covering out-of-scope, sensitive topics, and compliance edge cases |
-| Knowledge/Files/Tools | 20% | Not used | Agent has at least 1 extension (knowledge, files, or tools) | Extensions are purposeful — each one closes a specific gap |
-| Real-Work Readiness | 20% | Practice scenario | Agent could be used for real tasks | Agent is configured for work the learner actually does — and they plan to use it |
+| Knowledge/Project Integration | 20% | Not used | Skill has knowledge or is integrated into a project | Extensions are purposeful — each one closes a specific gap |
+| Real-Work Readiness | 20% | Practice scenario | Skill could be used for real tasks | Skill is configured for work the learner actually does — and they plan to use it |
 
 AGENT TEMPLATE DATA:
 ${agentTemplate.identity ? `Identity: "${agentTemplate.identity}"` : "Identity: MISSING"}
@@ -614,11 +603,59 @@ Guard Rails: ${agentTemplate.guardRails?.filter(g => g.rule.trim()).length || 0}
 Compliance Anchors: ${agentTemplate.complianceAnchors?.filter(a => a.trim()).length || 0} defined
 
 EVALUATION FOCUS:
-- Is this an agent the learner actually plans to use — not just a training exercise?
-- Does the agent template reflect Session 3 skills (identity, tasks, guard rails, optional extensions)?
-- Are guard rails specific to the agent's role and realistic edge cases?
-- Would a colleague be able to use this agent for the same tasks?` : moduleId === "4-1" ? `## MODULE 4-1 RUBRIC: WHAT ARE FUNCTIONAL AGENTS?
-This submission tests the learner's ability to identify functional agents in tools they already use and assess when to use them vs. building a custom agent.
+- Is this a skill the learner actually plans to use — not just a training exercise?
+- Does the skill definition reflect Session 3 concepts (identity, procedure, standards, guardrails, knowledge)?
+- Are guard rails specific to the skill's role and realistic edge cases?
+- Would a colleague be able to use this skill for the same tasks?` : moduleId === "4-2" ? `## MODULE 4-2 RUBRIC: AGENTS AS SKILL ORCHESTRATORS
+This submission tests the learner's ability to design an agent wrapper around an existing skill with all six anatomy components.
+
+3-LEVEL RUBRIC:
+| Criterion | Weight | Developing | Proficient | Advanced |
+|-----------|--------|-----------|-----------|---------|
+| Six Anatomy Components | 25% | Missing 2+ components | All six components present (skills, triggers, decision logic, guardrails, escalation, audit trail) | All six components are detailed and internally consistent |
+| Guardrail Testability | 25% | Vague aspirational statements | Guardrails are specific and verifiable | Guardrails include test scenarios that would verify each one |
+| Escalation Path Specificity | 20% | Just says "escalate" | Specifies when to escalate and to whom | Specifies what information the agent provides during handoff |
+| Audit Trail Completeness | 15% | No audit trail or vague logging | Specifies what gets logged | Logs enough to reconstruct any decision the agent made |
+| Trigger Definition Clarity | 15% | No clear trigger | Trigger is defined in general terms | Trigger is specific, testable, and maps to a real event |
+
+EVALUATION FOCUS:
+- Are all six agent anatomy components present and coherent?
+- Are guardrails specific and testable — not vague aspirational statements?
+- Is the escalation path detailed enough to be actionable?
+- Could you reconstruct the agent's decisions from the audit trail?` : moduleId === "4-3" ? `## MODULE 4-3 RUBRIC: BUILD A WORKING AGENT
+This submission tests the learner's ability to build and test an agent across four scenario types.
+
+3-LEVEL RUBRIC:
+| Criterion | Weight | Developing | Proficient | Advanced |
+|-----------|--------|-----------|-----------|---------|
+| Normal Test Pass | 20% | Agent does not complete normal tasks | Agent completes normal case tasks correctly | Agent handles normal tasks efficiently with high-quality output |
+| Edge Test Handling | 20% | Edge cases not tested | Agent handles edge cases or escalates appropriately | Agent's decision logic for edge cases is documented and consistent |
+| Out-of-Scope Refusal | 25% | Agent attempts out-of-scope tasks | Agent refuses or escalates out-of-scope tasks | Agent provides clear explanation of why the task is out of scope |
+| Guardrail Hold | 25% | Guardrails not tested or they fail | Guardrails hold under deliberate testing | Multiple guardrail test scenarios documented, all passing |
+| Iteration Evidence | 10% | No iteration documented | At least one change made based on test results | Multiple iterations with documented before/after improvements |
+
+EVALUATION FOCUS:
+- Did the learner run all four test types?
+- Do guardrails hold under deliberate testing — not just normal use?
+- Is there evidence of iteration based on test failures?
+- Would this agent be safe to deploy based on the test results?` : moduleId === "4-5" ? `## MODULE 4-5 RUBRIC: GOVERNANCE AND COMPLIANCE
+This submission tests the learner's ability to write a governance brief covering all six framework components.
+
+3-LEVEL RUBRIC:
+| Criterion | Weight | Developing | Proficient | Advanced |
+|-----------|--------|-----------|-----------|---------|
+| Six Governance Components | 30% | Missing 2+ components | All six present (Authorization, Monitoring, Audit Trail, Exception Handling, Review Cadence, Kill Switch) | All six are detailed with specific owners, timelines, and criteria |
+| Audit Trail Specificity | 25% | Vague logging described | Specifies what gets logged and retention period | Logs include decision reconstruction capability and compliance-ready format |
+| Kill Switch Definition | 15% | No kill switch or vague emergency plan | Specifies who can disable and how | Includes both manual disable and automatic shutdown triggers |
+| Approval Chain Identification | 15% | No approval chain | Identifies who would need to approve | Maps to existing organizational processes (change management, model risk, etc.) |
+| Review Cadence Definition | 15% | No review schedule | Specifies a review frequency | Review cadence tied to specific triggers (policy changes, incident reports, quarterly cycle) |
+
+EVALUATION FOCUS:
+- Does the governance brief cover all six components?
+- Is the audit trail specific enough for regulatory examination?
+- Is the kill switch accessible and clearly defined?
+- Does the learner know who in their organization would approve this?` : moduleId === "5-1" ? `## MODULE 5-1 RUBRIC: WHAT ARE FUNCTIONAL AGENTS?
+This submission tests the learner's ability to identify functional agents in tools they already use and assess when to use them vs. building a custom skill or agent.
 
 3-LEVEL RUBRIC:
 | Criterion | Developing | Proficient | Advanced |
@@ -631,7 +668,7 @@ This submission tests the learner's ability to identify functional agents in too
 EVALUATION FOCUS:
 - Does the learner correctly name specific functional agents (not generic "AI features")?
 - Is the custom vs. functional distinction correctly applied to their actual work context?
-- Are limitations specific — not just "it might make mistakes"?` : moduleId === "4-2" ? `## MODULE 4-2 RUBRIC: AI IN YOUR SPREADSHEET
+- Are limitations specific — not just "it might make mistakes"?` : moduleId === "5-2" ? `## MODULE 5-2 RUBRIC: AI IN YOUR SPREADSHEET
 This submission tests the learner's ability to use AI features in their spreadsheet tool to accelerate data work.
 
 3-LEVEL RUBRIC:
@@ -646,7 +683,7 @@ EVALUATION FOCUS:
 - Is this a real data task, not a demo or constructed example?
 - Is the AI feature applied to a task where it provides genuine value?
 - Does the learner verify critical outputs — not just trust the AI result?
-- Would they be able to repeat this workflow without step-by-step guidance?` : moduleId === "4-3" ? `## MODULE 4-3 RUBRIC: AI IN YOUR PRESENTATIONS
+- Would they be able to repeat this workflow without step-by-step guidance?` : moduleId === "5-3" ? `## MODULE 5-3 RUBRIC: AI IN YOUR PRESENTATIONS
 This submission tests the learner's ability to use AI features in their presentation tool to accelerate slide creation and improve quality.
 
 3-LEVEL RUBRIC:
@@ -660,7 +697,7 @@ This submission tests the learner's ability to use AI features in their presenta
 EVALUATION FOCUS:
 - Was the AI applied to a real presentation need?
 - Did the learner review and edit the AI output — or just accept it?
-- Is there evidence that the final output was usable in a professional context?` : moduleId === "4-4" ? `## MODULE 4-4 RUBRIC: AI IN YOUR INBOX
+- Is there evidence that the final output was usable in a professional context?` : moduleId === "5-4" ? `## MODULE 5-4 RUBRIC: AI IN YOUR INBOX
 This submission tests the learner's ability to use AI features in their email client for routine communications while maintaining professional voice.
 
 3-LEVEL RUBRIC:
@@ -674,8 +711,8 @@ This submission tests the learner's ability to use AI features in their email cl
 EVALUATION FOCUS:
 - Is this a real email task from their actual work?
 - Did they edit the AI output to match their voice — or send it unedited?
-- Do they understand what email tasks should NOT be delegated to AI?` : moduleId === "4-5" ? `## MODULE 4-5 RUBRIC: SESSION 4 SANDBOX (FUNCTIONAL AGENTS)
-This is the Session 4 Sandbox. Evaluate the learner's practical integration of functional agents into their daily workflow.
+- Do they understand what email tasks should NOT be delegated to AI?` : moduleId === "5-5" ? `## MODULE 5-5 RUBRIC: SESSION 5 SANDBOX (FUNCTIONAL AGENTS)
+This is the Session 5 Sandbox. Evaluate the learner's practical integration of functional agents into their daily workflow.
 
 3-LEVEL RUBRIC:
 | Criterion | Weight | Developing | Proficient | Advanced |
@@ -683,13 +720,13 @@ This is the Session 4 Sandbox. Evaluate the learner's practical integration of f
 | Tool Selection | 25% | Identifies tools without clear rationale | Selects the 1-2 functional agents most relevant to their work | Ranks agents by time savings and selects based on real task frequency |
 | Integration Plan | 30% | Vague intention to use AI tools | Specific plan for which tasks each agent handles | Plan includes what they will stop doing manually, what they will verify, and a 1-week trial |
 | Limitation Awareness | 20% | Only benefits identified | At least 1 meaningful limitation per tool acknowledged | Clear boundary: which tasks stay manual and why |
-| Reflection on Custom vs. Functional | 25% | Not addressed | Identifies at least 1 task where a custom agent (Session 3) would be better | Articulates the threshold: complexity, specificity, or frequency that tips toward custom |
+| Reflection on Custom vs. Functional | 25% | Not addressed | Identifies at least 1 task where a custom skill or agent (Sessions 3-4) would be better | Articulates the threshold: complexity, specificity, or frequency that tips toward custom |
 
 EVALUATION FOCUS:
 - Are the selected tools actually used in the learner's daily work?
 - Is the integration plan specific enough to execute without additional guidance?
-- Does the learner understand the boundary between functional and custom agents?
-- Is there honest acknowledgment of what AI tools cannot do for this person's specific work?` : moduleId === "5-2" && workflowData ? `## MODULE 5-2 RUBRIC: DESIGN YOUR WORKFLOW
+- Does the learner understand the boundary between functional and custom skills/agents?
+- Is there honest acknowledgment of what AI tools cannot do for this person's specific work?` : moduleId === "6-2" && workflowData ? `## MODULE 6-2 RUBRIC: DESIGN YOUR WORKFLOW
 This submission is a multi-step AI workflow. Evaluate COMPLETENESS and QUALITY of the workflow design.
 
 SCORING WEIGHTS:

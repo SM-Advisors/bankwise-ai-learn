@@ -48,6 +48,8 @@ export interface TrainingProgress {
   session_4_progress: SessionProgressData;
   session_5_completed: boolean;
   session_5_progress: SessionProgressData;
+  session_6_completed: boolean;
+  session_6_progress: SessionProgressData;
   session_3_progress: SessionProgressData;
 }
 
@@ -74,7 +76,7 @@ interface AuthContextType {
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: Error | null }>;
   refreshProfile: () => Promise<void>;
   updateProgress: (updates: Partial<TrainingProgress>) => Promise<{ error: Error | null }>;
-  markSessionCompleted: (sessionNumber: 1 | 2 | 3 | 4 | 5) => Promise<{ error: Error | null }>;
+  markSessionCompleted: (sessionNumber: 1 | 2 | 3 | 4 | 5 | 6) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -184,6 +186,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session_4_progress: {},
         session_5_completed: false,
         session_5_progress: {},
+        session_6_completed: false,
+        session_6_progress: {},
       })
       .select()
       .single();

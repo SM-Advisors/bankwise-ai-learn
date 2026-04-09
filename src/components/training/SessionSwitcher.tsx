@@ -9,9 +9,10 @@ import type { ModuleEngagement } from '@/types/progress';
 const SESSION_LABELS: Record<number, string> = {
   1: 'Fundamentals',
   2: 'Frameworks',
-  3: 'Agents',
-  4: 'Daily Tools',
-  5: 'Workflow',
+  3: 'Skills',
+  4: 'Agents',
+  5: 'Daily Tools',
+  6: 'Workflow',
 };
 
 interface SessionSwitcherProps {
@@ -120,7 +121,7 @@ export function SessionSwitcher({
   return (
     <div className="relative shrink-0" ref={dropdownRef}>
       <div className="flex items-center gap-1.5 px-4 py-2 border-b bg-card/50 overflow-x-auto">
-        {(([1, 2, 3, 4, 5] as const)).map((n) => {
+        {(([1, 2, 3, 4, 5, 6] as const)).map((n) => {
           const isAccessible = allGatesUnlocked || n <= currentSession;
           const isActive = n === activeSession;
           const isCompleted = !!completedSessions[n];

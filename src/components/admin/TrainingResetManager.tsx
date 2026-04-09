@@ -26,6 +26,8 @@ interface UserRow {
   session_2_completed: boolean;
   session_3_completed: boolean;
   session_4_completed: boolean;
+  session_5_completed: boolean;
+  session_6_completed: boolean;
 }
 
 export function TrainingResetManager() {
@@ -61,9 +63,9 @@ export function TrainingResetManager() {
 
       const { data: progress } = await supabase
         .from('training_progress')
-        .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed');
+        .select('user_id, session_1_completed, session_2_completed, session_3_completed, session_4_completed, session_5_completed, session_6_completed');
 
-      const progressMap: Record<string, { user_id: string; session_1_completed: boolean; session_2_completed: boolean; session_3_completed: boolean; session_4_completed: boolean }> = {};
+      const progressMap: Record<string, { user_id: string; session_1_completed: boolean; session_2_completed: boolean; session_3_completed: boolean; session_4_completed: boolean; session_5_completed: boolean; session_6_completed: boolean }> = {};
       (progress || []).forEach((p) => { progressMap[p.user_id] = p; });
 
       const mapped: UserRow[] = (profiles || []).map((p) => ({
@@ -76,6 +78,8 @@ export function TrainingResetManager() {
         session_2_completed: progressMap[p.user_id]?.session_2_completed ?? false,
         session_3_completed: progressMap[p.user_id]?.session_3_completed ?? false,
         session_4_completed: progressMap[p.user_id]?.session_4_completed ?? false,
+        session_5_completed: progressMap[p.user_id]?.session_5_completed ?? false,
+        session_6_completed: progressMap[p.user_id]?.session_6_completed ?? false,
       }));
 
       setUsers(mapped);
@@ -106,6 +110,8 @@ export function TrainingResetManager() {
           session_4_progress: {},
           session_5_completed: false,
           session_5_progress: {},
+          session_6_completed: false,
+          session_6_progress: {},
         })
         .eq('user_id', resetTarget.user_id);
 

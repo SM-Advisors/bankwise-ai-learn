@@ -56,13 +56,15 @@ interface ChatGPTPracticeChatPanelProps {
   onImportPriorConversation?: () => void;
   /** Whether the import is in progress */
   isImportingPrior?: boolean;
+  webSearchEnabled?: boolean;
+  onWebSearchToggle?: (enabled: boolean) => void;
 }
 
 const PLUS_MENU_ITEMS = [
   { icon: Palette, label: 'Canvas', action: 'coming_soon' },
   { icon: ImageIcon, label: 'Create Image', action: 'coming_soon' },
   { icon: Paperclip, label: 'Upload File', action: 'upload_file' },
-  { icon: Globe, label: 'Search the Web', action: 'coming_soon' },
+  { icon: Globe, label: 'Search the Web', action: 'web_search' },
   { icon: Building2, label: 'Company knowledge', action: 'knowledge' },
   { icon: Wrench, label: 'Use a Tool', action: 'coming_soon' },
 ] as const;
@@ -95,6 +97,8 @@ export function ChatGPTPracticeChatPanel({
   importPriorLabel,
   onImportPriorConversation,
   isImportingPrior = false,
+  webSearchEnabled = false,
+  onWebSearchToggle,
 }: ChatGPTPracticeChatPanelProps) {
   const { toast } = useToast();
   const [input, setInput] = useState('');
@@ -183,6 +187,12 @@ export function ChatGPTPracticeChatPanel({
     setPlusMenuOpen(false);
     if (action === 'coming_soon') {
       toast({ title: 'Coming soon', description: 'This feature will be available shortly.' });
+    } else if (action === 'web_search') {
+      onWebSearchToggle?.(!webSearchEnabled);
+      toast({
+        title: webSearchEnabled ? 'Web search OFF' : 'Web search ON',
+        description: webSearchEnabled ? 'AI will use its own knowledge only.' : 'AI will search the internet before responding.',
+      });
     } else if (action === 'knowledge') {
       setKnowledgeOpen(true);
     } else if (action === 'upload_file') {
@@ -522,10 +532,21 @@ export function ChatGPTPracticeChatPanel({
                     key={label}
                     type="button"
                     onClick={() => handlePlusItem(action)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors mx-0 text-left"
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors mx-0 text-left ${
+                      action === 'web_search' && webSearchEnabled
+                        ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 hover:bg-blue-100 dark:hover:bg-blue-900'
+                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
                   >
-                    <Icon className="h-4 w-4 text-gray-500 dark:text-gray-400 shrink-0" />
+                    <Icon className={`h-4 w-4 shrink-0 ${
+                      action === 'web_search' && webSearchEnabled
+                        ? 'text-blue-600 dark:text-blue-400'
+                        : 'text-gray-500 dark:text-gray-400'
+                    }`} />
                     {label}
+                    {action === 'web_search' && webSearchEnabled && (
+                      <span className="ml-auto text-[10px] font-semibold text-blue-600 dark:text-blue-400">ON</span>
+                    )}
                   </button>
                 ))}
               </div>

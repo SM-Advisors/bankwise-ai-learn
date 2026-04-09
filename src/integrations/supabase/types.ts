@@ -1284,6 +1284,8 @@ export type Database = {
           session_4_progress: Json | null
           session_5_completed: boolean | null
           session_5_progress: Json | null
+          session_6_completed: boolean | null
+          session_6_progress: Json | null
           updated_at: string | null
           user_id: string
         }
@@ -1300,6 +1302,8 @@ export type Database = {
           session_4_progress?: Json | null
           session_5_completed?: boolean | null
           session_5_progress?: Json | null
+          session_6_completed?: boolean | null
+          session_6_progress?: Json | null
           updated_at?: string | null
           user_id: string
         }
@@ -1316,6 +1320,8 @@ export type Database = {
           session_4_progress?: Json | null
           session_5_completed?: boolean | null
           session_5_progress?: Json | null
+          session_6_completed?: boolean | null
+          session_6_progress?: Json | null
           updated_at?: string | null
           user_id?: string
         }
