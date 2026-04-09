@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import { Send, Loader2, RotateCcw, Square, FileText, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -189,13 +192,17 @@ export function CSuiteAdvisorPanel({ organizationId, onSummarize }: CSuiteAdviso
         {localMessages.map((msg, idx) => (
           <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div
-              className={`max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
+              className={`max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed ${
                 msg.role === 'user'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-foreground'
+                  ? 'bg-primary text-primary-foreground whitespace-pre-wrap'
+                  : 'bg-muted text-foreground brainstorm-prose'
               }`}
             >
-              {msg.content}
+              {msg.role === 'user' ? msg.content : (
+                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                  {msg.content}
+                </ReactMarkdown>
+              )}
             </div>
           </div>
         ))}
