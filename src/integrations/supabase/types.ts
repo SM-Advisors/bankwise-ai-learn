@@ -1270,6 +1270,39 @@ export type Database = {
         }
         Relationships: []
       }
+      sync_status: {
+        Row: {
+          error_message: string | null
+          id: string
+          last_sync_at: string | null
+          last_sync_status: string | null
+          next_sync_at: string | null
+          records_synced: number | null
+          service: string
+          updated_at: string | null
+        }
+        Insert: {
+          error_message?: string | null
+          id?: string
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          next_sync_at?: string | null
+          records_synced?: number | null
+          service: string
+          updated_at?: string | null
+        }
+        Update: {
+          error_message?: string | null
+          id?: string
+          last_sync_at?: string | null
+          last_sync_status?: string | null
+          next_sync_at?: string | null
+          records_synced?: number | null
+          service?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       training_progress: {
         Row: {
           created_at: string | null
