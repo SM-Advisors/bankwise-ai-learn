@@ -1,32 +1,32 @@
 # SMILE — Comprehensive Technical Reference
 ### Smart, Modular, Intelligent Learning Experience for AI
 
-**Document Version:** 6.0
-**Date:** 2026-04-06
+**Document Version:** 7.0
+**Date:** 2026-04-09
 **Classification:** Internal / Confidential
 **Prepared by:** SM Advisors
 
-**Change Summary (v5.0 → v6.0):**
-- **Curriculum expanded**: 33 modules across 5 sessions (up from 27). Session 1: 7 modules (was 3), Session 2: 9 modules (was 7), Session 3: 7 modules (unchanged), Session 4: 5 modules (unchanged), Session 5: 5 modules (unchanged)
-- **Multi-model support**: Learners can now choose from 10 AI models across 3 providers (OpenAI GPT 5.x, Anthropic Claude, Google Gemini 3). Model selector unlocked during Module 2-7 and available in top bar
-- **Default practice model**: GPT 5.4 is now the default model for practice chat; Claude Opus 4.6 remains the backend model for Andrea coaching, submission review, and agent testing
-- **Healthcare industry support**: New healthcare industry vertical with Parallon/HCA departments seeded in the departments system
-- **Generated module content caching**: New `generated_module_content` table caches AI-generated module content to avoid regeneration
-- **Organization policies view**: New `org_policies` database view for streamlined access to organization resources
-- **SuperAdmin enhanced permissions**: Full read access across all orgs; org management restricted to SuperAdmin role only
-- **RLS policy fixes**: Fixed RLS policies on `ai_user_preferences` and `ai_memories` tables
-- **Module completion backfill**: Migration to backfill module completion data for existing users
-- **Edge function model updates**: `submission_review` and `workflow-test-chat` now use Claude Sonnet 4.5; `intake-prompt-score` now uses Claude Haiku 4.5; `generate-lesson` and `parse-policy-document` now use Gemini 3 models
-- **New edge functions**: `superadmin-kpis` for cross-org KPI dashboards; `generate-module-content` for AI-generated module content
-- **UI improvements**: Model selector moved to top bar; font sizes normalized in AI chat responses; Back button added to module content pages; Andrea panel starts collapsed and auto-expands on Begin Practice; "Thinking..." changed to "Reviewing your work..."
-- **Industry-aware placeholders**: Hardcoded banking examples replaced with industry-aware placeholder system; org names shown instead of hardcoded "bankers" and "F&F"
-- **CLEAR Framework restructured**: Module content updated with better intro and guided practice
-- **User-initiated skill level changes**: Learners can now request skill level changes via Andrea
-- **DOCX/XLSX file support**: Practice chat now supports `.docx` and `.xlsx` file uploads
-- **Comprehensive test suite**: 238 tests covering Phases 2-6
-- **Edge function count**: 19 (up from 18): added `superadmin-kpis`, `generate-module-content`
-- **Total migrations**: 69 (up from 61)
-- **ShadCN components**: 48 (consolidated from 62; unused components removed)
+**Change Summary (v6.0 → v7.0):**
+- **Skills & Agents Restructure**: Curriculum restructured to v3.0 — 41 modules across 6 sessions (up from 33 across 5). Old Session 3 (Agents) split into Session 3 (Skills & Projects) and Session 4 (Agents & Autonomy). Old Sessions 4-5 cascade to Sessions 5-6
+- **Session 1 revised**: Module order and content updated. "Your First Win" moved to 1-4; new modules: "The Flipped Interaction" (1-5), "Sandbox" (1-7, replaces "Session 1 Review")
+- **Session 2 expanded**: 10 modules (up from 9). New: AI Limitations & Critical Evaluation (2-1), Self-Review Loops (2-2), Outline Expander (2-5), Web Search (2-9). Removed: Tool Selection, Model Comparison, Workflow Basics
+- **Session 3 — Skills & Projects (NEW)**: 7 modules covering skill anatomy (6 components: Identity, Trigger, Procedure, Standards, Guardrails, Output Format), projects, knowledge bases, sharing and scaling
+- **Session 4 — Agents & Autonomy (NEW)**: 7 modules covering Autonomy Spectrum (5 levels), agent anatomy (6 components), governance framework (6 components), 4-test agent suite (Normal, Edge, Out-of-scope, Guardrail)
+- **Session 5 — AI in Everyday Tools**: Cascaded from old Session 4 (Functional Agents) with updated session/module references
+- **Session 6 — Designing Your AI Workflow**: Cascaded from old Session 5 (Build Your Frankenstein) with updated references
+- **All Sessions 3-6 modules are quality-gated**: Every module in Sessions 3-6 has `isGateModule: true` (24 gate modules + 3 from Sessions 1-2 = 27 total)
+- **PLATFORM_TERMINOLOGY system**: 5 platform-native vocabularies (default, claude, chatgpt, copilot, gemini) for cross-platform terminology substitution in Sessions 3-4 content
+- **KNOWLEDGE_CHECKS**: Reflective closing questions for all 6 sessions (3 questions per session)
+- **Zone unlock renamed**: `session_3_agent_deployed` → `session_4_agent_deployed` (agents moved to Session 4)
+- **Submission rubrics expanded**: 23 module-specific rubrics (up from ~8). New rubrics for skill anatomy, agent design, governance, functional agents, and workflow design
+- **Coaching depths updated**: S3=PEER (Skills & Projects), S4=ADVISOR (Agents & Autonomy), S5=ADVISOR (Everyday Tools), S6=ADVISOR (AI Workflow)
+- **Session 6 database columns**: `session_6_progress` (JSONB), `session_6_completed` (BOOLEAN), `session_6_completed_at` (TIMESTAMPTZ) on `training_progress`
+- **session_3_skill_created flag**: New boolean on `training_progress` for skill creation tracking
+- **Web search module**: Module 2-9 teaches web search toggle best practices; OpenAI `web_search_preview` tool integration
+- **New edge function**: `admin-settings` for SuperAdmin app_settings management
+- **Edge function count**: 20 (up from 19)
+- **Total migrations**: 71 (up from 69)
+- **ShadCN components**: 49 (up from 48)
 
 ---
 
@@ -57,7 +57,7 @@
 
 SMILE (Smart, Modular, Intelligent Learning Experience for AI) is a web-based AI training platform designed specifically for banking professionals at SM Advisors client institutions. Its primary mission is to help bank employees at every level — from frontline advisors to executives — become skilled, compliant, and confident users of AI technology in their day-to-day work.
 
-The application is not a passive e-learning tool. It uses a live AI coaching system ("Andrea") built on Anthropic's Claude Opus 4.6, a RAG (Retrieval Augmented Generation) pipeline with learning style-boosted similarity scoring, and a structured curriculum of 33 modules across five sessions (Curriculum v2.1), to deliver a personalized, interactive learning experience.
+The application is not a passive e-learning tool. It uses a live AI coaching system ("Andrea") built on Anthropic's Claude Opus 4.6, a RAG (Retrieval Augmented Generation) pipeline with learning style-boosted similarity scoring, and a structured curriculum of 41 modules across six sessions (Curriculum v3.0), to deliver a personalized, interactive learning experience.
 
 ### 1.2 Core Value Propositions
 
@@ -65,14 +65,15 @@ The application is not a passive e-learning tool. It uses a live AI coaching sys
 - **Industry-specific context**: AI scenarios, examples, and guardrails are tailored to the learner's industry — banking (retail, wealth management, commercial lending, compliance, operations) and healthcare (Parallon/HCA). Industry-aware placeholder system replaces hardcoded banking examples.
 - **Compliance-first design**: The platform actively detects and blocks prompts that would violate banking regulations (PII sharing, compliance bypass attempts, inappropriate data export). Andrea refuses to help with these and explains why.
 - **Multi-model practice**: Learners can practice with 10 AI models from OpenAI (GPT 5.x), Anthropic (Claude), and Google (Gemini 3). Model selector unlocks during Module 2-7 for hands-on comparison.
-- **Hands-on practice**: Learners don't just read about AI — they build AI agents with knowledge bases and tool connections, design multi-step workflows, and complete a Capstone session where they design their own AI stack.
-- **Agents zone**: After deploying their first agent, learners unlock a persistent Agents zone where they can chat with their deployed agents and share them with colleagues via shareable links.
+- **Hands-on practice**: Learners don't just read about AI — they build reusable AI skills with knowledge bases (Session 3), design and deploy autonomous agents with governance frameworks (Session 4), explore AI in everyday tools (Session 5), and complete a Capstone session where they design their own AI workflow stack (Session 6).
+- **Agents zone**: After deploying their first agent in Session 4, learners unlock a persistent Agents zone where they can chat with their deployed agents and share them with colleagues via shareable links.
 - **Prompt Library**: Learners accumulate and save high-quality prompts throughout training for ongoing reuse; Andrea suggests saving particularly well-crafted prompts via a one-click UI.
 - **AI Journey tracking**: The AI Journey page visualizes skill progression with a Prompt Evolution card comparing the learner's earliest vs. most recent submitted prompts.
 - **Progressive disclosure**: The platform reveals features (Explore, Community, Agents, Profile zones) as learners progress through training — no overwhelming information dump upfront. 6 learner zones unlock progressively.
 - **Proactive Andrea triggers**: Andrea proactively nudges learners on return engagement, feature unlocks, and stall detection — not just when they ask for help.
 - **AI Brainstorm discovery**: The BrainstormPanel provides Andrea-guided workflow discovery, letting learners identify AI use cases in their daily work and submit ideas to leadership.
-- **Quality-gated progression**: Key modules are marked as gate modules; module completion requires passing a quality gate on practice submissions — learners can't skip ahead without demonstrating competence.
+- **Quality-gated progression**: 27 modules are marked as gate modules (all of Sessions 3-6 plus select modules in Sessions 1-2); module completion requires passing a quality gate on practice submissions — learners can't skip ahead without demonstrating competence.
+- **Platform-native terminology**: PLATFORM_TERMINOLOGY system maps generic terms (skill, project, agent) to platform-specific equivalents (Claude Project, Custom GPT, Gem, Copilot Studio) so curriculum content reads naturally for each learner's platform.
 - **Voice-to-text**: Learners can dictate prompts and messages via microphone using Deepgram-powered transcription.
 - **Agent sharing**: Learners can share deployed agents via link; recipients chat with the agent on a dedicated public page.
 - **C-Suite visibility**: An executive reporting dashboard with attention items, funnel charts, and Andrea C-Suite AI advisor panel gives bank leadership KPI snapshots on engagement, completion rates, and skill signal trends.
@@ -82,7 +83,7 @@ The application is not a passive e-learning tool. It uses a live AI coaching sys
 
 | User Type | Description |
 |-----------|-------------|
-| **Learner** | Bank or healthcare professional completing the 5-session AI training curriculum |
+| **Learner** | Bank or healthcare professional completing the 6-session AI training curriculum |
 | **Admin** | SM Advisors staff managing the platform (content, users, orgs) |
 | **Executive** | Bank leadership accessing C-Suite KPI dashboard |
 | **Super Admin** | SM Advisors system-wide administrator with cross-org visibility |
@@ -107,7 +108,7 @@ Organizations can be typed as `bank` (default) or `friends_family` (pilot tester
 | Build Tool | Vite | 5.4.19 |
 | Routing | React Router DOM | 6.30.1 |
 | Server State | TanStack Query (React Query) | 5.83.0 |
-| UI Components | ShadCN UI (Radix UI) | 48 components |
+| UI Components | ShadCN UI (Radix UI) | 49 components |
 | Styling | Tailwind CSS | 3.4.17 |
 | Typography Plugin | @tailwindcss/typography | 0.5.16 |
 | Markdown Rendering | react-markdown | 10.1.0 |
@@ -233,7 +234,7 @@ Organizations can be typed as `bank` (default) or `friends_family` (pilot tester
 │  │  generate-lesson  │  embed_chunks  │  seed_lesson_chunks │   │
 │  │  ai-trainer  │  parse-policy-document  │  intake-prompt-score │
 │  │  admin-create-user  │  admin-delete-user  │  superadmin-kpis│  │
-│  │  generate-module-content                                  │   │
+│  │  generate-module-content  │  admin-settings               │   │
 │  └─────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -296,7 +297,7 @@ Progressive Disclosure Model:
 │ Learn       │ /training/1   │ onboarding_completed               │
 │ Explore     │ /explore      │ session_1_basic_interaction_done   │
 │ Community   │ /community    │ first_practice_done                │
-│ Agents      │ /agents       │ session_3_agent_deployed           │
+│ Agents      │ /agents       │ session_4_agent_deployed           │
 │ Profile     │ /profile      │ onboarding_completed               │
 └──────────────────────────────────────────────────────────────────┘
 
@@ -306,7 +307,7 @@ Zone definitions: src/config/zones.ts
 Unlock condition details:
   session_1_basic_interaction_done → completed module 1-3 (Basic Interaction)
   first_practice_done → any practice chat started in session 1
-  session_3_agent_deployed → user has at least one deployed agent (count query)
+  session_4_agent_deployed → user has at least one deployed agent (count query)
 ```
 
 ### 3.4 Request Flow — Standard Page Load
@@ -601,7 +602,7 @@ Agent Studio:
    → INSERT agent_test_conversations
 6. User reviews test results, iterates on prompt
 7. User clicks Deploy → UPDATE user_agents (status: active, is_deployed: true)
-8. In Capstone (Session 3):
+8. In Capstone (Session 4):
    → ai-practice edge function uses deployed agent's system_prompt
    → User practices against their own AI agent
 ```
@@ -654,7 +655,7 @@ Agent Studio:
 │ │   → any moduleEngagement[*].chatStarted          │
 │ ├── 'session_1_completed'                          │
 │ │   → progress.session_1_completed                 │
-│ ├── 'session_3_agent_deployed'                     │
+│ ├── 'session_4_agent_deployed'                     │
 │ │   → user has ≥1 deployed agent (count query)    │
 │ │                                                  │
 │ Returns:                                           │
@@ -694,7 +695,7 @@ Stores learner profile data, set during onboarding and updated throughout traini
 | `learning_style` | text | example_based / explanation_based / hands_on / logic_based |
 | `ai_proficiency_level` | integer | Score 0-8 from proficiency assessment |
 | `onboarding_completed` | boolean | Whether onboarding flow is complete |
-| `current_session` | integer | Current training session (1-5) |
+| `current_session` | integer | Current training session (1-6) |
 | `employer_name` | text | Institution/employer name |
 | `tour_completed` | boolean | Whether legacy product tour was completed |
 | `tours_completed` | jsonb | Per-tour completion map e.g. `{"dashboard": true, "admin": true}` |
@@ -719,7 +720,7 @@ Stores learner profile data, set during onboarding and updated throughout traini
 
 ### 5.3 Table: `training_progress`
 
-Tracks completion status for all five training sessions per user.
+Tracks completion status for all six training sessions per user.
 
 | Column | Type | Description |
 |--------|------|-------------|
@@ -730,11 +731,15 @@ Tracks completion status for all five training sessions per user.
 | `session_3_completed` | boolean | Session 3 fully completed |
 | `session_4_completed` | boolean | Session 4 fully completed |
 | `session_5_completed` | boolean | **v5** — Session 5 fully completed |
+| `session_6_completed` | boolean | **v7** — Session 6 fully completed |
 | `session_1_progress` | jsonb | Module-level progress data for Session 1 |
 | `session_2_progress` | jsonb | Module-level progress data for Session 2 |
 | `session_3_progress` | jsonb | Module-level progress data for Session 3 |
 | `session_4_progress` | jsonb | Module-level progress data for Session 4 |
 | `session_5_progress` | jsonb | **v5** — Module-level progress data for Session 5 |
+| `session_6_progress` | jsonb | **v7** — Module-level progress data for Session 6 |
+| `session_6_completed_at` | timestamptz | **v7** — Session 6 completion timestamp |
+| `session_3_skill_created` | boolean | **v7** — Whether learner created a skill in Session 3 |
 | `created_at` | timestamptz | Created |
 | `updated_at` | timestamptz | Updated |
 
@@ -1535,8 +1540,8 @@ All edge functions run on Deno runtime deployed to Supabase Edge Functions (Deno
 - SUPABASE_ANON_KEY — Supabase anonymous/public key
 - SUPABASE_SERVICE_ROLE_KEY — Supabase service role key (full bypass of RLS)
 
-**Current edge functions (19 total):**
-`trainer_chat`, `submission_review`, `ai-practice`, `agent-test-chat`, `workflow-test-chat`, `practice_chat`, `ai-trainer`, `generate-lesson`, `generate-module-content`, `embed_chunks`, `seed_lesson_chunks`, `parse-policy-document`, `intake-prompt-score`, `admin-create-user`, `admin-delete-user`, `speech-to-text`, `extract-agent-knowledge`, `generate-idea-preview`, `superadmin-kpis`, `_shared` (utilities)
+**Current edge functions (20 total):**
+`trainer_chat`, `submission_review`, `ai-practice`, `agent-test-chat`, `workflow-test-chat`, `practice_chat`, `ai-trainer`, `generate-lesson`, `generate-module-content`, `embed_chunks`, `seed_lesson_chunks`, `parse-policy-document`, `intake-prompt-score`, `admin-create-user`, `admin-delete-user`, `admin-settings`, `speech-to-text`, `extract-agent-knowledge`, `generate-idea-preview`, `superadmin-kpis`, `_shared` (utilities)
 
 ---
 
@@ -1620,28 +1625,56 @@ All edge functions run on Deno runtime deployed to Supabase Edge Functions (Deno
 
 #### Module-Specific Rubrics
 
-**Module 2-3 / 2-5 (Agent Building):**
-- Identity (20%): Role, department, audience, purpose defined
-- Task List (25%): at least 2 specific banking tasks with formats and constraints
-- Output Rules (15%): at least 2 formatting/behavior rules
-- Guard Rails (25%): at least 2 guard rails with alternative responses
-- Compliance Anchors (15%): at least 1 exact regulatory phrase
+**v7: 23 module-specific rubrics** (expanded from ~8 in v6). Each module with a rubric uses a tailored evaluation prompt that tests the specific skills taught in that module.
 
-**Module 3-3 (Workflow):**
-- Trigger (15%): Specific banking event
-- Steps (30%): at least 3 distinct steps with AI + human roles
-- Review Checkpoints (25%): at least 2 human review points
-- Prompt Templates (20%): Ready-to-use AI prompt in each step
-- Final Output (10%): Clear deliverable description
+**Session 1 Rubrics:**
+| Module | Focus |
+|--------|-------|
+| 1-6 (Iteration) | Treating AI output as a draft; refining through directed iteration |
+| 1-7 (Sandbox) | Independent application of all Session 1 techniques to real work |
 
-**Module 3-5 (Capstone):**
-- CLEAR Framework (20%): Context, Length, Examples, Audience, Role
-- Advanced Technique (20%): Chain-of-thought, multi-shot, or self-review
-- Compliance Awareness (20%): Data handling, decision boundaries, documentation
-- Department Relevance (20%): Specific to real banking function
-- Reflection Quality (20%): Honest identification of strengths and limitations
+**Session 2 Rubrics:**
+| Module | Focus |
+|--------|-------|
+| 2-2 (Self-Review Loops) | Building a two-prompt generate-then-critique workflow |
+| 2-3 (CLEAR Framework) | Applying Context/Length/Examples/Audience/Requirements structure |
+| 2-5 (Outline Expander) | Providing skeleton structure and letting AI fill substance |
+| 2-6 (Multi-Shot) | Using examples to teach consistent output patterns |
+| 2-8 (Chain-of-Thought) | Designing multi-step reasoning for auditable analysis |
+| 2-9 (Web Search) | Knowing when to enable/disable web search; articulating trade-offs |
+| 2-10 (Sandbox) | Independent application of Session 2 techniques |
 
-Submission scores are now persisted to `submission_scores` table for analytics and quality gate enforcement.
+**Session 3 Rubrics (Skills & Projects):**
+| Module | Focus |
+|--------|-------|
+| 3-3 (Building First Skill) | Complete skill with six anatomy components: Identity, Trigger, Procedure, Standards, Guardrails, Output Format |
+| 3-4 (Adding Knowledge) | Giving skill domain knowledge for specialist behavior |
+| 3-5 (Skills + Projects) | Combining skills and projects into working configuration |
+| 3-6 (Sharing and Scaling) | Sharing skills, collecting feedback, identifying domain expertise |
+| 3-7 (Capstone) | Complete skills and project configuration for actual use |
+
+**Session 4 Rubrics (Agents & Autonomy):**
+| Module | Focus |
+|--------|-------|
+| 4-2 (Agent Design) | Designing agent wrapper with six anatomy components: Skills, Triggers, Decision Logic, Guardrails, Escalation Path, Audit Trail |
+| 4-3 (Build Agent) | Building and testing agent across four scenario types: Normal, Edge, Out-of-scope, Guardrail |
+| 4-5 (Governance) | Writing governance brief covering six framework components: Authorization, Monitoring, Audit Trail, Exception Handling, Review Cadence, Kill Switch |
+
+**Session 5 Rubrics (Everyday Tools):**
+| Module | Focus |
+|--------|-------|
+| 5-1 (Functional Agents) | Identifying functional agents in tools; assessing when to use them |
+| 5-2 (Spreadsheet AI) | Using AI features for data work acceleration |
+| 5-3 (Presentation AI) | Using AI features for slide creation and quality |
+| 5-4 (Inbox AI) | Using AI features for email while maintaining professional voice |
+| 5-5 (Sandbox) | Practical integration of functional agents into daily workflow |
+
+**Session 6 Rubrics (AI Workflow):**
+| Module | Focus |
+|--------|-------|
+| 6-2 (Design Workflow) | Evaluating completeness and quality of multi-step AI workflow design |
+
+Submission scores are persisted to `submission_scores` table for analytics and quality gate enforcement.
 
 ---
 
@@ -1652,7 +1685,7 @@ Submission scores are now persisted to `submission_scores` table for analytics a
 **Default Model:** GPT 5.4 (OpenAI) — configurable per-user and per-organization
 **Supported Models:** GPT 5.4, GPT 5.4 Mini, GPT 5.4 Reasoning, GPT 5.3/Mini, GPT 5.2/Mini, Claude Sonnet 4.6, Claude Opus 4.6, Gemini 3 (max_tokens: 1500)
 
-**Mode 1 — Custom Agent (Session 3):** Uses learner's deployed agent system prompt.
+**Mode 1 — Custom Agent (Session 4):** Uses learner's deployed agent system prompt.
 **Mode 2 — Generic AI (Sessions 1-2):** Mirrors prompt quality behavior. Model selected by learner.
 **Mode 3 — Brainstorm Persona (v4):** Andrea-guided workflow discovery for BrainstormPanel.
 
@@ -1800,6 +1833,14 @@ Uses check-then-act pattern with insert-first to close race conditions. Fails op
 
 ---
 
+### 6.18 admin-settings *(v7 new)*
+
+**File:** supabase/functions/admin-settings/index.ts
+**Purpose:** Manages `app_settings` key-value table for platform configuration. Supports GET (read settings) and POST (upsert settings).
+**Auth:** Requires super_admin role. Validates JWT and checks role before proceeding.
+
+---
+
 ## 7. Andrea AI Persona
 
 ### 7.1 Overview
@@ -1873,11 +1914,12 @@ EXCEPTIONS — give the direct answer immediately if:
 
 | Session | Mode | Behavior |
 |---------|------|----------|
-| Session 1 | HAND-HOLDING | Explain concepts thoroughly. Assume learner has never prompted an AI. Offer examples proactively. Frame mistakes as "most people start here." Suggest next steps clearly. |
-| Session 2 | COLLABORATIVE | Ask before telling. Reference Session 1 concepts. Give hints, not answers. Push specificity. |
-| Session 3 | PEER | Challenge their thinking. More direct and concise. Push for production quality. Learner should be driving. |
-| Session 4 | ADVISOR | Deep-dive expertise. Peer-level challenge. Assume strong foundational skills. Focus on mastery and nuance. |
-| Session 5 | ADVISOR | Learner-driven capstone. Andrea provides expert guidance on AI stack design and integration. |
+| Session 1 | HAND-HOLDING | Foundation & Early Wins — Explain concepts thoroughly. Assume learner has never prompted an AI. Offer examples proactively. Frame mistakes as "most people start here." Suggest next steps clearly. |
+| Session 2 | COLLABORATIVE | Prompting Frameworks & Model Selection — Ask before telling. Reference Session 1 concepts. Give hints, not answers. Push specificity. |
+| Session 3 | PEER | Skills & Projects — Challenge their thinking. Socratic questioning. Push for production quality. Learner should be driving. |
+| Session 4 | ADVISOR | Agents & Autonomy — Governance rigor. Deployment readiness challenge. Assume strong foundational skills. |
+| Session 5 | ADVISOR | AI in Your Everyday Tools — Practical application focus. Tool-workflow connection. Peer-level challenge. |
+| Session 6 | ADVISOR | Designing Your AI Workflow — ROI and scale focus. Minimal hand-holding. Learner-driven capstone. Andrea provides expert guidance on AI stack design and integration. |
 
 ### 7.6 Learning Style Adaptations
 
@@ -1910,7 +1952,7 @@ The trainer_chat edge function operates in three distinct modes:
 
 **Dashboard Navigator Mode** (`lessonId === 'dashboard'`):
 - Skips RAG retrieval and bank policy injection
-- Injects the complete curriculum module map (33 modules across 5 sessions)
+- Injects the complete curriculum module map (41 modules across 6 sessions)
 - Keep responses to 2-3 sentences max — quick-help context, not a lesson
 - Direct learners to specific modules when they ask about topics
 - Check progress and suggest the next uncompleted module
@@ -2053,7 +2095,7 @@ Protected Routes — Self-Wrapping AppShell:
   /dashboard          → Dashboard.tsx (wraps itself in AppShell with dynamic topBarActions)
 
 Protected Routes — Full-Screen Focus Mode (no AppShell):
-  /training/:sessionId → TrainingWorkspace.tsx (core training modules, sessions 1-5)
+  /training/:sessionId → TrainingWorkspace.tsx (core training modules, sessions 1-6)
   /training/elective  → ElectiveWorkspace.tsx (elective module workspace)
 
 Protected Routes — Profile Zone Hub:
@@ -2180,7 +2222,7 @@ export const LEARNER_ZONES: Zone[] = [
   { id: 'learn',     icon: BookOpen, label: 'Learn',     description: 'Your training sessions',           path: '/training/1',  unlockedBy: 'onboarding_completed' },
   { id: 'explore',   icon: Compass,  label: 'Explore',   description: 'Prompt library, ideas, electives', path: '/explore',     unlockedBy: 'session_1_basic_interaction_done' },
   { id: 'community', icon: Users,    label: 'Community', description: 'Share wins, connect with peers',   path: '/community',   unlockedBy: 'first_practice_done' },
-  { id: 'agents',    icon: Bot,      label: 'Agents',    description: 'Your deployed AI agents',          path: '/agents',      unlockedBy: 'session_3_agent_deployed' },
+  { id: 'agents',    icon: Bot,      label: 'Agents',    description: 'Your deployed AI agents',          path: '/agents',      unlockedBy: 'session_4_agent_deployed' },
   { id: 'profile',   icon: User,     label: 'Profile',   description: 'Preferences, memories, journey',   path: '/profile',     unlockedBy: 'onboarding_completed' },
 ];
 ```
@@ -2213,9 +2255,9 @@ The main hub. Self-wraps in AppShell. Uses a **state machine** to render differe
 | `brand_new` | Onboarding done, no modules started | Start Session 1 CTA + Andrea greeting |
 | `mid_session` | Currently in progress | Continue button + progress bar (X/Y modules, %) |
 | `between_sessions` | Prior session done, next not started | Green completion badge + Next session card + community teaser |
-| `all_complete` | All 5 sessions finished | Congratulations + top skills list + Community CTAs |
+| `all_complete` | All 6 sessions finished | Congratulations + top skills list + Community CTAs |
 
-Dashboard tracks 5 sessions: Foundation, Structured Interaction, Agents, Functional Agents, Build Your Frankenstein. Uses `useUserAgents()` to show active agent card.
+Dashboard tracks 6 sessions: AI Fundamentals, Prompting Frameworks, Skills & Projects, Agents & Autonomy, AI in Everyday Tools, Designing Your AI Workflow. Uses `useUserAgents()` to show active agent card.
 
 Additional sections:
 - **BrainstormPanel**: Andrea-guided workflow discovery widget
@@ -2226,7 +2268,7 @@ Additional sections:
 
 Full-screen training interface (no AppShell). Multi-panel layout:
 
-- **SessionSwitcher** (top): 5 session pills with state indicators (active/completed/accessible/locked)
+- **SessionSwitcher** (top): 6 session pills with state indicators (active/completed/accessible/locked)
 - **Left panel (65%):** `ModuleContentPanel` — inline module viewer with scroll progress, learning outcomes, key points, examples, steps
 - **Center panel (35%):** `PracticeChatPanel` — AI practice conversation interface with model selector
 - **Right panel (collapsible):** `TrainerChatPanel` — Andrea coaching with prompt save support
@@ -2289,7 +2331,7 @@ Community hub (unlocked after first practice chat started). Wraps existing Commu
 
 #### `AgentsZone.tsx` (`src/pages/AgentsZone.tsx`) *(v5 new)*
 
-Persistent agent chat interface (unlocked after first agent deployment via `session_3_agent_deployed` gate). Works like a custom GPT — the user's deployed agent's `system_prompt` drives all responses. Messages persist in state. Uses `supabase.functions.invoke('ai-practice')` with the agent's system prompt. Includes share panel for sharing agents with colleagues.
+Persistent agent chat interface (unlocked after first agent deployment in Session 4 via `session_4_agent_deployed` gate). Works like a custom GPT — the user's deployed agent's `system_prompt` drives all responses. Messages persist in state. Uses `supabase.functions.invoke('ai-practice')` with the agent's system prompt. Includes share panel for sharing agents with colleagues.
 
 #### `SharedAgentChat.tsx` (`src/pages/SharedAgentChat.tsx`) *(v5 new)*
 
@@ -2308,7 +2350,7 @@ Multi-tab admin panel with **flex-wrap** tab layout. **Andrea advisor panel is a
 | Sessions | Schedule live training events |
 | Events | Events calendar management |
 | Ideas | Community idea moderation (status updates) |
-| Progress | Learner progress dashboard (sessions 1-5) |
+| Progress | Learner progress dashboard (sessions 1-6) |
 | C-Suite Reports | Engagement analytics, session completion rates, CSV export |
 | C-Suite Advisor | Executive KPI dashboard with Andrea C-Suite AI advisor panel |
 | Resources | Admin-managed `org_resources` link management |
@@ -2359,7 +2401,7 @@ AI practice conversation interface:
 
 #### `SessionSwitcher.tsx` (`src/components/training/SessionSwitcher.tsx`)
 
-5-session pill navigation bar:
+6-session pill navigation bar:
 - States: active (primary bg), completed (green + checkmark), accessible (muted), locked (muted/50 + lock icon)
 - Click navigates to `/training/:sessionNum`
 
@@ -2381,7 +2423,7 @@ C-suite admin landing:
   - Low-completion departments (<40% S1)
   - Funnel drop-off between sessions (>30% gap)
   - Pending ideas awaiting review
-- Funnel chart: S1 → S2 → S3 → S4 completion rates
+- Funnel chart: S1 → S2 → S3 → S4 → S5 → S6 completion rates
 
 #### `AgentStudioPanel.tsx` (`src/components/agent-studio/AgentStudioPanel.tsx`)
 
@@ -2421,7 +2463,7 @@ Progressive zone disclosure gate checker. Single source of truth for feature unl
 }
 ```
 
-Reads from `useAuth()` and `useUserAgents()` (for agent deployment check). The `session_3_agent_deployed` condition performs a count query on `user_agents` where `is_deployed = true`.
+Reads from `useAuth()` and `useUserAgents()` (for agent deployment check). The `session_4_agent_deployed` condition performs a count query on `user_agents` where `is_deployed = true`.
 
 #### `useValueSignals` (`src/hooks/useValueSignals.ts`) *(v4)*
 
@@ -2588,15 +2630,19 @@ interface WorkflowData {
 
 #### `src/data/trainingContent.ts`
 
-**Curriculum v2.1** (expanded from Rivers Meeting base, March 7, 2026). Defines all 5 sessions and 33 modules. Governing principles: everything works, confidence before complexity, conversation-first computing, role-specific from the start.
+**Curriculum v3.0** (Skills & Agents Restructure, April 9, 2026). Defines all 6 sessions and 41 modules. Governing principles: everything works, confidence before complexity, conversation-first computing, role-specific from the start.
 
 Each module contains: id, title, type, description, estimatedTime, learningObjectives, learningOutcome, content (overview, keyPoints, examples, steps, practiceTask with departmentScenarios).
 
 **Module types:** `document` | `exercise` | `sandbox` (no video modules currently defined)
 
-**Gate modules** (marked with `isGateModule: true`): 1-3 (Basic Interaction), 2-1 (Structured Prompting)
+**Gate modules** (marked with `isGateModule: true`): 27 total — 1-3, 1-4 (Session 1), 2-3 (Session 2), and ALL modules in Sessions 3-6
 
-**`ELECTIVE_PATHS`:** Defined but currently empty (`[]`). Elective concepts have been folded into Sessions 4 and 5.
+**`ELECTIVE_PATHS`:** Defined but currently empty (`[]`). Elective concepts have been folded into Sessions 5 and 6.
+
+**`PLATFORM_TERMINOLOGY`:** *(v7 new)* Maps generic terms (`project`, `skill`, `agent`, `customization`) to platform-native equivalents. 5 platforms: `default`, `claude` (Claude Project, Claude Skill), `chatgpt` (Custom GPT), `copilot` (Copilot Studio), `gemini` (Gem). UI components rendering Sessions 3-4 content substitute these at render time.
+
+**`KNOWLEDGE_CHECKS`:** *(v7 new)* Reflective closing questions for all 6 sessions, 3 questions per session. Used by the knowledge check component at session end.
 
 **`ALL_SESSION_CONTENT`:**
 ```typescript
@@ -2606,6 +2652,7 @@ export const ALL_SESSION_CONTENT: Record<number, SessionContent> = {
   3: SESSION_3_CONTENT,
   4: SESSION_4_CONTENT,
   5: SESSION_5_CONTENT,
+  6: SESSION_6_CONTENT,
 };
 ```
 
@@ -2736,7 +2783,7 @@ Edge functions enforce per-user rate limits via the `rate_limit_events` table. E
 ### 10.3 RAG Pipeline
 
 **Offline (content setup):**
-1. Training content defined in `trainingContent.ts` (33 modules across 5 sessions)
+1. Training content defined in `trainingContent.ts` (41 modules across 6 sessions)
 2. `seedAllContent()` frontend function calls seed edge functions for both core session and elective content
 3. Chunks tagged with `learning_style` (universal by default)
 4. `embed_chunks` edge function generates 1536-dimension embeddings
@@ -2751,7 +2798,7 @@ Edge functions enforce per-user rate limits via the `rate_limit_events` table. E
 
 | Function | Model | max_tokens | Notes |
 |----------|-------|-----------|-------|
-| `trainer_chat` (Andrea) | Claude Opus 4.6 | 1000 | 400 for greeting mode; curriculum v2.1 with 5-session navigation map |
+| `trainer_chat` (Andrea) | Claude Opus 4.6 | 1000 | 400 for greeting mode; curriculum v3.0 with 6-session navigation map |
 | `submission_review` | Claude Sonnet 4.5 | 1200 | Learning-style-adaptive feedback; proficiency-scaled guidance (0-8) |
 | `ai-practice` | Multi-model (user selectable) | 1500 | Default: GPT 5.4. Routes to Claude, GPT, or Gemini based on user selection |
 | `agent-test-chat` | Claude Opus 4.6 | 1500 | Wrapped system prompt |
@@ -2835,7 +2882,7 @@ Andrea silently tracks skill observations via the `skill_observations` table (em
 
 ### 11.1 Overview
 
-**Curriculum v2.1** — Expanded from the v2.0 base (Rivers Meeting, March 7, 2026). The curriculum now consists of **5 sessions with 33 modules** (up from 27 in v2.0). Sessions 1 and 2 received additional modules for deeper coverage.
+**Curriculum v3.0** — Skills & Agents Restructure (April 9, 2026). The curriculum now consists of **6 sessions with 41 modules** (up from 33 across 5 in v2.1). Old Session 3 (Agents) split into Session 3 (Skills & Projects) and Session 4 (Agents & Autonomy). Old Sessions 4-5 cascade to Sessions 5-6.
 
 **Governing principles:**
 - Everything works — nothing should fail in a way that makes the user feel they did something wrong
@@ -2845,6 +2892,8 @@ Andrea silently tracks skill observations via the `skill_observations` table (em
 
 **Module types:** `document` (conceptual), `exercise` (hands-on), `sandbox` (open-ended capstone)
 
+**Gate modules:** 27 total — 1-3, 1-4 (Session 1), 2-3 (Session 2), and ALL modules in Sessions 3-6.
+
 ### 11.2 Session 1: AI Fundamentals & Your First Win (7 Modules)
 
 Andrea Tier: **Hand-Holding** — detailed guidance, celebration of wins.
@@ -2853,88 +2902,113 @@ Andrea Tier: **Hand-Holding** — detailed guidance, celebration of wins.
 |--------|-------|------|-----------|-------------|
 | 1-1 | Personalization | exercise | 10 min | Configure role, department, employer context; observe how personalization changes AI responses |
 | 1-2 | Interface Orientation | document | 8 min | Core interface elements: conversation area, input, attachments, new thread control |
-| 1-3 | Basic Interaction | exercise | 20 min | Describe tasks conversationally; Flipped Interaction Pattern; Outline Expander; iterate on responses |
-| 1-4 | Understanding AI Responses | document | 12 min | How AI generates responses; recognizing limitations and hallucinations |
-| 1-5 | Iteration & Refinement | exercise | 15 min | Techniques for improving AI output through follow-up prompts |
-| 1-6 | Your First Win | exercise | 15 min | Apply all Session 1 skills to a real work task |
-| 1-7 | Session 1 Review | document | 10 min | Spaced repetition knowledge check; session recap |
+| 1-3 | Basic Interaction | exercise | 20 min | Describe tasks conversationally; iterate on responses; first real AI conversation |
+| 1-4 | Your First Win | exercise | 15 min | Apply Session 1 skills to produce something real for actual work |
+| 1-5 | The Flipped Interaction | exercise | 15 min | Let the AI interview you; Flipped Interaction Pattern for problem-solving |
+| 1-6 | Iteration | exercise | 15 min | Treat output as draft; push further through directed follow-up |
+| 1-7 | Sandbox | sandbox | 15 min | Free exploration and experimentation with all Session 1 techniques |
 
-**Gate module:** 1-3 (Basic Interaction). Completing 1-3 unlocks the Explore zone.
+**Gate modules:** 1-3 (Basic Interaction — unlocks Explore zone), 1-4 (Your First Win).
 
 **Department scenarios:** Module 1-3 includes `departmentScenarios` with tailored exercises for Commercial Lending, Retail Banking, Compliance, Wealth Management, etc.
 
-### 11.3 Session 2: Level 2: Workflows, Frameworks & First Win Scale (9 Modules)
+### 11.3 Session 2: Prompting Frameworks & Model Selection (10 Modules)
 
 Andrea Tier: **Collaborative** — ask before telling, push specificity.
 
 | Module | Title | Type | Est. Time | Key Content |
 |--------|-------|------|-----------|-------------|
-| 2-1 | Structured Prompting (CLEAR Framework) | document | 15 min | Context, Length, Examples, Audience, Requirements framework (restructured with better intro and guided practice) |
-| 2-2 | Output Templating | exercise | 15 min | Shape AI output format with templates and structures |
-| 2-3 | Multi-Shot Prompting | exercise | 15 min | Few-shot and multi-shot pattern examples |
-| 2-4 | Model Selection | document | 12 min | Understanding different AI models and when to use each |
-| 2-5 | Chain-of-Thought Mastery | exercise | 20 min | Step-by-step reasoning patterns |
-| 2-6 | Tool Selection | exercise | 15 min | Evaluating and selecting AI tools for specific tasks |
-| 2-7 | Model Comparison | exercise | 15 min | Hands-on multi-model comparison; model selector unlocks during this module |
-| 2-8 | Workflow Basics | exercise | 15 min | Introduction to multi-step AI workflows |
-| 2-9 | Sandbox | sandbox | 15 min | Open-ended exploration and practice |
+| 2-1 | AI Limitations & Critical Evaluation | document | 15 min | How AI generates responses; recognizing limitations and hallucinations |
+| 2-2 | Self-Review Loops | exercise | 15 min | Build two-prompt generate-then-critique workflows |
+| 2-3 | Structured Prompting (CLEAR Framework) | exercise | 15 min | Context, Length, Examples, Audience, Requirements framework |
+| 2-4 | Output Templating | exercise | 15 min | Shape AI output format with templates and structures |
+| 2-5 | Outline Expander | exercise | 15 min | Provide skeleton structure and let AI fill substance |
+| 2-6 | Multi-Shot Prompting | exercise | 15 min | Few-shot and multi-shot pattern examples for consistent output |
+| 2-7 | Model Selection | document | 12 min | Understanding different AI models and when to use each |
+| 2-8 | Chain-of-Thought Reasoning | exercise | 20 min | Step-by-step reasoning patterns for auditable analysis |
+| 2-9 | Web Search | exercise | 15 min | When to enable/disable web search; OpenAI `web_search_preview` tool; articulating trade-offs |
+| 2-10 | Sandbox | sandbox | 15 min | Open-ended exploration and practice with all Session 2 techniques |
 
-**Gate module:** 2-1 (Structured Prompting).
+**Gate module:** 2-3 (Structured Prompting).
 **Model selector unlock:** During Module 2-7, learners gain access to the multi-model selector in the practice chat top bar.
 
-### 11.4 Session 3: Agents (7 Modules)
+### 11.4 Session 3: Skills & Projects — Your AI Specialists (7 Modules) *(v7 new)*
 
-Andrea Tier: **Peer** — challenge thinking, push for production quality.
-
-| Module | Title | Type | Est. Time | Key Content |
-|--------|-------|------|-----------|-------------|
-| 3-1 | Why Agents Exist | document | 12 min | Agents vs one-off prompts, use cases |
-| 3-2 | The Four Levels | document | 10 min | Progressive agent complexity levels |
-| 3-3 | Build a Basic Agent | exercise | 25 min | Agent Studio — identity, task list, output rules, guard rails |
-| 3-4 | Add Knowledge | exercise | 15 min | Upload documents to agent knowledge base |
-| 3-5 | Add Files | exercise | 15 min | File attachment and processing for agents |
-| 3-6 | Add Tool Access | exercise | 15 min | Connect tools (web search, code interpreter) |
-| 3-7 | Sandbox / Capstone | sandbox | 25 min | Full agent build, test, and deploy |
-
-Deploying an agent in this session unlocks the **Agents zone**.
-
-### 11.5 Session 4: Functional Agents (5 Modules)
-
-Andrea Tier: **Advisor** — deep-dive expertise, peer-level challenge.
+Andrea Tier: **Peer** — challenge thinking, Socratic questioning, push for production quality.
 
 | Module | Title | Type | Est. Time | Key Content |
 |--------|-------|------|-----------|-------------|
-| 4-1 | What Are Functional Agents? | document | 10 min | Agents that live inside existing tools |
-| 4-2 | AI in Your Spreadsheet | exercise | 20 min | Spreadsheet AI integration patterns |
-| 4-3 | AI in Your Presentations | exercise | 20 min | Presentation AI integration patterns |
-| 4-4 | AI in Your Inbox | exercise | 15 min | Email AI integration patterns |
-| 4-5 | Sandbox | sandbox | 15 min | Choose-your-own functional agent exploration |
+| 3-1 | Why Customization Matters | document | 12 min | Ad-hoc conversation vs persistent configuration; when customization pays off |
+| 3-2 | Understanding Projects | exercise | 20 min | Project instructions, knowledge files, conversation history; create first project |
+| 3-3 | Building Your First Skill | exercise | 25 min | Six-part skill anatomy: Identity, Trigger, Procedure, Standards, Guardrails, Output Format |
+| 3-4 | Adding Knowledge to Skills | exercise | 15 min | Upload documents to skill; domain knowledge for specialist behavior |
+| 3-5 | Skills and Projects Together | exercise | 15 min | Combining skills and projects into working configuration |
+| 3-6 | Sharing and Scaling | exercise | 15 min | Share skills, collect feedback, identify domain expertise for skill candidates |
+| 3-7 | Sandbox / Capstone | sandbox | 25 min | Full skill + project build for actual use |
 
-### 11.6 Session 5: Build Your Frankenstein (5 Modules)
+**ALL modules are gate modules.** PLATFORM_TERMINOLOGY substitution active (renders platform-native terms for skill, project, etc.).
 
-Andrea Tier: **Advisor** — learner drives, Andrea provides expert guidance.
+### 11.5 Session 4: Agents & Autonomy (7 Modules) *(v7 new)*
+
+Andrea Tier: **Advisor** — governance rigor, deployment readiness challenge.
 
 | Module | Title | Type | Est. Time | Key Content |
 |--------|-------|------|-----------|-------------|
-| 5-1 | Map Your Stack | exercise | 15 min | Audit current tools and identify AI integration points |
-| 5-2 | Design Your Workflow | exercise | 25 min | Design a multi-tool AI workflow for your real work |
-| 5-3 | Stitch It Together | exercise | 20 min | Connect agents, tools, and workflows into a cohesive system |
-| 5-4 | Prototype & Test | exercise | 20 min | Build and test your integrated AI stack |
-| 5-5 | Present & Reflect | sandbox | 15 min | Present your Frankenstein stack and reflect on the journey |
+| 4-1 | From Skills to Agents | document | 12 min | Autonomy Spectrum — 5 levels: Conversation, Skill, Project, Agent, Orchestrator |
+| 4-2 | Agents as Skill Orchestrators | exercise | 15 min | Six-part agent anatomy: Skills, Triggers, Decision Logic, Guardrails, Escalation Path, Audit Trail |
+| 4-3 | Build a Working Agent | exercise | 25 min | Build and test agent across 4 scenario types: Normal, Edge, Out-of-scope, Guardrail |
+| 4-4 | Adding Tools and Actions | exercise | 15 min | Connect tools (web search, code interpreter) to agents |
+| 4-5 | Governance and Compliance | exercise | 15 min | Six-component governance framework: Authorization, Monitoring, Audit Trail, Exception Handling, Review Cadence, Kill Switch |
+| 4-6 | Agent Deployment and Sharing | exercise | 15 min | Deploy agent, peer test, share via link |
+| 4-7 | Sandbox / Capstone | sandbox | 25 min | Full agent build, test, and deploy capstone |
 
-### 11.7 Elective Paths (Currently Empty)
+**ALL modules are gate modules.** Deploying an agent in this session unlocks the **Agents zone** (`session_4_agent_deployed`).
 
-The `ELECTIVE_PATHS` array is defined but currently empty. Elective concepts from the prior curriculum (Advanced Prompt Engineering, AI Agent Specialization, Compliance & AI, Data Analytics with AI) have been folded into Sessions 4 and 5. The elective infrastructure remains in place for future use.
+### 11.6 Session 5: AI in Your Everyday Tools (5 Modules)
 
-### 11.8 Proficiency Assessment (Onboarding)
+Andrea Tier: **Advisor** — practical application, tool-workflow connection.
+
+| Module | Title | Type | Est. Time | Key Content |
+|--------|-------|------|-----------|-------------|
+| 5-1 | What Are Functional Agents? | document | 10 min | Agents that live inside existing tools; when to use them vs custom agents |
+| 5-2 | AI in Your Spreadsheet | exercise | 20 min | Spreadsheet AI integration patterns for data work acceleration |
+| 5-3 | AI in Your Presentations | exercise | 20 min | Presentation AI integration patterns for slide creation |
+| 5-4 | AI in Your Inbox | exercise | 15 min | Email AI integration patterns while maintaining professional voice |
+| 5-5 | Sandbox | sandbox | 15 min | Choose-your-own functional agent exploration |
+
+**ALL modules are gate modules.**
+
+### 11.7 Session 6: Designing Your AI Workflow (5 Modules)
+
+Andrea Tier: **Advisor** — ROI and scale focus, learner-driven capstone.
+
+| Module | Title | Type | Est. Time | Key Content |
+|--------|-------|------|-----------|-------------|
+| 6-1 | Map Your Stack | exercise | 15 min | Audit current tools and identify AI integration points |
+| 6-2 | Design Your Workflow | exercise | 25 min | Design a multi-tool AI workflow for your real work |
+| 6-3 | Stitch It Together | exercise | 20 min | Connect agents, tools, and workflows into a cohesive system |
+| 6-4 | Prototype & Test | exercise | 20 min | Build and test your integrated AI stack |
+| 6-5 | Present & Reflect | sandbox | 15 min | Present your AI workflow stack and reflect on the journey |
+
+**ALL modules are gate modules.**
+
+### 11.8 Elective Paths (Currently Empty)
+
+The `ELECTIVE_PATHS` array is defined but currently empty. Elective concepts from the prior curriculum have been folded into Sessions 5 and 6. The elective infrastructure remains in place for future use.
+
+### 11.9 Knowledge Checks *(v7 new)*
+
+The `KNOWLEDGE_CHECKS` export defines 3 reflective closing questions per session (18 total across 6 sessions). Questions cover key concepts from each session and are presented at session end to reinforce learning.
+
+### 11.10 Proficiency Assessment (Onboarding)
 
 The assessment is part of the 5-step onboarding flow (Step 3). Scenario-based questions with scoring mapped to proficiency levels. Full responses stored in `proficiency_responses` table for audit trail.
 
 **Scoring:** Composite score normalized to 0-8 integer. Stored as `user_profiles.ai_proficiency_level`.
 
-### 11.9 Quality-Gated Progression
+### 11.11 Quality-Gated Progression
 
-Key modules are marked with `isGateModule: true`. Module completion requires passing a quality gate:
+27 modules are marked with `isGateModule: true` (all of Sessions 3-6 plus 1-3, 1-4, 2-3). Module completion requires passing a quality gate:
 1. Learner completes practice conversation
 2. Clicks "Get Andrea's Feedback" to submit for review
 3. `submission_review` edge function evaluates against module-specific rubric
@@ -2949,7 +3023,7 @@ Key modules are marked with `isGateModule: true`. Module completion requires pas
 ### 12.1 Content Management
 
 - **Bank Policies:** Full CRUD. Upload PDF/DOCX for AI extraction + summary generation. Toggle active/inactive.
-- **Training Modules:** View all 33 module definitions across 5 sessions. Trigger `seedAllContent()` for combined seeding and embedding.
+- **Training Modules:** View all 41 module definitions across 6 sessions. Trigger `seedAllContent()` for combined seeding and embedding.
 - **Lesson Generation:** AI-powered lesson generation for new modules via generate-lesson edge function.
 - **Org Resources:** Create and manage resource links (guides, videos, policies) visible to learners within the organization.
 
@@ -2976,7 +3050,7 @@ Key modules are marked with `isGateModule: true`. Module completion requires pas
 ### 12.5 Analytics & Reporting
 
 - **Executive Overview:** Admin landing with KPI attention items, severity badges, and funnel chart. 2-column layout (funnel + departments).
-- **Engagement Reporting:** Message volume over time, active user counts, module completion rates across all 5 sessions. CSV export.
+- **Engagement Reporting:** Message volume over time, active user counts, module completion rates across all 6 sessions. CSV export.
 - **Proficiency Distribution:** Histogram of learner proficiency levels (0-8).
 - **Department Distribution:** Breakdown of users by department.
 - **Compliance Events:** Count and breakdown of compliance exceptions by type.
@@ -3182,7 +3256,7 @@ Lesson generation and document parsing use a Lovable-managed AI gateway routing 
 
 ## Appendix C: Database Migration History
 
-All migrations use `IF NOT EXISTS` for idempotency. **Total: 69 migrations.**
+All migrations use `IF NOT EXISTS` for idempotency. **Total: 71 migrations.**
 
 | Migration File | Description |
 |---------------|-------------|
@@ -3244,14 +3318,16 @@ All migrations use `IF NOT EXISTS` for idempotency. **Total: 69 migrations.**
 | `20260319100000_org_management_super_admin_only.sql` | **v6** — Restrict organization management to SuperAdmin role only |
 | `20260320100000_seed_healthcare_departments.sql` | **v6** — Seed healthcare industry and Parallon/HCA departments |
 | `20260326100000_fix_ai_preferences_rls.sql` | **v6** — Fix RLS policies on `ai_user_preferences` and `ai_memories` tables |
+| `20260408100000_app_settings_super_admin_policy.sql` | **v7** — SuperAdmin access policy for `app_settings` table |
+| `20260409100000_add_session_6_and_rename_agent_flag.sql` | **v7** — `session_6_progress` (JSONB), `session_6_completed` (BOOLEAN), `session_6_completed_at` (TIMESTAMPTZ) on `training_progress`; `session_3_skill_created` flag |
 
 ---
 
-*End of SMILE Comprehensive Technical Reference v6.0*
+*End of SMILE Comprehensive Technical Reference v7.0*
 
 **Document maintained by:** SM Advisors Development Team
-**Document version:** 6.0
+**Document version:** 7.0
 **Created:** 2026-02-22
-**Updated:** 2026-04-06
-**Next review date:** 2026-10-06
+**Updated:** 2026-04-09
+**Next review date:** 2026-10-09
 **Classification:** Internal / Confidential
